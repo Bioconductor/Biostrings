@@ -177,7 +177,7 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
     \item{}{
       \code{subseq(x, start=NA, end=NA, width=NA)}:
       Applies \code{subseq} on each element in \code{x}.
-      See \code{?\link[IRanges]{subseq}} for the details.
+      See \code{?\link[XVector]{subseq}} for the details.
 
       Note that this is similar to what \code{\link{substr}} does on a
       character vector. However there are some noticeable differences:
@@ -199,7 +199,7 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
       and \code{subseq} work on
       (\link[IRanges]{IRanges}, XStringSet or 
       \link{XStringViews} objects for \code{narrow},
-      \link[IRanges]{XVector} or XStringSet objects for
+      \link[XVector]{XVector} or XStringSet objects for
       \code{subseq}). But they both work and do the same thing on an
       XStringSet object. 
     }
@@ -216,9 +216,9 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
     }
     \item{}{
       \code{subseq(x, start=NA, end=NA, width=NA) <- value}:
-      A vectorized version of the \code{\link[IRanges]{subseq<-}}
-      method for \link[IRanges]{XVector} objects.
-      See \code{?`\link[IRanges]{subseq<-}`} for the details.
+      A vectorized version of the \code{\link[XVector]{subseq<-}}
+      method for \link[XVector]{XVector} objects.
+      See \code{?`\link[XVector]{subseq<-}`} for the details.
     }
   }
 }
@@ -316,158 +316,158 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
   \link{XString-class},
   \link{XStringViews-class},
   \link{XStringSetList-class},
-  \code{\link[IRanges]{subseq}},
+  \code{\link[XVector]{subseq}},
   \code{\link[IRanges]{narrow}},
   \code{\link{substr}},
   \code{\link[IRanges]{compact}},
-  \link[IRanges]{XVectorList-class}
+  \link[XVector]{XVectorList-class}
 }
 
 \examples{
-  ## ---------------------------------------------------------------------
-  ## A. USING THE XStringSet CONSTRUCTORS ON A CHARACTER VECTOR OR FACTOR
-  ## ---------------------------------------------------------------------
-  ## Note that there is no XStringSet() constructor, but an XStringSet
-  ## family of constructors: BStringSet(), DNAStringSet(), RNAStringSet(),
-  ## etc...
-  x0 <- c("#CTC-NACCAGTAT", "#TTGA", "TACCTAGAG")
-  width(x0)
-  x1 <- BStringSet(x0)
-  x1
+## ---------------------------------------------------------------------
+## A. USING THE XStringSet CONSTRUCTORS ON A CHARACTER VECTOR OR FACTOR
+## ---------------------------------------------------------------------
+## Note that there is no XStringSet() constructor, but an XStringSet
+## family of constructors: BStringSet(), DNAStringSet(), RNAStringSet(),
+## etc...
+x0 <- c("#CTC-NACCAGTAT", "#TTGA", "TACCTAGAG")
+width(x0)
+x1 <- BStringSet(x0)
+x1
 
-  ## 3 equivalent ways to obtain the same BStringSet object:
-  BStringSet(x0, start=4, end=-3)
-  subseq(x1, start=4, end=-3)
-  BStringSet(subseq(x0, start=4, end=-3))
+## 3 equivalent ways to obtain the same BStringSet object:
+BStringSet(x0, start=4, end=-3)
+subseq(x1, start=4, end=-3)
+BStringSet(subseq(x0, start=4, end=-3))
 
-  dna0 <- DNAStringSet(x0, start=4, end=-3)
-  dna0
-  names(dna0)
-  names(dna0)[2] <- "seqB"
-  dna0
+dna0 <- DNAStringSet(x0, start=4, end=-3)
+dna0
+names(dna0)
+names(dna0)[2] <- "seqB"
+dna0
 
-  ## When the input vector contains a lot of duplicates, turning it into
-  ## a factor first before passing it to the constructor will produce an
-  ## XStringSet object that is more compact in memory:
-  library(hgu95av2probe)
-  x2 <- sample(hgu95av2probe$sequence, 999000, replace=TRUE)
-  dna2a <- DNAStringSet(x2)
-  dna2b <- DNAStringSet(factor(x2))  # slower but result is more compact
-  object.size(dna2a)
-  object.size(dna2b)
+## When the input vector contains a lot of duplicates, turning it into
+## a factor first before passing it to the constructor will produce an
+## XStringSet object that is more compact in memory:
+library(hgu95av2probe)
+x2 <- sample(hgu95av2probe$sequence, 999000, replace=TRUE)
+dna2a <- DNAStringSet(x2)
+dna2b <- DNAStringSet(factor(x2))  # slower but result is more compact
+object.size(dna2a)
+object.size(dna2b)
 
-  ## ---------------------------------------------------------------------
-  ## B. USING THE XStringSet CONSTRUCTORS ON A SINGLE SEQUENCE (XString
-  ##    OBJECT OR CHARACTER STRING)
-  ## ---------------------------------------------------------------------
-  x3 <- "abcdefghij"
-  BStringSet(x3, start=2, end=6:2)  # behaves like 'substring(x3, 2, 6:2)'
-  BStringSet(x3, start=-(1:6))
-  x4 <- BString(x3)
-  BStringSet(x4, end=-(1:6), width=3)
+## ---------------------------------------------------------------------
+## B. USING THE XStringSet CONSTRUCTORS ON A SINGLE SEQUENCE (XString
+##    OBJECT OR CHARACTER STRING)
+## ---------------------------------------------------------------------
+x3 <- "abcdefghij"
+BStringSet(x3, start=2, end=6:2)  # behaves like 'substring(x3, 2, 6:2)'
+BStringSet(x3, start=-(1:6))
+x4 <- BString(x3)
+BStringSet(x4, end=-(1:6), width=3)
 
-  ## Randomly extract 1 million 40-mers from C. elegans chrI:
-  extractRandomReads <- function(subject, nread, readlength)
-  {
-      if (!is.integer(readlength))
-          readlength <- as.integer(readlength)
-      start <- sample(length(subject) - readlength + 1L, nread,
-                      replace=TRUE)
-      DNAStringSet(subject, start=start, width=readlength)
-  }
-  library(BSgenome.Celegans.UCSC.ce2)
-  rndreads <- extractRandomReads(Celegans$chrI, 1000000, 40)
-  ## Notes:
-  ## - This takes only 2 or 3 seconds versus several hours for a solution
-  ##   using substring() on a standard character string.
-  ## - The short sequences in 'rndreads' can be seen as the result of a
-  ##   simulated high-throughput sequencing experiment. A non-realistic
-  ##   one though because:
-  ##     (a) It assumes that the underlying technology is perfect (the
-  ##         generated reads have no technology induced errors).
-  ##     (b) It assumes that the sequenced genome is exactly the same as the
-  ##         reference genome.
-  ##     (c) The simulated reads can contain IUPAC ambiguity letters only
-  ##         because the reference genome contains them. In a real
-  ##         high-throughput sequencing experiment, the sequenced genome
-  ##         of course doesn't contain those letters, but the sequencer
-  ##         can introduce them in the generated reads to indicate ambiguous
-  ##         base-calling.
-  ##     (d) The simulated reads come from the plus strand only of a single
-  ##         chromosome.
-  ## - See the getSeq() function in the BSgenome package for how to
-  ##   circumvent (d) i.e. how to generate reads that come from the whole
-  ##   genome (plus and minus strands of all chromosomes).
+## Randomly extract 1 million 40-mers from C. elegans chrI:
+extractRandomReads <- function(subject, nread, readlength)
+{
+    if (!is.integer(readlength))
+        readlength <- as.integer(readlength)
+    start <- sample(length(subject) - readlength + 1L, nread,
+                    replace=TRUE)
+    DNAStringSet(subject, start=start, width=readlength)
+}
+library(BSgenome.Celegans.UCSC.ce2)
+rndreads <- extractRandomReads(Celegans$chrI, 1000000, 40)
+## Notes:
+## - This takes only 2 or 3 seconds versus several hours for a solution
+##   using substring() on a standard character string.
+## - The short sequences in 'rndreads' can be seen as the result of a
+##   simulated high-throughput sequencing experiment. A non-realistic
+##   one though because:
+##     (a) It assumes that the underlying technology is perfect (the
+##         generated reads have no technology induced errors).
+##     (b) It assumes that the sequenced genome is exactly the same as the
+##         reference genome.
+##     (c) The simulated reads can contain IUPAC ambiguity letters only
+##         because the reference genome contains them. In a real
+##         high-throughput sequencing experiment, the sequenced genome
+##         of course doesn't contain those letters, but the sequencer
+##         can introduce them in the generated reads to indicate ambiguous
+##         base-calling.
+##     (d) The simulated reads come from the plus strand only of a single
+##         chromosome.
+## - See the getSeq() function in the BSgenome package for how to
+##   circumvent (d) i.e. how to generate reads that come from the whole
+##   genome (plus and minus strands of all chromosomes).
 
-  ## ---------------------------------------------------------------------
-  ## C. USING THE XStringSet CONSTRUCTORS ON AN XStringSet OBJECT
-  ## ---------------------------------------------------------------------
-  library(drosophila2probe)
-  probes <- DNAStringSet(drosophila2probe)
-  probes
+## ---------------------------------------------------------------------
+## C. USING THE XStringSet CONSTRUCTORS ON AN XStringSet OBJECT
+## ---------------------------------------------------------------------
+library(drosophila2probe)
+probes <- DNAStringSet(drosophila2probe)
+probes
 
-  RNAStringSet(probes, start=2, end=-5)  # does NOT copy the sequence data!
+RNAStringSet(probes, start=2, end=-5)  # does NOT copy the sequence data!
 
-  ## ---------------------------------------------------------------------
-  ## D. USING THE XStringSet CONSTRUCTORS ON AN ORDINARY list OF XString
-  ##    OBJECTS
-  ## ---------------------------------------------------------------------
-  probes10 <- head(probes, n=10)
-  set.seed(33)
-  shuffled_nucleotides <- lapply(probes10, sample)
-  shuffled_nucleotides
+## ---------------------------------------------------------------------
+## D. USING THE XStringSet CONSTRUCTORS ON AN ORDINARY list OF XString
+##    OBJECTS
+## ---------------------------------------------------------------------
+probes10 <- head(probes, n=10)
+set.seed(33)
+shuffled_nucleotides <- lapply(probes10, sample)
+shuffled_nucleotides
 
-  DNAStringSet(shuffled_nucleotides)  # does NOT copy the sequence data!
+DNAStringSet(shuffled_nucleotides)  # does NOT copy the sequence data!
 
-  ## Note that the same result can be obtained in a more compact way with
-  ## just:
-  set.seed(33)
-  endoapply(probes10, sample)
+## Note that the same result can be obtained in a more compact way with
+## just:
+set.seed(33)
+endoapply(probes10, sample)
 
-  ## ---------------------------------------------------------------------
-  ## E. USING subseq() ON AN XStringSet OBJECT
-  ## ---------------------------------------------------------------------
-  subseq(probes, start=2, end=-5)
+## ---------------------------------------------------------------------
+## E. USING subseq() ON AN XStringSet OBJECT
+## ---------------------------------------------------------------------
+subseq(probes, start=2, end=-5)
 
-  subseq(probes, start=13, end=13) <- "N"
-  probes
+subseq(probes, start=13, end=13) <- "N"
+probes
 
-  ## Add/remove a prefix:
-  subseq(probes, start=1, end=0) <- "--"
-  probes
-  subseq(probes, end=2) <- ""
-  probes
+## Add/remove a prefix:
+subseq(probes, start=1, end=0) <- "--"
+probes
+subseq(probes, end=2) <- ""
+probes
 
-  ## Do more complicated things:
-  subseq(probes, start=4:7, end=7) <- c("YYYY", "YYY", "YY", "Y")
-  subseq(probes, start=4, end=6) <- subseq(probes, start=-2:-5)
-  probes
+## Do more complicated things:
+subseq(probes, start=4:7, end=7) <- c("YYYY", "YYY", "YY", "Y")
+subseq(probes, start=4, end=6) <- subseq(probes, start=-2:-5)
+probes
 
-  ## ---------------------------------------------------------------------
-  ## F. UNLISTING AN XStringSet OBJECT
-  ## ---------------------------------------------------------------------
-  library(drosophila2probe)
-  probes <- DNAStringSet(drosophila2probe)
-  unlist(probes)
+## ---------------------------------------------------------------------
+## F. UNLISTING AN XStringSet OBJECT
+## ---------------------------------------------------------------------
+library(drosophila2probe)
+probes <- DNAStringSet(drosophila2probe)
+unlist(probes)
 
-  ## ---------------------------------------------------------------------
-  ## G. COMPACTING AN XStringSet OBJECT
-  ## ---------------------------------------------------------------------
-  ## As a particular type of XVectorList objects, XStringSet objects can
-  ## optionally be compacted. Compacting is done typically before
-  ## serialization. See ?compact for more information.
-  library(drosophila2probe)
-  probes <- DNAStringSet(drosophila2probe)
+## ---------------------------------------------------------------------
+## G. COMPACTING AN XStringSet OBJECT
+## ---------------------------------------------------------------------
+## As a particular type of XVectorList objects, XStringSet objects can
+## optionally be compacted. Compacting is done typically before
+## serialization. See ?compact for more information.
+library(drosophila2probe)
+probes <- DNAStringSet(drosophila2probe)
 
-  y <- subseq(probes[1:12], start=5)
-  probes@pool
-  y@pool
-  object.size(probes)
-  object.size(y)
+y <- subseq(probes[1:12], start=5)
+probes@pool
+y@pool
+object.size(probes)
+object.size(y)
 
-  y0 <- compact(y)
-  y0@pool
-  object.size(y0)
+y0 <- compact(y)
+y0@pool
+object.size(y0)
 }
 
 \keyword{methods}

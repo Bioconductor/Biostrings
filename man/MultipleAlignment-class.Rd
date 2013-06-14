@@ -121,7 +121,8 @@ write.phylip(x, filepath)
   \item{start,end,width}{
     Either \code{NA}, a single integer, or an integer vector of the same
     length as \code{x} specifying how \code{x} should be "narrowed"
-    (see \code{?\link[IRanges:Ranges-utils]{narrow}} for the details).
+    (see \code{?\link[IRanges]{narrow}} in the \pkg{IRanges} package for
+    the details).
   }
   \item{use.names}{
     \code{TRUE} or \code{FALSE}. Should names be preserved?

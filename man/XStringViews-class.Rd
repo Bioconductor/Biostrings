@@ -147,7 +147,7 @@
 
 \seealso{
   \link[IRanges]{Views-class},
-  \code{\link[IRanges:IRanges-setops]{gaps}},
+  \code{\link[IRanges]{gaps}},
   \link{XString-class},
   \link{XStringSet-class},
   \code{\link{letter}},
@@ -155,59 +155,59 @@
 }
 
 \examples{
-  ## One standard way to create an XStringViews object is to use
-  ## the Views() constructor.
+## One standard way to create an XStringViews object is to use
+## the Views() constructor.
 
-  ## Views on a DNAString object:
-  s <- DNAString("-CTC-N")
-  v4 <- Views(s, start=3:0, end=5:8)
-  v4
-  subject(v4)
-  length(v4)
-  start(v4)
-  end(v4)
-  width(v4)
+## Views on a DNAString object:
+s <- DNAString("-CTC-N")
+v4 <- Views(s, start=3:0, end=5:8)
+v4
+subject(v4)
+length(v4)
+start(v4)
+end(v4)
+width(v4)
 
-  ## Attach a comment to views #3 and #4:
-  names(v4)[3:4] <- "out of limits"
-  names(v4)
+## Attach a comment to views #3 and #4:
+names(v4)[3:4] <- "out of limits"
+names(v4)
 
-  ## A more programatical way to "tag" the "out of limits" views:
-  names(v4)[start(v4) < 1 | nchar(subject(v4)) < end(v4)] <- "out of limits"
-  ## or just:
-  names(v4)[nchar(v4) < width(v4)] <- "out of limits"
+## A more programatical way to "tag" the "out of limits" views:
+names(v4)[start(v4) < 1 | nchar(subject(v4)) < end(v4)] <- "out of limits"
+## or just:
+names(v4)[nchar(v4) < width(v4)] <- "out of limits"
 
-  ## Two equivalent ways to extract a view as an XString object:
-  s2a <- v4[[2]]
-  s2b <- subseq(subject(v4), start=start(v4)[2], end=end(v4)[2])
-  identical(s2a, s2b) # TRUE
+## Two equivalent ways to extract a view as an XString object:
+s2a <- v4[[2]]
+s2b <- subseq(subject(v4), start=start(v4)[2], end=end(v4)[2])
+identical(s2a, s2b) # TRUE
 
-  ## It is an error to try to extract an "out of limits" view:
-  #v4[[3]] # Error!
+## It is an error to try to extract an "out of limits" view:
+#v4[[3]] # Error!
 
-  v12 <- Views(DNAString("TAATAATG"), start=-2:9, end=0:11)
-  v12 == DNAString("TAA")
-  v12[v12 == v12[4]]
-  v12[v12 == v12[1]]
-  v12[3] == Views(RNAString("AU"), start=0, end=2)
+v12 <- Views(DNAString("TAATAATG"), start=-2:9, end=0:11)
+v12 == DNAString("TAA")
+v12[v12 == v12[4]]
+v12[v12 == v12[1]]
+v12[3] == Views(RNAString("AU"), start=0, end=2)
 
-  ## Here the first view doesn't even overlap with the subject:
-  Views(BString("aaa--b"), start=-3:4, end=-3:4 + c(3:6, 6:3))
+## Here the first view doesn't even overlap with the subject:
+Views(BString("aaa--b"), start=-3:4, end=-3:4 + c(3:6, 6:3))
 
-  ## 'start' and 'end' are recycled:
-  subject <- "abcdefghij"
-  Views(subject, start=2:1, end=4)
-  Views(subject, start=5:7, end=nchar(subject))
-  Views(subject, start=1, end=5:7)
+## 'start' and 'end' are recycled:
+subject <- "abcdefghij"
+Views(subject, start=2:1, end=4)
+Views(subject, start=5:7, end=nchar(subject))
+Views(subject, start=1, end=5:7)
 
-  ## Applying gaps() to an XStringViews object:
-  v2 <- Views("abCDefgHIJK", start=c(8, 3), end=c(14, 4))
-  gaps(v2)
+## Applying gaps() to an XStringViews object:
+v2 <- Views("abCDefgHIJK", start=c(8, 3), end=c(14, 4))
+gaps(v2)
 
-  ## Coercion:
-  as(v12, "XStringSet")  # same as 'as(v12, "DNAStringSet")'
-  rna <- as(v12, "RNAStringSet")
-  as(rna, "Views")
+## Coercion:
+as(v12, "XStringSet")  # same as 'as(v12, "DNAStringSet")'
+rna <- as(v12, "RNAStringSet")
+as(rna, "Views")
 }
 
 \keyword{methods}

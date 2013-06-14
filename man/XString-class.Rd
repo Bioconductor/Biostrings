@@ -175,7 +175,7 @@
 \author{H. Pages}
 
 \seealso{
-  \code{\link[IRanges]{subseq}},
+  \code{\link[XVector]{subseq}},
   \code{\link{letter}},
   \link{DNAString-class},
   \link{RNAString-class},
@@ -183,42 +183,42 @@
   \link{XStringSet-class},
   \link{XStringViews-class},
   \code{\link{reverseComplement}},
-  \code{\link[IRanges]{compact}},
-  \link[IRanges]{XVector-class}
+  \code{\link[XVector]{compact}},
+  \link[XVector]{XVector-class}
 }
 
 \examples{
-  b <- BString("I am a BString object")
-  b
-  length(b)
+b <- BString("I am a BString object")
+b
+length(b)
 
-  ## Extracting a linear subsequence:
-  subseq(b)
-  subseq(b, start=3)
-  subseq(b, start=-3)
-  subseq(b, end=-3)
-  subseq(b, end=-3, width=5)
+## Extracting a linear subsequence:
+subseq(b)
+subseq(b, start=3)
+subseq(b, start=-3)
+subseq(b, end=-3)
+subseq(b, end=-3, width=5)
 
-  ## Subsetting:
-  b2 <- b[length(b):1]       # better done with reverse(b)
+## Subsetting:
+b2 <- b[length(b):1]       # better done with reverse(b)
 
-  as.character(b2)
+as.character(b2)
 
-  b2 == b                    # FALSE
-  b2 == as.character(b2)     # TRUE
+b2 == b                    # FALSE
+b2 == as.character(b2)     # TRUE
 
-  ## b[1:length(b)] is equal but not identical to b!
-  b == b[1:length(b)]        # TRUE
-  identical(b, 1:length(b))  # FALSE
-  ## This is because subsetting an XString object with [ makes a copy
-  ## of part or all its sequence data. Hence, for the resulting object,
-  ## the internal slot containing the memory address of the sequence
-  ## data differs from the original. This is enough for identical() to
-  ## see the 2 objects as different.
+## b[1:length(b)] is equal but not identical to b!
+b == b[1:length(b)]        # TRUE
+identical(b, 1:length(b))  # FALSE
+## This is because subsetting an XString object with [ makes a copy
+## of part or all its sequence data. Hence, for the resulting object,
+## the internal slot containing the memory address of the sequence
+## data differs from the original. This is enough for identical() to
+## see the 2 objects as different.
 
-  ## Compacting. As a particular type of XVector objects, XString
-  ## objects can optionally be compacted. Compacting is done typically
-  ## before serialization. See ?compact for more information.
+## Compacting. As a particular type of XVector objects, XString
+## objects can optionally be compacted. Compacting is done typically
+## before serialization. See ?compact for more information.
 }
 
 \keyword{methods}

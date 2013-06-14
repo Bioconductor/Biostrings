@@ -206,60 +206,61 @@
 \author{H. Pages}
 
 \seealso{
-  \code{\link{maskMotif}},
-  \code{\link{injectHardMask}},
-  \code{\link{alphabetFrequency}},
-  \code{\link{reverseComplement}},
-  \link{XString-class},
-  \link[IRanges]{MaskCollection-class},
-  \link[IRanges]{Views-class},
-  \link[IRanges]{Ranges-utils}
+  \itemize{
+    \item \code{\link{maskMotif}}
+    \item \code{\link{injectHardMask}}
+    \item \code{\link{alphabetFrequency}}
+    \item \code{\link{reverseComplement}}
+    \item \link{XString-class}
+    \item \link[IRanges]{MaskCollection-class}
+    \item \link[IRanges]{Views-class}
+  }
 }
 
 \examples{
-  ## ---------------------------------------------------------------------
-  ## A. MASKING BY POSITION
-  ## ---------------------------------------------------------------------
-  mask0 <- Mask(mask.width=29, start=c(3, 10, 25), width=c(6, 8, 5))
-  x <- DNAString("ACACAACTAGATAGNACTNNGAGAGACGC")
-  length(x)  # same as width(mask0)
-  nchar(x)   # same as length(x)
-  masks(x) <- mask0
-  x
-  length(x)  # has not changed
-  nchar(x)   # has changed
-  gaps(x)
+## ---------------------------------------------------------------------
+## A. MASKING BY POSITION
+## ---------------------------------------------------------------------
+mask0 <- Mask(mask.width=29, start=c(3, 10, 25), width=c(6, 8, 5))
+x <- DNAString("ACACAACTAGATAGNACTNNGAGAGACGC")
+length(x)  # same as width(mask0)
+nchar(x)   # same as length(x)
+masks(x) <- mask0
+x
+length(x)  # has not changed
+nchar(x)   # has changed
+gaps(x)
 
-  ## Prepare a MaskCollection object of 3 masks ('mymasks') by running the
-  ## examples in the man page for these objects:
-  example(MaskCollection, package="IRanges")
+## Prepare a MaskCollection object of 3 masks ('mymasks') by running the
+## examples in the man page for these objects:
+example(MaskCollection, package="IRanges")
 
-  ## Put it on 'x':
-  masks(x) <- mymasks
-  x
-  alphabetFrequency(x)
+## Put it on 'x':
+masks(x) <- mymasks
+x
+alphabetFrequency(x)
 
-  ## Deactivate all masks:
-  active(masks(x)) <- FALSE
-  x
+## Deactivate all masks:
+active(masks(x)) <- FALSE
+x
 
-  ## Activate mask "C":
-  active(masks(x))["C"] <- TRUE
-  x
+## Activate mask "C":
+active(masks(x))["C"] <- TRUE
+x
 
-  ## Turn MaskedXString object into a Views object:
-  as(x, "Views")
+## Turn MaskedXString object into a Views object:
+as(x, "Views")
 
-  ## Drop the masks:
-  masks(x) <- NULL
-  x
-  alphabetFrequency(x)
+## Drop the masks:
+masks(x) <- NULL
+x
+alphabetFrequency(x)
 
 
-  ## ---------------------------------------------------------------------
-  ## B. MASKING BY CONTENT
-  ## ---------------------------------------------------------------------
-  ## See ?maskMotif for masking by content
+## ---------------------------------------------------------------------
+## B. MASKING BY CONTENT
+## ---------------------------------------------------------------------
+## See ?maskMotif for masking by content
 }
 
 \keyword{methods}
