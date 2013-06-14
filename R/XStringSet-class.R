@@ -136,10 +136,14 @@ setMethod("seqtype", "XStringSet",
 setReplaceMethod("seqtype", "XStringSet",
     function(x, value)
     {
+        ans_class <- paste(value, "StringSet", sep="")
+        ## Don't try to replace the code below with 'as(x, ans_class)' because
+        ## that would introduce a chicken-egg situation ('as(x, ans_class)'
+        ## actually calls the seqtype() setter when 'x' is an XStringSet
+        ## object).
         lkup <- get_seqtype_conversion_lookup(seqtype(x), value)
         if (!is.null(lkup))
             x <- xvcopy(x, lkup=lkup)  # temporarily breaks 'x'!
-        ans_class <- paste(value, "StringSet", sep="")
         new2(ans_class, pool=x@pool, ranges=x@ranges, check=FALSE)
     }
 )

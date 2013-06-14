@@ -62,13 +62,6 @@ partitioning <- function(x) .Defunct("PartitioningByEnd")
 ### The XStringSetList() constructor. NOT exported.
 ###
 
-.new_XStringSetList_from_List <- function(seqtype, x)
-{
-    unlisted_x <- unlist(x, use.names=FALSE)
-    unlisted_ans <- XStringSet(seqtype, unlisted_x)
-    relist(unlisted_ans, x)
-}
-
 .new_XStringSetList_from_list <- function(seqtype, x)
 {
     x_eltlens <- elementLengths(x)
@@ -79,16 +72,28 @@ partitioning <- function(x) .Defunct("PartitioningByEnd")
         y <- x
     }
     unlisted_y <- unlist(y, use.names=FALSE, recursive=FALSE)
-    if (length(unlisted_y) < sum(x_eltlens)) {
-        ## unlist() was not able to fully unlist 'y'. So let's try to turn
-        ## each list element into an XStringSet object and then combine
-        ## them together.
+    if (length(unlisted_y) == sum(x_eltlens)) {
+        unlisted_ans <- XStringSet(seqtype, unlisted_y)
+    } else {
+        ## In that case 'length(unlisted_y)' should be < 'sum(x_eltlens)'
+        ## which means unlist() was not able to fully unlist 'y'. So let's
+        ## try to turn each list element into an XStringSet object and then
+        ## combine them together. This is of course much slower than if
+        ## unlist() had succeeded.
         y <- lapply(unname(y), XStringSet, seqtype=seqtype)
         unlisted_ans <- do.call(c, y)
-    } else {
-        unlisted_ans <- XStringSet(seqtype, unlisted_y)
     }
     relist(unlisted_ans, x)
+}
+
+.new_XStringSetList_from_List <- function(seqtype, x)
+{
+    unlisted_x <- unlist(x, use.names=FALSE)
+    unlisted_ans <- XStringSet(seqtype, unlisted_x)
+    ans <- relist(unlisted_ans, x)
+    ## relist() puts the names back but not the metadata columns.
+    mcols(ans) <- mcols(x)
+    ans
 }
 
 XStringSetList <- function(seqtype, ..., use.names=TRUE)
@@ -125,31 +130,17 @@ setMethod("seqtype", "XStringSetList",
 setReplaceMethod("seqtype", "XStringSetList",
     function(x, value)
     {
-        ## could be done with 'seqtype(unlisted(x)) <- value'
-        ## if `unlisted<-` was available
-        ans_class <- paste(value, "StringSetList", sep="")
-        ans_unlistData <- unlist(x)
-        seqtype(ans_unlistData) <- value
-        unsafe.newXStringSetList(ans_class, ans_unlistData, x@partitioning)
+        ## Could be done elegantly with 'seqtype(unlisted(x)) <- value'
+        ## if `unlisted<-` was available.
+        unlisted_ans <- unlist(x, use.names=FALSE)
+        seqtype(unlisted_ans) <- value
+        ans <- relist(unlisted_ans, x)
+        ## relist() puts the names back but not the metadata columns.
+        mcols(ans) <- mcols(x)
+        ans
     }
 )
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting.
-###
-### No "[" method for now.
-###
-
-### Returns an XStringSet object of the same seqtype as 'x'.
-setMethod("[[", "XStringSetList",
-    function(x, i, j, ...)
-    {
-        i <- IRanges:::checkAndTranslateDbleBracketSubscript(x, i)
-        ii <- x@partitioning[[i]]
-        unlist(x, use.names=FALSE)[ii]
-    }
-)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### User interface to the XStringSetList() constructor

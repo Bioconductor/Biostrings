@@ -23,8 +23,6 @@
 \alias{seqtype,XStringSetList-method}
 \alias{seqtype<-,XStringSetList-method}
 
-\alias{[[,XStringSetList-method}
-
 \alias{show,XStringSetList-method}
 
 % Old stuff (Deprecated or Defunct):
@@ -66,60 +64,24 @@ DNAStringSetList(..., use.names=TRUE)
   }
 }
 
-
-\section{Accessor-like methods}{
-  In the code snippets below,
-  \code{x} is an XStringSetList object.
-
-  \describe{
-    \item{}{
-      \code{length(x)}:
-      The number of list elements in \code{x}.
-    }
-    \item{}{
-      \code{PartitioningByEnd(x)}:
-      A \link[IRanges]{PartitioningByEnd} object describing the grouping
-      of the inner elements in \code{x} within each top-level list element.
-    }
-    \item{}{
-      \code{elementLengths(x)}:
-      An integer vector of the length of each list element of \code{x}.
-    }
-   \item{}{
-      \code{names(x)}:
-      \code{NULL} or a character vector of the same length as \code{x} 
-      containing a short user-provided description or comment for each 
-      element in \code{x}. These are the only data in an XStringSetList 
-      object that can safely be changed by the user. All the other data 
-      are immutable! As a general recommendation, the user should never 
-      try to modify an object by accessing its slots directly.
-    }
-  }
-}
-
-\section{Subsetting and appending}{
-  In the code snippets below,
-  \code{x} and \code{values} are XStringSet objects,
-  and \code{i} should be an index specifying the elements to extract.
-
-  \describe{
-    \item{}{
-      \code{x[[i]]}:
-      Extract the i-th \code{\link{XStringSet}} object from \code{x}.
-    }
-    \item{}{
-      \code{append(x, values, after=length(x))}:
-      Add sequences in \code{values} to \code{x}.
-    }
-  }
+\section{Methods}{
+  The XStringSetList class extends the \link[IRanges]{List} class defined
+  in the \pkg{IRanges} package. Using a less technical jargon, this just means
+  that an XStringSetList object is a list-like object that can be manipulated
+  like an ordinary list. Or, said otherwise, most of the operations that work
+  on an ordinary list (e.g. \code{length}, \code{names}, \code{[}, \code{[[},
+  \code{c}, \code{unlist}, etc...) should work on an XStringSetList object.
+  In addition, Bioconductor specific list operations like
+  \code{\link[IRanges]{elementLengths}} and
+  \code{\link[IRanges]{PartitioningByEnd}} (defined in the \pkg{IRanges}
+  package) are supported too.
 }
 
 \author{H. Pages}
 
 \seealso{
   \link{XStringSet-class},
-  \link[IRanges]{Grouping-class},
-  \link[IRanges]{Vector-class}
+  \link[IRanges]{List-class}
 }
 
 \examples{
