@@ -46,29 +46,29 @@ letter(x, i)
 }
 
 \seealso{
-  \code{\link[IRanges:XVector-class]{subseq}},
+  \code{\link[XVector]{subseq}},
   \link{XString-class},
   \link{XStringViews-class},
   \link{MaskedXString-class}
 }
 
 \examples{
-  x <- c("abcd", "ABC")
-  i <- c(3, 1, 1, 2, 1)
+x <- c("abcd", "ABC")
+i <- c(3, 1, 1, 2, 1)
 
-  ## With a character vector:
-  letter(x[1], 3:1)
-  letter(x, 3)
-  letter(x, i)
-  #letter(x, 4)             # Error!
+## With a character vector:
+letter(x[1], 3:1)
+letter(x, 3)
+letter(x, i)
+#letter(x, 4)             # Error!
 
-  ## With a BString object:
-  letter(BString(x[1]), i)  # returns a character vector
-  BString(x[1])[i]          # returns a BString object
+## With a BString object:
+letter(BString(x[1]), i)  # returns a character vector
+BString(x[1])[i]          # returns a BString object
 
-  ## With an XStringViews object:
-  x2 <- as(BStringSet(x), "Views")
-  letter(x2, i)
+## With an XStringViews object:
+x2 <- as(BStringSet(x), "Views")
+letter(x2, i)
 }
 
 \keyword{methods}

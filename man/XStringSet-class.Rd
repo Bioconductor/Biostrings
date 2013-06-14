@@ -319,7 +319,7 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
   \code{\link[XVector]{subseq}},
   \code{\link[IRanges]{narrow}},
   \code{\link{substr}},
-  \code{\link[IRanges]{compact}},
+  \code{\link[XVector]{compact}},
   \link[XVector]{XVectorList-class}
 }
 
