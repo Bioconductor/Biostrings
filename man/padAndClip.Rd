@@ -35,11 +35,16 @@ stackStrings(x, from, to, shift=0L,
     strings are first conceptually padded with an infinite number of
     padding letters on both sides, regions can go beyond string limits.
   }
-  \item{Lpadding.letter}{
-    A single letter to use for padding on the left.
-  }
-  \item{Rpadding.letter}{
-    A single letter to use for padding on the right.
+  \item{Lpadding.letter, Rpadding.letter}{
+    A single letter to use for padding on the left, and another one to
+    use for padding on the right. Note that the default letter (\code{" "})
+    does not work if, for example, \code{x} is a \link{DNAStringSet} object,
+    because the space is not a valid DNA letter (see
+    \code{?\link{DNA_ALPHABET}}).
+    So the \code{Lpadding.letter} and \code{Rpadding.letter} arguments
+    \emph{must} be supplied if \code{x} is not a \link{BStringSet} object.
+    For example, if \code{x} is a \link{DNAStringSet} object, a typical
+    choice is to use \code{"+"}.
   }
   \item{remove.out.of.view.strings}{
     \code{TRUE} or \code{FALSE}. Whether or not to remove the strings

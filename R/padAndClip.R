@@ -7,7 +7,7 @@
 .normarg_padding.letter <- function(padding.letter, seqtype, what)
 {
     if (seqtype != "B" && identical(padding.letter, " "))
-        stop("'", what, "' must be supplied when 'x' is not ",
+        stop("'", what, "' must be supplied if 'x' is not ",
              "a BStringSet object")
     class <- paste0(seqtype, "String")
     if (isSingleString(padding.letter) && nchar(padding.letter) == 1L)
