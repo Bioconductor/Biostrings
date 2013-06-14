@@ -903,16 +903,16 @@ setMethod("twoWayAlphabetFrequency", c("XString", "XString"),
           )
 
 setMethod("twoWayAlphabetFrequency", c("XString", "XStringSet"),
-          function(x, y, as.prob=FALSE, baseOnly=FALSE) {
-            x <- rep(as(x, "XStringSet"), length(y))
-            .XString.two_way_code_frequency(x, y, as.prob, baseOnly)
+          function(x, y, as.prob=FALSE, collapse=FALSE, baseOnly=FALSE) {
+          x <- rep(as(x, "XStringSet"), length(y))
+          .XStringSet.two_way_code_frequency(x, y, as.prob, collapse, baseOnly)
           }
           )
 
 setMethod("twoWayAlphabetFrequency", c("XStringSet", "XString"),
-          function(x, y, as.prob=FALSE, baseOnly=FALSE) {
-            y <- rep(as(y, "XStringSet"), length(x))
-            .XString.two_way_code_frequency(x, y, as.prob, baseOnly)
+          function(x, y, as.prob=FALSE, collapse=FALSE, baseOnly=FALSE) {
+          y <- rep(as(y, "XStringSet"), length(x))
+          .XStringSet.two_way_code_frequency(x, y, as.prob, collapse, baseOnly)
           }
           )
 
