@@ -111,19 +111,31 @@ stackStrings(x, from, to, shift=0L,
 \examples{
 x <- BStringSet(c(seq1="ABCD", seq2="abcdefghijk", seq3="", seq4="XYZ"))
 
-padAndClip(x, IRanges(3, 8:5), Lpadding.letter="+", Rpadding.letter="-")
-padAndClip(x, IRanges(1:-2, 7), Lpadding.letter="+", Rpadding.letter="-")
+padAndClip(x, IRanges(3, 8:5), Lpadding.letter=">", Rpadding.letter="<")
+padAndClip(x, IRanges(1:-2, 7), Lpadding.letter=">", Rpadding.letter="<")
 
-stackStrings(x, from=-2, to=8)
+stackStrings(x, 2, 8)
 
-stackStrings(x, from=-2, to=8, shift=c(0, -11, 6, 7),
+stackStrings(x, -2, 8, shift=c(0, -11, 6, 7),
+             Lpadding.letter="#", Rpadding.letter=".")
+
+stackStrings(x, -2, 8, shift=c(0, -14, 6, 7),
+             Lpadding.letter="#", Rpadding.letter=".")
+
+stackStrings(x, -2, 8, shift=c(0, -14, 6, 7),
+             Lpadding.letter="#", Rpadding.letter=".",
+             remove.out.of.view.strings=TRUE)
+
+library(hgu95av2probe)
+probes <- DNAStringSet(hgu95av2probe)
+probes
+
+stackStrings(probes, 0, 26,
              Lpadding.letter="+", Rpadding.letter="-")
 
-stackStrings(x, from=-2, to=8, shift=c(0, -14, 6, 7),
-             Lpadding.letter="+", Rpadding.letter="-")
-
-stackStrings(x, from=-2, to=8, shift=c(0, -14, 6, 7),
-             Lpadding.letter="+", Rpadding.letter="-",
+options(showHeadLines=15)
+stackStrings(probes, 3, 23, shift=6*c(1:5, -(1:5)),
+             Lpadding.letter="+", Rpadding.letter="N",
              remove.out.of.view.strings=TRUE)
 }
 
