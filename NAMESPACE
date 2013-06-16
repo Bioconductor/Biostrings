@@ -67,7 +67,7 @@ export(
     unmasked,
 
     ## XStringSetList-class.R:
-    DNAStringSetList,
+    DNAStringSetList, AAStringSetList,
 
     ## xscat.R:
     xscat,

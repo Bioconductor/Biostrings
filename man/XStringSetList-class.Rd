@@ -44,13 +44,15 @@
   These four containers are direct subclasses of XStringSetList
   with no additional slots.
 
-  Currently \code{DNAStringSetList()} is the only XStringSetList constructor. 
-  The XStringSetList class itself is virtual and has no constructor.
+  Currently \code{DNAStringSetList()} and \code{AAStringSetList()} are
+  the only XStringSetList constructors. The XStringSetList class itself 
+  is virtual and has no constructor.
 }
 
 \usage{
 ## Constructors:
 DNAStringSetList(..., use.names=TRUE)
+AAStringSetList(..., use.names=TRUE)
 }
 
 \arguments{
@@ -88,8 +90,8 @@ DNAStringSetList(..., use.names=TRUE)
 ## ------------------------------------------------------------------------
 ## A. THE XStringSetList CONSTRUCTORS
 ## ------------------------------------------------------------------------
-## Currently DNAStringSetList() is the only constructor. Others will 
-## be developed when the use case arises.
+## Currently DNAStringSetList() and AAStringSetList() are the only 
+## constructors. Others will be developed when the use case arises.
 
 dna1 <- c("AAA", "AC", "", "T", "GGATA")
 dna2 <- c("G", "TT", "C")

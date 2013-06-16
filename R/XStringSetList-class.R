@@ -151,6 +151,10 @@ DNAStringSetList <- function(..., use.names=TRUE)
     XStringSetList("DNA", ..., use.names=use.names)
 }
 
+AAStringSetList <- function(..., use.names=TRUE)
+{
+    XStringSetList("AA", ..., use.names=use.names)
+}
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.
