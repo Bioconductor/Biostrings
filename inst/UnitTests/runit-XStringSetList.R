@@ -37,69 +37,58 @@ all.equal.XStringSet <- function(target, current, ...)
     ans
 }
 
-test_DNAStringSetList_constructor <- function()
+.XStringSetList_constructor <- 
+    function(XStringSetFUN, XStringSetListFUN, XS_ALPHABET)
 {
-    dna1 <- DNAStringSet(DNA_ALPHABET[1:8])
-    dna2 <- DNAStringSet(DNA_ALPHABET[9:17])
+    xs1 <- XStringSetFUN(XS_ALPHABET[1:8])
+    xs2 <- XStringSetFUN(XS_ALPHABET[9:17])
 
-    lst1 <- DNAStringSetList(dna1, dna2) 
-    lst2 <- DNAStringSetList(as.character(DNA_ALPHABET[1:8]), 
-                             as.character(DNA_ALPHABET[9:17])) 
+    lst1 <- XStringSetListFUN(xs1, xs2) 
+    lst2 <- XStringSetListFUN(as.character(XS_ALPHABET[1:8]), 
+                              as.character(XS_ALPHABET[9:17])) 
     checkTrue(all.equal(lst1, lst2))
 
-    checkTrue(length(DNAStringSetList()) == 0)
+    checkTrue(length(XStringSetListFUN()) == 0)
 }
+
+.XStringSetList_unlist <-
+    function(XStringSetFUN, XStringSetListFUN, XS_ALPHABET)
+{
+    lst <- XStringSetListFUN(XS_ALPHABET, XS_ALPHABET)
+    expected <- XStringSetFUN(c(XS_ALPHABET, XS_ALPHABET))
+    checkTrue(all.equal(unlist(lst), expected))
+}
+
+.XStringSetList_append <-
+    function(XStringSetFUN, XStringSetListFUN, XS_ALPHABET)
+{
+    xs <- XStringSetFUN(XS_ALPHABET)
+    lst <- XStringSetListFUN(XS_ALPHABET, XS_ALPHABET)
+    elementMetadata(lst) <- DataFrame(C1=c("list1", "list2"))
+
+    xs2a <- c(lst, lst)
+    xs2b <- rep(lst, 2L)
+    xs2c <- append(lst, lst) 
+    checkTrue(all.equal(xs2a, xs2b))
+    checkTrue(all.equal(xs2a, xs2c))
+}
+
+## DNAStringSet
+test_DNAStringSetList_constructor <- function()
+    .XStringSetList_constructor(DNAStringSet, DNAStringSetList, DNA_ALPHABET)
 
 test_DNAStringSetList_unlist <- function()
-{
-    lst <- DNAStringSetList(DNA_ALPHABET, DNA_ALPHABET)
-    expected <- DNAStringSet(c(DNA_ALPHABET, DNA_ALPHABET))
-    checkTrue(all.equal(unlist(lst), expected))
-}
+    .XStringSetList_unlist(DNAStringSet, DNAStringSetList, DNA_ALPHABET)
 
 test_DNAStringSetList_append <- function()
-{
-    dna <- DNAStringSet(DNA_ALPHABET)
-    lst <- DNAStringSetList(DNA_ALPHABET, DNA_ALPHABET)
-    elementMetadata(lst) <- DataFrame(C1=c("list1", "list2"))
+    .XStringSetList_append(DNAStringSet, DNAStringSetList, DNA_ALPHABET)
 
-    dna2a <- c(lst, lst)
-    dna2b <- rep(lst, 2L)
-    dna2c <- append(lst, lst) 
-    checkTrue(all.equal(dna2a, dna2b))
-    checkTrue(all.equal(dna2a, dna2c))
-}
-
+## AAStringSet
 test_AAStringSetList_constructor <- function()
-{
-    aa1 <- AAStringSet(AA_ALPHABET[1:8])
-    aa2 <- AAStringSet(AA_ALPHABET[9:17])
-
-    lst1 <- AAStringSetList(aa1, aa2) 
-    lst2 <- AAStringSetList(as.character(AA_ALPHABET[1:8]), 
-                             as.character(AA_ALPHABET[9:17])) 
-    checkTrue(all.equal(lst1, lst2))
-
-    checkTrue(length(AAStringSetList()) == 0)
-}
+    .XStringSetList_constructor(AAStringSet, AAStringSetList, AA_ALPHABET)
 
 test_AAStringSetList_unlist <- function()
-{
-    lst <- AAStringSetList(AA_ALPHABET, AA_ALPHABET)
-    expected <- AAStringSet(c(AA_ALPHABET, AA_ALPHABET))
-    checkTrue(all.equal(unlist(lst), expected))
-}
+    .XStringSetList_unlist(AAStringSet, AAStringSetList, AA_ALPHABET)
 
 test_AAStringSetList_append <- function()
-{
-    aa <- AAStringSet(AA_ALPHABET)
-    lst <- AAStringSetList(AA_ALPHABET, AA_ALPHABET)
-    elementMetadata(lst) <- DataFrame(C1=c("list1", "list2"))
-
-    dna2a <- c(lst, lst)
-    dna2b <- rep(lst, 2L)
-    dna2c <- append(lst, lst) 
-    checkTrue(all.equal(dna2a, dna2b))
-    checkTrue(all.equal(dna2a, dna2c))
-}
-
+    .XStringSetList_append(AAStringSet, AAStringSetList, AA_ALPHABET)
