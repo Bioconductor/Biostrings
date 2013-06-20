@@ -410,6 +410,8 @@ stopifnot(identical_XStringSetList(res3a, res3b))
 setMethod("replaceAt", "XString",
     function(x, at, value="")
     {
+        if (length(at) == 0L && length(value) == 0L)
+            return(x)
         at <- .normarg_at1(at, x)
         value <- .normarg_value1(value, at, seqtype(x))
         NR <- length(at)  # same as length(value) -- nb of replacements
@@ -434,6 +436,8 @@ setMethod("replaceAt", "XString",
 setMethod("replaceAt", "XStringSet",
     function(x, at, value="")
     {
+        if (length(at) == 0L && length(value) == 0L)
+            return(x)
         at <- .normarg_at2(at, x)
         value <- .normarg_value2(value, at, seqtype(x))
         unlisted_x <- unlist(x, use.names=FALSE)

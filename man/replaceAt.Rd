@@ -56,6 +56,10 @@ replaceAt(x, at, value="")
     in \code{x}.
     The \emph{effective shape} of \code{at} is described by its length
     together with the lengths of its list elements \emph{after} recycling.
+
+    As a special case, \code{extractAt} accepts \code{at} and \code{value}
+    to be both of length 0, in which case it just returns \code{x} unmodified
+    (no-op).
   }
   \item{value}{
     The replacement sequences.
@@ -71,6 +75,10 @@ replaceAt(x, at, value="")
     \emph{effective shape} of \code{at} (see above). "Vertical recycling"
     is the usual recycling whereas "horizontal recycling" recycles the
     individual list elements .
+
+    As a special case, \code{extractAt} accepts \code{at} and \code{value}
+    to be both of length 0, in which case it just returns \code{x} unmodified
+    (no-op).
   }
 }
 
@@ -125,13 +133,13 @@ extractAt(x, at2)
 extractAt(x, rev(at2))
 
 value <- c("+", "-", "*")
-replaceAt(x, at2, value)
-replaceAt(x, rev(at2), rev(value))
+replaceAt(x, at2, value=value)
+replaceAt(x, rev(at2), value=rev(value))
 
 at3 <- IRanges(c(14, 1, 1, 1, 1, 11), c(13, 0, 10, 0, 0, 10))
 value <- 1:6
-replaceAt(x, at3, value)            # "24536klm1"
-replaceAt(x, rev(at3), rev(value))  # "54236klm1"
+replaceAt(x, at3, value=value)            # "24536klm1"
+replaceAt(x, rev(at3), value=rev(value))  # "54236klm1"
 
 ## Deletions:
 stopifnot(replaceAt(x, at2) == "defghijkm")
@@ -147,10 +155,11 @@ at5 <- c(5, 1, 6, 5)  # 2 insertions before position 5
 replaceAt(x, at5, value=c("+", "-", "*", "/"))
 
 ## No-ops:
-stopifnot(replaceAt(x, at2, extractAt(x, at2)) == x)
-stopifnot(replaceAt(x, at3, extractAt(x, at3)) == x)
-stopifnot(replaceAt(x, at4, extractAt(x, at4)) == x)
-stopifnot(replaceAt(x, at5, extractAt(x, at5)) == x)
+stopifnot(replaceAt(x, NULL, value=NULL) == x)
+stopifnot(replaceAt(x, at2, value=extractAt(x, at2)) == x)
+stopifnot(replaceAt(x, at3, value=extractAt(x, at3)) == x)
+stopifnot(replaceAt(x, at4, value=extractAt(x, at4)) == x)
+stopifnot(replaceAt(x, at5, value=extractAt(x, at5)) == x)
 
 ## The order of successive transformations matters:
 ##   T1: insert "+" before position 1 and 4
@@ -218,7 +227,7 @@ extractAt(probes, at)
 at <- IRanges(13, width=1)
 base13 <- extractAt(probes, at)
 base13comp <- relist(complement(unlist(base13)), base13)
-replaceAt(probes, at, base13comp)
+replaceAt(probes, at, value=base13comp)
 ## See ?xscat for a more efficient way to do this.
 
 ## Replace all the occurences of a given pattern with another pattern:
@@ -226,7 +235,7 @@ midx <- vmatchPattern("VCGTT", probes, fixed=FALSE)
 matches <- extractAt(probes, midx)
 unlist(matches)
 unique(unlist(matches))
-probes2 <- replaceAt(probes, midx, "-++-")
+probes2 <- replaceAt(probes, midx, value="-++-")
 
 ## See strings with 2 or more susbtitutions:
 probes2[elementLengths(midx) >= 2]
