@@ -191,13 +191,19 @@ setMethod("PWM", "matrix",
 
 .normargSubject <- function(subject)
 {
-    if (is(subject, "MaskedDNAString")) {
+    if (is.character(subject)) {
+        subject <- DNAString(subject)
+    } else if (is(subject, "MaskedDNAString")) {
         if (any(active(masks(subject))))
             stop("active masks are not supported yet, please complain!")
         subject <- unmasked(subject)
-    } else if (!is(subject, "DNAString"))
-        stop("'subject' must be a DNAString or MaskedDNAString object ",
-             "with no active masks")
+    } else if (is(subject, "XStringViews")) {
+        subject <- subject(subject)
+    }
+    if (!is(subject, "DNAString"))
+        stop("'subject' must be a single character string, ",
+             "or a DNAString object, or a MaskedDNAString object with ",
+             "no active masks, or a Views object on a DNAString subject")
     subject
 }
 
@@ -247,12 +253,16 @@ PWMscoreStartingAt <- function(pwm, subject, starting.at=1)
 ### subject: a DNAString object containing the subject sequence;
 ### min.score: given as a percentage (e.g. "90%") of the highest possible
 ###            score or as a single number.
-.XString.matchPWM <- function(pwm, subject, min.score, count.only=FALSE)
+.XString.matchPWM <- function(pwm, subject, min.score,
+                              with.score=FALSE, count.only=FALSE)
 {
     ## checking 'pwm'
     pwm <- .normargPwm(pwm)
     ## checking 'min.score'
     min.score <- .normargMinScore(min.score, pwm)
+    ## checking 'with.score'
+    if (!isTRUEorFALSE(with.score))
+        stop("'with.score' must be TRUE or FALSE")
     ## no need to check 'count.only' (not a user controlled argument)
 
     base_codes <- xscodes(subject, baseOnly=TRUE)
@@ -261,44 +271,64 @@ PWMscoreStartingAt <- function(pwm, subject, starting.at=1)
                    PACKAGE="Biostrings")
     if (count.only)
         return(C_ans)
-    unsafe.newXStringViews(subject, start(C_ans), width(C_ans))
+    ans_start <- start(C_ans)
+    ans_width <- width(C_ans)
+    ans <- unsafe.newXStringViews(subject, ans_start, ans_width)
+    if (with.score) {
+        score <- PWMscoreStartingAt(pwm, subject, starting.at=ans_start)
+        mcols(ans) <- DataFrame(score=score)
+    }
+    ans
 }
 
-.XStringViews.matchPWM <- function(pwm, subject, min.score, count.only=FALSE)
+.XStringViews.matchPWM <- function(pwm, subject, min.score,
+                                   with.score=FALSE, count.only=FALSE)
 {
     ## checking 'pwm'
     pwm <- .normargPwm(pwm)
     ## checking 'min.score'
     min.score <- .normargMinScore(min.score, pwm)
+    ## checking 'with.score'
+    if (!isTRUEorFALSE(with.score))
+        stop("'with.score' must be TRUE or FALSE")
     ## no need to check 'count.only' (not a user controlled argument)
 
-    base_codes <- xscodes(subject, baseOnly=TRUE)
+    subject0 <- subject(subject)
+    base_codes <- xscodes(subject0, baseOnly=TRUE)
     C_ans <- .Call2("XStringViews_match_PWM",
                    pwm,
-                   subject(subject), start(subject), width(subject),
+                   subject0, start(subject), width(subject),
                    min.score, count.only, base_codes,
                    PACKAGE="Biostrings")
     if (count.only)
         return(C_ans)
-    unsafe.newXStringViews(subject(subject), start(C_ans), width(C_ans))
+    ans_start <- start(C_ans)
+    ans_width <- width(C_ans)
+    ans <- unsafe.newXStringViews(subject0, ans_start, ans_width)
+    if (with.score) {
+        score <- PWMscoreStartingAt(pwm, subject0, starting.at=ans_start)
+        mcols(ans) <- DataFrame(score=score)
+    }
+    ans
 }
 
 ### Note the dispatch on 'subject'.
 setGeneric("matchPWM", signature="subject",
-    function(pwm, subject, min.score="80%", ...)
+    function(pwm, subject, min.score="80%", with.score=FALSE, ...)
         standardGeneric("matchPWM")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPWM", "character",
-    function(pwm, subject, min.score="80%")
-        matchPWM(pwm, DNAString(subject), min.score)
+    function(pwm, subject, min.score="80%", with.score=FALSE)
+        matchPWM(pwm, DNAString(subject),
+                 min.score=min.score, with.score=with.score)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPWM", "DNAString",
-    function(pwm, subject, min.score="80%")
-        .XString.matchPWM(pwm, subject, min.score)
+    function(pwm, subject, min.score="80%", with.score=FALSE)
+        .XString.matchPWM(pwm, subject, min.score, with.score=with.score)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
@@ -309,14 +339,15 @@ setMethod("matchPWM", "DNAString",
 ### a normal XStringViews object).
 ### matchPWM does not support "out of limits"  matches.
 setMethod("matchPWM", "XStringViews",
-    function(pwm, subject, min.score="80%")
-        .XStringViews.matchPWM(pwm, subject, min.score)
+    function(pwm, subject, min.score="80%", with.score=FALSE)
+        .XStringViews.matchPWM(pwm, subject, min.score, with.score=with.score)
 )
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPWM", "MaskedDNAString",
-    function(pwm, subject, min.score="80%")
-        matchPWM(pwm, toXStringViewsOrXString(subject), min.score)
+    function(pwm, subject, min.score="80%", with.score=FALSE)
+        matchPWM(pwm, toXStringViewsOrXString(subject),
+                 min.score=min.score, with.score=with.score)
 )
 
 

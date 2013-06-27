@@ -41,7 +41,7 @@
 PWM(x, type = c("log2probratio", "prob"),
     prior.params = c(A=0.25, C=0.25, G=0.25, T=0.25))
 
-matchPWM(pwm, subject, min.score="80\%", ...)
+matchPWM(pwm, subject, min.score="80\%", with.score=FALSE, ...)
 countPWM(pwm, subject, min.score="80\%", ...)
 PWMscoreStartingAt(pwm, subject, starting.at=1)
 
@@ -81,10 +81,9 @@ unitScale(x)
     names A, C, G and T.
   }
   \item{subject}{
-    A \link{DNAString}, \link{XStringViews} or \link{MaskedDNAString}
-    object for \code{matchPWM} and \code{countPWM}.
-
-    A \link{DNAString} object for \code{PWMscoreStartingAt}.
+    Typically a \link{DNAString} object. A \link[IRanges]{Views} object
+    on a \link{DNAString} subject, a \link{MaskedDNAString} object, or
+    a single character string, are also supported.
 
     IUPAC ambiguity letters in \code{subject} are ignored (i.e. assigned
     weight 0) with a warning.
@@ -93,6 +92,12 @@ unitScale(x)
     The minimum score for counting a match.
     Can be given as a character string containing a percentage (e.g.
     \code{"85\%"}) of the highest possible score or as a single number.
+  }
+  \item{with.score}{
+    \code{TRUE} or \code{FALSE}. If \code{TRUE}, then the score of each hit
+    is included in the returned object in a metadata column named \code{score}.
+    Say the returned object is \code{hits}, this metadata column can then be
+    accessed with \code{mcols(hits)$score}.
   }
   \item{starting.at}{
     An integer vector specifying the starting positions of the
@@ -189,7 +194,12 @@ PWMscoreStartingAt(pwm, unmasked(chr3R), starting.at=1:5)
 hits <- matchPWM(pwm, chr3R)
 nhit <- countPWM(pwm, chr3R)  # same as 'length(hits)'
 
-## Post-calculate the scores of the hits:
+## Use 'with.score=TRUE' to get the scores of the hits:
+hits <- matchPWM(pwm, chr3R, with.score=TRUE)
+head(mcols(hits)$score)
+min(mcols(hits)$score / maxScore(pwm))  # should be >= 0.8
+
+## The scores can also easily be post-calculated:
 scores <- PWMscoreStartingAt(pwm, subject(hits), start(hits))
 
 ## Match the minus strand:
