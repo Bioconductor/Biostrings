@@ -205,9 +205,10 @@ XStringViews.show_vframe_line <- function(x, i, iW, startW, endW, widthW)
         sep="")
 }
 
-### 'half_nrow' must be >= 1
-XStringViews.show_vframe <- function(x, half_nrow=9L)
+XStringViews.show_vframe <- function(x)
 {
+    nhead <- get_showHeadLines()
+    ntail <- get_showTailLines()
     cat("\nviews:")
     lx <- length(x)
     if (lx == 0)
@@ -222,12 +223,14 @@ XStringViews.show_vframe <- function(x, half_nrow=9L)
         widthMax <- max(width(x))
         widthW <- max(nchar(widthMax), nchar("width"))
         XStringViews.show_vframe_header(iW, startW, endW, widthW)
-        if (lx <= 2*half_nrow+1) {
+        if (lx <= nhead + ntail +1) {
             for (i in seq_len(lx))
                 XStringViews.show_vframe_line(x, i, iW, startW, endW, widthW)
         } else {
-            for (i in 1:half_nrow)
-                XStringViews.show_vframe_line(x, i, iW, startW, endW, widthW)
+            if (nhead > 0)
+                for (i in seq_len(nhead))
+                    XStringViews.show_vframe_line(x, i, iW, startW, endW, 
+                                                  widthW)
             cat(format("...", width=iW, justify="right"),
                 " ",
                 format("...", width=startW, justify="right"),
@@ -236,8 +239,10 @@ XStringViews.show_vframe <- function(x, half_nrow=9L)
                 " ",
                 format("...", width=widthW, justify="right"),
                 " ...\n", sep="")
-            for (i in (lx-half_nrow+1L):lx)
-                XStringViews.show_vframe_line(x, i, iW, startW, endW, widthW)
+            if (ntail > 0)
+                for (i in (lx-ntail+1L):lx)
+                    XStringViews.show_vframe_line(x, i, iW, startW, endW, 
+                                                  widthW)
         }
     }
 }
