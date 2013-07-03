@@ -47,7 +47,7 @@ static int get_ans_width(SEXP codes, int with_other)
 
 	if (codes == R_NilValue) {
 		return 256;
-        }
+	}
 	_init_byte2offset_with_INTEGER(byte2offset, codes, 1);
 	width = LENGTH(codes);
 	if (with_other) {
@@ -142,10 +142,10 @@ static int letter_freq_in_sliding_view(int *row, const int nrow, const char *c,
 	return rtn;
 }
 
-/* Note that calling update_letter_freqs2() with shift = 0, nrow = 0 and
-   ncol = X->length is equivalent to calling update_letter_freqs() */
+/* Note that calling update_letter_freqs2() with shift = 0, mat_nrow = 0 and
+   mat_ncol = X->length is equivalent to calling update_letter_freqs() */
 static void update_letter_freqs2(int *mat, const cachedCharSeq *X, SEXP codes,
-		int shift, int nrow, int ncol)
+		int shift, int mat_nrow, int mat_ncol)
 {
 	int i1, i2, j1, j2, *col, i, offset;
 	const char *c;
@@ -162,13 +162,13 @@ static void update_letter_freqs2(int *mat, const cachedCharSeq *X, SEXP codes,
 		i1 -= j1;
 		j1 = 0;
 	}
-	if (j2 > ncol) {
-		i2 -= j2 - ncol;
-		/* j2 = ncol; not needed */
+	if (j2 > mat_ncol) {
+		i2 -= j2 - mat_ncol;
+		/* j2 = mat_ncol; not needed */
 	}
 	c = X->seq + i1;
-	col = mat + j1 * nrow;
-	for (i = i1; i < i2; i++, c++, col += nrow) {
+	col = mat + j1 * mat_nrow;
+	for (i = i1; i < i2; i++, c++, col += mat_nrow) {
 		offset = (unsigned char) *c;
 		if (codes != R_NilValue) {
 			offset = byte2offset[offset];
@@ -180,51 +180,106 @@ static void update_letter_freqs2(int *mat, const cachedCharSeq *X, SEXP codes,
 	return;
 }
 
-static void update_oligo_freqs(SEXP mat, int row, int nrow,
+static void update_int_oligo_freqs(int *mat, int mat_nrow,
+		int width, int step,
 		TwobitEncodingBuffer *teb, const cachedCharSeq *X)
 {
-	int i, offset;
+	int imax, i, j, offset;
 	const char *c;
-	int *row_iptr;
-	double *row_dptr;
 
-	_reset_twobit_signature(teb);
+	if (step == 1) {
+		_reset_twobit_signature(teb);
+		for (i = 0, c = X->seq; i < X->length; i++, c++) {
+			offset = _shift_twobit_signature(teb, *c);
+			if (offset != NA_INTEGER)
+				mat[offset * mat_nrow]++;
+		}
+	} else if (step < width) {
+		_reset_twobit_signature(teb);
+		for (i = 0, c = X->seq; i < X->length; i++, c++) {
+			offset = _shift_twobit_signature(teb, *c);
+			if (i % step == 0 && offset != NA_INTEGER)
+				mat[offset * mat_nrow]++;
+		}
+	} else {
+		imax = X->length - width;
+		for (i = 0; i <= imax; i += step) {
+			_reset_twobit_signature(teb);
+			for (j = 1, c = X->seq + i; j < width; j++, c++)
+				_shift_twobit_signature(teb, *c);
+			offset = _shift_twobit_signature(teb, *c);
+			if (offset != NA_INTEGER)
+				mat[offset * mat_nrow]++;
+		}
+	}
+	return;
+}
+
+static void update_double_oligo_freqs(double *mat, int mat_nrow,
+		int width, int step,
+		TwobitEncodingBuffer *teb, const cachedCharSeq *X)
+{
+	int imax, i, j, offset;
+	const char *c;
+
+	if (step == 1) {
+		_reset_twobit_signature(teb);
+		for (i = 0, c = X->seq; i < X->length; i++, c++) {
+			offset = _shift_twobit_signature(teb, *c);
+			if (offset != NA_INTEGER)
+				mat[offset * mat_nrow] += 1.00;
+		}
+	} else if (step < width) {
+		_reset_twobit_signature(teb);
+		for (i = 0, c = X->seq; i < X->length; i++, c++) {
+			offset = _shift_twobit_signature(teb, *c);
+			if (i % step == 0 && offset != NA_INTEGER)
+				mat[offset * mat_nrow] += 1.00;
+		}
+	} else {
+		imax = X->length - width;
+		for (i = 0; i <= imax; i += step) {
+			_reset_twobit_signature(teb);
+			for (j = 1, c = X->seq + i; j < width; j++, c++)
+				_shift_twobit_signature(teb, *c);
+			offset = _shift_twobit_signature(teb, *c);
+			if (offset != NA_INTEGER)
+				mat[offset * mat_nrow] += 1.00;
+		}
+	}
+	return;
+}
+
+static void update_oligo_freqs(SEXP mat, int mat_row, int mat_nrow,
+		int width, int step,
+		TwobitEncodingBuffer *teb, const cachedCharSeq *X)
+{
 	switch (TYPEOF(mat)) {
-	    case INTSXP:
-		row_iptr = INTEGER(mat) + row;
-		for (i = 0, c = X->seq; i < X->length; i++, c++) {
-			offset = _shift_twobit_signature(teb, *c);
-			if (offset == NA_INTEGER)
-				continue;
-			row_iptr[offset * nrow]++;
-		}
+	case INTSXP:
+		update_int_oligo_freqs(INTEGER(mat) + mat_row, mat_nrow,
+				width, step, teb, X);
 		break;
-	    case REALSXP:
-		row_dptr = REAL(mat) + row;
-		for (i = 0, c = X->seq; i < X->length; i++, c++) {
-			offset = _shift_twobit_signature(teb, *c);
-			if (offset == NA_INTEGER)
-				continue;
-			row_dptr[offset * nrow] += 1.00;
-		}
+	case REALSXP:
+		update_double_oligo_freqs(REAL(mat) + mat_row, mat_nrow,
+				width, step, teb, X);
 		break;
 	}
 	return;
 }
 
-static void normalize_oligo_freqs(SEXP mat, int nrow, int ncol)
+static void normalize_oligo_freqs(SEXP mat, int mat_nrow, int mat_ncol)
 {
 	int i, j;
 	double sum;
 
-	for (i = 0; i < nrow; i++) {
+	for (i = 0; i < mat_nrow; i++) {
 		sum = 0.00;
-		for (j = 0; j < ncol; j++)
-			sum += REAL(mat)[i + j * nrow];
+		for (j = 0; j < mat_ncol; j++)
+			sum += REAL(mat)[i + j * mat_nrow];
 		if (sum == 0.00)
 			continue;
-		for (j = 0; j < ncol; j++)
-			REAL(mat)[i + j * nrow] /= sum;
+		for (j = 0; j < mat_ncol; j++)
+			REAL(mat)[i + j * mat_nrow] /= sum;
 	}
 	return;
 }
@@ -312,8 +367,8 @@ static SEXP mk_all_oligos(int width, SEXP base_letters, int invert_twobit_order)
 		// This is an attempt to get the memory early and in a more
 		// efficient way than if we let R grow the pool of Vcells
 		// during the construction of the big character string below.
-		// Note that this fake 'ans' must NOT be protected so the memory
-		// can then be claimed and used by the real 'ans'.
+		// Note that this fake 'ans' must NOT be protected so the
+		// memory can then be claimed and used by the real 'ans'.
 		ans = NEW_INTEGER(ans_length / sizeof(int) * sizeof(char) * (width + 1));
 	}
 */
@@ -340,8 +395,8 @@ static SEXP mk_all_oligos(int width, SEXP base_letters, int invert_twobit_order)
 	return ans;
 }
 
-static void format_oligo_freqs(SEXP x, int width,
-		SEXP base_labels, int invert_twobit_order, int as_array)
+static void format_oligo_freqs(SEXP x, int width, SEXP base_labels,
+		int invert_twobit_order, int as_array)
 {
 	SEXP flat_names;
 
@@ -351,7 +406,8 @@ static void format_oligo_freqs(SEXP x, int width,
 	}
 	if (base_labels == R_NilValue)
 		return;
-	PROTECT(flat_names = mk_all_oligos(width, base_labels, invert_twobit_order));
+	PROTECT(flat_names = mk_all_oligos(width, base_labels,
+					   invert_twobit_order));
 	SET_NAMES(x, flat_names);
 	UNPROTECT(1);
 	return;
@@ -445,15 +501,15 @@ SEXP XString_letterFrequencyInSlidingView(SEXP x, SEXP view_width,
 	SEXP single_codes, SEXP colmap, SEXP colnames)
 {
 	SEXP dim_names, ans;
-	int ans_width, *ans_row, i, k, nrow, *colmap0;
+	int ans_width, *ans_row, i, k, ans_nrow, *colmap0;
 	int first;  /* first letter of the last k-mer, as column offset */
 	cachedCharSeq X;
 	const char *c;
 
 	X = cache_XRaw(x);
 	k = INTEGER(view_width)[0];
-	nrow = X.length - k + 1;
-	if (nrow < 1)
+	ans_nrow = X.length - k + 1;
+	if (ans_nrow < 1)
 		error("'x' is too short or 'view.width' is too big");
 	ans_width = get_ans_width(single_codes, 0);
 	// byte2offset[code] is now set for each code in 'single_codes'.
@@ -470,11 +526,11 @@ SEXP XString_letterFrequencyInSlidingView(SEXP x, SEXP view_width,
 			byte2offset[INTEGER(single_codes)[i]] = ans_width - 1;
 		}
 	}
-	PROTECT(ans = allocMatrix(INTSXP, nrow, ans_width));
+	PROTECT(ans = allocMatrix(INTSXP, ans_nrow, ans_width));
 	ans_row = INTEGER(ans);
 	// memset unnecessary -- done in letter_freq_in_sliding_view()
-	for (i = 0, c = X.seq, first = -1; i < nrow; i++, ans_row++, c++)
-		first = letter_freq_in_sliding_view(ans_row, nrow, c,
+	for (i = 0, c = X.seq, first = -1; i < ans_nrow; i++, ans_row++, c++)
+		first = letter_freq_in_sliding_view(ans_row, ans_nrow, c,
 				first, ans_width, k);
 
 	// set names
@@ -543,9 +599,9 @@ SEXP XStringSet_letterFrequency(SEXP x, SEXP single_codes, SEXP colmap,
 	}
 
 	// set names
-	if (LOGICAL(collapse)[0])
-                SET_NAMES(ans, colnames);
-	else {
+	if (LOGICAL(collapse)[0]) {
+		SET_NAMES(ans, colnames);
+	} else {
 		PROTECT(dim_names = NEW_LIST(2));
 		SET_ELEMENT(dim_names, 0, R_NilValue);
 		SET_ELEMENT(dim_names, 1, colnames);
@@ -557,64 +613,78 @@ SEXP XStringSet_letterFrequency(SEXP x, SEXP single_codes, SEXP colmap,
 	return ans;
 }
 
-SEXP XString_oligo_frequency(SEXP x, SEXP width,
+SEXP XString_oligo_frequency(SEXP x, SEXP width, SEXP step,
 		SEXP as_prob, SEXP as_array,
 		SEXP fast_moving_side, SEXP with_labels,
 		SEXP base_codes)
 {
 	SEXP ans, base_labels;
 	TwobitEncodingBuffer teb;
-	int width0, as_integer, as_array0, invert_twobit_order, ans_width;
+	int width0, step0, as_integer, as_array0,
+	    invert_twobit_order, ans_width;
 	cachedCharSeq X;
 
 	width0 = INTEGER(width)[0];
+	step0 = INTEGER(step)[0];
 	as_integer = !LOGICAL(as_prob)[0];
 	as_array0 = LOGICAL(as_array)[0];
-	invert_twobit_order = strcmp(CHAR(STRING_ELT(fast_moving_side, 0)), "right") != 0;
-	teb = _new_TwobitEncodingBuffer(base_codes, width0, invert_twobit_order);
-	base_labels = LOGICAL(with_labels)[0] ? GET_NAMES(base_codes) : R_NilValue;
+	invert_twobit_order = strcmp(CHAR(STRING_ELT(fast_moving_side, 0)),
+				     "right") != 0;
+	teb = _new_TwobitEncodingBuffer(base_codes, width0,
+					invert_twobit_order);
+	base_labels = LOGICAL(with_labels)[0] ? GET_NAMES(base_codes) :
+						R_NilValue;
 	ans_width = 1 << (width0 * 2); /* 4^width0 */
 	PROTECT(ans = init_numeric_vector(ans_width, 0.00, as_integer));
 	X = cache_XRaw(x);
-	update_oligo_freqs(ans, 0, 1, &teb, &X);
+	update_oligo_freqs(ans, 0, 1, width0, step0, &teb, &X);
 	if (!as_integer)
 		normalize_oligo_freqs(ans, 1, ans_width);
-	format_oligo_freqs(ans, width0, base_labels, invert_twobit_order, as_array0);
+	format_oligo_freqs(ans, width0, base_labels,
+			   invert_twobit_order, as_array0);
 	UNPROTECT(1);
 	return ans;
 }
 
-SEXP XStringSet_oligo_frequency(SEXP x, SEXP width,
+SEXP XStringSet_oligo_frequency(SEXP x, SEXP width, SEXP step,
 		SEXP as_prob, SEXP as_array,
-		SEXP fast_moving_side, SEXP with_labels, SEXP simplify_as,
-		SEXP base_codes)
+		SEXP fast_moving_side, SEXP with_labels,
+		SEXP simplify_as, SEXP base_codes)
 {
 	SEXP ans, base_labels, ans_elt;
 	TwobitEncodingBuffer teb;
-	int width0, as_integer, as_array0, invert_twobit_order, ans_width, x_length, i;
+	int width0, step0, as_integer, as_array0,
+	    invert_twobit_order, ans_width, x_length, i;
 	const char *simplify_as0;
 	cachedXStringSet cached_x;
 	cachedCharSeq x_elt;
 
 	width0 = INTEGER(width)[0];
+	step0 = INTEGER(step)[0];
 	as_integer = !LOGICAL(as_prob)[0];
 	as_array0 = LOGICAL(as_array)[0];
-	invert_twobit_order = strcmp(CHAR(STRING_ELT(fast_moving_side, 0)), "right") != 0;
-	teb = _new_TwobitEncodingBuffer(base_codes, width0, invert_twobit_order);
-	base_labels = LOGICAL(with_labels)[0] ? GET_NAMES(base_codes) : R_NilValue;
+	invert_twobit_order = strcmp(CHAR(STRING_ELT(fast_moving_side, 0)),
+				     "right") != 0;
+	teb = _new_TwobitEncodingBuffer(base_codes, width0,
+					invert_twobit_order);
+	base_labels = LOGICAL(with_labels)[0] ? GET_NAMES(base_codes) :
+						R_NilValue;
 	simplify_as0 = CHAR(STRING_ELT(simplify_as, 0));
 	ans_width = 1 << (width0 * 2); /* 4^width0 */
 	x_length = _get_XStringSet_length(x);
 	cached_x = _cache_XStringSet(x);
 	if (strcmp(simplify_as0, "matrix") == 0) {  /* the default */
-		PROTECT(ans = init_numeric_matrix(x_length, ans_width, 0.00, as_integer));
+		PROTECT(ans = init_numeric_matrix(x_length, ans_width,
+						  0.00, as_integer));
 		for (i = 0; i < x_length; i++) {
 			x_elt = _get_cachedXStringSet_elt(&cached_x, i);
-			update_oligo_freqs(ans, i, x_length, &teb, &x_elt);
+			update_oligo_freqs(ans, i, x_length, width0, step0,
+					   &teb, &x_elt);
 		}
 		if (!as_integer)
 			normalize_oligo_freqs(ans, x_length, ans_width);
-		set_oligo_freqs_colnames(ans, width0, base_labels, invert_twobit_order);
+		set_oligo_freqs_colnames(ans, width0, base_labels,
+					 invert_twobit_order);
 		UNPROTECT(1);
 		return ans;
 	}
@@ -622,22 +692,26 @@ SEXP XStringSet_oligo_frequency(SEXP x, SEXP width,
 		PROTECT(ans = init_numeric_vector(ans_width, 0.00, as_integer));
 		for (i = 0; i < x_length; i++) {
 			x_elt = _get_cachedXStringSet_elt(&cached_x, i);
-			update_oligo_freqs(ans, 0, 1, &teb, &x_elt);
+			update_oligo_freqs(ans, 0, 1, width0, step0,
+					   &teb, &x_elt);
 		}
 		if (!as_integer)
 			normalize_oligo_freqs(ans, 1, ans_width);
-		format_oligo_freqs(ans, width0, base_labels, invert_twobit_order, as_array0);
+		format_oligo_freqs(ans, width0, base_labels,
+				   invert_twobit_order, as_array0);
 		UNPROTECT(1);
 		return ans;
 	}
 	PROTECT(ans = NEW_LIST(x_length));
 	for (i = 0; i < x_length; i++) {
-		PROTECT(ans_elt = init_numeric_vector(ans_width, 0.00, as_integer));
+		PROTECT(ans_elt = init_numeric_vector(ans_width, 0.00,
+						      as_integer));
 		x_elt = _get_cachedXStringSet_elt(&cached_x, i);
-		update_oligo_freqs(ans_elt, 0, 1, &teb, &x_elt);
+		update_oligo_freqs(ans_elt, 0, 1, width0, step0, &teb, &x_elt);
 		if (!as_integer)
 			normalize_oligo_freqs(ans_elt, 1, ans_width);
-		format_oligo_freqs(ans_elt, width0, base_labels, invert_twobit_order, as_array0);
+		format_oligo_freqs(ans_elt, width0, base_labels,
+				   invert_twobit_order, as_array0);
 		SET_ELEMENT(ans, i, ans_elt);
 		UNPROTECT(1);
 	}
@@ -688,7 +762,8 @@ SEXP XStringSet_nucleotide_frequency_at(SEXP x, SEXP at,
 	}
 	if (!as_integer)
 		normalize_oligo_freqs(ans, 1, ans_width);
-	format_oligo_freqs(ans, LENGTH(at), base_labels, invert_twobit_order, as_array0);
+	format_oligo_freqs(ans, LENGTH(at), base_labels,
+			   invert_twobit_order, as_array0);
 	UNPROTECT(1);
 	return ans;
 }
@@ -736,7 +811,8 @@ SEXP XStringSet_consensus_matrix(SEXP x, SEXP shift, SEXP width,
 		if (s == NA_INTEGER)
 			error("'shift' contains NAs");
 		x_elt = _get_cachedXStringSet_elt(&cached_x, i);
-		update_letter_freqs2(INTEGER(ans), &x_elt, codes, s, ans_nrow, ans_ncol);
+		update_letter_freqs2(INTEGER(ans), &x_elt, codes, s,
+				     ans_nrow, ans_ncol);
 	}
 	set_names(ans, codes, LOGICAL(with_other)[0], 0, 0);
 	UNPROTECT(1);
@@ -757,7 +833,7 @@ static void copy_codes_into(ByteTrTable dest) {
   }
 }
 
-static void update_two_way_letter_freqs(int *mat, int nrow,
+static void update_two_way_letter_freqs(int *mat, int ans_nrow,
                                         const cachedCharSeq *X,
                                         const cachedCharSeq *Y)
 {
@@ -772,7 +848,7 @@ static void update_two_way_letter_freqs(int *mat, int nrow,
     x_offset = xbyte2offset[(unsigned char) *xc];
     y_offset = ybyte2offset[(unsigned char) *yc];
     if (x_offset != NA_INTEGER && y_offset != NA_INTEGER) {
-      mat[x_offset + y_offset * nrow]++;
+      mat[x_offset + y_offset * ans_nrow]++;
     }
   }
   return;

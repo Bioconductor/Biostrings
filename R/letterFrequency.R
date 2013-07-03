@@ -13,14 +13,6 @@
 ### consensusMatrix() and consensusString()
 ### -------------------------------------------------------------------------
 
-
-.normargCollapse <- function(collapse)
-{
-    if (!isTRUEorFALSE(collapse))
-        stop("'collapse' must be TRUE or FALSE")
-    collapse
-}
-
 .normargWidth <- function(width, argname="width", min.width=1L)
 {
     if (!isSingleNumber(width))
@@ -29,6 +21,23 @@
     if (width < min.width)
         stop("'", argname, "' must be an integer >= ", min.width)
     width
+}
+
+.normargStep <- function(step)
+{
+    if (!isSingleNumber(step))
+        stop("'step' must be a single integer")
+    step <- as.integer(step)
+    if (step <= 0L)
+        stop("'step' must be a positive integer")
+    step
+}
+
+.normargCollapse <- function(collapse)
+{
+    if (!isTRUEorFALSE(collapse))
+        stop("'collapse' must be TRUE or FALSE")
+    collapse
 }
 
 .normargAsArray <- function(as.array)
@@ -495,18 +504,21 @@ mkAllStrings <- function(alphabet, width, fast.moving.side="right")
 ###
 
 setGeneric("oligonucleotideFrequency", signature="x",
-    function(x, width, as.prob=FALSE, as.array=FALSE,
+    function(x, width, step=1,
+             as.prob=FALSE, as.array=FALSE,
              fast.moving.side="right", with.labels=TRUE, ...)
         standardGeneric("oligonucleotideFrequency")
 )
 
 setMethod("oligonucleotideFrequency", "XString",
-    function(x, width, as.prob=FALSE, as.array=FALSE,
+    function(x, width, step=1,
+             as.prob=FALSE, as.array=FALSE,
              fast.moving.side="right", with.labels=TRUE)
     {
         if (!(seqtype(x) %in% c("DNA", "RNA")))
             stop("'x' must contain sequences of type DNA or RNA")
         width <- .normargWidth(width)
+        step <- .normargStep(step)
         if (!isTRUEorFALSE(as.prob))
             stop("'as.prob' must be TRUE or FALSE")
         as.array <- .normargAsArray(as.array)
@@ -514,21 +526,24 @@ setMethod("oligonucleotideFrequency", "XString",
         with.labels <- .normargWithLabels(with.labels)
         base_codes <- xscodes(x, baseOnly=TRUE)
         .Call2("XString_oligo_frequency",
-              x, width, as.prob, as.array,
-              fast.moving.side, with.labels,
-              base_codes,
-              PACKAGE="Biostrings")
+               x, width, step,
+               as.prob, as.array,
+               fast.moving.side, with.labels,
+               base_codes,
+               PACKAGE="Biostrings")
     }
 )
 
 setMethod("oligonucleotideFrequency", "XStringSet",
-    function(x, width, as.prob=FALSE, as.array=FALSE,
+    function(x, width, step=1,
+             as.prob=FALSE, as.array=FALSE,
              fast.moving.side="right", with.labels=TRUE,
              simplify.as="matrix")
     {
         if (!(seqtype(x) %in% c("DNA", "RNA")))
             stop("'x' must contain sequences of type DNA or RNA")
         width <- .normargWidth(width)
+        step <- .normargStep(step)
         if (!isTRUEorFALSE(as.prob))
             stop("'as.prob' must be TRUE or FALSE")
         as.array <- .normargAsArray(as.array)
@@ -537,34 +552,38 @@ setMethod("oligonucleotideFrequency", "XStringSet",
         simplify.as <- .normargSimplifyAs(simplify.as, as.array)
         base_codes <- xscodes(x, baseOnly=TRUE)
         .Call2("XStringSet_oligo_frequency",
-              x, width, as.prob, as.array,
-              fast.moving.side, with.labels, simplify.as,
-              base_codes,
-              PACKAGE="Biostrings")
+               x, width, step,
+               as.prob, as.array,
+               fast.moving.side, with.labels, simplify.as,
+               base_codes,
+               PACKAGE="Biostrings")
     }
 )
 
 setMethod("oligonucleotideFrequency", "XStringViews",
-    function(x, width, as.prob=FALSE, as.array=FALSE,
+    function(x, width, step=1,
+             as.prob=FALSE, as.array=FALSE,
              fast.moving.side="right", with.labels=TRUE, ...)
     {
         y <- fromXStringViewsToStringSet(x)
-        oligonucleotideFrequency(y, width, as.prob=as.prob,
-                                 as.array=as.array,
+        oligonucleotideFrequency(y, width, step=step,
+                                 as.prob=as.prob, as.array=as.array,
                                  fast.moving.side=fast.moving.side,
                                  with.labels=with.labels, ...)
     }
 )
 
 setMethod("oligonucleotideFrequency", "MaskedXString",
-    function(x, width, as.prob=FALSE, as.array=FALSE,
-             fast.moving.side="right", with.labels=TRUE, ...)
+    function(x, width, step=1,
+             as.prob=FALSE, as.array=FALSE,
+             fast.moving.side="right", with.labels=TRUE)
     {
         y <- as(x, "XStringViews")
-        oligonucleotideFrequency(y, width, as.prob=as.prob,
-                                 as.array=as.array,
+        oligonucleotideFrequency(y, width, step=step,
+                                 as.prob=as.prob, as.array=as.array,
                                  fast.moving.side=fast.moving.side,
-                                 with.labels=with.labels, simplify.as="collapsed")
+                                 with.labels=with.labels,
+                                 simplify.as="collapsed")
     }
 )
 

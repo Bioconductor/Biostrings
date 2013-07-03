@@ -265,6 +265,7 @@ SEXP XStringSet_letterFrequency(
 SEXP XString_oligo_frequency(
 	SEXP x,
 	SEXP width,
+	SEXP step,
 	SEXP as_prob,
 	SEXP as_array,
 	SEXP fast_moving_side,
@@ -275,6 +276,7 @@ SEXP XString_oligo_frequency(
 SEXP XStringSet_oligo_frequency(
 	SEXP x,
 	SEXP width,
+	SEXP step,
 	SEXP as_prob,
 	SEXP as_array,
 	SEXP fast_moving_side,

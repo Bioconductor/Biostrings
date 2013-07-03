@@ -26,7 +26,8 @@
   Given a DNA or RNA sequence (or a set of DNA or RNA sequences),
   the \code{oligonucleotideFrequency} function computes the frequency
   of all possible oligonucleotides of a given length (called the "width"
-  in this particular context).
+  in this particular context) in a sliding window that is shifted
+  \code{step} nucleotides at a time.
 
   The \code{dinucleotideFrequency} and \code{trinucleotideFrequency}
   functions are convenient wrappers for calling \code{oligonucleotideFrequency}
@@ -43,23 +44,30 @@
 }
 
 \usage{
-oligonucleotideFrequency(x, width, as.prob=FALSE, as.array=FALSE,
+oligonucleotideFrequency(x, width, step=1,
+                         as.prob=FALSE, as.array=FALSE,
                          fast.moving.side="right", with.labels=TRUE, ...)
 
-\S4method{oligonucleotideFrequency}{XStringSet}(x,
-    width, as.prob=FALSE, as.array=FALSE,
-    fast.moving.side="right", with.labels=TRUE, simplify.as="matrix")
+\S4method{oligonucleotideFrequency}{XStringSet}(x, width, step=1,
+                         as.prob=FALSE, as.array=FALSE,
+                         fast.moving.side="right", with.labels=TRUE,
+                         simplify.as="matrix")
 
-dinucleotideFrequency(x, as.prob=FALSE, as.matrix=FALSE,
+dinucleotideFrequency(x, step=1,
+                      as.prob=FALSE, as.matrix=FALSE,
                       fast.moving.side="right", with.labels=TRUE, ...)
-trinucleotideFrequency(x, as.prob=FALSE, as.array=FALSE,
+
+trinucleotideFrequency(x, step=1,
+                       as.prob=FALSE, as.array=FALSE,
                        fast.moving.side="right", with.labels=TRUE, ...)
 
-nucleotideFrequencyAt(x, at, as.prob=FALSE, as.array=TRUE,
+nucleotideFrequencyAt(x, at,
+                      as.prob=FALSE, as.array=TRUE,
                       fast.moving.side="right", with.labels=TRUE, ...)
 
 ## Some related functions:
 oligonucleotideTransitions(x, left=1, right=1, as.prob=FALSE)
+
 mkAllStrings(alphabet, width, fast.moving.side="right")
 }
 
@@ -76,6 +84,15 @@ mkAllStrings(alphabet, width, fast.moving.side="right")
     \code{oligonucleotideFrequency}.
 
     The number of letters per string for \code{mkAllStrings}.
+  }
+  \item{step}{
+    How many nucleotides should the window be shifted before counting the next 
+    oligonucleotide (i.e. the sliding window step; default 1).
+    If \code{step} is smaller than \code{width}, oligonucleotides will overlap;
+    if the two arguments are equal, adjacent oligonucleotides will be counted
+    (an efficient way to count codons in an ORF); and if \code{step} is larger
+    than \code{width}, nucleotides will be sampled \code{step} nucleotides
+    apart.
   }
   \item{at}{
     An integer vector containing the positions to look at in each element
@@ -143,7 +160,7 @@ mkAllStrings(alphabet, width, fast.moving.side="right")
   argument.
 }
 
-\author{H. Pages and P. Aboyoun}
+\author{H. Pages and P. Aboyoun; K. Vlahovicek for the \code{step} argument}
 
 \seealso{
   \code{\link{alphabetFrequency}},
@@ -160,121 +177,148 @@ mkAllStrings(alphabet, width, fast.moving.side="right")
 }
 
 \examples{
-  ## ---------------------------------------------------------------------
-  ## A. BASIC *Frequency() EXAMPLES
-  ## ---------------------------------------------------------------------
-  data(yeastSEQCHR1)
-  yeast1 <- DNAString(yeastSEQCHR1)
+## ---------------------------------------------------------------------
+## A. BASIC *Frequency() EXAMPLES
+## ---------------------------------------------------------------------
+data(yeastSEQCHR1)
+yeast1 <- DNAString(yeastSEQCHR1)
 
-  dinucleotideFrequency(yeast1)
-  trinucleotideFrequency(yeast1)
-  oligonucleotideFrequency(yeast1, 4)
-
-  ## Get the less and most represented 6-mers:
-  f6 <- oligonucleotideFrequency(yeast1, 6)
-  f6[f6 == min(f6)]
-  f6[f6 == max(f6)]
-
-  ## Get the result as an array:
-  tri <- trinucleotideFrequency(yeast1, as.array=TRUE)
-  tri["A", "A", "C"] # == trinucleotideFrequency(yeast1)["AAC"]
-  tri["T", , ] # frequencies of trinucleotides starting with a "T"
-
-  ## With input made of multiple sequences:
-  library(drosophila2probe)
-  probes <- DNAStringSet(drosophila2probe)
-  dfmat <- dinucleotideFrequency(probes)  # a big matrix
-  dinucleotideFrequency(probes, simplify.as="collapsed")
-  dinucleotideFrequency(probes, simplify.as="collapsed", as.matrix=TRUE)
-
-  ## ---------------------------------------------------------------------
-  ## B. OBSERVED DINUCLEOTIDE FREQUENCY VERSUS EXPECTED DINUCLEOTIDE
-  ##    FREQUENCY
-  ## ---------------------------------------------------------------------
-  ## The expected frequency of dinucleotide "ab" based on the frequencies
-  ## of its individual letters "a" and "b" is:
-  ##    exp_Fab = Fa * Fb / N if the 2 letters are different (e.g. CG)
-  ##    exp_Faa = Fa * (Fa-1) / N if the 2 letters are the same (e.g. TT)
-  ## where Fa and Fb are the frequencies of "a" and "b" (respectively) and
-  ## N the length of the sequence.
+dinucleotideFrequency(yeast1)
+trinucleotideFrequency(yeast1)
+oligonucleotideFrequency(yeast1, 4)
   
-  ## Here is a simple function that implements the above formula for a
-  ## DNAString object 'x'. The expected frequencies are returned in a 4x4
-  ## matrix where the rownames and colnames correspond to the 1st and 2nd
-  ## base in the dinucleotide:
-  expectedDinucleotideFrequency <- function(x)
-  {
-      # Individual base frequencies.
-      bf <- alphabetFrequency(x, baseOnly=TRUE)[DNA_BASES]
-      (as.matrix(bf) \%*\% t(bf) - diag(bf)) / length(x)
-  }
+## Get the counts of tetranucleotides overlapping by one nucleotide:
+oligonucleotideFrequency(yeast1, 4, step=3)
 
-  ## On Celegans chrI:
-  library(BSgenome.Celegans.UCSC.ce2)
-  chrI <- Celegans$chrI
-  obs_df <- dinucleotideFrequency(chrI, as.matrix=TRUE)
-  obs_df  # CG has the lowest frequency
-  exp_df <- expectedDinucleotideFrequency(chrI)
-  ## A sanity check:
-  stopifnot(as.integer(sum(exp_df)) == sum(obs_df))
+## Get the counts of adjacent tetranucleotides, starting from the first
+## nucleotide:
+oligonucleotideFrequency(yeast1, 4, step=4)
+  
+## Subset the sequence to change the starting nucleotide (here we start
+## counting from third nucleotide):
+yeast2 <- subseq(yeast1, start=3)
+oligonucleotideFrequency(yeast2, 4, step=4)
+ 
+## Get the less and most represented 6-mers:
+f6 <- oligonucleotideFrequency(yeast1, 6)
+f6[f6 == min(f6)]
+f6[f6 == max(f6)]
 
-  ## Ratio of observed frequency to expected frequency:
-  obs_df / exp_df  # TA has the lowest ratio, not CG!
+## Get the result as an array:
+tri <- trinucleotideFrequency(yeast1, as.array=TRUE)
+tri["A", "A", "C"] # == trinucleotideFrequency(yeast1)["AAC"]
+tri["T", , ] # frequencies of trinucleotides starting with a "T"
 
-  ## ---------------------------------------------------------------------
-  ## C. nucleotideFrequencyAt()
-  ## ---------------------------------------------------------------------
-  nucleotideFrequencyAt(probes, 13)
-  nucleotideFrequencyAt(probes, c(13, 20))
-  nucleotideFrequencyAt(probes, c(13, 20), as.array=FALSE)
+## With input made of multiple sequences:
+library(drosophila2probe)
+probes <- DNAStringSet(drosophila2probe)
+dfmat <- dinucleotideFrequency(probes)  # a big matrix
+dinucleotideFrequency(probes, simplify.as="collapsed")
+dinucleotideFrequency(probes, simplify.as="collapsed", as.matrix=TRUE)
 
-  ## nucleotideFrequencyAt() can be used to answer questions like: "how
-  ## many probes in the drosophila2 chip have T, G, T, A at position
-  ## 2, 4, 13 and 20, respectively?"
-  nucleotideFrequencyAt(probes, c(2, 4, 13, 20))["T", "G", "T", "A"]
-  ## or "what's the probability to have an A at position 25 if there is
-  ## one at position 13?"
-  nf <- nucleotideFrequencyAt(probes, c(13, 25))
-  sum(nf["A", "A"]) / sum(nf["A", ])
-  ## Probabilities to have other bases at position 25 if there is an A
-  ## at position 13:
-  sum(nf["A", "C"]) / sum(nf["A", ])  # C
-  sum(nf["A", "G"]) / sum(nf["A", ])  # G
-  sum(nf["A", "T"]) / sum(nf["A", ])  # T
+## ---------------------------------------------------------------------
+## B. OBSERVED DINUCLEOTIDE FREQUENCY VERSUS EXPECTED DINUCLEOTIDE
+##    FREQUENCY
+## ---------------------------------------------------------------------
+## The expected frequency of dinucleotide "ab" based on the frequencies
+## of its individual letters "a" and "b" is:
+##    exp_Fab = Fa * Fb / N if the 2 letters are different (e.g. CG)
+##    exp_Faa = Fa * (Fa-1) / N if the 2 letters are the same (e.g. TT)
+## where Fa and Fb are the frequencies of "a" and "b" (respectively) and
+## N the length of the sequence.
+  
+## Here is a simple function that implements the above formula for a
+## DNAString object 'x'. The expected frequencies are returned in a 4x4
+## matrix where the rownames and colnames correspond to the 1st and 2nd
+## base in the dinucleotide:
+expectedDinucleotideFrequency <- function(x)
+{
+    # Individual base frequencies.
+    bf <- alphabetFrequency(x, baseOnly=TRUE)[DNA_BASES]
+    (as.matrix(bf) \%*\% t(bf) - diag(bf)) / length(x)
+}
 
-  ## See ?hasLetterAt for another way to get those results.
+## On Celegans chrI:
+library(BSgenome.Celegans.UCSC.ce2)
+chrI <- Celegans$chrI
+obs_df <- dinucleotideFrequency(chrI, as.matrix=TRUE)
+obs_df  # CG has the lowest frequency
+exp_df <- expectedDinucleotideFrequency(chrI)
+## A sanity check:
+stopifnot(as.integer(sum(exp_df)) == sum(obs_df))
 
-  ## ---------------------------------------------------------------------
-  ## D. oligonucleotideTransitions()
-  ## ---------------------------------------------------------------------
-  ## Get nucleotide transition matrices for yeast1
-  oligonucleotideTransitions(yeast1)
-  oligonucleotideTransitions(yeast1, 2, as.prob=TRUE)
+## Ratio of observed frequency to expected frequency:
+obs_df / exp_df  # TA has the lowest ratio, not CG!
 
-  ## ---------------------------------------------------------------------
-  ## E. ADVANCED *Frequency() EXAMPLES
-  ## ---------------------------------------------------------------------
-  ## Note that when dropping the dimensions of the 'tri' array, elements
-  ## in the resulting vector are ordered as if they were obtained with
-  ## 'fast.moving.side="left"':
-  triL <- trinucleotideFrequency(yeast1, fast.moving.side="left")
-  all(as.vector(tri) == triL) # TRUE
+## ---------------------------------------------------------------------
+## C. nucleotideFrequencyAt()
+## ---------------------------------------------------------------------
+nucleotideFrequencyAt(probes, 13)
+nucleotideFrequencyAt(probes, c(13, 20))
+nucleotideFrequencyAt(probes, c(13, 20), as.array=FALSE)
 
-  ## Convert the trinucleotide frequency into the amino acid frequency
-  ## based on translation:
-  tri1 <- trinucleotideFrequency(yeast1)
-  names(tri1) <- GENETIC_CODE[names(tri1)]
-  sapply(split(tri1, names(tri1)), sum) # 12512 occurrences of the stop codon
+## nucleotideFrequencyAt() can be used to answer questions like: "how
+## many probes in the drosophila2 chip have T, G, T, A at position
+## 2, 4, 13 and 20, respectively?"
+nucleotideFrequencyAt(probes, c(2, 4, 13, 20))["T", "G", "T", "A"]
+## or "what's the probability to have an A at position 25 if there is
+## one at position 13?"
+nf <- nucleotideFrequencyAt(probes, c(13, 25))
+sum(nf["A", "A"]) / sum(nf["A", ])
+## Probabilities to have other bases at position 25 if there is an A
+## at position 13:
+sum(nf["A", "C"]) / sum(nf["A", ])  # C
+sum(nf["A", "G"]) / sum(nf["A", ])  # G
+sum(nf["A", "T"]) / sum(nf["A", ])  # T
 
-  ## When the returned vector is very long (e.g. width >= 10), using
-  ## 'with.labels=FALSE' can improve performance significantly.
-  ## Here for example, the observed speed up is between 25x and 500x:
-  f12 <- oligonucleotideFrequency(yeast1, 12, with.labels=FALSE) # very fast!
+## See ?hasLetterAt for another way to get those results.
 
-  ## Spome related functions:
-  dict1 <- mkAllStrings(LETTERS[1:3], 4)
-  dict2 <- mkAllStrings(LETTERS[1:3], 4, fast.moving.side="left")
-  stopifnot(identical(reverse(dict1), dict2)) 
+## ---------------------------------------------------------------------
+## D. oligonucleotideTransitions()
+## ---------------------------------------------------------------------
+## Get nucleotide transition matrices for yeast1
+oligonucleotideTransitions(yeast1)
+oligonucleotideTransitions(yeast1, 2, as.prob=TRUE)
+
+## ---------------------------------------------------------------------
+## E. ADVANCED *Frequency() EXAMPLES
+## ---------------------------------------------------------------------
+## Note that when dropping the dimensions of the 'tri' array, elements
+## in the resulting vector are ordered as if they were obtained with
+## 'fast.moving.side="left"':
+triL <- trinucleotideFrequency(yeast1, fast.moving.side="left")
+all(as.vector(tri) == triL) # TRUE
+
+## Convert the trinucleotide frequency into the amino acid frequency
+## based on translation:
+tri1 <- trinucleotideFrequency(yeast1)
+names(tri1) <- GENETIC_CODE[names(tri1)]
+sapply(split(tri1, names(tri1)), sum) # 12512 occurrences of the stop codon
+
+## When the returned vector is very long (e.g. width >= 10), using
+## 'with.labels=FALSE' can improve performance significantly.
+## Here for example, the observed speed up is between 25x and 500x:
+f12 <- oligonucleotideFrequency(yeast1, 12, with.labels=FALSE) # very fast!
+
+## With the use of 'step', trinucleotideFrequency() is a very fast way to 
+## calculate the codon usage table in an ORF (or a set of ORFs).
+## Taking the same example as in '?codons':
+file <- system.file("extdata", "someORF.fa", package="Biostrings")
+my_ORFs <- readDNAStringSet(file)
+## Strip flanking 1000 nucleotides around each ORF and remove first
+## sequence as it contains an intron:
+my_ORFs <- DNAStringSet(my_ORFs, start=1001, end=-1001)[-1]
+## Codon usage for each ORF:
+codon_usage <- trinucleotideFrequency(my_ORFs, step=3)
+## Codon usage across all ORFs:
+global_codon_usage <- trinucleotideFrequency(my_ORFs, step=3,
+                                             simplify.as="collapsed")
+stopifnot(all(colSums(codon_usage) == global_codon_usage))  # sanity check
+
+## Some related functions:
+dict1 <- mkAllStrings(LETTERS[1:3], 4)
+dict2 <- mkAllStrings(LETTERS[1:3], 4, fast.moving.side="left")
+stopifnot(identical(reverse(dict1), dict2)) 
 }
 
 \keyword{methods}
