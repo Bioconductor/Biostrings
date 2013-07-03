@@ -184,28 +184,36 @@ static void update_int_oligo_freqs(int *mat, int mat_nrow,
 		int width, int step,
 		TwobitEncodingBuffer *teb, const cachedCharSeq *X)
 {
-	int imax, i, j, offset;
+	int max_start, start, offset, i;
 	const char *c;
 
+	max_start = X->length - width;
 	if (step == 1) {
 		_reset_twobit_signature(teb);
-		for (i = 0, c = X->seq; i < X->length; i++, c++) {
+		for (start = 1 - width, c = X->seq;
+		     start <= max_start;
+		     start++, c++)
+		{
 			offset = _shift_twobit_signature(teb, *c);
 			if (offset != NA_INTEGER)
 				mat[offset * mat_nrow]++;
 		}
 	} else if (step < width) {
+		/* 1 < step < width */
 		_reset_twobit_signature(teb);
-		for (i = 0, c = X->seq; i < X->length; i++, c++) {
+		for (start = 1 - width, c = X->seq;
+		     start <= max_start;
+		     start++, c++)
+		{
 			offset = _shift_twobit_signature(teb, *c);
-			if (i % step == 0 && offset != NA_INTEGER)
+			if (start % step == 0 && offset != NA_INTEGER)
 				mat[offset * mat_nrow]++;
 		}
 	} else {
-		imax = X->length - width;
-		for (i = 0; i <= imax; i += step) {
+		/* 1 <= width <= step */
+		for (start = 0; start <= max_start; start += step) {
 			_reset_twobit_signature(teb);
-			for (j = 1, c = X->seq + i; j < width; j++, c++)
+			for (i = 1, c = X->seq + start; i < width; i++, c++)
 				_shift_twobit_signature(teb, *c);
 			offset = _shift_twobit_signature(teb, *c);
 			if (offset != NA_INTEGER)
@@ -219,28 +227,36 @@ static void update_double_oligo_freqs(double *mat, int mat_nrow,
 		int width, int step,
 		TwobitEncodingBuffer *teb, const cachedCharSeq *X)
 {
-	int imax, i, j, offset;
+	int max_start, start, offset, i;
 	const char *c;
 
+	max_start = X->length - width;
 	if (step == 1) {
 		_reset_twobit_signature(teb);
-		for (i = 0, c = X->seq; i < X->length; i++, c++) {
+		for (start = 1 - width, c = X->seq;
+		     start <= max_start;
+		     start++, c++)
+		{
 			offset = _shift_twobit_signature(teb, *c);
 			if (offset != NA_INTEGER)
 				mat[offset * mat_nrow] += 1.00;
 		}
 	} else if (step < width) {
+		/* 1 < step < width */
 		_reset_twobit_signature(teb);
-		for (i = 0, c = X->seq; i < X->length; i++, c++) {
+		for (start = 1 - width, c = X->seq;
+		     start <= max_start;
+		     start++, c++)
+		{
 			offset = _shift_twobit_signature(teb, *c);
-			if (i % step == 0 && offset != NA_INTEGER)
+			if (start % step == 0 && offset != NA_INTEGER)
 				mat[offset * mat_nrow] += 1.00;
 		}
 	} else {
-		imax = X->length - width;
-		for (i = 0; i <= imax; i += step) {
+		/* 1 <= width <= step */
+		for (start = 0; start <= max_start; start += step) {
 			_reset_twobit_signature(teb);
-			for (j = 1, c = X->seq + i; j < width; j++, c++)
+			for (i = 1, c = X->seq + start; i < width; i++, c++)
 				_shift_twobit_signature(teb, *c);
 			offset = _shift_twobit_signature(teb, *c);
 			if (offset != NA_INTEGER)
