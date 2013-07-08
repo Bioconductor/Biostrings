@@ -98,8 +98,9 @@ void _init_byte2offset_with_INTEGER(ByteTrTable byte2offset, SEXP bytes, int err
 	int byte, offset;
 
 	if (LENGTH(bytes) > BYTETRTABLE_LENGTH)
-		error("Biostrings internal error in _init_byte2offset_with_INTEGER(): ",
-		      "LENGTH(bytes) > BYTETRTABLE_LENGTH");
+		error("Biostrings internal error in "
+                      "_init_byte2offset_with_INTEGER(): "
+                      "LENGTH(bytes) > BYTETRTABLE_LENGTH");
 	for (byte = 0; byte < BYTETRTABLE_LENGTH; byte++)
 		byte2offset[byte] = NA_INTEGER;
 	for (offset = 0; offset < LENGTH(bytes); offset++) {
@@ -120,9 +121,6 @@ void _init_byte2offset_with_cachedCharSeq(ByteTrTable byte2offset,
 {
 	int byte, offset;
 
-	if (seq->length > BYTETRTABLE_LENGTH)
-		error("Biostrings internal error in _init_byte2offset_with_cachedCharSeq(): ",
-		      "seq->length > BYTETRTABLE_LENGTH");
 	for (byte = 0; byte < BYTETRTABLE_LENGTH; byte++)
 		byte2offset[byte] = NA_INTEGER;
 	for (offset = 0; offset < seq->length; offset++) {
