@@ -36,18 +36,25 @@
 }
 
 \usage{
-  matchPattern(pattern, subject,
-               max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
-               algorithm="auto")
-  countPattern(pattern, subject,
-               max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
-               algorithm="auto")
-  vmatchPattern(pattern, subject,
-                max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
-                algorithm="auto", ...)
-  vcountPattern(pattern, subject,
-                max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
-                algorithm="auto", ...)
+matchPattern(pattern, subject,
+             max.mismatch=0, min.mismatch=0,
+             with.indels=FALSE, fixed=TRUE,
+             algorithm="auto")
+
+countPattern(pattern, subject,
+             max.mismatch=0, min.mismatch=0,
+             with.indels=FALSE, fixed=TRUE,
+             algorithm="auto")
+
+vmatchPattern(pattern, subject,
+              max.mismatch=0, min.mismatch=0,
+              with.indels=FALSE, fixed=TRUE,
+              algorithm="auto", ...)
+
+vcountPattern(pattern, subject,
+              max.mismatch=0, min.mismatch=0,
+              with.indels=FALSE, fixed=TRUE,
+              algorithm="auto", ...)
 }
 
 \arguments{
@@ -159,101 +166,119 @@
 }
 
 \examples{
-  ## ---------------------------------------------------------------------
-  ## A. matchPattern()/countPattern()
-  ## ---------------------------------------------------------------------
+## ---------------------------------------------------------------------
+## A. matchPattern()/countPattern()
+## ---------------------------------------------------------------------
 
-  ## A simple inexact matching example with a short subject:
-  x <- DNAString("AAGCGCGATATG")
-  m1 <- matchPattern("GCNNNAT", x)
-  m1
-  m2 <- matchPattern("GCNNNAT", x, fixed=FALSE)
-  m2
-  as.matrix(m2)
+## A simple inexact matching example with a short subject:
+x <- DNAString("AAGCGCGATATG")
+m1 <- matchPattern("GCNNNAT", x)
+m1
+m2 <- matchPattern("GCNNNAT", x, fixed=FALSE)
+m2
+as.matrix(m2)
 
-  ## With DNA sequence of yeast chromosome number 1:
-  data(yeastSEQCHR1)
-  yeast1 <- DNAString(yeastSEQCHR1)
-  PpiI <- "GAACNNNNNCTC" # a restriction enzyme pattern
-  match1.PpiI <- matchPattern(PpiI, yeast1, fixed=FALSE)
-  match2.PpiI <- matchPattern(PpiI, yeast1, max.mismatch=1, fixed=FALSE)
+## With DNA sequence of yeast chromosome number 1:
+data(yeastSEQCHR1)
+yeast1 <- DNAString(yeastSEQCHR1)
+PpiI <- "GAACNNNNNCTC" # a restriction enzyme pattern
+match1.PpiI <- matchPattern(PpiI, yeast1, fixed=FALSE)
+match2.PpiI <- matchPattern(PpiI, yeast1, max.mismatch=1, fixed=FALSE)
 
-  ## With a genome containing isolated Ns:
-  library(BSgenome.Celegans.UCSC.ce2)
-  chrII <- Celegans[["chrII"]]
-  alphabetFrequency(chrII)
-  matchPattern("N", chrII)
-  matchPattern("TGGGTGTCTTT", chrII) # no match
-  matchPattern("TGGGTGTCTTT", chrII, fixed=FALSE) # 1 match
+## With a genome containing isolated Ns:
+library(BSgenome.Celegans.UCSC.ce2)
+chrII <- Celegans[["chrII"]]
+alphabetFrequency(chrII)
+matchPattern("N", chrII)
+matchPattern("TGGGTGTCTTT", chrII) # no match
+matchPattern("TGGGTGTCTTT", chrII, fixed=FALSE) # 1 match
 
-  ## Using wildcards ("N") in the pattern on a genome containing N-blocks:
-  library(BSgenome.Dmelanogaster.UCSC.dm3)
-  chrX <- maskMotif(Dmelanogaster$chrX, "N")
-  as(chrX, "Views") # 4 non masked regions
-  matchPattern("TTTATGNTTGGTA", chrX, fixed=FALSE)
-  ## Can also be achieved with no mask:
-  masks(chrX) <- NULL
-  matchPattern("TTTATGNTTGGTA", chrX, fixed="subject")
+## Using wildcards ("N") in the pattern on a genome containing N-blocks:
+library(BSgenome.Dmelanogaster.UCSC.dm3)
+chrX <- maskMotif(Dmelanogaster$chrX, "N")
+as(chrX, "Views") # 4 non masked regions
+matchPattern("TTTATGNTTGGTA", chrX, fixed=FALSE)
+## Can also be achieved with no mask:
+masks(chrX) <- NULL
+matchPattern("TTTATGNTTGGTA", chrX, fixed="subject")
 
-  ## ---------------------------------------------------------------------
-  ## B. vmatchPattern()/vcountPattern()
-  ## ---------------------------------------------------------------------
+## ---------------------------------------------------------------------
+## B. vmatchPattern()/vcountPattern()
+## ---------------------------------------------------------------------
 
-  Ebox <- DNAString("CANNTG")
-  subject <- Celegans$upstream5000
-  mindex <- vmatchPattern(Ebox, subject, fixed=FALSE)
-  count_index <- countIndex(mindex)  # Get the number of matches per
-                                     # subject element.
-  sum(count_index)  # Total number of matches.
-  table(count_index)
-  i0 <- which(count_index == max(count_index))
-  subject[i0]  # The subject element with most matches.
+Ebox <- DNAString("CANNTG")
+subject <- Celegans$upstream5000
+mindex <- vmatchPattern(Ebox, subject, fixed=FALSE)
+count_index <- countIndex(mindex)  # Get the number of matches per
+                                   # subject element.
+sum(count_index)  # Total number of matches.
+table(count_index)
+i0 <- which(count_index == max(count_index))
+subject[i0]  # The subject element with most matches.
 
-  ## The matches in 'subject[i0]' as an IRanges object:
-  mindex[[i0]]
-  ## The matches in 'subject[i0]' as an XStringViews object:
-  Views(subject[[i0]], mindex[[i0]])
+## The matches in 'subject[i0]' as an IRanges object:
+mindex[[i0]]
+## The matches in 'subject[i0]' as an XStringViews object:
+Views(subject[[i0]], mindex[[i0]])
 
-  ## ---------------------------------------------------------------------
-  ## C. WITH INDELS
-  ## ---------------------------------------------------------------------
-  library(BSgenome.Celegans.UCSC.ce2)
-  pattern <- DNAString("ACGGACCTAATGTTATC")
-  subject <- Celegans$chrI
+## ---------------------------------------------------------------------
+## C. WITH INDELS
+## ---------------------------------------------------------------------
 
-  ## Allowing up to 2 mismatching letters doesn't give any match:
-  matchPattern(pattern, subject, max.mismatch=2)
+library(BSgenome.Celegans.UCSC.ce2)
+subject <- Celegans$chrI
+pattern1 <- DNAString("ACGGACCTAATGTTATC")
+pattern2 <- DNAString("ACGGACCTVATGTTRTC")
 
-  ## But allowing up to 2 edit operations gives 3 matches:
-  system.time(m <- matchPattern(pattern, subject, max.mismatch=2, with.indels=TRUE))
-  m
+## Allowing up to 2 mismatching letters doesn't give any match:
+m1a <- matchPattern(pattern1, subject, max.mismatch=2)
 
-  ## pairwiseAlignment() returns the (first) best match only:
-  if (interactive()) {
-    mat <- nucleotideSubstitutionMatrix(match=1, mismatch=0, baseOnly=TRUE)
-    ## Note that this call to pairwiseAlignment() will need to
-    ## allocate 733.5 Mb of memory (i.e. length(pattern) * length(subject)
-    ## * 3 bytes).
-    system.time(pwa <- pairwiseAlignment(pattern, subject, type="local",
-                                         substitutionMatrix=mat,
-                                         gapOpening=0, gapExtension=1))
-    pwa
-  }
+## But allowing up to 2 edit operations gives 3 matches:
+system.time(m1b <- matchPattern(pattern1, subject, max.mismatch=2,
+                                with.indels=TRUE))
+m1b
 
-  ## Only "best local matches" are reported:
-    ## - with deletions in the subject
-  subject <- BString("ACDEFxxxCDEFxxxABCE")
-  matchPattern("ABCDEF", subject, max.mismatch=2, with.indels=TRUE)
-  matchPattern("ABCDEF", subject, max.mismatch=2)
-    ## - with insertions in the subject
-  subject <- BString("AiBCDiEFxxxABCDiiFxxxAiBCDEFxxxABCiDEF")
-  matchPattern("ABCDEF", subject, max.mismatch=2, with.indels=TRUE)
-  matchPattern("ABCDEF", subject, max.mismatch=2)
-    ## - with substitutions (note that the "best local matches" can introduce
-    ##   indels and therefore be shorter than 6)
-  subject <- BString("AsCDEFxxxABDCEFxxxBACDEFxxxABCEDF")
-  matchPattern("ABCDEF", subject, max.mismatch=2, with.indels=TRUE)
-  matchPattern("ABCDEF", subject, max.mismatch=2)
+## pairwiseAlignment() returns the (first) best match only:
+if (interactive()) {
+  mat <- nucleotideSubstitutionMatrix(match=1, mismatch=0, baseOnly=TRUE)
+  ## Note that this call to pairwiseAlignment() will need to
+  ## allocate 733.5 Mb of memory (i.e. length(pattern) * length(subject)
+  ## * 3 bytes).
+  system.time(pwa <- pairwiseAlignment(pattern1, subject, type="local",
+                                       substitutionMatrix=mat,
+                                       gapOpening=0, gapExtension=1))
+  pwa
+}
+
+## With IUPAC ambiguities in the pattern:
+m2a <- matchPattern(pattern2, subject, max.mismatch=2,
+                    fixed="subject")
+m2b <- matchPattern(pattern2, subject, max.mismatch=2,
+                    with.indels=TRUE, fixed="subject")
+
+## All the matches in 'm1b' and 'm2a' should also appear in 'm2b':
+stopifnot(suppressWarnings(all(ranges(m1b) %in% ranges(m2b))))
+stopifnot(suppressWarnings(all(ranges(m2a) %in% ranges(m2b))))
+
+## ---------------------------------------------------------------------
+## D. WHEN 'with.indels=TRUE', ONLY "BEST LOCAL MATCHES" ARE REPORTED
+## ---------------------------------------------------------------------
+
+## With deletions in the subject:
+subject <- BString("ACDEFxxxCDEFxxxABCE")
+matchPattern("ABCDEF", subject, max.mismatch=2, with.indels=TRUE)
+matchPattern("ABCDEF", subject, max.mismatch=2)
+
+## With insertions in the subject:
+subject <- BString("AiBCDiEFxxxABCDiiFxxxAiBCDEFxxxABCiDEF")
+matchPattern("ABCDEF", subject, max.mismatch=2, with.indels=TRUE)
+matchPattern("ABCDEF", subject, max.mismatch=2)
+
+## With substitutions (note that the "best local matches" can introduce
+## indels and therefore be shorter than 6):
+subject <- BString("AsCDEFxxxABDCEFxxxBACDEFxxxABCEDF")
+matchPattern("ABCDEF", subject, max.mismatch=2, with.indels=TRUE)
+matchPattern("ABCDEF", subject, max.mismatch=2)
 }
 
 \keyword{methods}

@@ -117,15 +117,24 @@ void _init_byte2offset_with_INTEGER(ByteTrTable *byte2offset, SEXP bytes, int er
 }
 
 void _init_byte2offset_with_cachedCharSeq(ByteTrTable *byte2offset,
-		const cachedCharSeq *seq, int error_on_dup)
+		const cachedCharSeq *seq,
+		const BytewiseOpTable *bytewise_match_table)
 {
-	int byte, offset;
+	int j, offset, n;
+	unsigned char x, y;
+	const char *c;
 
-	for (byte = 0; byte < BYTETRTABLE_LENGTH; byte++)
-		byte2offset->byte2code[byte] = NA_INTEGER;
-	for (offset = 0; offset < seq->length; offset++) {
-		byte = seq->seq[offset];
-		set_byte2offset_elt(byte2offset, byte, offset, error_on_dup);
+	for (j = 0; j < 256; j++) {
+		y = (unsigned char) j;
+		offset = NA_INTEGER;
+		for (n = 0, c = seq->seq; n < seq->length; n++, c++) {
+			x = (unsigned char) *c;
+			if (bytewise_match_table->xy2val[x][y]) {
+				offset = n;
+				break;
+			}
+		}
+		byte2offset->byte2code[y] = offset;
 	}
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {

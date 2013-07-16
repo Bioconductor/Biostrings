@@ -379,9 +379,6 @@ static int nedit_at(const cachedCharSeq *P, const cachedCharSeq *S,
 		return _nmismatch_at_Pshift(P, S, offset, max_nmis,
 					    bytewise_match_table);
 	}
-	if (!fixedP || !fixedS)
-		error("when 'with.indels' is TRUE, only 'fixed=TRUE' "
-		      "is supported for now");
 	offset = at - 1;
 	if (at_type0 == 0)
 		nmis = _nedit_for_Ploffset(P, S, offset,
@@ -403,11 +400,11 @@ static void check_mismatch_lengths(int at_length,
 		SEXP max_mismatch, SEXP min_mismatch, int ans_type0)
 {
 	if ((at_length == 0 && LENGTH(max_mismatch) > 1)
-         || (at_length != 0 && LENGTH(max_mismatch) > at_length))
+	 || (at_length != 0 && LENGTH(max_mismatch) > at_length))
 		warning("'max_mismatch' is longer than 'at' "
 			"(remaining elements are ignored)");
 	if ((at_length == 0 && LENGTH(min_mismatch) > 1)
-         || (at_length != 0 && LENGTH(min_mismatch) > at_length))
+	 || (at_length != 0 && LENGTH(min_mismatch) > at_length))
 		warning("'min_mismatch' is longer than 'at' "
 			"(remaining elements are ignored)");
 	if (at_length == 0)

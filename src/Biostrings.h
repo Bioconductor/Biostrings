@@ -30,7 +30,7 @@ void _init_byte2offset_with_INTEGER(
 void _init_byte2offset_with_cachedCharSeq(
 	ByteTrTable *byte2offset,
 	const cachedCharSeq *seq,
-	int error_on_dup
+	const BytewiseOpTable *bytewise_match_table
 );
 
 TwobitEncodingBuffer _new_TwobitEncodingBuffer(

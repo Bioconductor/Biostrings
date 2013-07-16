@@ -108,12 +108,8 @@ void _match_pattern_indels(const cachedCharSeq *P, const cachedCharSeq *S,
 	if (P->length <= 0)
 		error("empty pattern");
 	bytewise_match_table = _select_bytewise_match_table(fixedP, fixedS);
-	if (!fixedP || !fixedS)
-		error("'fixed' must be TRUE when 'algorithm=\"indels\"' (for now)");
-	// Before we can support fixedP=FALSE or fixedS=FALSE in
-	// _match_pattern_indels(), we need to support them in
-	// _init_byte2offset_with_cachedCharSeq().
-	_init_byte2offset_with_cachedCharSeq(&byte2offset, P, 0);
+	_init_byte2offset_with_cachedCharSeq(&byte2offset, P,
+					     bytewise_match_table);
 	provisory_match_nedit = -1; // means no provisory match yet
 	j0 = 0;
 	while (j0 < S->length) {
