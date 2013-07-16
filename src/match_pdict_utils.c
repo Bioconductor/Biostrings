@@ -207,11 +207,11 @@ static int nmismatch_in_HT(const cachedCharSeq *H, const cachedCharSeq *T,
 {
 	int nmis;
 
-	nmis = _selected_nmismatch_at_Pshift_fun(H, S, Hshift, max_nmis);
+	nmis = _nmismatch_at_Pshift(H, S, Hshift, max_nmis, NULL);
 	if (nmis > max_nmis)
 		return nmis;
 	max_nmis -= nmis;
-	nmis += _selected_nmismatch_at_Pshift_fun(T, S, Tshift, max_nmis);
+	nmis += _nmismatch_at_Pshift(T, S, Tshift, max_nmis, NULL);
 	return nmis;
 }
 
@@ -339,7 +339,8 @@ static PPHeadTail new_PPHeadTail(SEXP base_codes, int bmbuf_nrow,
 	if (LENGTH(base_codes) != 4)
 		error("Biostrings internal error in _new_HeadTail(): "
 			"LENGTH(base_codes) != 4");
-	_init_byte2offset_with_INTEGER(ppheadtail.byte2offset, base_codes, 1);
+	_init_byte2offset_with_INTEGER(&(ppheadtail.byte2offset),
+				       base_codes, 1);
 	if (max_Hwidth > 0)
 		for (i = 0; i < 4; i++)
 			ppheadtail.head_bmbuf[i] = _new_BitMatrix(bmbuf_nrow,
@@ -463,15 +464,15 @@ static void init_nmis_bmbuf(BitMatrix *bmbuf, int nrow)
 	return;
 }
 
-static void preprocess_H(const cachedCharSeq *H, ByteTrTable byte2offset,
-		BitMatrix *bmbuf0, int i)
+static void preprocess_H(const cachedCharSeq *H,
+		const ByteTrTable *byte2offset, BitMatrix *bmbuf0, int i)
 {
 	int j, offset;
 	const char *c;
 	BitMatrix *bmbuf;
 
 	for (j = 0, c = H->seq + H->length - 1; j < H->length; j++, c--) {
-		offset = byte2offset[(unsigned char) *c];
+		offset = byte2offset->byte2code[(unsigned char) *c];
 		if (offset == NA_INTEGER)
 			error("preprocess_H(): don't know how to handle "
 			      "non-base letters in the preprocessed head or "
@@ -487,15 +488,15 @@ static void preprocess_H(const cachedCharSeq *H, ByteTrTable byte2offset,
 	return;
 }
 
-static void preprocess_T(const cachedCharSeq *T, ByteTrTable byte2offset,
-		BitMatrix *bmbuf0, int i)
+static void preprocess_T(const cachedCharSeq *T,
+		const ByteTrTable *byte2offset, BitMatrix *bmbuf0, int i)
 {
 	int j, offset;
 	const char *c;
 	BitMatrix *bmbuf;
 
 	for (j = 0, c = T->seq; j < T->length; j++, c++) {
-		offset = byte2offset[(unsigned char) *c];
+		offset = byte2offset->byte2code[(unsigned char) *c];
 		if (offset == NA_INTEGER)
 			error("preprocess_T(): don't know how to handle "
 			      "non-base letters in the preprocessed head or "
@@ -512,7 +513,7 @@ static void preprocess_T(const cachedCharSeq *T, ByteTrTable byte2offset,
 }
 
 static void preprocess_head(const RoSeqs *head, const IntAE *grouped_keys,
-		ByteTrTable byte2offset, BitMatrix *bmbuf0)
+		const ByteTrTable *byte2offset, BitMatrix *bmbuf0)
 {
 	int nelt, i, *key;
 
@@ -526,7 +527,7 @@ static void preprocess_head(const RoSeqs *head, const IntAE *grouped_keys,
 }
 
 static void preprocess_tail(const RoSeqs *tail, const IntAE *grouped_keys,
-		ByteTrTable byte2offset, BitMatrix *bmbuf0)
+		const ByteTrTable *byte2offset, BitMatrix *bmbuf0)
 {
 	int nelt, i, *key;
 
@@ -559,7 +560,7 @@ static BitCol match_ppheadtail_for_loc(HeadTail *headtail, int tb_width,
 		// match_ppheadtail_for_loc() only when 'tb_end' is guaranteed
 		// not to be too close to 'S' boundaries.
 		s = S->seq[j2];
-		offset = headtail->ppheadtail.byte2offset[(unsigned char) s];
+		offset = headtail->ppheadtail.byte2offset.byte2code[(unsigned char) s];
 		if (offset == NA_INTEGER) {
 			_BitMatrix_Rrot1(nmis_bmbuf);
 			continue;
@@ -577,7 +578,7 @@ static BitCol match_ppheadtail_for_loc(HeadTail *headtail, int tb_width,
 		// match_ppheadtail_for_loc() only when 'tb_end' is guaranteed
 		// not to be too close from 'S' boundaries.
 		s = S->seq[j2];
-		offset = headtail->ppheadtail.byte2offset[(unsigned char) s];
+		offset = headtail->ppheadtail.byte2offset.byte2code[(unsigned char) s];
 		if (offset == NA_INTEGER) {
 			_BitMatrix_Rrot1(nmis_bmbuf);
 			continue;
@@ -667,11 +668,11 @@ static void match_ppheadtail0(HeadTail *headtail,
 
 	if (headtail->max_Hwidth > 0)
 		preprocess_head(&(headtail->head), &(headtail->grouped_keys),
-			headtail->ppheadtail.byte2offset,
+			&(headtail->ppheadtail.byte2offset),
 			headtail->ppheadtail.head_bmbuf);
 	if (headtail->max_Twidth > 0)
 		preprocess_tail(&(headtail->tail), &(headtail->grouped_keys),
-			headtail->ppheadtail.byte2offset,
+			&(headtail->ppheadtail.byte2offset),
 			headtail->ppheadtail.tail_bmbuf);
 	tmp_match_bmbuf = &(headtail->ppheadtail.tmp_match_bmbuf);
 	tmp_match_bmbuf->nrow = IntAE_get_nelt(&(headtail->grouped_keys));

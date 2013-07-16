@@ -14,7 +14,7 @@ SEXP debug_utils()
 }
 
 #ifdef DEBUG_BIOSTRINGS
-static void print_ByteTrTable(const ByteTrTable byte2code)
+static void print_ByteTrTable(const ByteTrTable *byte_tr_table)
 {
 	int byte, code;
 
@@ -26,7 +26,7 @@ static void print_ByteTrTable(const ByteTrTable byte2code)
 		else
 			Rprintf("     ");
 		Rprintf(" -> code=");
-		code = byte2code[byte];
+		code = byte_tr_table->byte2code[byte];
 		if (code == NA_INTEGER)
 			Rprintf("NA\n");
 		else
@@ -36,7 +36,7 @@ static void print_ByteTrTable(const ByteTrTable byte2code)
 }
 #endif
 
-void _init_ByteTrTable_with_lkup(ByteTrTable byte2code, SEXP lkup)
+void _init_ByteTrTable_with_lkup(ByteTrTable *byte_tr_table, SEXP lkup)
 {
 	int byte;
 
@@ -44,33 +44,33 @@ void _init_ByteTrTable_with_lkup(ByteTrTable byte2code, SEXP lkup)
 		error("Biostrings internal error in _init_ByteTrTable_with_lkup(): "
 		      "LENGTH(lkup) > BYTETRTABLE_LENGTH");
 	for (byte = 0; byte < LENGTH(lkup); byte++)
-		byte2code[byte] = INTEGER(lkup)[byte];
+		byte_tr_table->byte2code[byte] = INTEGER(lkup)[byte];
 	for ( ; byte < BYTETRTABLE_LENGTH; byte++)
-		byte2code[byte] = NA_INTEGER;
+		byte_tr_table->byte2code[byte] = NA_INTEGER;
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
 		Rprintf("[DEBUG] _init_ByteTrTable_with_lkup():\n");
-		print_ByteTrTable(byte2code);
+		print_ByteTrTable(byte_tr_table);
 	}
 #endif
 	return;
 }
 
-SEXP _new_lkup_from_ByteTrTable(const ByteTrTable *byte2code)
+SEXP _new_lkup_from_ByteTrTable(const ByteTrTable *byte_tr_table)
 {
 	SEXP ans;
 	int byte;
 
-	if (byte2code == NULL)
+	if (byte_tr_table == NULL)
 		return R_NilValue;
 	PROTECT(ans = NEW_INTEGER(BYTETRTABLE_LENGTH));
 	for (byte = 0; byte < BYTETRTABLE_LENGTH; byte++)
-		INTEGER(ans)[byte] = (*byte2code)[byte];
+		INTEGER(ans)[byte] = byte_tr_table->byte2code[byte];
 	UNPROTECT(1);
 	return ans;
 }
 
-static void set_byte2offset_elt(ByteTrTable byte2offset,
+static void set_byte2offset_elt(ByteTrTable *byte2offset,
 		int byte, int offset, int error_on_dup)
 {
 	int *offset_p;
@@ -78,7 +78,7 @@ static void set_byte2offset_elt(ByteTrTable byte2offset,
 	if (byte < 0 || byte >= BYTETRTABLE_LENGTH)
 		error("Biostrings internal error in set_byte2offset_elt(): "
 		      "invalid byte value %d", byte);
-	offset_p = byte2offset + (unsigned char) byte;
+	offset_p = byte2offset->byte2code + (unsigned char) byte;
 	if (*offset_p == NA_INTEGER) {
 		*offset_p = offset;
 		return;
@@ -93,7 +93,7 @@ static void set_byte2offset_elt(ByteTrTable byte2offset,
  * Values in 'bytes' must represent byte values i.e. values >= 0 and < 256.
  * The byte offsets are written to 'byte2offset'.
 */
-void _init_byte2offset_with_INTEGER(ByteTrTable byte2offset, SEXP bytes, int error_on_dup)
+void _init_byte2offset_with_INTEGER(ByteTrTable *byte2offset, SEXP bytes, int error_on_dup)
 {
 	int byte, offset;
 
@@ -102,7 +102,7 @@ void _init_byte2offset_with_INTEGER(ByteTrTable byte2offset, SEXP bytes, int err
                       "_init_byte2offset_with_INTEGER(): "
                       "LENGTH(bytes) > BYTETRTABLE_LENGTH");
 	for (byte = 0; byte < BYTETRTABLE_LENGTH; byte++)
-		byte2offset[byte] = NA_INTEGER;
+		byte2offset->byte2code[byte] = NA_INTEGER;
 	for (offset = 0; offset < LENGTH(bytes); offset++) {
 		byte = INTEGER(bytes)[offset];
 		set_byte2offset_elt(byte2offset, byte, offset, error_on_dup);
@@ -116,13 +116,13 @@ void _init_byte2offset_with_INTEGER(ByteTrTable byte2offset, SEXP bytes, int err
 	return;
 }
 
-void _init_byte2offset_with_cachedCharSeq(ByteTrTable byte2offset,
+void _init_byte2offset_with_cachedCharSeq(ByteTrTable *byte2offset,
 		const cachedCharSeq *seq, int error_on_dup)
 {
 	int byte, offset;
 
 	for (byte = 0; byte < BYTETRTABLE_LENGTH; byte++)
-		byte2offset[byte] = NA_INTEGER;
+		byte2offset->byte2code[byte] = NA_INTEGER;
 	for (offset = 0; offset < seq->length; offset++) {
 		byte = seq->seq[offset];
 		set_byte2offset_elt(byte2offset, byte, offset, error_on_dup);
@@ -144,7 +144,7 @@ TwobitEncodingBuffer _new_TwobitEncodingBuffer(SEXP base_codes, int buflength, i
 		error("_new_TwobitEncodingBuffer(): 'base_codes' must be of length 4");
 	if (buflength < 1 || buflength > 15)
 		error("_new_TwobitEncodingBuffer(): 'buflength' must be >= 1 and <= 15");
-	_init_byte2offset_with_INTEGER(teb.eightbit2twobit, base_codes, 1);
+	_init_byte2offset_with_INTEGER(&(teb.eightbit2twobit), base_codes, 1);
 	teb.buflength = buflength;
 	teb.endianness = endianness;
 	teb.nbit_in_mask = (buflength - 1) * 2;
@@ -170,7 +170,7 @@ int _shift_twobit_signature(TwobitEncodingBuffer *teb, char c)
 	int lastin_twobit;
 
 	lastin_twobit = teb->lastin_twobit =
-		teb->eightbit2twobit[(unsigned char) c];
+		teb->eightbit2twobit.byte2code[(unsigned char) c];
 	if (lastin_twobit == NA_INTEGER) {
 		teb->nb_valid_prev_char = 0;
 		return NA_INTEGER;

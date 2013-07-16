@@ -48,12 +48,12 @@ static int get_ans_width(SEXP codes, int with_other)
 	if (codes == R_NilValue) {
 		return 256;
 	}
-	_init_byte2offset_with_INTEGER(byte2offset, codes, 1);
+	_init_byte2offset_with_INTEGER(&byte2offset, codes, 1);
 	width = LENGTH(codes);
 	if (with_other) {
 		for (i = 0; i < BYTETRTABLE_LENGTH; i++)
-			if (byte2offset[i] == NA_INTEGER)
-				byte2offset[i] = width;
+			if (byte2offset.byte2code[i] == NA_INTEGER)
+				byte2offset.byte2code[i] = width;
 		width++;
 	}
 	return width;
@@ -67,7 +67,7 @@ static void update_letter_freqs(int *row, int nrow, const cachedCharSeq *X, SEXP
 	for (i = 0, c = X->seq; i < X->length; i++, c++) {
 		offset = (unsigned char) *c;
 		if (codes != R_NilValue) {
-			offset = byte2offset[offset];
+			offset = byte2offset.byte2code[offset];
 			if (offset == NA_INTEGER)
 				continue;
 		}
@@ -85,7 +85,7 @@ static void update_letter_freqs_without_codes(int *row, int nrow,
 	int k = X->length;
 
 	for (i = 0, c = X->seq; i < k; i++, c++) {
-		offset = byte2offset[(unsigned char) *c];
+		offset = byte2offset.byte2code[(unsigned char) *c];
 		if (offset != NA_INTEGER)
 			row[offset * nrow]++;
 	}
@@ -115,7 +115,7 @@ static int letter_freq_in_sliding_view(int *row, const int nrow, const char *c,
 			row[J] = (row - 1)[J];
 
 	// look up offset for the first letter and set return
-	offset = byte2offset[(unsigned char) *c];
+	offset = byte2offset.byte2code[(unsigned char) *c];
 	rtn = offset;
 
 	// on the 1st call, set count for this offset
@@ -135,7 +135,7 @@ static int letter_freq_in_sliding_view(int *row, const int nrow, const char *c,
 		c += i;
 	}
 	for ( ; i < k; i++, c++) {
-		offset = byte2offset[(unsigned char) *c];
+		offset = byte2offset.byte2code[(unsigned char) *c];
 		if (offset != NA_INTEGER)
 			row[offset * nrow]++;
 	}
@@ -171,7 +171,7 @@ static void update_letter_freqs2(int *mat, const cachedCharSeq *X, SEXP codes,
 	for (i = i1; i < i2; i++, c++, col += mat_nrow) {
 		offset = (unsigned char) *c;
 		if (codes != R_NilValue) {
-			offset = byte2offset[offset];
+			offset = byte2offset.byte2code[offset];
 			if (offset == NA_INTEGER)
 				continue;
 		}
@@ -528,7 +528,8 @@ SEXP XString_letterFrequencyInSlidingView(SEXP x, SEXP view_width,
 	if (ans_nrow < 1)
 		error("'x' is too short or 'view.width' is too big");
 	ans_width = get_ans_width(single_codes, 0);
-	// byte2offset[code] is now set for each code in 'single_codes'.
+	// 'byte2offset.byte2code[code]' is now set for each code
+	// in 'single_codes'.
 	// If 'colmap' is non-NULL, we edit these settings accordingly.
 	if (colmap != R_NilValue) {
 		if (LENGTH(single_codes) != LENGTH(colmap))
@@ -539,7 +540,7 @@ SEXP XString_letterFrequencyInSlidingView(SEXP x, SEXP view_width,
 		colmap0 = INTEGER(colmap);
 		for (i = 0; i < LENGTH(colmap); i++) {
 			ans_width = colmap0[i];
-			byte2offset[INTEGER(single_codes)[i]] = ans_width - 1;
+			byte2offset.byte2code[INTEGER(single_codes)[i]] = ans_width - 1;
 		}
 	}
 	PROTECT(ans = allocMatrix(INTSXP, ans_nrow, ans_width));
@@ -580,7 +581,8 @@ SEXP XStringSet_letterFrequency(SEXP x, SEXP single_codes, SEXP colmap,
 	int x_length = _get_XStringSet_length(x);
 
 	ans_width = get_ans_width(single_codes, 0);
-	// byte2offset[code] is now set for each code in 'single_codes'.
+	// 'byte2offset.byte2code[code]' is now set for each code
+	// in 'single_codes'.
 	// If 'colmap' is non-NULL, we edit these settings accordingly.
 	if (colmap != R_NilValue) {
 		if (LENGTH(single_codes) != LENGTH(colmap))
@@ -591,7 +593,7 @@ SEXP XStringSet_letterFrequency(SEXP x, SEXP single_codes, SEXP colmap,
 		colmap0 = INTEGER(colmap);
 		for (i = 0; i < LENGTH(colmap); i++) {
 			ans_width = colmap0[i];
-			byte2offset[INTEGER(single_codes)[i]] = ans_width - 1;
+			byte2offset.byte2code[INTEGER(single_codes)[i]] = ans_width - 1;
 		}
 	}
 	if (LOGICAL(collapse)[0]) {
@@ -843,9 +845,9 @@ SEXP XStringSet_consensus_matrix(SEXP x, SEXP shift, SEXP width,
 static ByteTrTable xbyte2offset;
 static ByteTrTable ybyte2offset;
 
-static void copy_codes_into(ByteTrTable dest) {
+static void copy_codes_into(ByteTrTable *dest) {
   for (int i = 0; i < BYTETRTABLE_LENGTH; i++) {
-    dest[i] = byte2offset[i];
+    dest->byte2code[i] = byte2offset.byte2code[i];
   }
 }
 
@@ -861,8 +863,8 @@ static void update_two_way_letter_freqs(int *mat, int ans_nrow,
   }
   
   for (i = 0, xc = X->seq, yc = Y->seq; i < X->length; i++, xc++, yc++) {
-    x_offset = xbyte2offset[(unsigned char) *xc];
-    y_offset = ybyte2offset[(unsigned char) *yc];
+    x_offset = xbyte2offset.byte2code[(unsigned char) *xc];
+    y_offset = ybyte2offset.byte2code[(unsigned char) *yc];
     if (x_offset != NA_INTEGER && y_offset != NA_INTEGER) {
       mat[x_offset + y_offset * ans_nrow]++;
     }
@@ -923,9 +925,9 @@ SEXP XString_two_way_letter_frequency(SEXP x, SEXP y,
   cachedCharSeq X, Y;
 
   x_width = get_ans_width(x_codes, LOGICAL(with_other)[0]);
-  copy_codes_into(xbyte2offset);
+  copy_codes_into(&xbyte2offset);
   y_width = get_ans_width(y_codes, LOGICAL(with_other)[0]);
-  copy_codes_into(ybyte2offset);
+  copy_codes_into(&ybyte2offset);
   PROTECT(ans = allocMatrix(INTSXP, x_width, y_width));
   memset(INTEGER(ans), 0, LENGTH(ans) * sizeof(int));
   X = cache_XRaw(x);
@@ -950,9 +952,9 @@ SEXP XStringSet_two_way_letter_frequency(SEXP x, SEXP y, SEXP collapse,
   Rboolean _collapse = asLogical(collapse);
 
   x_width = get_ans_width(x_codes, LOGICAL(with_other)[0]);
-  copy_codes_into(xbyte2offset);
+  copy_codes_into(&xbyte2offset);
   y_width = get_ans_width(y_codes, LOGICAL(with_other)[0]);
-  copy_codes_into(ybyte2offset);
+  copy_codes_into(&ybyte2offset);
 
   x_length = _get_XStringSet_length(x);
   if (x_length != _get_XStringSet_length(y))
@@ -1004,10 +1006,10 @@ static void update_two_way_letter_freqs_by_quality(int *mat,
   }
   
   for (i = 0; i < X->length; i++) {
-    x_offset = byte2offset[(unsigned char) X->seq[i]];
-    y_offset = byte2offset[(unsigned char) Y->seq[i]];
-    qx_offset = quality_byte2offset[(unsigned char) QX->seq[i]];
-    qy_offset = quality_byte2offset[(unsigned char) QY->seq[i]];
+    x_offset = byte2offset.byte2code[(unsigned char) X->seq[i]];
+    y_offset = byte2offset.byte2code[(unsigned char) Y->seq[i]];
+    qx_offset = quality_byte2offset.byte2code[(unsigned char) QX->seq[i]];
+    qy_offset = quality_byte2offset.byte2code[(unsigned char) QY->seq[i]];
     min_q_offset = qx_offset < qy_offset ? qx_offset : qy_offset; 
     if (x_offset != NA_INTEGER && y_offset != NA_INTEGER) {
       mat[x_offset + y_offset * seq_width + min_q_offset * seq_width_squared]++;
@@ -1043,7 +1045,7 @@ SEXP XStringSet_two_way_letter_frequency_by_quality(SEXP x, SEXP y,
   cached_x_quality = _cache_XStringSet(x_quality);
   cached_y_quality = _cache_XStringSet(y_quality);
 
-  _init_byte2offset_with_INTEGER(quality_byte2offset, quality_codes, 1);
+  _init_byte2offset_with_INTEGER(&quality_byte2offset, quality_codes, 1);
   quality_width = LENGTH(quality_codes);
   
   PROTECT(ans = alloc3DArray(INTSXP, ans_width, ans_width, quality_width));

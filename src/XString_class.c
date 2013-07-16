@@ -28,7 +28,7 @@ SEXP debug_XString_class()
  */
 
 static ByteTrTable DNA_enc_byte2code, DNA_dec_byte2code,
-		 RNA_enc_byte2code, RNA_dec_byte2code;
+		   RNA_enc_byte2code, RNA_dec_byte2code;
 
 const ByteTrTable *get_enc_byte2code(const char *classname)
 {
@@ -51,8 +51,8 @@ const ByteTrTable *get_dec_byte2code(const char *classname)
 /* --- .Call ENTRY POINT --- */
 SEXP init_DNAlkups(SEXP enc_lkup, SEXP dec_lkup)
 {
-	_init_ByteTrTable_with_lkup(DNA_enc_byte2code, enc_lkup);
-	_init_ByteTrTable_with_lkup(DNA_dec_byte2code, dec_lkup);
+	_init_ByteTrTable_with_lkup(&DNA_enc_byte2code, enc_lkup);
+	_init_ByteTrTable_with_lkup(&DNA_dec_byte2code, dec_lkup);
 	return R_NilValue;
 }
 
@@ -60,7 +60,7 @@ char _DNAencode(char c)
 {
 	int code;
 
-	code = DNA_enc_byte2code[(unsigned char) c];
+	code = DNA_enc_byte2code.byte2code[(unsigned char) c];
 	if (code == NA_INTEGER)
 		error("_DNAencode(): key %d not in lookup table", (int) c);
 	return code;
@@ -70,7 +70,7 @@ char _DNAdecode(char code)
 {
 	int c;
 
-	c = DNA_dec_byte2code[(unsigned char) code];
+	c = DNA_dec_byte2code.byte2code[(unsigned char) code];
 	if (c == NA_INTEGER)
 		error("_DNAdecode(): key %d not in lookup table", (int) code);
 	return c;
@@ -79,8 +79,8 @@ char _DNAdecode(char code)
 /* --- .Call ENTRY POINT --- */
 SEXP init_RNAlkups(SEXP enc_lkup, SEXP dec_lkup)
 {
-	_init_ByteTrTable_with_lkup(RNA_enc_byte2code, enc_lkup);
-	_init_ByteTrTable_with_lkup(RNA_dec_byte2code, dec_lkup);
+	_init_ByteTrTable_with_lkup(&RNA_enc_byte2code, enc_lkup);
+	_init_ByteTrTable_with_lkup(&RNA_dec_byte2code, dec_lkup);
 	return R_NilValue;
 }
 
@@ -88,7 +88,7 @@ char _RNAencode(char c)
 {
 	int code;
 
-	code = RNA_enc_byte2code[(unsigned char) c];
+	code = RNA_enc_byte2code.byte2code[(unsigned char) c];
 	if (code == NA_INTEGER)
 		error("_RNAencode(): key %d not in lookup table", (int) c);
 	return code;
@@ -98,7 +98,7 @@ char _RNAdecode(char code)
 {
 	int c;
 
-	c = RNA_dec_byte2code[(unsigned char) code];
+	c = RNA_dec_byte2code.byte2code[(unsigned char) code];
 	if (c == NA_INTEGER)
 		error("_RNAdecode(): key %d not in lookup table", (int) code);
 	return (char) c;

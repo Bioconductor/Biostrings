@@ -22,113 +22,85 @@ SEXP debug_lowlevel_matching()
 
 
 /****************************************************************************
- * nmismatch_at_Pshift_*()
+ * 4 predefined global "bytewise match tables".
  *
- * The 4 static functions below stop counting mismatches if the number
- * exceeds 'max_nmis'. The caller can disable this by passing 'P->length' to
- * the 'max_nmis' arg.
- *
- * fixedP | fixedS | letters *p and *s match iff...
+ * fixedP | fixedS | letters 'p' and 's' match iff...
  * --------------------------------------------------------
  * TRUE   | TRUE   | ...they are equal
- * TRUE   | FALSE  | ...bits at 1 in *p are also at 1 in *s
- * FALSE  | TRUE   | ...bits at 1 in *s are also at 1 in *p
+ * TRUE   | FALSE  | ...bits at 1 in 'p' are also at 1 in 's'
+ * FALSE  | TRUE   | ...bits at 1 in 's' are also at 1 in 'p'
  * FALSE  | FALSE  | ...they share at least one bit at 1
  */
 
-static int nmismatch_at_Pshift_fixedPfixedS(const cachedCharSeq *P,
-		const cachedCharSeq *S, int Pshift, int max_nmis)
+static BytewiseOpTable fixedPfixedS_match_table,
+		       fixedPnonfixedS_match_table,
+		       nonfixedPfixedS_match_table,
+		       nonfixedPnonfixedS_match_table;
+
+void _init_bytewise_match_tables()
 {
-	int nmis, i, j;
-	const char *p, *s;
+	int i, j;
+	unsigned char *val1, *val2, *val3, *val4, x, y;
 
-	nmis = 0;
-	for (i = 0, j = Pshift, p = P->seq, s = S->seq + Pshift;
-	     i < P->length;
-	     i++, j++, p++, s++)
-	{
-		if (j >= 0 && j < S->length && *p == *s)
-			continue;
-		if (nmis++ >= max_nmis)
-			break;
-	}
-	return nmis;
-}
-
-static int nmismatch_at_Pshift_fixedPnonfixedS(const cachedCharSeq *P,
-		const cachedCharSeq *S, int Pshift, int max_nmis)
-{
-	int nmis, i, j;
-	const char *p, *s;
-
-	nmis = 0;
-	for (i = 0, j = Pshift, p = P->seq, s = S->seq + Pshift;
-	     i < P->length;
-	     i++, j++, p++, s++)
-	{
-		if (j >= 0 && j < S->length && ((*p) & ~(*s)) == 0)
-			continue;
-		if (nmis++ >= max_nmis)
-			break;
-	}
-	return nmis;
-}
-
-static int nmismatch_at_Pshift_nonfixedPfixedS(const cachedCharSeq *P,
-		const cachedCharSeq *S, int Pshift, int max_nmis)
-{
-	int nmis, i, j;
-	const char *p, *s;
-
-	nmis = 0;
-	for (i = 0, j = Pshift, p = P->seq, s = S->seq + Pshift;
-	     i < P->length;
-	     i++, j++, p++, s++)
-	{
-		if (j >= 0 && j < S->length && (~(*p) & (*s)) == 0)
-			continue;
-		if (nmis++ >= max_nmis)
-			break;
-	}
-	return nmis;
-}
-
-static int nmismatch_at_Pshift_nonfixedPnonfixedS(const cachedCharSeq *P,
-		const cachedCharSeq *S, int Pshift, int max_nmis)
-{
-	int nmis, i, j;
-	const char *p, *s;
-
-	nmis = 0;
-	for (i = 0, j = Pshift, p = P->seq, s = S->seq + Pshift;
-	     i < P->length;
-	     i++, j++, p++, s++)
-	{
-		if (j >= 0 && j < S->length && ((*p) & (*s)))
-			continue;
-		if (nmis++ >= max_nmis)
-			break;
-	}
-	return nmis;
-}
-
-int (*_selected_nmismatch_at_Pshift_fun)(const cachedCharSeq *P,
-		const cachedCharSeq *S, int Pshift, int max_nmis);
-
-void _select_nmismatch_at_Pshift_fun(int fixedP, int fixedS)
-{
-	if (fixedP) {
-		if (fixedS)
-			_selected_nmismatch_at_Pshift_fun = &nmismatch_at_Pshift_fixedPfixedS;
-		else
-			_selected_nmismatch_at_Pshift_fun = &nmismatch_at_Pshift_fixedPnonfixedS;
-	} else {
-		if (fixedS)
-			_selected_nmismatch_at_Pshift_fun = &nmismatch_at_Pshift_nonfixedPfixedS;
-		else
-			_selected_nmismatch_at_Pshift_fun = &nmismatch_at_Pshift_nonfixedPnonfixedS;
+	val1 = fixedPfixedS_match_table.xy2val[0];
+	val2 = fixedPnonfixedS_match_table.xy2val[0];
+	val3 = nonfixedPfixedS_match_table.xy2val[0];
+	val4 = nonfixedPnonfixedS_match_table.xy2val[0];
+	for (i = 0; i < 256; i++) {
+		x = (unsigned char) i;
+		for (j = 0; j < 256; j++) {
+			y = (unsigned char) j;
+			*(val1++) = x == y;
+			*(val2++) = (x & ~y) == 0;
+			*(val3++) = (~x & y) == 0;
+			*(val4++) = (x & y) != 0;
+		}
 	}
 	return;
+}
+
+const BytewiseOpTable *_select_bytewise_match_table(int fixedP, int fixedS)
+{
+	if (fixedP) {
+		return fixedS ? &fixedPfixedS_match_table :
+				&fixedPnonfixedS_match_table;
+	}
+	return fixedS ? &nonfixedPfixedS_match_table :
+			&nonfixedPnonfixedS_match_table;
+}
+
+
+/****************************************************************************
+ * _nmismatch_at_Pshift()
+ *
+ * Stops counting mismatches if their number exceeds 'max_nmis'. The caller
+ * can disable this by passing 'P->length' to the 'max_nmis' arg.
+ */
+
+int _nmismatch_at_Pshift(const cachedCharSeq *P,
+		const cachedCharSeq *S, int Pshift, int max_nmis,
+		const BytewiseOpTable *bytewise_match_table)
+{
+	int nmis, i, j;
+	const char *p, *s;
+	unsigned char x, y;
+
+	if (bytewise_match_table == NULL)
+		bytewise_match_table = &fixedPfixedS_match_table;
+	nmis = 0;
+	for (i = 0, j = Pshift, p = P->seq, s = S->seq + Pshift;
+	     i < P->length;
+	     i++, j++, p++, s++)
+	{
+		x = (unsigned char) *p;
+		y = (unsigned char) *s;
+		if (j >= 0 && j < S->length
+		 && bytewise_match_table->xy2val[x][y])
+			continue;
+		if (nmis++ >= max_nmis)
+			break;
+	}
+	return nmis;
 }
 
 
@@ -152,10 +124,10 @@ static int row1_buf[MAX_ROW_LENGTH], row2_buf[MAX_ROW_LENGTH];
 	(curr_row) = tmp; \
 }
 
-#define PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, Pc, row_length) \
+#define PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, y2val, row_length) \
 { \
 	int nedit, B2, nedit2; \
-	nedit = (prev_row)[(B)] + ((Si) < 0 || (Si) >= (S)->length || (S)->seq[(Si)] != (Pc)); \
+	nedit = (prev_row)[(B)] + ((Si) < 0 || (Si) >= (S)->length || !y2val[(unsigned char) (S)->seq[(Si)]]); \
 	if ((B2 = (B) - 1) >= 0 && (nedit2 = (curr_row)[B2] + 1) < nedit) \
 		nedit = nedit2; \
 	if ((B2 = (B) + 1) < (row_length) && (nedit2 = (prev_row)[B2] + 1) < nedit) \
@@ -190,12 +162,14 @@ static void print_curr_row(const char* margin, const int *curr_row, int Bmin, in
  * on the first letter of the local alignement).
  */
 int _nedit_for_Ploffset(const cachedCharSeq *P, const cachedCharSeq *S,
-		int Ploffset, int max_nedit, int loose_Ploffset, int *min_width)
+		int Ploffset, int max_nedit, int loose_Ploffset, int *min_width,
+		const BytewiseOpTable *bytewise_match_table)
 {
 	int max_nedit_plus1, *prev_row, *curr_row, row_length,
 	    a, B, b, min_Si, min_nedit,
 	    Pi, Si; // 0-based letter pos in P and S, respectively
 	char Pc;
+	const unsigned char *y2val;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) Rprintf("[DEBUG] _nedit_for_Ploffset():\n");
@@ -203,14 +177,16 @@ int _nedit_for_Ploffset(const cachedCharSeq *P, const cachedCharSeq *S,
 	if (P->length == 0)
 		return 0;
 	if (max_nedit == 0)
-		error("Biostrings internal error in _nedit_for_Ploffset(): ",
-		      "use _selected_nmismatch_at_Pshift_fun() when 'max_nedit' is 0");
+		error("Biostrings internal error in _nedit_for_Ploffset(): "
+		      "use _nmismatch_at_Pshift() when 'max_nedit' is 0");
 	max_nedit_plus1 = max_nedit + 1;
 	if (max_nedit > P->length)
 		max_nedit = P->length;
 	// from now max_nedit <= P->length
 	if (max_nedit > MAX_NEDIT)
 		error("'max.nedit' too big");
+	if (bytewise_match_table == NULL)
+		bytewise_match_table = &fixedPfixedS_match_table;
 	prev_row = row1_buf;
 	curr_row = row2_buf;
 	row_length = 2 * max_nedit + 1;
@@ -228,11 +204,12 @@ int _nedit_for_Ploffset(const cachedCharSeq *P, const cachedCharSeq *S,
 	// to be <= a < max_nedit.
 	for (a = 1, Pi = 0; a < max_nedit; a++, Pi++) {
 		Pc = P->seq[Pi]; // Pi < a < max_nedit <= P->length
+		y2val = bytewise_match_table->xy2val[(unsigned char) Pc];
 		SWAP_NEDIT_BUFS(prev_row, curr_row);
 		B = max_nedit - a;
 		curr_row[B++] = a;
 		for (Si = min_Si; B < row_length; B++, Si++)
-			PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, Pc, row_length);
+			PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, y2val, row_length);
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) print_curr_row("STAGE1", curr_row, max_nedit - a, row_length);
 #endif
@@ -240,12 +217,13 @@ int _nedit_for_Ploffset(const cachedCharSeq *P, const cachedCharSeq *S,
 
 	// STAGE 2: no attempt is made to bailout during this stage either.
 	Pc = P->seq[Pi];
+	y2val = bytewise_match_table->xy2val[(unsigned char) Pc];
 	SWAP_NEDIT_BUFS(prev_row, curr_row);
 	B = 0;
 	curr_row[B++] = min_nedit = a;
 	*min_width = 0;
 	for (Si = min_Si; B < row_length; B++, Si++) {
-		PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, Pc, row_length);
+		PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, y2val, row_length);
 		if (curr_row[B] < min_nedit) {
 			min_nedit = curr_row[B];
 			*min_width = Si - Ploffset + 1;
@@ -260,11 +238,12 @@ int _nedit_for_Ploffset(const cachedCharSeq *P, const cachedCharSeq *S,
 	// STAGE 3 (2nd for() loop): with attempt to bailout.
 	for ( ; Pi < P->length; Pi++, a++, min_Si++) {
 		Pc = P->seq[Pi];
+		y2val = bytewise_match_table->xy2val[(unsigned char) Pc];
 		SWAP_NEDIT_BUFS(prev_row, curr_row);
 		min_nedit = a;
 		*min_width = 0;
 		for (B = 0, Si = min_Si; B < row_length; B++, Si++) {
-			PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, Pc, row_length);
+			PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, y2val, row_length);
 			if (curr_row[B] < min_nedit) {
 				min_nedit = curr_row[B];
 				*min_width = Si - Ploffset + 1;
@@ -281,12 +260,14 @@ int _nedit_for_Ploffset(const cachedCharSeq *P, const cachedCharSeq *S,
 }
 
 int _nedit_for_Proffset(const cachedCharSeq *P, const cachedCharSeq *S,
-		int Proffset, int max_nedit, int loose_Proffset, int *min_width)
+		int Proffset, int max_nedit, int loose_Proffset, int *min_width,
+		const BytewiseOpTable *bytewise_match_table)
 {
 	int max_nedit_plus1, *prev_row, *curr_row, row_length,
 	    a, B, b, max_Si, min_nedit,
 	    Pi, Si; // 0-based letter pos in P and S, respectively
 	char Pc;
+	const unsigned char *y2val;
 
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) Rprintf("[DEBUG] _nedit_for_Proffset():\n");
@@ -294,14 +275,16 @@ int _nedit_for_Proffset(const cachedCharSeq *P, const cachedCharSeq *S,
 	if (P->length == 0)
 		return 0;
 	if (max_nedit == 0)
-		error("Biostrings internal error in _nedit_for_Proffset(): ",
-		      "use _selected_nmismatch_at_Pshift_fun() when 'max_nedit' is 0");
+		error("Biostrings internal error in _nedit_for_Proffset(): "
+		      "use _nmismatch_at_Pshift() when 'max_nedit' is 0");
 	max_nedit_plus1 = max_nedit + 1;
 	if (max_nedit > P->length)
 		max_nedit = P->length;
 	// from now max_nedit <= P->length
 	if (max_nedit > MAX_NEDIT)
 		error("'max.nedit' too big");
+	if (bytewise_match_table == NULL)
+		bytewise_match_table = &fixedPfixedS_match_table;
 	prev_row = row1_buf;
 	curr_row = row2_buf;
 	row_length = 2 * max_nedit + 1;
@@ -320,11 +303,12 @@ int _nedit_for_Proffset(const cachedCharSeq *P, const cachedCharSeq *S,
 	// to be <= a < max_nedit.
 	for (a = 1, Pi = P->length - 1; a < max_nedit; a++, Pi--) {
 		Pc = P->seq[Pi];
+		y2val = bytewise_match_table->xy2val[(unsigned char) Pc];
 		SWAP_NEDIT_BUFS(prev_row, curr_row);
 		B = max_nedit - a;
 		curr_row[B++] = a;
 		for (Si = max_Si; B < row_length; B++, Si--)
-			PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, Pc, row_length);
+			PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, y2val, row_length);
 #ifdef DEBUG_BIOSTRINGS
 		if (debug) print_curr_row("STAGE1", curr_row, max_nedit - a, row_length);
 #endif
@@ -332,12 +316,13 @@ int _nedit_for_Proffset(const cachedCharSeq *P, const cachedCharSeq *S,
 
 	// STAGE 2: no attempt is made to bailout during this stage either.
 	Pc = P->seq[Pi];
+	y2val = bytewise_match_table->xy2val[(unsigned char) Pc];
 	SWAP_NEDIT_BUFS(prev_row, curr_row);
 	B = 0;
 	curr_row[B++] = min_nedit = a;
 	*min_width = 0;
 	for (Si = max_Si; B < row_length; B++, Si--) {
-		PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, Pc, row_length);
+		PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, y2val, row_length);
 		if (curr_row[B] < min_nedit) {
 			min_nedit = curr_row[B];
 			*min_width = Proffset - Si + 1;
@@ -352,11 +337,12 @@ int _nedit_for_Proffset(const cachedCharSeq *P, const cachedCharSeq *S,
 	// STAGE 3 (2nd for() loop): with attempt to bailout.
 	for ( ; Pi >= 0; Pi--, a++, max_Si--) {
 		Pc = P->seq[Pi];
+		y2val = bytewise_match_table->xy2val[(unsigned char) Pc];
 		SWAP_NEDIT_BUFS(prev_row, curr_row);
 		min_nedit = a;
 		*min_width = 0;
 		for (B = 0, Si = max_Si; B < row_length; B++, Si--) {
-			PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, Pc, row_length);
+			PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, y2val, row_length);
 			if (curr_row[B] < min_nedit) {
 				min_nedit = curr_row[B];
 				*min_width = Proffset - Si + 1;
@@ -382,22 +368,29 @@ static int nedit_at(const cachedCharSeq *P, const cachedCharSeq *S,
 		int fixedP, int fixedS)
 {
 	int offset, nmis, min_width;
+	const BytewiseOpTable *bytewise_match_table;
 
+	bytewise_match_table = _select_bytewise_match_table(fixedP, fixedS);
 	if (!with_indels0 || max_nmis == 0) {
 		if (at_type0 == 0)
 			offset = at - 1;
 		else
 			offset = at - P->length;
-		_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
-		return _selected_nmismatch_at_Pshift_fun(P, S, offset, max_nmis);
+		return _nmismatch_at_Pshift(P, S, offset, max_nmis,
+					    bytewise_match_table);
 	}
-	if (!(fixedP && fixedS))
-		error("when 'with.indels' is TRUE, only 'fixed=TRUE' is supported for now");
+	if (!fixedP || !fixedS)
+		error("when 'with.indels' is TRUE, only 'fixed=TRUE' "
+		      "is supported for now");
 	offset = at - 1;
 	if (at_type0 == 0)
-		nmis = _nedit_for_Ploffset(P, S, offset, max_nmis, 1, &min_width);
+		nmis = _nedit_for_Ploffset(P, S, offset,
+					   max_nmis, 1, &min_width,
+					   bytewise_match_table);
 	else
-		nmis = _nedit_for_Proffset(P, S, offset, max_nmis, 1, &min_width);
+		nmis = _nedit_for_Proffset(P, S, offset,
+					   max_nmis, 1, &min_width,
+					   bytewise_match_table);
 	return nmis;
 }
 

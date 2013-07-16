@@ -64,7 +64,6 @@ static void match_pdict(SEXP pptb, HeadTail *headtail, const cachedCharSeq *S,
 	min_nmis = INTEGER(min_mismatch)[0];
 	fixedP = LOGICAL(fixed)[0];
 	fixedS = LOGICAL(fixed)[1];
-	_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
 	type = get_classname(pptb);
 /*
 	if (strcmp(type, "ACtree2") == 0) {

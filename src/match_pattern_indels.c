@@ -41,8 +41,9 @@ SEXP debug_match_pattern_indels()
 }
 
 #ifdef DEBUG_BIOSTRINGS
-static void print_match(int start, int width, const cachedCharSeq *P,
-		const cachedCharSeq *S)
+static void print_match(int start, int width,
+		const cachedCharSeq *P, const cachedCharSeq *S,
+		const BytewiseOpTable *bytewise_match_table)
 {
 	int end, j0, nedit0, width0;
 	char mbuf[1001];
@@ -52,7 +53,8 @@ static void print_match(int start, int width, const cachedCharSeq *P,
 	j0 = start - 1;
 	end = j0 + width;
 	snprintf(mbuf, width + 1, "%s", S->seq + j0);
-	nedit0 = _nedit_for_Ploffset(P, S, j0, P->length, 1, &width0);
+	nedit0 = _nedit_for_Ploffset(P, S, j0, P->length, 1, &width0,
+				     bytewise_match_table);
 	Rprintf("start=%d end=%d (%s) nedit0=%d\n", start, end, mbuf, nedit0);
 	return;
 }
@@ -100,23 +102,24 @@ void _match_pattern_indels(const cachedCharSeq *P, const cachedCharSeq *S,
 {
 	int i0, j0, max_nmis1, nedit1, width1;
 	char c0;
+	const BytewiseOpTable *bytewise_match_table;
 	cachedCharSeq P1;
 
 	if (P->length <= 0)
 		error("empty pattern");
-	_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
+	bytewise_match_table = _select_bytewise_match_table(fixedP, fixedS);
 	if (!fixedP || !fixedS)
 		error("'fixed' must be TRUE when 'algorithm=\"indels\"' (for now)");
 	// Before we can support fixedP=FALSE or fixedS=FALSE in
 	// _match_pattern_indels(), we need to support them in
-	// _init_byte2offset_with_cachedCharSeq() and _nedit_for_Ploffset().
-	_init_byte2offset_with_cachedCharSeq(byte2offset, P, 0);
+	// _init_byte2offset_with_cachedCharSeq().
+	_init_byte2offset_with_cachedCharSeq(&byte2offset, P, 0);
 	provisory_match_nedit = -1; // means no provisory match yet
 	j0 = 0;
 	while (j0 < S->length) {
 		while (1) {
 			c0 = S->seq[j0];
-			i0 = byte2offset[(unsigned char) c0];
+			i0 = byte2offset.byte2code[(unsigned char) c0];
 			if (i0 != NA_INTEGER) break;
 			j0++;
 			if (j0 >= S->length) goto done;
@@ -134,17 +137,22 @@ void _match_pattern_indels(const cachedCharSeq *P, const cachedCharSeq *S,
 */
 		if (max_nmis1 >= 0) {
 			if (max_nmis1 == 0) {
-				nedit1 = _selected_nmismatch_at_Pshift_fun(&P1, S, j0 + 1, max_nmis1);
+				nedit1 = _nmismatch_at_Pshift(&P1, S, j0 + 1,
+							max_nmis1,
+							bytewise_match_table);
 				width1 = P1.length;
 			} else {
-				nedit1 = _nedit_for_Ploffset(&P1, S, j0 + 1, max_nmis1, 1, &width1);
+				nedit1 = _nedit_for_Ploffset(&P1, S, j0 + 1,
+							max_nmis1, 1, &width1,
+							bytewise_match_table);
 			}
 			if (nedit1 <= max_nmis1) {
 #ifdef DEBUG_BIOSTRINGS
 				if (debug) {
 					Rprintf("[DEBUG] _match_pattern_indels(): "
 						"provisory match found at ");
-					print_match(j0 + 1, width1 + 1, P, S);
+					print_match(j0 + 1, width1 + 1, P, S,
+						    bytewise_match_table);
 				}
 #endif
 				report_provisory_match(j0 + 1, width1 + 1, nedit1 + i0);

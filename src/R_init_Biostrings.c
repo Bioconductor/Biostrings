@@ -208,6 +208,7 @@ void R_init_Biostrings(DllInfo *info)
 	/* Lots of code around assumes that sizeof(Rbyte) == sizeof(char) */
 	if (sizeof(Rbyte) != sizeof(char))
 		error("sizeof(Rbyte) != sizeof(char)");
+	_init_bytewise_match_tables();
 	R_registerRoutines(info, cMethods, NULL, NULL, NULL);
 	R_registerRoutines(info, NULL, callMethods, NULL, NULL);
 

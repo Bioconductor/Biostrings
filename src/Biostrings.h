@@ -15,20 +15,20 @@
 SEXP debug_utils();
 
 void _init_ByteTrTable_with_lkup(
-	ByteTrTable byte2code,
+	ByteTrTable *byte_tr_table,
 	SEXP lkup
 );
 
-SEXP _new_lkup_from_ByteTrTable(const ByteTrTable *byte2code);
+SEXP _new_lkup_from_ByteTrTable(const ByteTrTable *byte_tr_table);
 
 void _init_byte2offset_with_INTEGER(
-	ByteTrTable byte2offset,
+	ByteTrTable *byte2offset,
 	SEXP bytes,
 	int error_on_dup
 );
 
 void _init_byte2offset_with_cachedCharSeq(
-	ByteTrTable byte2offset,
+	ByteTrTable *byte2offset,
 	const cachedCharSeq *seq,
 	int error_on_dup
 );
@@ -512,16 +512,16 @@ SEXP ByPos_MIndex_combine(SEXP ends_listlist);
 
 SEXP debug_lowlevel_matching();
 
-int (*_selected_nmismatch_at_Pshift_fun)(
+void _init_bytewise_match_tables();
+
+const BytewiseOpTable *_select_bytewise_match_table(int fixedP, int fixedS);
+
+int _nmismatch_at_Pshift(
 	const cachedCharSeq *P,
 	const cachedCharSeq *S,
 	int Pshift,
-	int max_nmis
-);
-
-void _select_nmismatch_at_Pshift_fun(
-	int fixedP,
-	int fixedS
+	int max_nmis,
+	const BytewiseOpTable *bytewise_match_table
 );
 
 int _nedit_for_Ploffset(
@@ -530,7 +530,8 @@ int _nedit_for_Ploffset(
 	int Ploffset,
 	int max_nedit,
 	int loose_Ploffset,
-	int *min_width
+	int *min_width,
+	const BytewiseOpTable *bytewise_match_table
 );
 
 int _nedit_for_Proffset(
@@ -539,7 +540,8 @@ int _nedit_for_Proffset(
 	int Proffset,
 	int max_nedit,
 	int loose_Proffset,
-	int *min_width
+	int *min_width,
+	const BytewiseOpTable *bytewise_match_table
 );
 
 SEXP XString_match_pattern_at(

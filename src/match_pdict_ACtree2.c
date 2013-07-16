@@ -487,7 +487,7 @@ static void extend_ACnode(ACtree *tree, ACnode *node)
 #define IS_LEAFNODE(node) ((node)->attribs & ISLEAF_BIT)
 #define NODE_DEPTH(tree, node) \
 		(IS_LEAFNODE(node) ? TREE_DEPTH(tree) : _NODE_DEPTH(node))
-#define CHAR2LINKTAG(tree, c) ((tree)->char2linktag[(unsigned char) (c)])
+#define CHAR2LINKTAG(tree, c) ((tree)->char2linktag.byte2code[(unsigned char) (c)])
 #define NEW_NODE(tree, depth) new_ACnode(tree, depth)
 #define NEW_LEAFNODE(tree, P_id) new_leafACnode(tree, P_id)
 #define GET_NODE_LINK(tree, node, linktag) \
@@ -630,7 +630,7 @@ static ACtree new_ACtree(int tb_length, int tb_width, SEXP base_codes,
 	tree.depth = tb_width;
 	tree.nodebuf = new_ACnodeBuf(nodebuf_ptr);
 	tree.nodeextbuf = new_ACnodeextBuf(nodeextbuf_ptr);
-	_init_byte2offset_with_INTEGER(tree.char2linktag, base_codes, 1);
+	_init_byte2offset_with_INTEGER(&(tree.char2linktag), base_codes, 1);
 	tree.max_nodeextbuf_nelt = 0U;
 	tree.dont_extend_nodes = 0;
 	NEW_NODE(&tree, 0);  /* create the root node */
@@ -667,7 +667,7 @@ static ACtree pptb_asACtree(SEXP pptb)
 	if (LENGTH(base_codes) != MAX_CHILDREN_PER_NODE)
 		error("Biostrings internal error in pptb_asACtree(): "
 		      "LENGTH(base_codes) != MAX_CHILDREN_PER_NODE");
-	_init_byte2offset_with_INTEGER(tree.char2linktag, base_codes, 1);
+	_init_byte2offset_with_INTEGER(&(tree.char2linktag), base_codes, 1);
 /*
   Using max_nelt = 0U will turn off the "dont_extend_nodes" feature
   for now. Seems like having dont_extend_nodes at 1 causes segfaults.

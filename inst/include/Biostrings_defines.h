@@ -29,7 +29,9 @@
  * not mapped.
  */
 #define BYTETRTABLE_LENGTH 256
-typedef int ByteTrTable[BYTETRTABLE_LENGTH];
+typedef struct byte_tr_table {
+	int byte2code[BYTETRTABLE_LENGTH];
+} ByteTrTable;
 
 typedef struct twobit_encoding_buffer {
 	ByteTrTable eightbit2twobit;
@@ -41,6 +43,14 @@ typedef struct twobit_encoding_buffer {
 	int nb_valid_prev_char;
 	int current_signature;
 } TwobitEncodingBuffer;
+
+
+/*
+ * A simple typedef for representing a "bytewise op table".
+ */
+typedef struct bytewise_op_table {
+	unsigned char xy2val[256][256];
+} BytewiseOpTable;
 
 
 /*

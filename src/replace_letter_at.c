@@ -43,7 +43,7 @@ static int replace_letter_at(char *dest, int dest_length,
 		new_letter = src[j];
 		if (use_byte2code) {
 			byte = (unsigned char) new_letter;
-			if ((new_letter = byte2code[byte]) == NA_INTEGER) {
+			if ((new_letter = byte2code.byte2code[byte]) == NA_INTEGER) {
 				snprintf(errmsg_buf, sizeof(errmsg_buf),
 					 "'letter' contains invalid letters "
 					 "(first found has code %d)",
@@ -102,7 +102,7 @@ SEXP XString_replace_letter_at(SEXP x, SEXP at, SEXP letter, SEXP lkup,
 	at_length = LENGTH(at);
 	letter_length = LENGTH(letter);
 	if (lkup != R_NilValue)
-		_init_ByteTrTable_with_lkup(byte2code, lkup);
+		_init_ByteTrTable_with_lkup(&byte2code, lkup);
 	set_notextend_action(CHAR(STRING_ELT(if_not_extending, 0)));
 
 	PROTECT(tag = NEW_RAW(X.length));
@@ -153,7 +153,7 @@ SEXP XString_inplace_replace_letter_at(SEXP x, SEXP at, SEXP letter, SEXP lkup)
 	at_length = LENGTH(at);
 	letter_length = LENGTH(letter);
 	if (lkup != R_NilValue)
-		_init_ByteTrTable_with_lkup(byte2code, lkup);
+		_init_ByteTrTable_with_lkup(&byte2code, lkup);
 	notextend_action = MERGE_IFNOTEXTEND;
 
 	tag = get_XVector_tag(x);

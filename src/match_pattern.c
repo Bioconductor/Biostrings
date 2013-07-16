@@ -70,17 +70,19 @@ static void match_naive_inexact(const cachedCharSeq *P, const cachedCharSeq *S,
 	int Pshift, // position of pattern left-most char relative to the subject
 	    n2, // 1 + position of pattern right-most char relative to the subject
 	    min_Pshift, max_n2, nmis;
+	const BytewiseOpTable *bytewise_match_table;
 
 	if (P->length <= 0)
 		error("empty pattern");
-	_select_nmismatch_at_Pshift_fun(fixedP, fixedS);
+	bytewise_match_table = _select_bytewise_match_table(fixedP, fixedS);
 	min_Pshift = P->length <= max_nmis ? 1 - P->length : -max_nmis;
 	max_n2 = S->length - min_Pshift;
 	for (Pshift = min_Pshift, n2 = min_Pshift + P->length;
 	     n2 <= max_n2;
 	     Pshift++, n2++)
 	{
-		nmis = _selected_nmismatch_at_Pshift_fun(P, S, Pshift, max_nmis);
+		nmis = _nmismatch_at_Pshift(P, S, Pshift, max_nmis,
+					    bytewise_match_table);
 		if (nmis <= max_nmis && nmis >= min_nmis)
 			_report_match(Pshift + 1, P->length);
 	}
