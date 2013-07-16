@@ -593,20 +593,24 @@ setMethod("oligonucleotideFrequency", "MaskedXString",
 ### "oligonucleotideTransitions" convenience wrappers.
 ###
 
-dinucleotideFrequency <- function(x, as.prob=FALSE, as.matrix=FALSE,
+dinucleotideFrequency <- function(x, step=1,
+                                  as.prob=FALSE, as.matrix=FALSE,
                                   fast.moving.side="right",
                                   with.labels=TRUE, ...)
 {
-    oligonucleotideFrequency(x, 2L, as.prob=as.prob, as.array=as.matrix,
+    oligonucleotideFrequency(x, 2L, step=step,
+                             as.prob=as.prob, as.array=as.matrix,
                              fast.moving.side=fast.moving.side,
                              with.labels=with.labels, ...)
 }
 
-trinucleotideFrequency <- function(x, as.prob=FALSE, as.array=FALSE,
+trinucleotideFrequency <- function(x, step=1,
+                                   as.prob=FALSE, as.array=FALSE,
                                    fast.moving.side="right",
                                    with.labels=TRUE, ...)
 {
-    oligonucleotideFrequency(x, 3L, as.prob=as.prob, as.array=as.array,
+    oligonucleotideFrequency(x, 3L, step=step,
+                             as.prob=as.prob, as.array=as.array,
                              fast.moving.side=fast.moving.side,
                              with.labels=with.labels, ...)
 }
