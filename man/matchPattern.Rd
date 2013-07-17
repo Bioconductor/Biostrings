@@ -257,8 +257,8 @@ m2b <- matchPattern(pattern2, subject, max.mismatch=2,
                     with.indels=TRUE, fixed="subject")
 
 ## All the matches in 'm1b' and 'm2a' should also appear in 'm2b':
-stopifnot(suppressWarnings(all(ranges(m1b) %in% ranges(m2b))))
-stopifnot(suppressWarnings(all(ranges(m2a) %in% ranges(m2b))))
+stopifnot(suppressWarnings(all(ranges(m1b) \%in\% ranges(m2b))))
+stopifnot(suppressWarnings(all(ranges(m2a) \%in\% ranges(m2b))))
 
 ## ---------------------------------------------------------------------
 ## D. WHEN 'with.indels=TRUE', ONLY "BEST LOCAL MATCHES" ARE REPORTED
