@@ -495,14 +495,20 @@ function(pattern,
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### pairwiseAlignment() generic and primary methods.
+### pairwiseAlignment() generic and methods.
+###
+### We want pairwiseAlignment() to work when 'pattern' and 'subject' are any
+### of the 4 following objects: character vector, XString, XStringSet, and
+### QualityScaledXStringSet. With the 4 methods defined below, we cover the 16
+### type pairs we want to support (and more).
+### TODO: Maybe consider making pairwiseAlignment() just an ordinary function?
 ###
 
 setGeneric("pairwiseAlignment",
     function(pattern, subject, ...) standardGeneric("pairwiseAlignment")
 )
 
-setMethod("pairwiseAlignment", c("XStringSet", "XStringSet"),
+setMethod("pairwiseAlignment", c("ANY", "ANY"),
     function(pattern, subject,
              patternQuality=PhredQuality(22L),
              subjectQuality=PhredQuality(22L),
@@ -511,6 +517,21 @@ setMethod("pairwiseAlignment", c("XStringSet", "XStringSet"),
              gapOpening=-10, gapExtension=-4,
              scoreOnly=FALSE)
     {
+        ## Turn each of 'pattern' and 'subject' into an instance of one of
+        ## the 4 direct concrete subclasses of the XStringSet virtual class.
+        pattern_seqtype <- try(seqtype(pattern), silent=TRUE)
+        if (is(pattern_seqtype, "try-error"))
+            pattern_seqtype <- "B"
+        subject_seqtype <- try(seqtype(subject), silent=TRUE)
+        if (is(subject_seqtype, "try-error"))
+            subject_seqtype <- "B"
+        if (pattern_seqtype == "B")
+            pattern_seqtype <- subject_seqtype
+        if (subject_seqtype == "B")
+            subject_seqtype <- pattern_seqtype
+        pattern <- XStringSet(pattern_seqtype, pattern)
+        subject <- XStringSet(subject_seqtype, subject)
+
         if (!is.null(substitutionMatrix)) {
             mpi.XStringSet.pairwiseAlignment(
                                 pattern=pattern,
@@ -520,7 +541,7 @@ setMethod("pairwiseAlignment", c("XStringSet", "XStringSet"),
                                 gapExtension=gapExtension,
                                 gapOpening=gapOpening,
                                 scoreOnly=scoreOnly)
-    } else {
+        } else {
             pattern <- QualityScaledXStringSet(pattern, patternQuality)
             subject <- QualityScaledXStringSet(subject, subjectQuality)
             mpi.QualityScaledXStringSet.pairwiseAlignment(
@@ -535,7 +556,7 @@ setMethod("pairwiseAlignment", c("XStringSet", "XStringSet"),
     }
 )
 
-setMethod("pairwiseAlignment", c("XStringSet", "QualityScaledXStringSet"),
+setMethod("pairwiseAlignment", c("ANY", "QualityScaledXStringSet"),
     function(pattern, subject,
              patternQuality=PhredQuality(22L),
              type="global",
@@ -543,6 +564,11 @@ setMethod("pairwiseAlignment", c("XStringSet", "QualityScaledXStringSet"),
              gapOpening=-10, gapExtension=-4,
              scoreOnly=FALSE)
     {
+        if (is.character(pattern)) {
+            pattern <- XStringSet(seqtype(subject), pattern)
+        } else {
+            pattern <- as(pattern, "XStringSet")
+        }
         if (!is.null(substitutionMatrix)) {
             subject <- as(subject, "XStringSet")
             mpi.XStringSet.pairwiseAlignment(pattern=pattern, subject=subject,
@@ -565,7 +591,7 @@ setMethod("pairwiseAlignment", c("XStringSet", "QualityScaledXStringSet"),
     }
 )
 
-setMethod("pairwiseAlignment", c("QualityScaledXStringSet", "XStringSet"),
+setMethod("pairwiseAlignment", c("QualityScaledXStringSet", "ANY"),
     function(pattern, subject,
              subjectQuality=PhredQuality(22L),
              type="global",
@@ -573,6 +599,11 @@ setMethod("pairwiseAlignment", c("QualityScaledXStringSet", "XStringSet"),
              gapOpening=-10, gapExtension=-4,
              scoreOnly=FALSE)
     {
+        if (is.character(subject)) {
+            subject <- XStringSet(seqtype(pattern), subject)
+        } else {
+            subject <- as(subject, "XStringSet")
+        }
         if (!is.null(substitutionMatrix)) {
             pattern <- as(pattern, "XStringSet")
             mpi.XStringSet.pairwiseAlignment(pattern=pattern, subject=subject,
@@ -622,272 +653,6 @@ setMethod("pairwiseAlignment", c("QualityScaledXStringSet",
                                 gapOpening=gapOpening,
                                 scoreOnly=scoreOnly)
         }
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Convenience "pairwiseAlignment" methods.
-###
-### These are basically wrappers to the primary "pairwiseAlignment" methods.
-### We want to support 'pattern' and 'subject' being any of the 4 following
-### types: character vector, XString, XStringSet, QualityScaledXStringSet.
-### So we end up defining 16 "pairwiseAlignment" methods in total (3 primary
-### methods above + 13 convenience methods below).
-### TODO: This explosion of methods is hard to maintain. Maybe make
-### pairwiseAlignment() just an ordinary function?
-
-### Wrappers to pairwiseAlignment,XStringSet,XStringSet method.
-
-setMethod("pairwiseAlignment", c("character", "character"),
-    function(pattern, subject,
-             patternQuality=PhredQuality(22L),
-             subjectQuality=PhredQuality(22L),
-             type="global",
-             substitutionMatrix=NULL, fuzzyMatrix=NULL,
-             gapOpening=-10, gapExtension=-4,
-             scoreOnly=FALSE)
-    {
-        pattern <- BStringSet(pattern)
-        subject <- BStringSet(subject)
-        pairwiseAlignment(pattern, subject,
-                          patternQuality=patternQuality,
-                          subjectQuality=subjectQuality,
-                          type=type,
-                          substitutionMatrix=substitutionMatrix,
-                          fuzzyMatrix=fuzzyMatrix,
-                          gapOpening=gapOpening, gapExtension=gapExtension,
-                          scoreOnly=scoreOnly)
-    }
-)
-
-setMethod("pairwiseAlignment", c("character", "XString"),
-    function(pattern, subject,
-             patternQuality=PhredQuality(22L),
-             subjectQuality=PhredQuality(22L),
-             type="global",
-             substitutionMatrix=NULL, fuzzyMatrix=NULL,
-             gapOpening=-10, gapExtension=-4,
-             scoreOnly=FALSE)
-    {
-        pattern <- XStringSet(seqtype(subject), pattern)
-        subject <- XStringSet(seqtype(subject), subject)
-        pairwiseAlignment(pattern, subject,
-                          patternQuality=patternQuality,
-                          subjectQuality=subjectQuality,
-                          type=type,
-                          substitutionMatrix=substitutionMatrix,
-                          fuzzyMatrix=fuzzyMatrix,
-                          gapOpening=gapOpening, gapExtension=gapExtension,
-                          scoreOnly=scoreOnly)
-    }
-)
-
-setMethod("pairwiseAlignment", c("XString", "character"),
-    function(pattern, subject,
-             patternQuality=PhredQuality(22L),
-             subjectQuality=PhredQuality(22L),
-             type="global",
-             substitutionMatrix=NULL, fuzzyMatrix=NULL,
-             gapOpening=-10, gapExtension=-4,
-             scoreOnly=FALSE)
-    {
-        pattern <- XStringSet(seqtype(pattern), pattern)
-        subject <- XStringSet(seqtype(pattern), subject)
-        pairwiseAlignment(pattern, subject,
-                          patternQuality=patternQuality,
-                          subjectQuality=subjectQuality,
-                          type=type,
-                          substitutionMatrix=substitutionMatrix,
-                          fuzzyMatrix=fuzzyMatrix,
-                          gapOpening=gapOpening, gapExtension=gapExtension,
-                          scoreOnly=scoreOnly)
-    }
-)
-
-setMethod("pairwiseAlignment", c("XString", "XString"),
-    function(pattern, subject,
-             patternQuality=PhredQuality(22L),
-             subjectQuality=PhredQuality(22L),
-             type="global",
-             substitutionMatrix=NULL, fuzzyMatrix=NULL,
-             gapOpening=-10, gapExtension=-4,
-             scoreOnly=FALSE)
-    {
-        pattern <- XStringSet(seqtype(pattern), pattern)
-        subject <- XStringSet(seqtype(subject), subject)
-        pairwiseAlignment(pattern, subject,
-                          patternQuality=patternQuality,
-                          subjectQuality=subjectQuality,
-                          type=type,
-                          substitutionMatrix=substitutionMatrix,
-                          fuzzyMatrix=fuzzyMatrix,
-                          gapOpening=gapOpening, gapExtension=gapExtension,
-                          scoreOnly=scoreOnly)
-    }
-)
-
-setMethod("pairwiseAlignment", c("character", "XStringSet"),
-    function(pattern, subject,
-             patternQuality=PhredQuality(22L),
-             subjectQuality=PhredQuality(22L),
-             type="global",
-             substitutionMatrix=NULL, fuzzyMatrix=NULL,
-             gapOpening=-10, gapExtension=-4,
-             scoreOnly=FALSE)
-    {
-        pattern <- XStringSet(seqtype(subject), pattern)
-        pairwiseAlignment(pattern, subject,
-                          patternQuality=patternQuality,
-                          subjectQuality=subjectQuality,
-                          type=type,
-                          substitutionMatrix=substitutionMatrix,
-                          fuzzyMatrix=fuzzyMatrix,
-                          gapOpening=gapOpening, gapExtension=gapExtension,
-                          scoreOnly=scoreOnly)
-    }
-)
-
-setMethod("pairwiseAlignment", c("XStringSet", "character"),
-    function(pattern, subject,
-             patternQuality=PhredQuality(22L),
-             subjectQuality=PhredQuality(22L),
-             type="global",
-             substitutionMatrix=NULL, fuzzyMatrix=NULL,
-             gapOpening=-10, gapExtension=-4,
-             scoreOnly=FALSE)
-    {
-        subject <- XStringSet(seqtype(pattern), subject)
-        pairwiseAlignment(pattern, subject,
-                          patternQuality=patternQuality,
-                          subjectQuality=subjectQuality,
-                          type=type,
-                          substitutionMatrix=substitutionMatrix,
-                          fuzzyMatrix=fuzzyMatrix,
-                          gapOpening=gapOpening, gapExtension=gapExtension,
-                          scoreOnly=scoreOnly)
-    }
-)
-
-setMethod("pairwiseAlignment", c("XString", "XStringSet"),
-    function(pattern, subject,
-             patternQuality=PhredQuality(22L),
-             subjectQuality=PhredQuality(22L),
-             type="global",
-             substitutionMatrix=NULL, fuzzyMatrix=NULL,
-             gapOpening=-10, gapExtension=-4,
-             scoreOnly=FALSE)
-    {
-        pattern <- XStringSet(seqtype(pattern), pattern)
-        pairwiseAlignment(pattern, subject,
-                          patternQuality=patternQuality,
-                          subjectQuality=subjectQuality,
-                          type=type,
-                          substitutionMatrix=substitutionMatrix,
-                          fuzzyMatrix=fuzzyMatrix,
-                          gapOpening=gapOpening, gapExtension=gapExtension,
-                          scoreOnly=scoreOnly)
-    }
-)
-
-setMethod("pairwiseAlignment", c("XStringSet", "XString"),
-    function(pattern, subject,
-             patternQuality=PhredQuality(22L),
-             subjectQuality=PhredQuality(22L),
-             type="global",
-             substitutionMatrix=NULL, fuzzyMatrix=NULL,
-             gapOpening=-10, gapExtension=-4,
-             scoreOnly=FALSE)
-    {
-        subject <- XStringSet(seqtype(subject), subject)
-        pairwiseAlignment(pattern, subject,
-                          patternQuality=patternQuality,
-                          subjectQuality=subjectQuality,
-                          type=type,
-                          substitutionMatrix=substitutionMatrix,
-                          fuzzyMatrix=fuzzyMatrix,
-                          gapOpening=gapOpening, gapExtension=gapExtension,
-                          scoreOnly=scoreOnly)
-    }
-)
-
-### Wrappers to pairwiseAlignment,XStringSet,QualityScaledXStringSet method.
-
-setMethod("pairwiseAlignment", c("character", "QualityScaledXStringSet"),
-    function(pattern, subject,
-             patternQuality=PhredQuality(22L),
-             type="global",
-             substitutionMatrix=NULL, fuzzyMatrix=NULL,
-             gapOpening=-10, gapExtension=-4,
-             scoreOnly=FALSE)
-    {
-        pattern <- XStringSet(seqtype(subject), pattern)
-        pairwiseAlignment(pattern, subject,
-                          patternQuality=patternQuality,
-                          type=type,
-                          substitutionMatrix=substitutionMatrix,
-                          fuzzyMatrix=fuzzyMatrix,
-                          gapOpening=gapOpening, gapExtension=gapExtension,
-                          scoreOnly=scoreOnly)
-    }
-)
-
-setMethod("pairwiseAlignment", c("XString", "QualityScaledXStringSet"),
-    function(pattern, subject,
-             patternQuality=PhredQuality(22L),
-             type="global",
-             substitutionMatrix=NULL, fuzzyMatrix=NULL,
-             gapOpening=-10, gapExtension=-4,
-             scoreOnly=FALSE)
-    {
-        pattern <- XStringSet(seqtype(pattern), pattern)
-        pairwiseAlignment(pattern, subject,
-                          patternQuality=patternQuality,
-                          type=type,
-                          substitutionMatrix=substitutionMatrix,
-                          fuzzyMatrix=fuzzyMatrix,
-                          gapOpening=gapOpening, gapExtension=gapExtension,
-                          scoreOnly=scoreOnly)
-    }
-)
-
-### Wrappers to pairwiseAlignment,QualityScaledXStringSet,XStringSet method.
-
-setMethod("pairwiseAlignment", c("QualityScaledXStringSet", "character"),
-    function(pattern, subject,
-             subjectQuality=PhredQuality(22L),
-             type="global",
-             substitutionMatrix=NULL, fuzzyMatrix=NULL,
-             gapOpening=-10, gapExtension=-4,
-             scoreOnly=FALSE)
-    {
-        subject <- XStringSet(seqtype(pattern), subject)
-        pairwiseAlignment(pattern, subject,
-                          subjectQuality=subjectQuality,
-                          type=type,
-                          substitutionMatrix=substitutionMatrix,
-                          fuzzyMatrix=fuzzyMatrix,
-                          gapOpening=gapOpening, gapExtension=gapExtension,
-                          scoreOnly=scoreOnly)
-    }
-)
-
-setMethod("pairwiseAlignment", c("QualityScaledXStringSet", "XString"),
-    function(pattern, subject,
-             subjectQuality=PhredQuality(22L),
-             type="global",
-             substitutionMatrix=NULL, fuzzyMatrix=NULL,
-             gapOpening=-10, gapExtension=-4,
-             scoreOnly=FALSE)
-    {
-        subject <- XStringSet(seqtype(subject), subject)
-        pairwiseAlignment(pattern, subject,
-                          subjectQuality=subjectQuality,
-                          type=type,
-                          substitutionMatrix=substitutionMatrix,
-                          fuzzyMatrix=fuzzyMatrix,
-                          gapOpening=gapOpening, gapExtension=gapExtension,
-                          scoreOnly=scoreOnly)
     }
 )
 

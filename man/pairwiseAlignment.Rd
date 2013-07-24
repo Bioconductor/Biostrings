@@ -1,21 +1,9 @@
 \name{pairwiseAlignment}
 \alias{pairwiseAlignment}
 
-\alias{pairwiseAlignment,character,character-method}
-\alias{pairwiseAlignment,character,XString-method}
-\alias{pairwiseAlignment,character,XStringSet-method}
-\alias{pairwiseAlignment,character,QualityScaledXStringSet-method}
-\alias{pairwiseAlignment,XString,character-method}
-\alias{pairwiseAlignment,XString,XString-method}
-\alias{pairwiseAlignment,XString,XStringSet-method}
-\alias{pairwiseAlignment,XString,QualityScaledXStringSet-method}
-\alias{pairwiseAlignment,XStringSet,character-method}
-\alias{pairwiseAlignment,XStringSet,XString-method}
-\alias{pairwiseAlignment,XStringSet,XStringSet-method}
-\alias{pairwiseAlignment,XStringSet,QualityScaledXStringSet-method}
-\alias{pairwiseAlignment,QualityScaledXStringSet,character-method}
-\alias{pairwiseAlignment,QualityScaledXStringSet,XString-method}
-\alias{pairwiseAlignment,QualityScaledXStringSet,XStringSet-method}
+\alias{pairwiseAlignment,ANY,ANY-method}
+\alias{pairwiseAlignment,ANY,QualityScaledXStringSet-method}
+\alias{pairwiseAlignment,QualityScaledXStringSet,ANY-method}
 \alias{pairwiseAlignment,QualityScaledXStringSet,QualityScaledXStringSet-method}
 
 \title{Optimal Pairwise Alignment}
@@ -26,7 +14,7 @@ and (ends-free) overlap alignment problems.
 \usage{
 pairwiseAlignment(pattern, subject, \dots)
 
-\S4method{pairwiseAlignment}{XStringSet,XStringSet}(pattern, subject,
+\S4method{pairwiseAlignment}{ANY,ANY}(pattern, subject,
                   patternQuality=PhredQuality(22L),
                   subjectQuality=PhredQuality(22L),
                   type="global",
@@ -44,8 +32,8 @@ pairwiseAlignment(pattern, subject, \dots)
 \arguments{
   \item{pattern}{a character vector of any length, an \code{\link{XString}}, or
     an \code{\link{XStringSet}} object.}
-  \item{subject}{a character vector of length 1 or an \code{\link{XString}}
-    object.}
+  \item{subject}{a character vector of length 1, an \code{\link{XString}}, or
+    an \code{\link{XStringSet}} object of length 1.}
   \item{patternQuality, subjectQuality}{objects of class
     \code{\link{XStringQuality}} representing the respective quality scores for
     \code{pattern} and \code{subject} that are used in a quality-based method
