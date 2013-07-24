@@ -25,14 +25,22 @@ and (ends-free) overlap alignment problems.
 }
 \usage{
 pairwiseAlignment(pattern, subject, \dots)
+
 \S4method{pairwiseAlignment}{XStringSet,XStringSet}(pattern, subject,
-                  patternQuality = PhredQuality(22L), subjectQuality = PhredQuality(22L),
-                  type = "global", substitutionMatrix = NULL, fuzzyMatrix = NULL,
-                  gapOpening = -10, gapExtension = -4, scoreOnly = FALSE)
+                  patternQuality=PhredQuality(22L),
+                  subjectQuality=PhredQuality(22L),
+                  type="global",
+                  substitutionMatrix=NULL, fuzzyMatrix=NULL,
+                  gapOpening=-10, gapExtension=-4,
+                  scoreOnly=FALSE)
+
 \S4method{pairwiseAlignment}{QualityScaledXStringSet,QualityScaledXStringSet}(pattern, subject,
-                  type = "global", substitutionMatrix = NULL, fuzzyMatrix = NULL, 
-                  gapOpening = -10, gapExtension = -4, scoreOnly = FALSE)
+                  type="global",
+                  substitutionMatrix=NULL, fuzzyMatrix=NULL, 
+                  gapOpening=-10, gapExtension=-4,
+                  scoreOnly=FALSE)
 }
+
 \arguments{
   \item{pattern}{a character vector of any length, an \code{\link{XString}}, or
     an \code{\link{XStringSet}} object.}
