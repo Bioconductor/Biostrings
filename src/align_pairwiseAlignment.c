@@ -41,19 +41,53 @@
 
 /* Structure to hold alignment information */
 struct AlignInfo {
+	/* Initialized before passing the AlignInfo structure to
+	 * pairwiseAlignment(). Not modified by pairwiseAlignment(). */
 	cachedCharSeq string;
 	cachedCharSeq quality;
 	int endGap;
-	int startRange;
-	int widthRange;
+
+	/* Allocated (but not initialized) before passing the AlignInfo
+	 * structure to pairwiseAlignment(). Filled by pairwiseAlignment(). */
 	int* mismatch;
-	int lengthMismatch;
 	int* startIndel;
 	int* widthIndel;
+
+	/* Not initialized before passing the AlignInfo structure to
+	 * pairwiseAlignment(). Set by pairwiseAlignment(). */
+	int lengthMismatch;
 	int lengthIndel;
+	int startRange;
+	int widthRange;
 };
 void function1(struct AlignInfo *);
 
+void print_AlignInfo(const struct AlignInfo *alignInfoPtr)
+{
+	int string_len, i;
+	const char *string_seq, *c;
+
+	printf("- string: ");
+	string_len = alignInfoPtr->string.length;
+	string_seq = alignInfoPtr->string.seq;
+	for (i = 0, c = string_seq; i < string_len; i++, c++)
+		printf("%c", *c);
+	printf("\n");
+
+	printf("- quality: ");
+	string_len = alignInfoPtr->quality.length;
+	string_seq = alignInfoPtr->quality.seq;
+	for (i = 0, c = string_seq; i < string_len; i++, c++)
+		printf("%c", *c);
+	printf("\n");
+
+	printf("- endGap: %d\n", alignInfoPtr->endGap);
+	printf("- lengthMismatch: %d\n", alignInfoPtr->lengthMismatch);
+	printf("- lengthIndel: %d\n", alignInfoPtr->lengthIndel);
+	printf("- startRange: %d\n", alignInfoPtr->startRange);
+	printf("- widthRange: %d\n", alignInfoPtr->widthRange);
+	return;
+}
 
 /* Structure to hold alignment buffers */
 struct AlignBuffer {
@@ -107,6 +141,10 @@ static double pairwiseAlignment(
 {
 	int i, j, iMinus1, jMinus1;
 
+	//printf("align1InfoPtr:\n");
+	//print_AlignInfo(align1InfoPtr);
+	//printf("align2InfoPtr:\n");
+	//print_AlignInfo(align2InfoPtr);
 	/* Step 1:  Get information on input XString objects */
 	const int nCharString1 = align1InfoPtr->string.length;
 	const int nCharString2 = align2InfoPtr->string.length;
@@ -122,6 +160,10 @@ static double pairwiseAlignment(
 			zeroCharScore = gapOpening + nCharString2 * gapExtension;
 		else
 			zeroCharScore = 0.0;
+		align1InfoPtr->lengthMismatch = 0;
+		align2InfoPtr->lengthMismatch = 0;
+		align1InfoPtr->lengthIndel = 0;
+		align2InfoPtr->lengthIndel = 0;
 		return zeroCharScore;
 	}
 

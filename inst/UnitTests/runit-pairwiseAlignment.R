@@ -1,11 +1,27 @@
 test_pairwiseAlignment_emptyString <- function()
 {
-    string1 <- DNAString()
-    string2 <- DNAString("ACGT")
+    string1 <- DNAStringSet("")
+    string2 <- DNAStringSet("ACGT")
+
+    ## Empty pattern.
     alignment <- pairwiseAlignment(string1, string2)
     checkEquals(as.character(aligned(pattern(alignment))), "")
+    checkEquals(as.character(aligned(subject(alignment))), "")
     checkEquals(score(alignment), -26)
     checkEquals(pairwiseAlignment(string1, string2, scoreOnly = TRUE), -26)
+
+    ## Empty subject.
+    alignment <- pairwiseAlignment(string2, string1)
+    checkEquals(as.character(aligned(pattern(alignment))), "")
+    checkEquals(as.character(aligned(subject(alignment))), "")
+    checkEquals(score(alignment), -26)
+    checkEquals(pairwiseAlignment(string2, string1, scoreOnly = TRUE), -26)
+
+    ## Empty pattern and subject.
+    alignment <- pairwiseAlignment(string1, string1)
+    checkEquals(as.character(aligned(pattern(alignment))), "")
+    checkEquals(score(alignment), 0)
+    checkEquals(pairwiseAlignment(string1, string1, scoreOnly = TRUE), 0)
 }
 
 

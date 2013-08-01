@@ -35,9 +35,9 @@
 ### are reverse lookup tables.
 ### The key property of reverse lookup tables is:
 ###   lkupy2x[lkupx2y[x + 1]] + 1 is identical to x
-### More generally, if 'x', 'y1', 'y2', 'z' verify:
+### More generally, if 'x', 'y1', 'y2', and 'z' verify:
 ###   a) 'x' is a vector of unique non-negative integers
-###   b) 'y1' is a vector of non-negative integers and same length as 'x'
+###   b) 'y1' is a vector of non-negative integers with same length as 'x'
 ###   c) 'y2' is a vector of unique non-negative integers
 ###   d) 'z' is a vector of same length as 'y2'
 ### and if 'lkupx2y' and 'lkupy2z' are the lookup tables from 'x' to 'y1'
@@ -46,20 +46,33 @@
 ### is the lookup table from 'x' to the subset of 'z' defined by
 ###   lkupx2z[x + 1]
 ### Note that 'lkupx2z[x + 1]' is exactly the same as 'lkupy2z[y1 + 1]'.
-
 buildLookupTable <- function(keys, vals)
 {
-    if (!is.integer(keys) || min(keys) < 0)
-        stop("'keys' must be a vector of non-negative integers")
+    ## Checking 'keys'.
+    if (!is.integer(keys))
+        stop("'keys' must be a an integer vector")
+    if (any(is.na(keys)))
+        stop("'keys' cannot contain NAs")
+    keys_len <- length(keys)
+    if (keys_len != 0L && min(keys) < 0L)
+        stop("'keys' cannot contain negative integers")
     if (any(duplicated(keys)))
-        stop("'keys' are not unique")
-    if (length(keys) != length(vals))
-        stop("'keys' and 'vals' must have the same length")
-    table <- vector(mode=typeof(vals), length=max(keys)+1)
-    table[] <- NA
-    for (i in 1:length(keys))
-        table[keys[i] + 1] <- vals[[i]]
-    table
+        stop("'keys' cannot contain duplicates")
+
+    ## Checking 'vals'.
+    if (!is.atomic(vals) || length(vals) != keys_len)
+        stop("'vals' must be a vector of the length of 'keys'")
+
+    ## Build the lookup table ('ans') and return it.
+    if (keys_len == 0L) {
+        ans_len <- 0L  # but could be anything as long as we fill with NAs
+    } else {
+        ans_len <- max(keys) + 1L
+    }
+    ans <- vector(mode=typeof(vals), length=ans_len)
+    ans[] <- NA
+    ans[keys + 1L] <- vals
+    ans
 }
 
 

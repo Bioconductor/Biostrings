@@ -276,7 +276,7 @@ setMethod("hasOnlyBaseLetters", "MaskedXString",
         stop("Biostrings internal anomaly: cannot infer names of ",
              "vector returned by 'alphabetFrequency(x)'")
     x_codes <- x_codes[x_af != 0]
-    if (min(x_codes) == 0)
+    if (length(x_codes) != 0 && min(x_codes) == 0)
         warning("'x' contains embedded nuls")
     intToUtf8(x_codes, multiple=TRUE)
 }
