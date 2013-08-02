@@ -872,13 +872,19 @@ static void update_two_way_letter_freqs(int *mat, int ans_nrow,
   return;
 }
 
-static SEXP get_names_for_codes(SEXP codes, int with_other) {
+static SEXP get_names_for_codes(SEXP codes, int with_other)
+{
+  SEXP codes_names;
+
   if (codes == R_NilValue)
+    return R_NilValue;
+  codes_names = GET_NAMES(codes);
+  if (codes_names == R_NilValue)
     return R_NilValue;
   if (with_other) {
     return append_other_to_names(codes);
   } else {
-    return duplicate(GET_NAMES(codes));
+    return duplicate(codes_names);
   }
 }
 
