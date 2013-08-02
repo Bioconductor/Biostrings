@@ -210,7 +210,7 @@ setMethod("maskGaps", "MultipleAlignment",
 
 setMethod("nrow","MultipleAlignment", function(x) length(x@unmasked))
 setMethod("ncol","MultipleAlignment",
-    function(x) ifelse(nrow(x) == 0, 0L, nchar(x@unmasked[[1L]]))
+    function(x) {if (nrow(x) == 0L) 0L else nchar(x@unmasked[[1L]])}
 )
 setMethod("dim","MultipleAlignment", function(x) c(nrow(x), ncol(x)))
 
@@ -252,40 +252,44 @@ setMethod("seqtype", "MultipleAlignment",
 ### Constructors.
 ###
 
-DNAMultipleAlignment <-
-function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE,
-         rowmask=NULL, colmask=NULL)
+.new_MultipleAlignment <- function(seqtype, x, start, end, width, use.names,
+                                   rowmask, colmask)
 {
-    new("DNAMultipleAlignment",
-        unmasked=
-        DNAStringSet(x=x, start=start, end=end, width=width,
-                     use.names=use.names),
-        rowmask=rowmask,
-        colmask=colmask)
+    ans_class <- paste0(seqtype, "MultipleAlignment")
+    unmasked <- get(paste0(seqtype, "StringSet"))(x=x,
+                                                  start=start,
+                                                  end=end,
+                                                  width=width,
+                                                  use.names=use.names)
+    if (is.null(rowmask))
+        rowmask <- new("NormalIRanges")
+    if (is.null(colmask))
+        colmask <- new("NormalIRanges")
+    new(ans_class, unmasked=unmasked, rowmask=rowmask, colmask=colmask)
 }
 
-RNAMultipleAlignment <-
-function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE,
-         rowmask=NULL, colmask=NULL)
+DNAMultipleAlignment <- function(x=character(),
+                                 start=NA, end=NA, width=NA, use.names=TRUE,
+                                 rowmask=NULL, colmask=NULL)
 {
-    new("RNAMultipleAlignment",
-        unmasked=
-        RNAStringSet(x=x, start=start, end=end, width=width,
-                     use.names=use.names),
-        rowmask=rowmask,
-        colmask=colmask)
+    .new_MultipleAlignment("DNA", x, start, end, width, use.names,
+                           rowmask, colmask)
 }
 
-AAMultipleAlignment <-
-function(x=character(), start=NA, end=NA, width=NA, use.names=TRUE,
-         rowmask=NULL, colmask=NULL)
+RNAMultipleAlignment <- function(x=character(),
+                                 start=NA, end=NA, width=NA, use.names=TRUE,
+                                 rowmask=NULL, colmask=NULL)
 {
-    new("AAMultipleAlignment",
-        unmasked=
-        AAStringSet(x=x, start=start, end=end, width=width,
-                    use.names=use.names),
-        rowmask=rowmask,
-        colmask=colmask)
+    .new_MultipleAlignment("RNA", x, start, end, width, use.names,
+                           rowmask, colmask)
+}
+
+AAMultipleAlignment <- function(x=character(),
+                                start=NA, end=NA, width=NA, use.names=TRUE,
+                                rowmask=NULL, colmask=NULL)
+{
+    .new_MultipleAlignment("AA", x, start, end, width, use.names,
+                           rowmask, colmask)
 }
 
 
