@@ -3,20 +3,12 @@
 \alias{XStringSet-comparison}
 
 \alias{compare,XStringSet,XStringSet-method}
-\alias{compare,XStringSet,character-method}
-\alias{compare,character,XStringSet-method}
-\alias{compare,XStringSet,XString-method}
-\alias{compare,XString,XStringSet-method}
-\alias{compare,character,XString-method}
-\alias{compare,XString,character-method}
+\alias{compare,XStringSet,ANY-method}
+\alias{compare,ANY,XStringSet-method}
 
 \alias{match,XStringSet,XStringSet-method}
-\alias{match,XStringSet,character-method}
-\alias{match,character,XStringSet-method}
-\alias{match,XStringSet,XString-method}
-\alias{match,XString,XStringSet-method}
-\alias{match,character,XString-method}
-\alias{match,XString,character-method}
+\alias{match,XStringSet,ANY-method}
+\alias{match,ANY,XStringSet-method}
 
 
 \title{Comparing and ordering the elements in one or more XStringSet objects}
@@ -33,7 +25,8 @@
 
   For \link{DNAStringSet} and \link{RNAStringSet} objects, the letters in
   the respective alphabets (i.e. \link{DNA_ALPHABET} and \link{RNA_ALPHABET})
-  are ordered based on the code assigned to each letter with:
+  are ordered based on a predefined code assigned to each letter. The code
+  assigned to each letter can be retrieved with:
   \preformatted{
   dna_codes <- as.integer(DNAString(paste(DNA_ALPHABET, collapse="")))
   names(dna_codes) <- DNA_ALPHABET
@@ -156,6 +149,9 @@
 ## ---------------------------------------------------------------------
 ## A. SIMPLE EXAMPLES
 ## ---------------------------------------------------------------------
+
+dna <- DNAStringSet(c("AAA", "TC", "", "TC", "AAA", "CAAC", "G"))
+match(c("", "G", "AA", "TC"), dna)
 
 library(drosophila2probe)
 fly_probes <- DNAStringSet(drosophila2probe)

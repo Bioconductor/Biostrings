@@ -4,142 +4,74 @@
 ###
 
 
+### Returns a character vector of length 2 containing the 2 XStringSet direct
+### concrete subclasses that 'x' and 'y' need to be coerced to before they can
+### actually be compared.
+.coerce_to <- function(x, y)
+{
+    seqtype1 <- try(seqtype(x), silent=TRUE)
+    if (is(seqtype1, "try-error"))
+        seqtype1 <- "B"
+    seqtype2 <- try(seqtype(y), silent=TRUE)
+    if (is(seqtype2, "try-error"))
+        seqtype2 <- "B"
+    if (seqtype1 != seqtype2) {
+        if ((seqtype1 != "B" && seqtype2 == "AA")
+         || (seqtype2 != "B" && seqtype1 == "AA"))
+            stop("comparison between a \"", class(x), "\" instance ",
+                 "and a \"", class(y), "\" instance\n",
+                 "  is not supported")
+        if (seqtype1 == "B" && seqtype2 != "AA")
+            seqtype1 <- seqtype2
+        if (seqtype2 == "B" && seqtype1 != "AA")
+            seqtype2 <- seqtype1
+    }
+    class1 <- paste0(seqtype1, "StringSet")
+    class2 <- paste0(seqtype2, "StringSet")
+    c(class1, class2)
+}
+
+.coerce_and_call_next_method <- function(f, x, y, ...)
+{
+    classes <- .coerce_to(x, y)
+    class1 <- classes[[1L]]
+    class2 <- classes[[2L]]
+    if (!is(x, class1))
+        x <- as(x, class1)
+    if (!is(y, class2))
+        y <- as(y, class2)
+    ## We cannot use callNextMethod() in this context (only from within the
+    ## body of a method definition), so we use getMethod() instead.
+    XRawList_method <- getMethod(f, c("XRawList", "XRawList"))
+    XRawList_method(x, y, ...)
+}
+
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### compare().
 ###
 
-setMethod("compare", c("XStringSet", "XStringSet"),
-    function(x, y)
-    {
-        if (!comparable_seqtypes(seqtype(x), seqtype(y)))
-            stop("comparison between a \"", class(x), "\" instance ",
-                 "and a \"", class(y), "\" instance ",
-                 "is not supported")
-        callNextMethod()  # call method for XRawList objects
-    }
-)
+.XStringSet.compare <- function(x, y)
+    .coerce_and_call_next_method("compare", x, y)
 
-setMethod("compare", c("XStringSet", "character"),
-    function(x, y)
-    {
-        y <- try(XStringSet(seqtype(x), y))
-        if (is(y, "try-error"))
-            stop("could not turn 'y' into a ",
-                 xsbaseclass(x), "Set instance")
-        callGeneric()  # call method for XStringSet,XStringSet
-    }
-)
-
-setMethod("compare", c("character", "XStringSet"),
-    function(x, y)
-    {
-        x <- try(XStringSet(seqtype(y), x))
-        if (is(x, "try-error"))
-            stop("could not turn 'x' into a ",
-                 xsbaseclass(y), "Set instance")
-        callGeneric()  # call method for XStringSet,XStringSet
-    }
-)
-
-setMethod("compare", c("XStringSet", "XString"),
-    function(x, y)
-    {
-        y <- as(y, "XStringSet")
-        callGeneric()  # call method for XStringSet,XStringSet
-    }
-)
-
-setMethod("compare", c("XString", "XStringSet"),
-    function(x, y)
-    {
-        x <- as(x, "XStringSet")
-        callGeneric()  # call method for XStringSet,XStringSet
-    }
-)
-
-setMethod("compare", c("character", "XString"),
-    function(x, y)
-    {
-        y <- as(y, "XStringSet")
-        callGeneric()  # call method for character,XStringSet
-    }
-)
-
-setMethod("compare", c("XString", "character"),
-    function(x, y)
-    {
-        x <- as(x, "XStringSet")
-        callGeneric()  # call method for XStringSet,character
-    }
-)
+setMethod("compare", c("XStringSet", "XStringSet"), .XStringSet.compare)
+setMethod("compare", c("XStringSet", "ANY"), .XStringSet.compare)
+setMethod("compare", c("ANY", "XStringSet"), .XStringSet.compare)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### match().
 ###
 
-setMethod("match", c("XStringSet", "XStringSet"),
-    function(x, table, nomatch=NA_integer_, incomparables=NULL)
-    {
-        if (!comparable_seqtypes(seqtype(x), seqtype(table)))
-            stop("match() between a \"", class(x), "\" instance ",
-                 "and a \"", class(table), "\" instance ",
-                 "is not supported")
-        callNextMethod()  # call method for XRawList objects
-    }
-)
+.XStringSet.match <- function(x, table,
+                              nomatch=NA_integer_, incomparables=NULL)
+{
+    .coerce_and_call_next_method("match", x, table,
+                                 nomatch=nomatch, incomparables=incomparables)
+}
 
-setMethod("match", c("XStringSet", "character"),
-    function(x, table, nomatch=NA_integer_, incomparables=NULL)
-    {
-        table <- try(XStringSet(seqtype(x), table))
-        if (is(table, "try-error"))
-            stop("could not turn 'table' into a ",
-                 xsbaseclass(x), "Set instance")
-        callGeneric()  # call method for XStringSet,XStringSet
-    }
-)
 
-setMethod("match", c("character", "XStringSet"),
-    function(x, table, nomatch=NA_integer_, incomparables=NULL)
-    {
-        x <- try(XStringSet(seqtype(table), x))
-        if (is(x, "try-error"))
-            stop("could not turn 'x' into a ",
-                 xsbaseclass(table), "Set instance")
-        callGeneric()  # call method for XStringSet,XStringSet
-    }
-)
-
-setMethod("match", c("XStringSet", "XString"),
-    function(x, table, nomatch=NA_integer_, incomparables=NULL)
-    {
-        table <- as(table, "XStringSet")
-        callGeneric()  # call method for XStringSet,XStringSet
-    }
-)
-
-setMethod("match", c("XString", "XStringSet"),
-    function(x, table, nomatch=NA_integer_, incomparables=NULL)
-    {
-        x <- as(x, "XStringSet")
-        callGeneric()  # call method for XStringSet,XStringSet
-    }
-)
-
-setMethod("match", c("character", "XString"),
-    function(x, table, nomatch=NA_integer_, incomparables=NULL)
-    {
-        table <- as(table, "XStringSet")
-        callGeneric()  # call method for character,XStringSet
-    }
-)
-
-setMethod("match", c("XString", "character"),
-    function(x, table, nomatch=NA_integer_, incomparables=NULL)
-    {
-        x <- as(x, "XStringSet")
-        callGeneric()  # call method for XStringSet,character
-    }
-)
+setMethod("match", c("XStringSet", "XStringSet"), .XStringSet.match)
+setMethod("match", c("XStringSet", "ANY"), .XStringSet.match)
+setMethod("match", c("ANY", "XStringSet"), .XStringSet.match)
 
