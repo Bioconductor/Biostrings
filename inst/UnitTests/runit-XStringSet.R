@@ -10,7 +10,7 @@
 
 ### '.eltAddresses(x)' collects the addresses of the elements in 'x' (in
 ### practice 'x' will be a list of external pointers or environments).
-.eltAddresses <- function(x) sapply(x, IRanges:::address)
+.eltAddresses <- function(x) sapply(x, XVector:::address)
 
 ### 'x' and 'y' must be XVectorList vectors.
 .haveIdenticalPools <- function(x, y)
@@ -18,7 +18,13 @@
 
 ### 'x' must be an XVectorList vector.
 .poolEltLengths <- function(x)
-    sapply(seq_len(length(x@pool)), function(i) length(x@pool[[i]]))
+{
+    pool_len <- length(x@pool)
+    if (pool_len == 0L)
+        return(integer(0))
+    sapply(seq_len(pool_len), function(i) length(x@pool[[i]]))
+}
+
 
 ### -------------------------------------------------------------------------
 

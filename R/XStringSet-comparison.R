@@ -70,7 +70,6 @@ setMethod("compare", c("ANY", "XStringSet"), .XStringSet.compare)
                                  nomatch=nomatch, incomparables=incomparables)
 }
 
-
 setMethod("match", c("XStringSet", "XStringSet"), .XStringSet.match)
 setMethod("match", c("XStringSet", "ANY"), .XStringSet.match)
 setMethod("match", c("ANY", "XStringSet"), .XStringSet.match)

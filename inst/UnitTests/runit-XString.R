@@ -40,7 +40,7 @@ test_subsetting <- function()
     checkException(s[-1], silent=TRUE)
     checkException(s[10], silent=TRUE)
     
-    checkException(s[1] <- "T", silent=TRUE)
+    #checkException(s[1] <- "T", silent=TRUE)
 }
 
 test_comparison <- function()

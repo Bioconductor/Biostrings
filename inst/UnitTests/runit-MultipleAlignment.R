@@ -13,7 +13,7 @@ make_DNAMultipleAlignment <- function()
 test_DNAMultipleAlignment_empty <- function()
 {
     malign <- DNAMultipleAlignment()
-    checkTrue(validObject(malign, test=TRUE))
+    checkTrue(validObject(malign, test=TRUE, complete=TRUE))
     checkIdentical(as.character(unmasked(malign)), as.character(DNAStringSet()))
     checkIdentical(rownames(malign), NULL)
     checkIdentical(rowmask(malign), new("NormalIRanges"))

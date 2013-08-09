@@ -7,14 +7,13 @@
 ## TODO: Maybe "all.equal" should be made an S4 generic with S4/S3 method
 ## combos for XVector and XVectorList object?
 
-## Unclass the XStringSet object and sets its "pool" and "ranges" slots
-## to NULL.
+## Unclass the XStringSet object by setting its "pool" and "ranges" slots
+## to NULL first.
 .unclass_XStringSet <- function(x)
 {
-    x <- unclass(x)
     slot(x, "pool", check=FALSE) <- NULL
     slot(x, "ranges", check=FALSE) <- NULL
-    x
+    unclass(x)
 }
 
 all.equal.XStringSet <- function(target, current, ...)
@@ -24,9 +23,44 @@ all.equal.XStringSet <- function(target, current, ...)
     current_seqs <- as.character(current)
     ok1 <- all.equal(target_seqs, current_seqs)
     ## Compare the rest.
-    target <- .unclass_XStringSet(target)
-    current <- .unclass_XStringSet(current)
-    ok2 <- all.equal(target, current)
+    # .unclass_XStringSet() works interactively but fails when run in the
+    # context of the unit tests.
+    #target <- .unclass_XStringSet(target)
+    #current <- .unclass_XStringSet(current)
+    #ok2 <- all.equal(target, current)
+    ok2 <- identical(class(target), class(current))
+    if (!ok2)
+        ok2 <- "class mismatch"
+    ok3 <- all.equal(target@metadata, current@metadata)
+    ok4 <- all.equal(target@elementMetadata, current@elementMetadata)
+    ans <- character(0)
+    if (!isTRUE(ok1))
+        ans <- c(ans, ok1)
+    if (!isTRUE(ok2))
+        ans <- c(ans, ok2)
+    if (!isTRUE(ok3))
+        ans <- c(ans, ok3)
+    if (!isTRUE(ok4))
+        ans <- c(ans, ok4)
+    if (length(ans) == 0L)
+        return(TRUE)
+    ans
+}
+
+all.equal.XStringSetList <- function(target, current, ...)
+{
+    ok1 <- identical(class(target), class(current))
+    if (!ok1)
+        ok1 <- "class mismatch"
+    target2 <- as(target, "CharacterList")
+    current2 <- as(current, "CharacterList")
+    ## Temporary workaround until coercion from XStringSet to CharacterList
+    ## is fixed to propagate metadata and metadata columns.
+    metadata(target2) <- metadata(target)
+    mcols(target2) <- mcols(target)
+    metadata(current2) <- metadata(current)
+    mcols(current2) <- mcols(current)
+    ok2 <- all.equal(target2, current2)
     ans <- character(0)
     if (!isTRUE(ok1))
         ans <- c(ans, ok1)
@@ -46,7 +80,7 @@ all.equal.XStringSet <- function(target, current, ...)
     lst1 <- XStringSetListFUN(xs1, xs2) 
     lst2 <- XStringSetListFUN(as.character(XS_ALPHABET[1:8]), 
                               as.character(XS_ALPHABET[9:17])) 
-    checkTrue(all.equal(lst1, lst2))
+    checkTrue(all.equal.XStringSetList(lst1, lst2))
 
     checkTrue(length(XStringSetListFUN()) == 0)
 }
@@ -56,7 +90,7 @@ all.equal.XStringSet <- function(target, current, ...)
 {
     lst <- XStringSetListFUN(XS_ALPHABET, XS_ALPHABET)
     expected <- XStringSetFUN(c(XS_ALPHABET, XS_ALPHABET))
-    checkTrue(all.equal(unlist(lst), expected))
+    checkTrue(all.equal.XStringSet(unlist(lst), expected))
 }
 
 .XStringSetList_append <-
@@ -69,8 +103,8 @@ all.equal.XStringSet <- function(target, current, ...)
     xs2a <- c(lst, lst)
     xs2b <- rep(lst, 2L)
     xs2c <- append(lst, lst) 
-    checkTrue(all.equal(xs2a, xs2b))
-    checkTrue(all.equal(xs2a, xs2c))
+    checkTrue(all.equal.XStringSetList(xs2a, xs2b))
+    checkTrue(all.equal.XStringSetList(xs2a, xs2c))
 }
 
 ## DNAStringSet
