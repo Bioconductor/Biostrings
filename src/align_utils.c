@@ -72,7 +72,7 @@ SEXP AlignedXStringSet_nchar(SEXP alignedXStringSet)
 
 SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 {
-	int i, j;
+	int i, j, k;
 	char gapCodeValue = (char) RAW(gapCode)[0];
 
 	SEXP unaligned = GET_SLOT(alignedXStringSet, install("unaligned"));
@@ -137,7 +137,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 					index += copyElements;
 					origStringPtr += copyElements;
 				}
-				for (int k = 0; k < currWidth; k++) {
+				for (k = 0; k < currWidth; k++) {
 					alignedStringPtr[index] = gapCodeValue;
 					index++;
 				}
@@ -157,7 +157,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 
 SEXP PairwiseAlignmentsSingleSubject_align_aligned(SEXP alignment, SEXP gapCode, SEXP endgapCode)
 {
-	int i, j;
+	int i, j, k;
 	char gapCodeValue = (char) RAW(gapCode)[0];
 	char endgapCodeValue = (char) RAW(endgapCode)[0];
 
@@ -238,7 +238,7 @@ SEXP PairwiseAlignmentsSingleSubject_align_aligned(SEXP alignment, SEXP gapCode,
 					origStringPtr++;
 					jPattern++;
 				} else {
-					for (int k = 0; k < indelWidthPattern; k++) {
+					for (k = 0; k < indelWidthPattern; k++) {
 						mappedStringPtr[index] = gapCodeValue;
 						index++;
 					}

@@ -761,16 +761,17 @@ static void BENCHMARK_match_ppheadtail(HeadTail *headtail,
 {
 	clock_t time0;
 	double dt1, dt2;
+	int i;
 
 	time0 = clock();
-	for (int i = 0; i < 100; i++) {
+	for (i = 0; i < 100; i++) {
 		match_ppheadtail0(headtail,
 			S, tb_end_buf, max_nmis, min_nmis,
 			matchpdict_buf);
 	}
 	dt1 = (double) (clock() - time0) / CLOCKS_PER_SEC;
 	time0 = clock();
-	for (int i = 0; i < 100; i++) {
+	for (i = 0; i < 100; i++) {
 		match_headtail_by_key(headtail,
 			S, tb_end_buf, max_nmis, min_nmis,
 			matchpdict_buf);
@@ -886,15 +887,16 @@ sum(countIndex(mi6))  # 17896
 		 && IntAE_get_nelt(tb_end_buf) >= 40) {
 			clock_t time0;
 			double dt1, dt2;
+			int j;
 
 			time0 = clock();
-			for (int j = 0; j < 5000; j++)
+			for (j = 0; j < 5000; j++)
 				match_ppheadtail(headtail, S, tb_end_buf,
 					max_nmis, min_nmis,
 					matchpdict_buf);
 			dt1 = (double) (clock() - time0) / CLOCKS_PER_SEC;
 			time0 = clock();
-			for (int j = 0; j < 5000; j++)
+			for (j = 0; j < 5000; j++)
 				match_headtail_by_key(headtail, S, tb_end_buf,
 					max_nmis, min_nmis,
 					matchpdict_buf);

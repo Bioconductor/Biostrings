@@ -846,7 +846,9 @@ static ByteTrTable xbyte2offset;
 static ByteTrTable ybyte2offset;
 
 static void copy_codes_into(ByteTrTable *dest) {
-  for (int i = 0; i < BYTETRTABLE_LENGTH; i++) {
+  int i;
+
+  for (i = 0; i < BYTETRTABLE_LENGTH; i++) {
     dest->byte2code[i] = byte2offset.byte2code[i];
   }
 }
