@@ -34,13 +34,16 @@ test_length <- function()
 test_subsetting <- function()
 {
     s <- BString("ACGT")
-    checkEquals("AT", as.character(s[c(1,4)]))
 
     ## out of bounds
-    checkException(s[-1], silent=TRUE)
     checkException(s[10], silent=TRUE)
-    
-    #checkException(s[1] <- "T", silent=TRUE)
+
+    checkEquals("AT", as.character(s[c(1,4)]))
+    checkEquals("CGT", as.character(s[-1]))
+
+    ## replacement
+    s[1] <- "T"   
+    checkEquals("TCGT", as.character(s))
 }
 
 test_comparison <- function()
