@@ -87,11 +87,11 @@
     #if (is.null(x1) && is.null(x2))
     #    return(BStringSet(c("", "")))
     if (is.null(x1)) {
-        x1 <- Biostrings:::XString(seqtype(x2), "-")
+        x1 <- XString(seqtype(x2), "-")
         x1 <- rep.int(x1, length(x2))
     }
     if (is.null(x2)) {
-        x2 <- Biostrings:::XString(seqtype(x1), "-")
+        x2 <- XString(seqtype(x1), "-")
         x2 <- rep.int(x2, length(x1))
     }
     c(as(x1, "XStringSet"), as(x2, "XStringSet"))

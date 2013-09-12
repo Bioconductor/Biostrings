@@ -148,7 +148,8 @@ setMethod("[", "QualityScaledXStringSet",
             stop("invalid subsetting")
         if (any(i < 1) || any(i > length(x)))
             stop("subscript out of bounds")
-		slot(x, "quality", check=FALSE) <- .safe.subset.XStringSet(quality(x), i)
-        selectMethod("[", "XStringSet")(x, i)
+        slot(x, "quality", check=FALSE) <- .safe.subset.XStringSet(quality(x), i)
+        callNextMethod(x, i)
     }
 )
+

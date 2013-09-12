@@ -362,7 +362,7 @@ mpi.XStringSet.pairwiseAlignment <-
                    gapExtension = -4,
                    scoreOnly = FALSE) {
             output <-
-              Biostrings:::XStringSet.pairwiseAlignment(pattern = x$pattern,
+              XStringSet.pairwiseAlignment(pattern = x$pattern,
                         subject = x$subject,
                         type = type,
                         substitutionMatrix = substitutionMatrix,
@@ -456,7 +456,7 @@ mpi.QualityScaledXStringSet.pairwiseAlignment <-
                              gapExtension = -4,
                              scoreOnly = FALSE) {
                       output <-
-                        Biostrings:::QualityScaledXStringSet.pairwiseAlignment(pattern = x$pattern,
+                        QualityScaledXStringSet.pairwiseAlignment(pattern = x$pattern,
                                   subject = x$subject,
                                   type = type,
                                   fuzzyMatrix = fuzzyMatrix,
