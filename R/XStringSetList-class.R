@@ -72,7 +72,7 @@ partitioning <- function(x) .Defunct("PartitioningByEnd")
         y <- x
     }
     unlisted_y <- unlist(y, use.names=FALSE, recursive=FALSE)
-    if (length(unlisted_y) == sum(x_eltlens)) {
+    if (!is.list(unlisted_y) && length(unlisted_y) == sum(x_eltlens)) {
         unlisted_ans <- XStringSet(seqtype, unlisted_y)
     } else {
         ## In that case 'length(unlisted_y)' should be < 'sum(x_eltlens)'
