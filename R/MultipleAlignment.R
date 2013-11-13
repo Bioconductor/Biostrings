@@ -247,7 +247,6 @@ setMethod("seqtype", "MultipleAlignment",
     function(x) seqtype(unmasked(x))
 )
 
-
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructors.
 ###
@@ -401,15 +400,15 @@ function(filepath, maskGen=FALSE)
 }
 
 .read.MultipleAlignment <-
-function(filepath, format)
+function(filepath, format, seqtype, ...)
 {
     format <- .checkFormat(filepath, format)
     switch(format,
            "stockholm" = .read.Stockholm(filepath),
            "clustal" = .read.ClustalAln(filepath),
            "phylip" = .read.PhylipAln(filepath),
-           readDNAStringSet(filepath, format=format))
-    ##fasta uses readDNAStringSet (default)
+           .readXStringSet(filepath, format=format, seqtype=seqtype,
+                           nrec=-1L, skip=0L, use.names=TRUE))
     ##TODO: BUGs with stockholm??
 }
 
@@ -428,7 +427,7 @@ function(filepath, format)
 readDNAMultipleAlignment <-
 function(filepath, format)
 {
-    DNAMultipleAlignment(.read.MultipleAlignment(filepath, format),
+    DNAMultipleAlignment(.read.MultipleAlignment(filepath, format, "DNA"),
                          rowmask=as(IRanges(),"NormalIRanges"),
                          colmask=.read.MultipleMask(filepath,format))
 }
@@ -436,7 +435,7 @@ function(filepath, format)
 readRNAMultipleAlignment <-
 function(filepath, format)
 {
-    RNAMultipleAlignment(.read.MultipleAlignment(filepath, format),
+    RNAMultipleAlignment(.read.MultipleAlignment(filepath, format, "RNA"),
                          rowmask=as(IRanges(),"NormalIRanges"),
                          colmask=.read.MultipleMask(filepath,format))
 }
@@ -444,7 +443,7 @@ function(filepath, format)
 readAAMultipleAlignment <-
 function(filepath, format)
 {
-    AAMultipleAlignment(.read.MultipleAlignment(filepath, format),
+    AAMultipleAlignment(.read.MultipleAlignment(filepath, format, "AA"),
                         rowmask=as(IRanges(),"NormalIRanges"),
                         colmask=.read.MultipleMask(filepath,format))
 }
