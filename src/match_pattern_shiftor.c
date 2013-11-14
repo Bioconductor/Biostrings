@@ -134,7 +134,7 @@ static void set_pmaskmap(
 		int is_fixed,
 		int pmaskmap_length,
 		ShiftOrWord_t *pmaskmap,
-		const cachedCharSeq *P)
+		const Chars_holder *P)
 {
 	ShiftOrWord_t pmask;
 	int nncode, i;
@@ -198,7 +198,7 @@ static void update_PMmasks(
 static int next_match(
 		int *Lpos,
 		int *Rpos,
-		const cachedCharSeq *S,
+		const Chars_holder *S,
 		ShiftOrWord_t *pmaskmap,
 		int PMmask_length, /* PMmask_length = kerr+1 */
 		ShiftOrWord_t *PMmask)
@@ -233,7 +233,7 @@ static int next_match(
 	return -1;
 }
 
-static void shiftor(const cachedCharSeq *P, const cachedCharSeq *S,
+static void shiftor(const Chars_holder *P, const Chars_holder *S,
 		int PMmask_length, int is_fixed)
 {
 	ShiftOrWord_t *PMmask, pmaskmap[256];
@@ -281,7 +281,7 @@ static void shiftor(const cachedCharSeq *P, const cachedCharSeq *S,
 	return;
 }
 
-void _match_pattern_shiftor(const cachedCharSeq *P, const cachedCharSeq *S,
+void _match_pattern_shiftor(const Chars_holder *P, const Chars_holder *S,
 		int max_nmis, int fixedP, int fixedS)
 {
 	if (P->length > shiftor_maxbits)

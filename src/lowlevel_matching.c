@@ -77,8 +77,8 @@ const BytewiseOpTable *_select_bytewise_match_table(int fixedP, int fixedS)
  * can disable this by passing 'P->length' to the 'max_nmis' arg.
  */
 
-int _nmismatch_at_Pshift(const cachedCharSeq *P,
-		const cachedCharSeq *S, int Pshift, int max_nmis,
+int _nmismatch_at_Pshift(const Chars_holder *P,
+		const Chars_holder *S, int Pshift, int max_nmis,
 		const BytewiseOpTable *bytewise_match_table)
 {
 	int nmis, i, j;
@@ -161,7 +161,7 @@ static void print_curr_row(const char* margin, const int *curr_row, int Bmin, in
  * TODO: Implement the 'loose_Ploffset' feature (allowing or not an indel
  * on the first letter of the local alignement).
  */
-int _nedit_for_Ploffset(const cachedCharSeq *P, const cachedCharSeq *S,
+int _nedit_for_Ploffset(const Chars_holder *P, const Chars_holder *S,
 		int Ploffset, int max_nedit, int loose_Ploffset, int *min_width,
 		const BytewiseOpTable *bytewise_match_table)
 {
@@ -259,7 +259,7 @@ int _nedit_for_Ploffset(const cachedCharSeq *P, const cachedCharSeq *S,
 	return min_nedit;
 }
 
-int _nedit_for_Proffset(const cachedCharSeq *P, const cachedCharSeq *S,
+int _nedit_for_Proffset(const Chars_holder *P, const Chars_holder *S,
 		int Proffset, int max_nedit, int loose_Proffset, int *min_width,
 		const BytewiseOpTable *bytewise_match_table)
 {
@@ -363,7 +363,7 @@ int _nedit_for_Proffset(const cachedCharSeq *P, const cachedCharSeq *S,
  * nedit_at()
  */
 
-static int nedit_at(const cachedCharSeq *P, const cachedCharSeq *S,
+static int nedit_at(const Chars_holder *P, const Chars_holder *S,
 		int at, int at_type0, int max_nmis, int with_indels0,
 		int fixedP, int fixedS)
 {
@@ -418,14 +418,14 @@ static void check_mismatch_lengths(int at_length,
 	return;
 }
 
-static void match_pattern_at(const cachedCharSeq *P, const cachedCharSeq *S,
+static void match_pattern_at(const Chars_holder *P, const Chars_holder *S,
 		SEXP at, int at_type0,
 		SEXP max_mismatch, SEXP min_mismatch, int with_indels0,
 		int fixedP, int fixedS, int ans_type0, int *ans_elt,
 		int auto_reduce_pattern0)
 {
 	int at_length, i, k1, k2, *at_elt, max_nmis, min_nmis, nmis, is_matching;
-	cachedCharSeq my_p = *P;
+	Chars_holder my_p = *P;
 
 	at_length = LENGTH(at);
 	if (ans_type0 >= 2)
@@ -521,13 +521,13 @@ SEXP XString_match_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_type,
 		SEXP max_mismatch, SEXP min_mismatch, SEXP with_indels, SEXP fixed,
 		SEXP ans_type, SEXP auto_reduce_pattern)
 {
-	cachedCharSeq P, S;
+	Chars_holder P, S;
 	int at_length, at_type0, with_indels0, fixedP, fixedS, ans_type0, *ans_elt;
 	int auto_reduce_pattern0 = LOGICAL(auto_reduce_pattern)[0];
 	SEXP ans;
 
-	P = cache_XRaw(pattern);
-	S = cache_XRaw(subject);
+	P = hold_XRaw(pattern);
+	S = hold_XRaw(subject);
 	at_length = LENGTH(at);
 	at_type0 = INTEGER(at_type)[0];
 	with_indels0 = LOGICAL(with_indels)[0];
@@ -569,16 +569,16 @@ SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_t
 		SEXP max_mismatch, SEXP min_mismatch, SEXP with_indels, SEXP fixed,
 		SEXP ans_type, SEXP auto_reduce_pattern)
 {
-	cachedCharSeq P, S_elt;
-	cachedXStringSet S;
+	Chars_holder P, S_elt;
+	XStringSet_holder S;
 	int S_length, at_length, at_type0, with_indels0, fixedP, fixedS,
 	    ans_type0, *ans_elt, ans_nrow, i;
 	int auto_reduce_pattern0 = LOGICAL(auto_reduce_pattern)[0];
 	SEXP ans;
 
-	P = cache_XRaw(pattern);
-	S = _cache_XStringSet(subject);
-	S_length = _get_cachedXStringSet_length(&S);
+	P = hold_XRaw(pattern);
+	S = _hold_XStringSet(subject);
+	S_length = _get_length_from_XStringSet_holder(&S);
 	at_length = LENGTH(at);
 	at_type0 = INTEGER(at_type)[0];
 	with_indels0 = LOGICAL(with_indels)[0];
@@ -606,7 +606,7 @@ SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_t
 		default: error("invalid 'ans_type' value (%d)", ans_type0);
 	}
 	for (i = 0; i < S_length; i++, ans_elt += ans_nrow) {
-		S_elt = _get_cachedXStringSet_elt(&S, i);
+		S_elt = _get_elt_from_XStringSet_holder(&S, i);
 		match_pattern_at(&P, &S_elt, at, at_type0,
 				 max_mismatch, min_mismatch, with_indels0,
 				 fixedP, fixedS, ans_type0, ans_elt,
@@ -622,20 +622,20 @@ SEXP XStringSet_vmatch_pattern_at(SEXP pattern, SEXP subject, SEXP at, SEXP at_t
  */
 SEXP XStringSet_dist_hamming(SEXP x)
 {
-	cachedCharSeq x_i, x_j;
-	cachedXStringSet X;
+	Chars_holder x_i, x_j;
+	XStringSet_holder X;
 	int X_length, *ans_elt, i, j, max_nmis;
 	unsigned long ans_length;
 	SEXP ans;
 
-	X = _cache_XStringSet(x);
-	X_length = _get_cachedXStringSet_length(&X);
+	X = _hold_XStringSet(x);
+	X_length = _get_length_from_XStringSet_holder(&X);
 	if (X_length < 2)
 		return NEW_INTEGER(0);
 
-	x_i = _get_cachedXStringSet_elt(&X, 0);
+	x_i = _get_elt_from_XStringSet_holder(&X, 0);
 	for (j = 1; j < X_length; j++) {
-		x_j = _get_cachedXStringSet_elt(&X, j);
+		x_j = _get_elt_from_XStringSet_holder(&X, j);
 		if (x_i.length != x_j.length)
 		      error("Hamming distance requires equal length strings");
 	}
@@ -647,11 +647,11 @@ SEXP XStringSet_dist_hamming(SEXP x)
 	PROTECT(ans = NEW_INTEGER((int) ans_length));
 	ans_elt = INTEGER(ans);
 
-	max_nmis = _get_cachedXStringSet_elt(&X, 0).length;
+	max_nmis = _get_elt_from_XStringSet_holder(&X, 0).length;
 	for (i = 0; i < (X_length - 1); i++) {
-		x_i = _get_cachedXStringSet_elt(&X, i);
+		x_i = _get_elt_from_XStringSet_holder(&X, i);
 		for (j = (i+1); j < X_length; j++, ans_elt++) {
-			x_j = _get_cachedXStringSet_elt(&X, j);
+			x_j = _get_elt_from_XStringSet_holder(&X, j);
 			*ans_elt = nedit_at(&x_i, &x_j, 1, 0, max_nmis, 0, 1, 1);
 		}
 	}

@@ -50,19 +50,19 @@ const char *_get_XStringSet_xsbaseclassname(SEXP x)
  * C-level abstract getters.
  */
 
-cachedXStringSet _cache_XStringSet(SEXP x)
+XStringSet_holder _hold_XStringSet(SEXP x)
 {
-	return cache_XVectorList(x);
+	return hold_XVectorList(x);
 }
 
-int _get_cachedXStringSet_length(const cachedXStringSet *cached_x)
+int _get_length_from_XStringSet_holder(const XStringSet_holder *x_holder)
 {
-	return get_cachedXVectorList_length(cached_x);
+	return get_length_from_XVectorList_holder(x_holder);
 }
 
-cachedCharSeq _get_cachedXStringSet_elt(const cachedXStringSet *cached_x, int i)
+Chars_holder _get_elt_from_XStringSet_holder(const XStringSet_holder *x_holder, int i)
 {
-	return get_cachedXRawList_elt(cached_x, i);
+	return get_elt_from_XRawList_holder(x_holder, i);
 }
 
 
@@ -88,16 +88,16 @@ SEXP new_XStringSet_from_CHARACTER(SEXP classname, SEXP element_type,
 		SEXP x, SEXP start, SEXP width, SEXP lkup)
 {
 	SEXP ans, x_elt;
-	cachedXVectorList cached_ans;
+	XVectorList_holder ans_holder;
 	const int *lkup0;
 	int ans_length, lkup_length, i;
-	cachedCharSeq cached_ans_elt;
+	Chars_holder ans_elt_holder;
 
 	PROTECT(ans = alloc_XRawList(CHAR(STRING_ELT(classname, 0)),
 				     CHAR(STRING_ELT(element_type, 0)),
 				     width));
-	cached_ans = cache_XVectorList(ans);
-	ans_length = get_cachedXVectorList_length(&cached_ans);
+	ans_holder = hold_XVectorList(ans);
+	ans_length = get_length_from_XVectorList_holder(&ans_holder);
 	if (lkup == R_NilValue) {
 		lkup0 = NULL;
 	} else {
@@ -105,13 +105,13 @@ SEXP new_XStringSet_from_CHARACTER(SEXP classname, SEXP element_type,
 		lkup_length = LENGTH(lkup);
 	}
 	for (i = 0; i < ans_length; i++) {
-		cached_ans_elt = get_cachedXRawList_elt(&cached_ans, i);
+		ans_elt_holder = get_elt_from_XRawList_holder(&ans_holder, i);
 		x_elt = STRING_ELT(x, i);
 		if (x_elt == NA_STRING) {
 			UNPROTECT(1);
 			error("input sequence %d is NA", i + 1);
 		}
-		_copy_CHARSXP_to_cachedCharSeq(&cached_ans_elt, x_elt,
+		_copy_CHARSXP_to_Chars_holder(&ans_elt_holder, x_elt,
 				INTEGER(start)[i], lkup0, lkup_length);
 	}
 	UNPROTECT(1);
@@ -121,18 +121,18 @@ SEXP new_XStringSet_from_CHARACTER(SEXP classname, SEXP element_type,
 /* --- .Call ENTRY POINT --- */
 SEXP new_CHARACTER_from_XStringSet(SEXP x, SEXP lkup)
 {
-	cachedXStringSet cached_x;
+	XStringSet_holder x_holder;
 	int x_length, i;
 	SEXP ans, ans_elt;
-	cachedCharSeq cached_x_elt;
+	Chars_holder x_elt_holder;
 
-	cached_x = cache_XVectorList(x);
-	x_length = get_cachedXVectorList_length(&cached_x);
+	x_holder = hold_XVectorList(x);
+	x_length = get_length_from_XVectorList_holder(&x_holder);
 	PROTECT(ans = NEW_CHARACTER(x_length));
 	for (i = 0; i < x_length; i++) {
-		cached_x_elt = get_cachedXRawList_elt(&cached_x, i);
-		PROTECT(ans_elt = _new_CHARSXP_from_cachedCharSeq(
-					&cached_x_elt, lkup));
+		x_elt_holder = get_elt_from_XRawList_holder(&x_holder, i);
+		PROTECT(ans_elt = _new_CHARSXP_from_Chars_holder(
+					&x_elt_holder, lkup));
 		SET_STRING_ELT(ans, i, ans_elt);
 		UNPROTECT(1);
 	}
@@ -148,17 +148,17 @@ SEXP new_CHARACTER_from_XStringSet(SEXP x, SEXP lkup)
 RoSeqs _new_RoSeqs_from_XStringSet(int nelt, SEXP x)
 {
 	RoSeqs seqs;
-	cachedXStringSet cached_x;
-	cachedCharSeq *elt1;
+	XStringSet_holder x_holder;
+	Chars_holder *elt1;
 	int i;
 
 	if (nelt > _get_XStringSet_length(x))
 		error("_new_RoSeqs_from_XStringSet(): "
 		      "'nelt' must be <= '_get_XStringSet_length(x)'");
 	seqs = _alloc_RoSeqs(nelt);
-	cached_x = _cache_XStringSet(x);
+	x_holder = _hold_XStringSet(x);
 	for (i = 0, elt1 = seqs.elts; i < nelt; i++, elt1++)
-		*elt1 = _get_cachedXStringSet_elt(&cached_x, i);
+		*elt1 = _get_elt_from_XStringSet_holder(&x_holder, i);
 	return seqs;
 }
 
@@ -173,16 +173,16 @@ SEXP XStringSet_unlist(SEXP x)
 {
 	SEXP ans_tag, ans;
 	int x_length, ans_length, tag_offset, i;
-	cachedXStringSet cached_x;
-	cachedCharSeq xx;
+	XStringSet_holder x_holder;
+	Chars_holder xx;
 
-	cached_x = _cache_XStringSet(x);
-	x_length = _get_cachedXStringSet_length(&cached_x);
+	x_holder = _hold_XStringSet(x);
+	x_length = _get_length_from_XStringSet_holder(&x_holder);
 
 	/* 1st pass: determine 'ans_length' */
 	ans_length = 0;
 	for (i = 0; i < x_length; i++) {
-		xx = _get_cachedXStringSet_elt(&cached_x, i);
+		xx = _get_elt_from_XStringSet_holder(&x_holder, i);
 		ans_length += xx.length;
 	}
 	PROTECT(ans_tag = NEW_RAW(ans_length));
@@ -190,7 +190,7 @@ SEXP XStringSet_unlist(SEXP x)
 	/* 2nd pass: fill 'ans' */
 	tag_offset = 0;
 	for (i = 0; i < x_length; i++) {
-		xx = _get_cachedXStringSet_elt(&cached_x, i);
+		xx = _get_elt_from_XStringSet_holder(&x_holder, i);
 		Ocopy_bytes_to_i1i2_with_lkup(tag_offset,
 				tag_offset + xx.length - 1,
 				(char *) RAW(ans_tag), LENGTH(ans_tag),

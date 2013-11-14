@@ -27,9 +27,9 @@ void _init_byte2offset_with_INTEGER(
 	int error_on_dup
 );
 
-void _init_byte2offset_with_cachedCharSeq(
+void _init_byte2offset_with_Chars_holder(
 	ByteTrTable *byte2offset,
-	const cachedCharSeq *seq,
+	const Chars_holder *seq,
 	const BytewiseOpTable *bytewise_match_table
 );
 
@@ -48,12 +48,12 @@ int _shift_twobit_signature(
 
 int _get_twobit_signature(
 	TwobitEncodingBuffer *teb,
-	const cachedCharSeq *seq
+	const Chars_holder *seq
 );
 
 int _get_twobit_signature_at(
 	TwobitEncodingBuffer *teb,
-	const cachedCharSeq *seq,
+	const Chars_holder *seq,
 	const int *at,
 	int at_length
 );
@@ -100,16 +100,16 @@ char _RNAencode(char c);
 
 char _RNAdecode(char code);
 
-void _copy_CHARSXP_to_cachedCharSeq(
-	cachedCharSeq *dest,
+void _copy_CHARSXP_to_Chars_holder(
+	Chars_holder *dest,
 	SEXP src,
 	int start_in_src,
 	const int *lkup,
 	int lkup_length
 );
 
-SEXP _new_CHARSXP_from_cachedCharSeq(
-	const cachedCharSeq *x,
+SEXP _new_CHARSXP_from_Chars_holder(
+	const Chars_holder *x,
 	SEXP lkup
 );
 
@@ -137,12 +137,12 @@ SEXP _get_XStringSet_width(SEXP x);
 
 const char *_get_XStringSet_xsbaseclassname(SEXP x);
 
-cachedXStringSet _cache_XStringSet(SEXP x);
+XStringSet_holder _hold_XStringSet(SEXP x);
 
-int _get_cachedXStringSet_length(const cachedXStringSet *cached_x);
+int _get_length_from_XStringSet_holder(const XStringSet_holder *x_holder);
 
-cachedCharSeq _get_cachedXStringSet_elt(
-	const cachedXStringSet *cached_x,
+Chars_holder _get_elt_from_XStringSet_holder(
+	const XStringSet_holder *x_holder,
 	int i
 );
 
@@ -484,13 +484,19 @@ MatchBuf *_get_internal_match_buf();
 
 SEXP debug_MIndex_class();
 
-cachedMIndex _cache_MIndex(SEXP x);
+MIndex_holder _hold_MIndex(SEXP x);
 
-int _get_cachedMIndex_length(const cachedMIndex *cached_x);
+int _get_length_from_MIndex_holder(const MIndex_holder *x_holder);
 
-int _get_cachedMIndex_elt_width0(const cachedMIndex *cached_x, int i);
+int _get_width0_elt_from_MIndex_holder(
+	const MIndex_holder *x_holder,
+	int i
+);
 
-cachedIRanges _get_cachedMIndex_elt(const cachedMIndex *cached_x, int i);
+IRanges_holder _get_elt_from_MIndex_holder(
+	const MIndex_holder *x_holder,
+	int i
+);
 
 SEXP ByPos_MIndex_endIndex(
 	SEXP x_high2low,
@@ -517,16 +523,16 @@ void _init_bytewise_match_tables();
 const BytewiseOpTable *_select_bytewise_match_table(int fixedP, int fixedS);
 
 int _nmismatch_at_Pshift(
-	const cachedCharSeq *P,
-	const cachedCharSeq *S,
+	const Chars_holder *P,
+	const Chars_holder *S,
 	int Pshift,
 	int max_nmis,
 	const BytewiseOpTable *bytewise_match_table
 );
 
 int _nedit_for_Ploffset(
-	const cachedCharSeq *P,
-	const cachedCharSeq *S,
+	const Chars_holder *P,
+	const Chars_holder *S,
 	int Ploffset,
 	int max_nedit,
 	int loose_Ploffset,
@@ -535,8 +541,8 @@ int _nedit_for_Ploffset(
 );
 
 int _nedit_for_Proffset(
-	const cachedCharSeq *P,
-	const cachedCharSeq *S,
+	const Chars_holder *P,
+	const Chars_holder *S,
 	int Proffset,
 	int max_nedit,
 	int loose_Proffset,
@@ -578,8 +584,8 @@ SEXP XStringSet_dist_hamming(SEXP x);
 SEXP debug_match_pattern_boyermoore();
 
 int _match_pattern_boyermoore(
-	const cachedCharSeq *P,
-	const cachedCharSeq *S,
+	const Chars_holder *P,
+	const Chars_holder *S,
 	int nfirstmatches,
 	int walk_backward
 );
@@ -592,8 +598,8 @@ SEXP debug_match_pattern_shiftor();
 SEXP bits_per_long();
 
 void _match_pattern_shiftor(
-	const cachedCharSeq *P,
-	const cachedCharSeq *S,
+	const Chars_holder *P,
+	const Chars_holder *S,
 	int max_nmis,
 	int fixedP,
 	int fixedS
@@ -605,8 +611,8 @@ void _match_pattern_shiftor(
 SEXP debug_match_pattern_indels();
 
 void _match_pattern_indels(
-	const cachedCharSeq *P,
-	const cachedCharSeq *S,
+	const Chars_holder *P,
+	const Chars_holder *S,
 	int max_nmis,
 	int fixedP,
 	int fixedS
@@ -618,8 +624,8 @@ void _match_pattern_indels(
 SEXP debug_match_pattern();
 
 void _match_pattern_XString(
-	const cachedCharSeq *P,
-	const cachedCharSeq *S,
+	const Chars_holder *P,
+	const Chars_holder *S,
 	SEXP max_mismatch,
 	SEXP min_mismatch,
 	SEXP with_indels,
@@ -628,8 +634,8 @@ void _match_pattern_XString(
 );
 
 void _match_pattern_XStringViews(
-	const cachedCharSeq *P,
-	const cachedCharSeq *S,
+	const Chars_holder *P,
+	const Chars_holder *S,
 	SEXP views_start,
 	SEXP views_width,
 	SEXP max_mismatch,
@@ -948,7 +954,7 @@ void _match_pdict_flanks_at(
 	int key0,
 	SEXP low2high,
 	HeadTail *headtail,
-	const cachedCharSeq *S,
+	const Chars_holder *S,
 	int tb_end,
 	int max_nmis,
 	int min_nmis,
@@ -959,7 +965,7 @@ void _match_pdict_flanks_at(
 void _match_pdict_all_flanks(
 	SEXP low2high,
 	HeadTail *headtail,
-	const cachedCharSeq *S,
+	const Chars_holder *S,
 	int max_nmis,
 	int min_nmis,
 	MatchPDictBuf *matchpdict_buf
@@ -978,7 +984,7 @@ SEXP build_Twobit(
 
 void _match_Twobit(
 	SEXP pptb,
-	const cachedCharSeq *S,
+	const Chars_holder *S,
 	int fixedS,
 	TBMatchBuf *tb_matches
 );
@@ -1030,7 +1036,7 @@ SEXP ACtree2_compute_all_flinks(SEXP pptb);
 
 void _match_tbACtree2(
 	SEXP pptb,
-	const cachedCharSeq *S,
+	const Chars_holder *S,
 	int fixedS,
 	TBMatchBuf *tb_matches
 );
@@ -1038,7 +1044,7 @@ void _match_tbACtree2(
 void _match_pdictACtree2(
 	SEXP pptb,
 	HeadTail *headtail,
-	const cachedCharSeq *S,
+	const Chars_holder *S,
 	int max_nmis,
 	int min_nmis,
 	int fixedP,

@@ -65,19 +65,19 @@ DEFINE_CCALLABLE_STUB(const char *, get_XStringSet_xsbaseclassname,
 	(     x)
 )
 
-DEFINE_CCALLABLE_STUB(cachedXStringSet, cache_XStringSet,
+DEFINE_CCALLABLE_STUB(XStringSet_holder, hold_XStringSet,
 	(SEXP x),
 	(     x)
 )
 
-DEFINE_CCALLABLE_STUB(int, get_cachedXStringSet_length,
-	(const cachedXStringSet *cached_x),
-	(                        cached_x)
+DEFINE_CCALLABLE_STUB(int, get_length_from_XStringSet_holder,
+	(const XStringSet_holder *x_holder),
+	(                         x_holder)
 )
 
-DEFINE_CCALLABLE_STUB(cachedCharSeq, get_cachedXStringSet_elt,
-	(const cachedXStringSet *cached_x, int i),
-	(                        cached_x,     i)
+DEFINE_CCALLABLE_STUB(Chars_holder, get_elt_from_XStringSet_holder,
+	(const XStringSet_holder *x_holder, int i),
+	(                         x_holder,     i)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(set_XStringSet_names,
@@ -128,24 +128,24 @@ DEFINE_CCALLABLE_STUB(SEXP, reported_matches_asSEXP,
  * Stubs for callables defined in MIndex_class.c
  */
 
-DEFINE_CCALLABLE_STUB(cachedMIndex, cache_MIndex,
+DEFINE_CCALLABLE_STUB(MIndex_holder, hold_MIndex,
 	(SEXP x),
 	(     x)
 )
 
-DEFINE_CCALLABLE_STUB(int, get_cachedMIndex_length,
-	(const cachedMIndex *cached_x),
-	(                    cached_x)
+DEFINE_CCALLABLE_STUB(int, get_length_from_MIndex_holder,
+	(const MIndex_holder *x_holder),
+	(                     x_holder)
 )
 
-DEFINE_CCALLABLE_STUB(int, get_cachedMIndex_elt_width0,
-	(const cachedMIndex *cached_x, int i),
-	(                    cached_x,     i)
+DEFINE_CCALLABLE_STUB(int, get_width0_elt_from_MIndex_holder,
+	(const MIndex_holder *x_holder, int i),
+	(                     x_holder,     i)
 )
 
-DEFINE_CCALLABLE_STUB(cachedIRanges, get_cachedMIndex_elt,
-	(const cachedMIndex *cached_x, int i),
-	(                    cached_x,     i)
+DEFINE_CCALLABLE_STUB(IRanges_holder, get_elt_from_MIndex_holder,
+	(const MIndex_holder *x_holder, int i),
+	(                     x_holder,     i)
 )
 
 /*
@@ -153,7 +153,7 @@ DEFINE_CCALLABLE_STUB(cachedIRanges, get_cachedMIndex_elt,
  */
 
 DEFINE_CCALLABLE_STUB(int, match_pattern_boyermoore,
-	(const cachedCharSeq *P, const cachedCharSeq *S, int nfirstmatches, int walk_backward),
-	(                     P,                      S,     nfirstmatches,     walk_backward)
+	(const Chars_holder *P, const Chars_holder *S, int nfirstmatches, int walk_backward),
+	(                    P,                     S,     nfirstmatches,     walk_backward)
 )
 

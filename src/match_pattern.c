@@ -41,7 +41,7 @@ SEXP debug_match_pattern()
  * - To use as a reference when comparing performance.
  */
 
-static void match_naive_exact(const cachedCharSeq *P, const cachedCharSeq *S)
+static void match_naive_exact(const Chars_holder *P, const Chars_holder *S)
 {
 	const char *p, *s;
 	int plen, slen, start, n2;
@@ -64,7 +64,7 @@ static void match_naive_exact(const cachedCharSeq *P, const cachedCharSeq *S)
  * An implementation of the "naive" method for inexact matching.
  */
 
-static void match_naive_inexact(const cachedCharSeq *P, const cachedCharSeq *S,
+static void match_naive_inexact(const Chars_holder *P, const Chars_holder *S,
 		int max_nmis, int min_nmis, int fixedP, int fixedS)
 {
 	int Pshift, // position of pattern left-most char relative to the subject
@@ -94,7 +94,7 @@ static void match_naive_inexact(const cachedCharSeq *P, const cachedCharSeq *S,
  * _match_pattern_XString() and _match_pattern_XStringViews()
  */
 
-void _match_pattern_XString(const cachedCharSeq *P, const cachedCharSeq *S,
+void _match_pattern_XString(const Chars_holder *P, const Chars_holder *S,
 		SEXP max_mismatch, SEXP min_mismatch,
 		SEXP with_indels, SEXP fixed,
 		const char *algo)
@@ -123,13 +123,13 @@ void _match_pattern_XString(const cachedCharSeq *P, const cachedCharSeq *S,
 	return;
 }
 
-void _match_pattern_XStringViews(const cachedCharSeq *P,
-		const cachedCharSeq *S, SEXP views_start, SEXP views_width,
+void _match_pattern_XStringViews(const Chars_holder *P,
+		const Chars_holder *S, SEXP views_start, SEXP views_width,
 		SEXP max_mismatch, SEXP min_mismatch,
 		SEXP with_indels, SEXP fixed,
 		const char *algo)
 {
-	cachedCharSeq S_view;
+	Chars_holder S_view;
 	int nviews, v, *view_start, *view_width, view_offset;
 
 	nviews = LENGTH(views_start);
@@ -176,12 +176,12 @@ SEXP XString_match_pattern(SEXP pattern, SEXP subject,
 		SEXP with_indels, SEXP fixed,
 		SEXP algorithm, SEXP count_only)
 {
-	cachedCharSeq P, S;
+	Chars_holder P, S;
 	const char *algo;
 	int is_count_only;
 
-	P = cache_XRaw(pattern);
-	S = cache_XRaw(subject);
+	P = hold_XRaw(pattern);
+	S = hold_XRaw(subject);
 	algo = CHAR(STRING_ELT(algorithm, 0));
 	is_count_only = LOGICAL(count_only)[0];
 	_init_match_reporting(is_count_only ?
@@ -203,12 +203,12 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 		SEXP with_indels, SEXP fixed,
 		SEXP algorithm, SEXP count_only)
 {
-	cachedCharSeq P, S;
+	Chars_holder P, S;
 	const char *algo;
 	int is_count_only;
 
-	P = cache_XRaw(pattern);
-	S = cache_XRaw(subject);
+	P = hold_XRaw(pattern);
+	S = hold_XRaw(subject);
 	algo = CHAR(STRING_ELT(algorithm, 0));
 	is_count_only = LOGICAL(count_only)[0];
 	_init_match_reporting(is_count_only ?
@@ -229,20 +229,20 @@ SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject,
 		SEXP with_indels, SEXP fixed,
 		SEXP algorithm, SEXP count_only)
 {
-	cachedCharSeq P, S_elt;
-	cachedXStringSet S;
+	Chars_holder P, S_elt;
+	XStringSet_holder S;
 	int S_length, is_count_only, j;
 	const char *algo;
 
-	P = cache_XRaw(pattern);
-	S = _cache_XStringSet(subject);
+	P = hold_XRaw(pattern);
+	S = _hold_XStringSet(subject);
 	S_length = _get_XStringSet_length(subject);
 	algo = CHAR(STRING_ELT(algorithm, 0));
 	is_count_only = LOGICAL(count_only)[0];
 	_init_match_reporting(is_count_only ?
 		"MATCHES_AS_COUNTS" : "MATCHES_AS_ENDS", S_length);
 	for (j = 0; j < S_length; j++) {
-		S_elt = _get_cachedXStringSet_elt(&S, j);
+		S_elt = _get_elt_from_XStringSet_holder(&S, j);
 		_set_active_PSpair(j);
 		_match_pattern_XString(&P, &S_elt,
 			max_mismatch, min_mismatch, with_indels, fixed,

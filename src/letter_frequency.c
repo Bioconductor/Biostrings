@@ -59,7 +59,7 @@ static int get_ans_width(SEXP codes, int with_other)
 	return width;
 }
 
-static void update_letter_freqs(int *row, int nrow, const cachedCharSeq *X, SEXP codes)
+static void update_letter_freqs(int *row, int nrow, const Chars_holder *X, SEXP codes)
 {
 	int i, offset;
 	const char *c;
@@ -78,7 +78,7 @@ static void update_letter_freqs(int *row, int nrow, const cachedCharSeq *X, SEXP
 
 // HJ -- faster version of the above, without 'codes' to consider
 static void update_letter_freqs_without_codes(int *row, int nrow,
-	const cachedCharSeq *X)
+	const Chars_holder *X)
 {
 	int i, offset;
 	const char *c;
@@ -144,7 +144,7 @@ static int letter_freq_in_sliding_view(int *row, const int nrow, const char *c,
 
 /* Note that calling update_letter_freqs2() with shift = 0, mat_nrow = 0 and
    mat_ncol = X->length is equivalent to calling update_letter_freqs() */
-static void update_letter_freqs2(int *mat, const cachedCharSeq *X, SEXP codes,
+static void update_letter_freqs2(int *mat, const Chars_holder *X, SEXP codes,
 		int shift, int mat_nrow, int mat_ncol)
 {
 	int i1, i2, j1, j2, *col, i, offset;
@@ -182,7 +182,7 @@ static void update_letter_freqs2(int *mat, const cachedCharSeq *X, SEXP codes,
 
 static void update_int_oligo_freqs(int *mat, int mat_nrow,
 		int width, int step,
-		TwobitEncodingBuffer *teb, const cachedCharSeq *X)
+		TwobitEncodingBuffer *teb, const Chars_holder *X)
 {
 	int max_start, start, offset, i;
 	const char *c;
@@ -225,7 +225,7 @@ static void update_int_oligo_freqs(int *mat, int mat_nrow,
 
 static void update_double_oligo_freqs(double *mat, int mat_nrow,
 		int width, int step,
-		TwobitEncodingBuffer *teb, const cachedCharSeq *X)
+		TwobitEncodingBuffer *teb, const Chars_holder *X)
 {
 	int max_start, start, offset, i;
 	const char *c;
@@ -268,7 +268,7 @@ static void update_double_oligo_freqs(double *mat, int mat_nrow,
 
 static void update_oligo_freqs(SEXP mat, int mat_row, int mat_nrow,
 		int width, int step,
-		TwobitEncodingBuffer *teb, const cachedCharSeq *X)
+		TwobitEncodingBuffer *teb, const Chars_holder *X)
 {
 	switch (TYPEOF(mat)) {
 	case INTSXP:
@@ -455,12 +455,12 @@ SEXP XString_letter_frequency(SEXP x, SEXP codes, SEXP with_other)
 {
 	SEXP ans;
 	int ans_width;
-	cachedCharSeq X;
+	Chars_holder X;
 
 	ans_width = get_ans_width(codes, LOGICAL(with_other)[0]);
 	PROTECT(ans = NEW_INTEGER(ans_width));
 	memset(INTEGER(ans), 0, LENGTH(ans) * sizeof(int));
-	X = cache_XRaw(x);
+	X = hold_XRaw(x);
 	update_letter_freqs(INTEGER(ans), 1, &X, codes);
 	set_names(ans, codes, LOGICAL(with_other)[0], 1, 1);
 	UNPROTECT(1);
@@ -472,18 +472,18 @@ SEXP XStringSet_letter_frequency(SEXP x, SEXP collapse,
 {
 	SEXP ans;
 	int ans_width, x_length, *ans_row, i;
-	cachedXStringSet cached_x;
-	cachedCharSeq x_elt;
+	XStringSet_holder x_holder;
+	Chars_holder x_elt;
 
 	ans_width = get_ans_width(codes, LOGICAL(with_other)[0]);
 	x_length = _get_XStringSet_length(x);
-	cached_x = _cache_XStringSet(x);
+	x_holder = _hold_XStringSet(x);
 	if (LOGICAL(collapse)[0]) {
 		PROTECT(ans = NEW_INTEGER(ans_width));
 		ans_row = INTEGER(ans);
 		memset(ans_row, 0, LENGTH(ans) * sizeof(int));
 		for (i = 0; i < x_length; i++) {
-			x_elt = _get_cachedXStringSet_elt(&cached_x, i);
+			x_elt = _get_elt_from_XStringSet_holder(&x_holder, i);
 			update_letter_freqs(ans_row, 1, &x_elt, codes);
 		}
 	} else {
@@ -491,7 +491,7 @@ SEXP XStringSet_letter_frequency(SEXP x, SEXP collapse,
 		ans_row = INTEGER(ans);
 		memset(ans_row, 0, LENGTH(ans) * sizeof(int));
 		for (i = 0; i < x_length; i++, ans_row++) {
-			x_elt = _get_cachedXStringSet_elt(&cached_x, i);
+			x_elt = _get_elt_from_XStringSet_holder(&x_holder, i);
 			update_letter_freqs(ans_row, x_length, &x_elt, codes);
 		}
 	}
@@ -519,10 +519,10 @@ SEXP XString_letterFrequencyInSlidingView(SEXP x, SEXP view_width,
 	SEXP dim_names, ans;
 	int ans_width, *ans_row, i, k, ans_nrow, *colmap0;
 	int first;  /* first letter of the last k-mer, as column offset */
-	cachedCharSeq X;
+	Chars_holder X;
 	const char *c;
 
-	X = cache_XRaw(x);
+	X = hold_XRaw(x);
 	k = INTEGER(view_width)[0];
 	ans_nrow = X.length - k + 1;
 	if (ans_nrow < 1)
@@ -576,8 +576,8 @@ SEXP XStringSet_letterFrequency(SEXP x, SEXP single_codes, SEXP colmap,
 {
 	SEXP dim_names, ans;
 	int ans_width, *ans_row, i, *colmap0;
-	cachedCharSeq x_elt;
-	cachedXStringSet cached_x = _cache_XStringSet(x);
+	Chars_holder x_elt;
+	XStringSet_holder x_holder = _hold_XStringSet(x);
 	int x_length = _get_XStringSet_length(x);
 
 	ans_width = get_ans_width(single_codes, 0);
@@ -601,7 +601,7 @@ SEXP XStringSet_letterFrequency(SEXP x, SEXP single_codes, SEXP colmap,
 		ans_row = INTEGER(ans);
 		memset(ans_row, 0, LENGTH(ans) * sizeof(int));
 		for (i = 0; i < x_length; i++) {
-			x_elt = _get_cachedXStringSet_elt(&cached_x, i);
+			x_elt = _get_elt_from_XStringSet_holder(&x_holder, i);
 			update_letter_freqs_without_codes(ans_row,
 				1, &x_elt);
 		}
@@ -610,7 +610,7 @@ SEXP XStringSet_letterFrequency(SEXP x, SEXP single_codes, SEXP colmap,
 		ans_row = INTEGER(ans);
 		memset(ans_row, 0, LENGTH(ans) * sizeof(int));
 		for (i = 0; i < x_length; i++, ans_row++) {
-			x_elt = _get_cachedXStringSet_elt(&cached_x, i);
+			x_elt = _get_elt_from_XStringSet_holder(&x_holder, i);
 			update_letter_freqs_without_codes(ans_row,
 				x_length, &x_elt);
 		}
@@ -640,7 +640,7 @@ SEXP XString_oligo_frequency(SEXP x, SEXP width, SEXP step,
 	TwobitEncodingBuffer teb;
 	int width0, step0, as_integer, as_array0,
 	    invert_twobit_order, ans_width;
-	cachedCharSeq X;
+	Chars_holder X;
 
 	width0 = INTEGER(width)[0];
 	step0 = INTEGER(step)[0];
@@ -654,7 +654,7 @@ SEXP XString_oligo_frequency(SEXP x, SEXP width, SEXP step,
 						R_NilValue;
 	ans_width = 1 << (width0 * 2); /* 4^width0 */
 	PROTECT(ans = init_numeric_vector(ans_width, 0.00, as_integer));
-	X = cache_XRaw(x);
+	X = hold_XRaw(x);
 	update_oligo_freqs(ans, 0, 1, width0, step0, &teb, &X);
 	if (!as_integer)
 		normalize_oligo_freqs(ans, 1, ans_width);
@@ -674,8 +674,8 @@ SEXP XStringSet_oligo_frequency(SEXP x, SEXP width, SEXP step,
 	int width0, step0, as_integer, as_array0,
 	    invert_twobit_order, ans_width, x_length, i;
 	const char *simplify_as0;
-	cachedXStringSet cached_x;
-	cachedCharSeq x_elt;
+	XStringSet_holder x_holder;
+	Chars_holder x_elt;
 
 	width0 = INTEGER(width)[0];
 	step0 = INTEGER(step)[0];
@@ -690,12 +690,12 @@ SEXP XStringSet_oligo_frequency(SEXP x, SEXP width, SEXP step,
 	simplify_as0 = CHAR(STRING_ELT(simplify_as, 0));
 	ans_width = 1 << (width0 * 2); /* 4^width0 */
 	x_length = _get_XStringSet_length(x);
-	cached_x = _cache_XStringSet(x);
+	x_holder = _hold_XStringSet(x);
 	if (strcmp(simplify_as0, "matrix") == 0) {  /* the default */
 		PROTECT(ans = init_numeric_matrix(x_length, ans_width,
 						  0.00, as_integer));
 		for (i = 0; i < x_length; i++) {
-			x_elt = _get_cachedXStringSet_elt(&cached_x, i);
+			x_elt = _get_elt_from_XStringSet_holder(&x_holder, i);
 			update_oligo_freqs(ans, i, x_length, width0, step0,
 					   &teb, &x_elt);
 		}
@@ -709,7 +709,7 @@ SEXP XStringSet_oligo_frequency(SEXP x, SEXP width, SEXP step,
 	if (strcmp(simplify_as0, "collapsed") == 0) {
 		PROTECT(ans = init_numeric_vector(ans_width, 0.00, as_integer));
 		for (i = 0; i < x_length; i++) {
-			x_elt = _get_cachedXStringSet_elt(&cached_x, i);
+			x_elt = _get_elt_from_XStringSet_holder(&x_holder, i);
 			update_oligo_freqs(ans, 0, 1, width0, step0,
 					   &teb, &x_elt);
 		}
@@ -724,7 +724,7 @@ SEXP XStringSet_oligo_frequency(SEXP x, SEXP width, SEXP step,
 	for (i = 0; i < x_length; i++) {
 		PROTECT(ans_elt = init_numeric_vector(ans_width, 0.00,
 						      as_integer));
-		x_elt = _get_cachedXStringSet_elt(&cached_x, i);
+		x_elt = _get_elt_from_XStringSet_holder(&x_holder, i);
 		update_oligo_freqs(ans_elt, 0, 1, width0, step0, &teb, &x_elt);
 		if (!as_integer)
 			normalize_oligo_freqs(ans_elt, 1, ans_width);
@@ -746,8 +746,8 @@ SEXP XStringSet_nucleotide_frequency_at(SEXP x, SEXP at,
 	TwobitEncodingBuffer teb;
 	int as_integer, as_array0, invert_twobit_order, ans_width, x_length,
 	    i, offset, print_warning1, print_warning2;
-	cachedXStringSet cached_x;
-	cachedCharSeq x_elt;
+	XStringSet_holder x_holder;
+	Chars_holder x_elt;
 
 	as_integer = !LOGICAL(as_prob)[0];
 	as_array0 = LOGICAL(as_array)[0];
@@ -756,11 +756,11 @@ SEXP XStringSet_nucleotide_frequency_at(SEXP x, SEXP at,
 	base_labels = LOGICAL(with_labels)[0] ? GET_NAMES(base_codes) : R_NilValue;
 	ans_width = 1 << (LENGTH(at) * 2); /* 4^LENGTH(at) */
 	x_length = _get_XStringSet_length(x);
-	cached_x = _cache_XStringSet(x);
+	x_holder = _hold_XStringSet(x);
 	PROTECT(ans = init_numeric_vector(ans_width, 0.00, as_integer));
 	print_warning1 = print_warning2 = TRUE;
 	for (i = 0; i < x_length; i++) {
-		x_elt = _get_cachedXStringSet_elt(&cached_x, i);
+		x_elt = _get_elt_from_XStringSet_holder(&x_holder, i);
 		offset = _get_twobit_signature_at(&teb, &x_elt, INTEGER(at), LENGTH(at));
 		if (offset == -1) {
 			if (print_warning1)
@@ -791,12 +791,12 @@ SEXP XStringSet_consensus_matrix(SEXP x, SEXP shift, SEXP width,
 {
 	SEXP ans;
 	int ans_nrow, ans_ncol, ans_length, x_length, i, k, s, x_elt_end;
-	cachedXStringSet cached_x;
-	cachedCharSeq x_elt;
+	XStringSet_holder x_holder;
+	Chars_holder x_elt;
 
 	ans_nrow = get_ans_width(codes, LOGICAL(with_other)[0]);
 	x_length = _get_XStringSet_length(x);
-	cached_x = _cache_XStringSet(x);
+	x_holder = _hold_XStringSet(x);
 	if (width == R_NilValue) {
 		if (x_length == 0)
 			error("'x' has no element and 'width' is NULL");
@@ -809,7 +809,7 @@ SEXP XStringSet_consensus_matrix(SEXP x, SEXP shift, SEXP width,
 			s = INTEGER(shift)[k];
 			if (s == NA_INTEGER)
 				error("'shift' contains NAs");
-			x_elt = _get_cachedXStringSet_elt(&cached_x, i);
+			x_elt = _get_elt_from_XStringSet_holder(&x_holder, i);
 			x_elt_end = x_elt.length + s;
 			if (x_elt_end > ans_ncol)
 				ans_ncol = x_elt_end;
@@ -828,7 +828,7 @@ SEXP XStringSet_consensus_matrix(SEXP x, SEXP shift, SEXP width,
 		s = INTEGER(shift)[k];
 		if (s == NA_INTEGER)
 			error("'shift' contains NAs");
-		x_elt = _get_cachedXStringSet_elt(&cached_x, i);
+		x_elt = _get_elt_from_XStringSet_holder(&x_holder, i);
 		update_letter_freqs2(INTEGER(ans), &x_elt, codes, s,
 				     ans_nrow, ans_ncol);
 	}
@@ -854,8 +854,8 @@ static void copy_codes_into(ByteTrTable *dest) {
 }
 
 static void update_two_way_letter_freqs(int *mat, int ans_nrow,
-                                        const cachedCharSeq *X,
-                                        const cachedCharSeq *Y)
+                                        const Chars_holder *X,
+                                        const Chars_holder *Y)
 {
   int i, x_offset, y_offset;
   const char *xc, *yc;
@@ -930,7 +930,7 @@ SEXP XString_two_way_letter_frequency(SEXP x, SEXP y,
 {
   SEXP ans;
   int x_width, y_width;
-  cachedCharSeq X, Y;
+  Chars_holder X, Y;
 
   x_width = get_ans_width(x_codes, LOGICAL(with_other)[0]);
   copy_codes_into(&xbyte2offset);
@@ -938,8 +938,8 @@ SEXP XString_two_way_letter_frequency(SEXP x, SEXP y,
   copy_codes_into(&ybyte2offset);
   PROTECT(ans = allocMatrix(INTSXP, x_width, y_width));
   memset(INTEGER(ans), 0, LENGTH(ans) * sizeof(int));
-  X = cache_XRaw(x);
-  Y = cache_XRaw(y);
+  X = hold_XRaw(x);
+  Y = hold_XRaw(y);
   update_two_way_letter_freqs(INTEGER(ans), x_width, &X, &Y);
   set_two_way_names(ans, x_codes, y_codes, LOGICAL(with_other)[0], 1);
   UNPROTECT(1);
@@ -955,8 +955,8 @@ SEXP XStringSet_two_way_letter_frequency(SEXP x, SEXP y, SEXP collapse,
 {
   SEXP ans, ans_dimnames;
   int x_width, y_width, x_length, *ans_mat, i, x_pos;
-  cachedXStringSet cached_x, cached_y;
-  cachedCharSeq x_elt, y_elt;
+  XStringSet_holder x_holder, y_holder;
+  Chars_holder x_elt, y_elt;
   Rboolean _collapse = asLogical(collapse);
 
   x_width = get_ans_width(x_codes, LOGICAL(with_other)[0]);
@@ -968,8 +968,8 @@ SEXP XStringSet_two_way_letter_frequency(SEXP x, SEXP y, SEXP collapse,
   if (x_length != _get_XStringSet_length(y))
     error("'x' and 'y' must have the same length");
   
-  cached_x = _cache_XStringSet(x);
-  cached_y = _cache_XStringSet(y);
+  x_holder = _hold_XStringSet(x);
+  y_holder = _hold_XStringSet(y);
 
   if (_collapse) {
     PROTECT(ans = allocMatrix(INTSXP, x_width, y_width));
@@ -980,8 +980,8 @@ SEXP XStringSet_two_way_letter_frequency(SEXP x, SEXP y, SEXP collapse,
   ans_mat = INTEGER(ans);
   memset(ans_mat, 0, LENGTH(ans) * sizeof(int));
   for (i = 0; i < x_length; i++) {
-    x_elt = _get_cachedXStringSet_elt(&cached_x, i);
-    y_elt = _get_cachedXStringSet_elt(&cached_y, i);
+    x_elt = _get_elt_from_XStringSet_holder(&x_holder, i);
+    y_elt = _get_elt_from_XStringSet_holder(&y_holder, i);
     update_two_way_letter_freqs(ans_mat, x_width, &x_elt, &y_elt);
     if (!_collapse)
       ans_mat += x_width * y_width;
@@ -997,10 +997,10 @@ static ByteTrTable quality_byte2offset;
 
 static void update_two_way_letter_freqs_by_quality(int *mat,
                                                    int seq_width,
-                                                   const cachedCharSeq *X,
-                                                   const cachedCharSeq *Y,
-                                                   const cachedCharSeq *QX,
-                                                   const cachedCharSeq *QY
+                                                   const Chars_holder *X,
+                                                   const Chars_holder *Y,
+                                                   const Chars_holder *QX,
+                                                   const Chars_holder *QY
                                                    )
 {
   int i, x_offset, y_offset, qx_offset, qy_offset, min_q_offset;
@@ -1038,8 +1038,8 @@ SEXP XStringSet_two_way_letter_frequency_by_quality(SEXP x, SEXP y,
 {
   SEXP ans;
   int ans_width, quality_width, x_length, *ans_mat, i;
-  cachedXStringSet cached_x, cached_y, cached_x_quality, cached_y_quality;
-  cachedCharSeq x_elt, y_elt, x_elt_quality, y_elt_quality;
+  XStringSet_holder x_holder, y_holder, x_quality_holder, y_quality_holder;
+  Chars_holder x_elt, y_elt, x_elt_quality, y_elt_quality;
 
   ans_width = get_ans_width(codes, asLogical(with_other));  
   x_length = _get_XStringSet_length(x);
@@ -1048,10 +1048,10 @@ SEXP XStringSet_two_way_letter_frequency_by_quality(SEXP x, SEXP y,
       x_length != _get_XStringSet_length(y_quality))
     error("'x', 'y' and qualities must have the same length");
   
-  cached_x = _cache_XStringSet(x);
-  cached_y = _cache_XStringSet(y);
-  cached_x_quality = _cache_XStringSet(x_quality);
-  cached_y_quality = _cache_XStringSet(y_quality);
+  x_holder = _hold_XStringSet(x);
+  y_holder = _hold_XStringSet(y);
+  x_quality_holder = _hold_XStringSet(x_quality);
+  y_quality_holder = _hold_XStringSet(y_quality);
 
   _init_byte2offset_with_INTEGER(&quality_byte2offset, quality_codes, 1);
   quality_width = LENGTH(quality_codes);
@@ -1061,10 +1061,10 @@ SEXP XStringSet_two_way_letter_frequency_by_quality(SEXP x, SEXP y,
   ans_mat = INTEGER(ans);
   memset(ans_mat, 0, LENGTH(ans) * sizeof(int));
   for (i = 0; i < x_length; i++) {
-    x_elt = _get_cachedXStringSet_elt(&cached_x, i);
-    y_elt = _get_cachedXStringSet_elt(&cached_y, i);
-    x_elt_quality = _get_cachedXStringSet_elt(&cached_x_quality, i);
-    y_elt_quality = _get_cachedXStringSet_elt(&cached_y_quality, i);
+    x_elt = _get_elt_from_XStringSet_holder(&x_holder, i);
+    y_elt = _get_elt_from_XStringSet_holder(&y_holder, i);
+    x_elt_quality = _get_elt_from_XStringSet_holder(&x_quality_holder, i);
+    y_elt_quality = _get_elt_from_XStringSet_holder(&y_quality_holder, i);
     update_two_way_letter_freqs_by_quality(ans_mat, ans_width,
                                            &x_elt, &y_elt,
                                            &x_elt_quality, &y_elt_quality);

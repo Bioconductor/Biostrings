@@ -221,9 +221,9 @@ void R_init_Biostrings(DllInfo *info)
 /* XStringSet_class.c */
 	REGISTER_CCALLABLE(_get_XStringSet_length);
 	REGISTER_CCALLABLE(_get_XStringSet_xsbaseclassname);
-	REGISTER_CCALLABLE(_cache_XStringSet);
-	REGISTER_CCALLABLE(_get_cachedXStringSet_length);
-	REGISTER_CCALLABLE(_get_cachedXStringSet_elt);
+	REGISTER_CCALLABLE(_hold_XStringSet);
+	REGISTER_CCALLABLE(_get_length_from_XStringSet_holder);
+	REGISTER_CCALLABLE(_get_elt_from_XStringSet_holder);
 	REGISTER_CCALLABLE(_set_XStringSet_names);
 
 /* match_reporting.c */
@@ -236,10 +236,10 @@ void R_init_Biostrings(DllInfo *info)
 	REGISTER_CCALLABLE(_reported_matches_asSEXP);
 
 /* MIndex_class.c */
-	REGISTER_CCALLABLE(_cache_MIndex);
-	REGISTER_CCALLABLE(_get_cachedMIndex_length);
-	REGISTER_CCALLABLE(_get_cachedMIndex_elt_width0);
-	REGISTER_CCALLABLE(_get_cachedMIndex_elt);
+	REGISTER_CCALLABLE(_hold_MIndex);
+	REGISTER_CCALLABLE(_get_length_from_MIndex_holder);
+	REGISTER_CCALLABLE(_get_width0_elt_from_MIndex_holder);
+	REGISTER_CCALLABLE(_get_elt_from_MIndex_holder);
 
 /* match_pattern_boyermoore.c */
 	REGISTER_CCALLABLE(_match_pattern_boyermoore);

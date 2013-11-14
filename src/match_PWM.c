@@ -46,7 +46,7 @@ static double compute_pwm_score(const double *pwm, int pwm_ncol,
 }
 
 static void _match_PWM_XString(const double *pwm, int pwm_ncol,
-		const cachedCharSeq *S, double minscore)
+		const Chars_holder *S, double minscore)
 {
 	int n1, n2;
 	double score;
@@ -71,7 +71,7 @@ static void _match_PWM_XString(const double *pwm, int pwm_ncol,
 SEXP PWM_score_starting_at(SEXP pwm, SEXP subject, SEXP starting_at,
 		SEXP base_codes)
 {
-	cachedCharSeq S;
+	Chars_holder S;
 	int pwm_ncol, ans_length, i, *start_elt;
 	SEXP ans;
 	double *ans_elt;
@@ -79,7 +79,7 @@ SEXP PWM_score_starting_at(SEXP pwm, SEXP subject, SEXP starting_at,
 	if (INTEGER(GET_DIM(pwm))[0] != 4)
 		error("'pwm' must have 4 rows");
 	pwm_ncol = INTEGER(GET_DIM(pwm))[1];
-	S = cache_XRaw(subject);
+	S = hold_XRaw(subject);
 	_init_byte2offset_with_INTEGER(&byte2offset, base_codes, 1);
 	no_warning_yet = 1;
 	ans_length = LENGTH(starting_at);
@@ -112,14 +112,14 @@ SEXP PWM_score_starting_at(SEXP pwm, SEXP subject, SEXP starting_at,
 SEXP XString_match_PWM(SEXP pwm, SEXP subject,
 		SEXP min_score, SEXP count_only, SEXP base_codes)
 {
-	cachedCharSeq S;
+	Chars_holder S;
 	int pwm_ncol, is_count_only;
 	double minscore;
 
 	if (INTEGER(GET_DIM(pwm))[0] != 4)
 		error("'pwm' must have 4 rows");
 	pwm_ncol = INTEGER(GET_DIM(pwm))[1];
-	S = cache_XRaw(subject);
+	S = hold_XRaw(subject);
 	minscore = REAL(min_score)[0];
 	is_count_only = LOGICAL(count_only)[0];
 	_init_byte2offset_with_INTEGER(&byte2offset, base_codes, 1);
@@ -145,7 +145,7 @@ SEXP XStringViews_match_PWM(SEXP pwm,
 		SEXP subject, SEXP views_start, SEXP views_width,
 		SEXP min_score, SEXP count_only, SEXP base_codes)
 {
-	cachedCharSeq S, S_view;
+	Chars_holder S, S_view;
 	int pwm_ncol, is_count_only;
 	int nviews, v, *start_p, *width_p, view_offset;
 	double minscore;
@@ -153,7 +153,7 @@ SEXP XStringViews_match_PWM(SEXP pwm,
 	if (INTEGER(GET_DIM(pwm))[0] != 4)
 		error("'pwm' must have 4 rows");
 	pwm_ncol = INTEGER(GET_DIM(pwm))[1];
-	S = cache_XRaw(subject);
+	S = hold_XRaw(subject);
 	minscore = REAL(min_score)[0];
 	is_count_only = LOGICAL(count_only)[0];
 	_init_byte2offset_with_INTEGER(&byte2offset, base_codes, 1);

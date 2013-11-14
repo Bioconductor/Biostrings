@@ -7,7 +7,7 @@
 static void test_match_pattern_indels(const char *p, const char *s,
 		int max_nmis, const char *expected_matches)
 {
-	cachedCharSeq P, S;
+	Chars_holder P, S;
 
 	Rprintf("P=%s S=%s max_nmis=%d expected_matches=%s\n", p, s,
 		max_nmis, expected_matches);
@@ -42,7 +42,7 @@ SEXP debug_match_pattern_indels()
 
 #ifdef DEBUG_BIOSTRINGS
 static void print_match(int start, int width,
-		const cachedCharSeq *P, const cachedCharSeq *S,
+		const Chars_holder *P, const Chars_holder *S,
 		const BytewiseOpTable *bytewise_match_table)
 {
 	int end, j0, nedit0, width0;
@@ -97,18 +97,18 @@ static void report_provisory_match(int start, int width, int nedit)
 
 static ByteTrTable byte2offset;
 
-void _match_pattern_indels(const cachedCharSeq *P, const cachedCharSeq *S,
+void _match_pattern_indels(const Chars_holder *P, const Chars_holder *S,
 		int max_nmis, int fixedP, int fixedS)
 {
 	int i0, j0, max_nmis1, nedit1, width1;
 	char c0;
 	const BytewiseOpTable *bytewise_match_table;
-	cachedCharSeq P1;
+	Chars_holder P1;
 
 	if (P->length <= 0)
 		error("empty pattern");
 	bytewise_match_table = _select_bytewise_match_table(fixedP, fixedS);
-	_init_byte2offset_with_cachedCharSeq(&byte2offset, P,
+	_init_byte2offset_with_Chars_holder(&byte2offset, P,
 					     bytewise_match_table);
 	provisory_match_nedit = -1; // means no provisory match yet
 	j0 = 0;

@@ -6,7 +6,7 @@
 static char errmsg_buf[200];
 
 /* Returns 0 if OK, -1 if error, and 1 if warning. */
-static int translate(const cachedCharSeq *dna, cachedCharSeq *aa,
+static int translate(const Chars_holder *dna, Chars_holder *aa,
 		TwobitEncodingBuffer *teb, SEXP lkup, char skipcode0)
 {
 	int phase, i, lkup_key;
@@ -53,28 +53,28 @@ static int translate(const cachedCharSeq *dna, cachedCharSeq *aa,
  */
 SEXP DNAStringSet_translate(SEXP x, SEXP base_codes, SEXP lkup, SEXP skipcode)
 {
-	cachedXStringSet X, Y;
-	cachedCharSeq X_elt, Y_elt;
+	XStringSet_holder X, Y;
+	Chars_holder X_elt, Y_elt;
 	char skipcode0;
 	int ans_length, i, errcode;
 	SEXP ans, width, ans_width;
 	TwobitEncodingBuffer teb;
 
-	X = _cache_XStringSet(x);
+	X = _hold_XStringSet(x);
 	skipcode0 = (unsigned char) INTEGER(skipcode)[0];
-	ans_length = _get_cachedXStringSet_length(&X);
+	ans_length = _get_length_from_XStringSet_holder(&X);
 	PROTECT(width = NEW_INTEGER(ans_length));
 	for (i = 0; i < ans_length; i++) {
-		X_elt = _get_cachedXStringSet_elt(&X, i);
+		X_elt = _get_elt_from_XStringSet_holder(&X, i);
 		INTEGER(width)[i] = X_elt.length / 3;
 	}
 	PROTECT(ans = alloc_XRawList("AAStringSet", "AAString", width));
-	Y = _cache_XStringSet(ans);
+	Y = _hold_XStringSet(ans);
 	teb = _new_TwobitEncodingBuffer(base_codes, 3, 0);
 	ans_width = _get_XStringSet_width(ans);
 	for (i = 0; i < ans_length; i++) {
-		X_elt = _get_cachedXStringSet_elt(&X, i);
-		Y_elt = _get_cachedXStringSet_elt(&Y, i);
+		X_elt = _get_elt_from_XStringSet_holder(&X, i);
+		Y_elt = _get_elt_from_XStringSet_holder(&Y, i);
 		errcode = translate(&X_elt, &Y_elt, &teb, lkup, skipcode0);
 		if (errcode == -1) {
 			UNPROTECT(2);

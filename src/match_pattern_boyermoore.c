@@ -71,7 +71,7 @@ static struct {
  *         Prefix between old and new current pattern (LCP will always be <=
  *         min(P->length, ppP.seqlength)).
  */
-static void init_ppP_seq(const cachedCharSeq *P, int walk_backward)
+static void init_ppP_seq(const Chars_holder *P, int walk_backward)
 {
 	int LCP, j1, j2;
 	char c;
@@ -393,7 +393,7 @@ static void init_ppP_MWshift_table()
 }
 
 /* Return 1-based end of last match or -1 if no match */
-int _match_pattern_boyermoore(const cachedCharSeq *P, const cachedCharSeq *S,
+int _match_pattern_boyermoore(const Chars_holder *P, const Chars_holder *S,
 		int nfirstmatches, int walk_backward)
 {
 	int nmatches, last_match_end, n, i1, i2, j1, j2, shift, shift1,

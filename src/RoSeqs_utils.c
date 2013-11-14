@@ -24,7 +24,7 @@ RoSeqs _alloc_RoSeqs(int nelt)
 {
 	RoSeqs seqs;
 
-	seqs.elts = Salloc((long) nelt, cachedCharSeq);
+	seqs.elts = Salloc((long) nelt, Chars_holder);
 	seqs.nelt = nelt;
 	return seqs;
 }

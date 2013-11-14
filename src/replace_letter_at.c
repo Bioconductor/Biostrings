@@ -92,13 +92,13 @@ SEXP XString_replace_letter_at(SEXP x, SEXP at, SEXP letter, SEXP lkup,
 		SEXP if_not_extending, SEXP verbose)
 {
 	const char *x_classname;
-	cachedCharSeq X;
+	Chars_holder X;
 	SEXP tag, letter_elt, ans;
 	int at_length, letter_length, letter_elt_length, letter_ncharsum, i;
 	const int *at_p;
 
 	x_classname = get_classname(x);
-	X = cache_XRaw(x);
+	X = hold_XRaw(x);
 	at_length = LENGTH(at);
 	letter_length = LENGTH(letter);
 	if (lkup != R_NilValue)

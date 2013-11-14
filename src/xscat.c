@@ -17,7 +17,7 @@ SEXP XString_xscat(SEXP args)
 	int nargs, ans_length, tag_offset, j;
 	SEXP arg, ans_tag, ans;
 	const char *ans_classname;
-	cachedCharSeq cached_arg;
+	Chars_holder arg_holder;
 
 	nargs = LENGTH(args);
 	if (nargs == 0)
@@ -26,12 +26,12 @@ SEXP XString_xscat(SEXP args)
 	/* 1st pass: determine 'ans_classname' and 'ans_length' */
 	for (j = 0; j < nargs; j++) {
 		arg = VECTOR_ELT(args, j);
-		cached_arg = cache_XRaw(arg);
+		arg_holder = hold_XRaw(arg);
 		if (j == 0) {
 			ans_classname = get_classname(arg);
-			ans_length = cached_arg.length;
+			ans_length = arg_holder.length;
 		} else {
-			ans_length += cached_arg.length;
+			ans_length += arg_holder.length;
 		}
 	}
 	PROTECT(ans_tag = NEW_RAW(ans_length));
@@ -40,11 +40,11 @@ SEXP XString_xscat(SEXP args)
 	tag_offset = 0;
 	for (j = 0; j < nargs; j++) {
 		arg = VECTOR_ELT(args, j);
-		cached_arg = cache_XRaw(arg);
+		arg_holder = hold_XRaw(arg);
 		memcpy((char *) RAW(ans_tag) + tag_offset,
-		       cached_arg.seq,
-		       cached_arg.length * sizeof(char));
-		tag_offset += cached_arg.length;
+		       arg_holder.seq,
+		       arg_holder.length * sizeof(char));
+		tag_offset += arg_holder.length;
 	}
 
 	/* Make 'ans' */
@@ -61,24 +61,24 @@ SEXP XString_xscat(SEXP args)
  */
 SEXP XStringSet_xscat(SEXP args)
 {
-	cachedXStringSet *cached_args, cached_ans;
+	XStringSet_holder *args_holder, ans_holder;
 	int nargs, *arg_lengths, *ii, ans_length, i, j, *width;
 	SEXP arg, ans_width, ans;
 	const char *ans_element_type;
-	cachedCharSeq cached_arg_elt, cached_ans_elt;
+	Chars_holder arg_elt_holder, ans_elt_holder;
 	char ans_classname[40];  /* longest string should be "DNAStringSet" */
 
 	nargs = LENGTH(args);
 	if (nargs == 0)
 		error("XStringSet_xscat(): no input");
-	cached_args = Salloc((long) nargs, cachedXStringSet);
+	args_holder = Salloc((long) nargs, XStringSet_holder);
 	arg_lengths = Salloc((long) nargs, int);
 	ii = Salloc((long) nargs, int);
 
 	/* 1st pass: determine 'ans_element_type' and 'ans_length' */
 	for (j = 0; j < nargs; j++) {
 		arg = VECTOR_ELT(args, j);
-		cached_args[j] = _cache_XStringSet(arg);
+		args_holder[j] = _hold_XStringSet(arg);
 		arg_lengths[j] = _get_XStringSet_length(arg);
 		if (j == 0) {
 			ans_element_type = _get_XStringSet_xsbaseclassname(arg);
@@ -99,9 +99,9 @@ SEXP XStringSet_xscat(SEXP args)
 		for (j = 0; j < nargs; j++) {
 			if (ii[j] >= arg_lengths[j])
 				ii[j] = 0; /* recycle */
-			cached_arg_elt = _get_cachedXStringSet_elt(
-						cached_args + j, ii[j]);
-			*width += cached_arg_elt.length;
+			arg_elt_holder = _get_elt_from_XStringSet_holder(
+						args_holder + j, ii[j]);
+			*width += arg_elt_holder.length;
 			ii[j]++;
 		}
 	}
@@ -116,24 +116,24 @@ SEXP XStringSet_xscat(SEXP args)
 				     ans_width));
 
 	/* 3rd pass: fill 'ans' */
-	cached_ans = cache_XVectorList(ans);
+	ans_holder = hold_XVectorList(ans);
 	for (j = 0; j < nargs; j++)
 		ii[j] = 0;
 	for (i = 0; i < ans_length;  i++) {
-		cached_ans_elt = _get_cachedXStringSet_elt(&cached_ans, i);
-		cached_ans_elt.length = 0;
+		ans_elt_holder = _get_elt_from_XStringSet_holder(&ans_holder, i);
+		ans_elt_holder.length = 0;
 		for (j = 0; j < nargs; j++) {
 			if (ii[j] >= arg_lengths[j])
 				ii[j] = 0; /* recycle */
-			cached_arg_elt = _get_cachedXStringSet_elt(
-							cached_args + j, ii[j]);
-			/* cached_ans_elt->seq is a const char * so we need to
+			arg_elt_holder = _get_elt_from_XStringSet_holder(
+							args_holder + j, ii[j]);
+			/* ans_elt_holder->seq is a const char * so we need to
 			   cast it to char * in order to write to it */
-			memcpy((char *) cached_ans_elt.seq +
-			                cached_ans_elt.length,
-			       cached_arg_elt.seq,
-			       cached_arg_elt.length * sizeof(char));
-			cached_ans_elt.length += cached_arg_elt.length;
+			memcpy((char *) ans_elt_holder.seq +
+			                ans_elt_holder.length,
+			       arg_elt_holder.seq,
+			       arg_elt_holder.length * sizeof(char));
+			ans_elt_holder.length += arg_elt_holder.length;
 			ii[j]++;
 		}
 	}

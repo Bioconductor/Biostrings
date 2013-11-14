@@ -58,18 +58,18 @@ typedef struct bytewise_op_table {
  * null-terminated sequences of chars.
  */
 typedef struct roseqs {
-	cachedCharSeq *elts;
+	Chars_holder *elts;
 	int nelt;
 } RoSeqs;
 
 
 /*
- * cached_* structs.
+ * *_holder structs.
  */
 
-typedef cachedXVectorList cachedXStringSet;
+typedef XVectorList_holder XStringSet_holder;
 
-typedef struct cached_mindex {
+typedef struct mindex_holder {
 	const char *classname;
 	int length;
 	SEXP width0;
@@ -77,7 +77,7 @@ typedef struct cached_mindex {
 	SEXP ends;
 	SEXP dups0_high2low;
 	SEXP dups0_low2high;
-} cachedMIndex;
+} MIndex_holder;
 
 
 /*

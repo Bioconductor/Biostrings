@@ -62,57 +62,57 @@ static SEXP get_MIndex_ends(SEXP x)
  * C-level abstract getters.
  */
 
-cachedMIndex _cache_MIndex(SEXP x)
+MIndex_holder _hold_MIndex(SEXP x)
 {
-	cachedMIndex cached_x;
+	MIndex_holder x_holder;
 	SEXP dups0;
 
-	cached_x.classname = get_classname(x);
-	cached_x.width0 = get_MIndex_width0(x);
-	cached_x.names = get_MIndex_names(x);
-	cached_x.length = LENGTH(cached_x.width0);
-	cached_x.ends = get_MIndex_ends(x);
+	x_holder.classname = get_classname(x);
+	x_holder.width0 = get_MIndex_width0(x);
+	x_holder.names = get_MIndex_names(x);
+	x_holder.length = LENGTH(x_holder.width0);
+	x_holder.ends = get_MIndex_ends(x);
 	dups0 = get_MIndex_dups0(x);
-	cached_x.dups0_high2low = get_H2LGrouping_high2low(dups0);
-	cached_x.dups0_low2high = get_H2LGrouping_low2high(dups0);
-	return cached_x;
+	x_holder.dups0_high2low = get_H2LGrouping_high2low(dups0);
+	x_holder.dups0_low2high = get_H2LGrouping_low2high(dups0);
+	return x_holder;
 }
 
-int _get_cachedMIndex_length(const cachedMIndex *cached_x)
+int _get_length_from_MIndex_holder(const MIndex_holder *x_holder)
 {
-	return cached_x->length;
+	return x_holder->length;
 }
 
-int _get_cachedMIndex_elt_width0(const cachedMIndex *cached_x, int i)
+int _get_width0_elt_from_MIndex_holder(const MIndex_holder *x_holder, int i)
 {
-	return INTEGER(cached_x->width0)[i];
+	return INTEGER(x_holder->width0)[i];
 }
 
-cachedIRanges _get_cachedMIndex_elt(const cachedMIndex *cached_x, int i)
+IRanges_holder _get_elt_from_MIndex_holder(const MIndex_holder *x_holder, int i)
 {
-	cachedIRanges cached_iranges;
+	IRanges_holder iranges_holder;
 	int low;
 	SEXP ends_elt;
 
-	if (cached_x->dups0_high2low != R_NilValue
-	 && LENGTH(cached_x->dups0_high2low) != 0
-	 && (low = INTEGER(cached_x->dups0_high2low)[i]) != NA_INTEGER)
+	if (x_holder->dups0_high2low != R_NilValue
+	 && LENGTH(x_holder->dups0_high2low) != 0
+	 && (low = INTEGER(x_holder->dups0_high2low)[i]) != NA_INTEGER)
 		i = low - 1;
-	cached_iranges.classname = "IRanges";
-	cached_iranges.is_constant_width = 1;
-	cached_iranges.offset = 0;
-	cached_iranges.width = INTEGER(cached_x->width0) + i;
-	cached_iranges.start = NULL;
-	cached_iranges.names = R_NilValue;
-	ends_elt = VECTOR_ELT(cached_x->ends, i);
+	iranges_holder.classname = "IRanges";
+	iranges_holder.is_constant_width = 1;
+	iranges_holder.offset = 0;
+	iranges_holder.width = INTEGER(x_holder->width0) + i;
+	iranges_holder.start = NULL;
+	iranges_holder.names = R_NilValue;
+	ends_elt = VECTOR_ELT(x_holder->ends, i);
 	if (ends_elt == R_NilValue) {
-		/* No need to initialize cached_iranges.end */
-		cached_iranges.length = 0;
+		/* No need to initialize iranges_holder.end */
+		iranges_holder.length = 0;
 	} else {
-		cached_iranges.length = LENGTH(ends_elt);
-		cached_iranges.end = INTEGER(ends_elt);
+		iranges_holder.length = LENGTH(ends_elt);
+		iranges_holder.end = INTEGER(ends_elt);
 	}
-	return cached_iranges;
+	return iranges_holder;
 }
 
 

@@ -109,7 +109,7 @@ char _RNAdecode(char code)
  * From CHARACTER to XString and vice-versa.
  */
 
-void _copy_CHARSXP_to_cachedCharSeq(cachedCharSeq *dest, SEXP src,
+void _copy_CHARSXP_to_Chars_holder(Chars_holder *dest, SEXP src,
 		int start_in_src, const int *lkup, int lkup_length)
 {
 	int i1, i2;
@@ -125,7 +125,7 @@ void _copy_CHARSXP_to_cachedCharSeq(cachedCharSeq *dest, SEXP src,
 	return;
 }
 
-SEXP _new_CHARSXP_from_cachedCharSeq(const cachedCharSeq *x, SEXP lkup)
+SEXP _new_CHARSXP_from_Chars_holder(const Chars_holder *x, SEXP lkup)
 {
 	// IMPORTANT: We use user-controlled memory for this private memory
 	// pool so it is persistent between calls to .Call().
@@ -142,7 +142,7 @@ SEXP _new_CHARSXP_from_cachedCharSeq(const cachedCharSeq *x, SEXP lkup)
 	if (new_buflength > buflength) {
 		new_buf = (char *) realloc(buf, new_buflength);
 		if (new_buf == NULL)
-			error("_new_CHARSXP_from_cachedCharSeq(): "
+			error("_new_CHARSXP_from_Chars_holder(): "
 			      "call to realloc() failed");
 		buf = new_buf;
 		buflength = new_buflength;
@@ -159,7 +159,7 @@ SEXP new_XString_from_CHARACTER(SEXP classname,
 		SEXP x, SEXP start, SEXP width, SEXP lkup)
 {
 	SEXP x_elt, ans;
-	cachedCharSeq cached_ans;
+	Chars_holder ans_holder;
 	const int *lkup0;
 	int lkup_length;
 
@@ -170,14 +170,14 @@ SEXP new_XString_from_CHARACTER(SEXP classname,
 		error("input sequence is NA");
 	PROTECT(ans = alloc_XRaw(CHAR(STRING_ELT(classname, 0)),
 				 INTEGER(width)[0]));
-	cached_ans = cache_XRaw(ans);
+	ans_holder = hold_XRaw(ans);
 	if (lkup == R_NilValue) {
 		lkup0 = NULL;
 	} else {
 		lkup0 = INTEGER(lkup);
 		lkup_length = LENGTH(lkup);
 	}
-	_copy_CHARSXP_to_cachedCharSeq(&cached_ans, x_elt,
+	_copy_CHARSXP_to_Chars_holder(&ans_holder, x_elt,
 			INTEGER(start)[0], lkup0, lkup_length);
 	UNPROTECT(1);
 	return ans;
@@ -186,12 +186,12 @@ SEXP new_XString_from_CHARACTER(SEXP classname,
 /* --- .Call ENTRY POINT --- */
 SEXP new_CHARACTER_from_XString(SEXP x, SEXP lkup)
 {
-	cachedCharSeq cached_x;
+	Chars_holder x_holder;
 	SEXP ans, ans_elt;
 
-	cached_x = cache_XRaw(x);
+	x_holder = hold_XRaw(x);
 	PROTECT(ans = NEW_CHARACTER(1));
-	PROTECT(ans_elt = _new_CHARSXP_from_cachedCharSeq(&cached_x, lkup));
+	PROTECT(ans_elt = _new_CHARSXP_from_Chars_holder(&x_holder, lkup));
 	SET_STRING_ELT(ans, 0, ans_elt);
 	UNPROTECT(2);
 	return ans;

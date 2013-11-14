@@ -44,7 +44,7 @@ static void init_twobit_sign2pos(SEXP twobit_sign2pos, int val0)
 }
 
 static int pp_pattern(SEXP twobit_sign2pos, TwobitEncodingBuffer *teb,
-		const cachedCharSeq *pattern, int poffset)
+		const Chars_holder *pattern, int poffset)
 {
 	int twobit_sign, *pos0;
 
@@ -120,21 +120,21 @@ static SEXP Twobit_asLIST(SEXP twobit_sign2pos)
 SEXP build_Twobit(SEXP tb, SEXP pp_exclude, SEXP base_codes)
 {
 	int tb_length, tb_width, poffset, twobit_len;
-	cachedXStringSet cached_tb;
-	cachedCharSeq pattern;
+	XStringSet_holder tb_holder;
+	Chars_holder pattern;
 	TwobitEncodingBuffer teb;
 	SEXP ans, twobit_sign2pos;
 
 	tb_length = _get_XStringSet_length(tb);
 	_init_ppdups_buf(tb_length);
 	tb_width = -1;
-	cached_tb = _cache_XStringSet(tb);
+	tb_holder = _hold_XStringSet(tb);
 	for (poffset = 0; poffset < tb_length; poffset++) {
 		/* Skip duplicated patterns */
 		if (pp_exclude != R_NilValue
 		 && INTEGER(pp_exclude)[poffset] != NA_INTEGER)
 			continue;
-		pattern = _get_cachedXStringSet_elt(&cached_tb, poffset);
+		pattern = _get_elt_from_XStringSet_holder(&tb_holder, poffset);
 		if (pattern.length == 0)
 			error("empty trusted region for pattern %d",
 			      poffset + 1);
@@ -172,7 +172,7 @@ SEXP build_Twobit(SEXP tb, SEXP pp_exclude, SEXP base_codes)
  ****************************************************************************/
 
 void walk_subject(const int *twobit_sign2pos, TwobitEncodingBuffer *teb,
-		const cachedCharSeq *S, TBMatchBuf *tb_matches)
+		const Chars_holder *S, TBMatchBuf *tb_matches)
 {
 	int n, twobit_sign, P_id;
 	const char *s;
@@ -190,7 +190,7 @@ void walk_subject(const int *twobit_sign2pos, TwobitEncodingBuffer *teb,
 	return;
 }
 
-void _match_Twobit(SEXP pptb, const cachedCharSeq *S, int fixedS,
+void _match_Twobit(SEXP pptb, const Chars_holder *S, int fixedS,
 		TBMatchBuf *tb_matches)
 {
 	int tb_width;

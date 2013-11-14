@@ -51,7 +51,7 @@ static MatchPDictBuf new_MatchPDictBuf_from_PDict3Parts(SEXP matches_as,
 				head_widths, tail_widths);
 }
 
-static void match_pdict(SEXP pptb, HeadTail *headtail, const cachedCharSeq *S,
+static void match_pdict(SEXP pptb, HeadTail *headtail, const Chars_holder *S,
 		SEXP max_mismatch, SEXP min_mismatch, SEXP fixed,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -178,12 +178,12 @@ SEXP match_PDict3Parts_XString(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		SEXP matches_as, SEXP envir)
 {
 	HeadTail headtail;
-	cachedCharSeq S;
+	Chars_holder S;
 	MatchPDictBuf matchpdict_buf;
 
 	headtail = _new_HeadTail(pdict_head, pdict_tail, pptb,
 				max_mismatch, fixed, 1);
-	S = cache_XRaw(subject);
+	S = hold_XRaw(subject);
 	matchpdict_buf = new_MatchPDictBuf_from_PDict3Parts(matches_as,
 				pptb, pdict_head, pdict_tail);
 	match_pdict(pptb, &headtail,
@@ -199,19 +199,19 @@ SEXP match_XStringSet_XString(SEXP pattern,
 		SEXP with_indels, SEXP fixed,
 		SEXP algorithm, SEXP matches_as, SEXP envir)
 {
-	cachedXStringSet P;
+	XStringSet_holder P;
 	int P_length, i;
-	cachedCharSeq S, P_elt;
+	Chars_holder S, P_elt;
 	const char *algo, *ms_mode;
 
-	P = _cache_XStringSet(pattern);
-	P_length = _get_cachedXStringSet_length(&P);
-	S = cache_XRaw(subject);
+	P = _hold_XStringSet(pattern);
+	P_length = _get_length_from_XStringSet_holder(&P);
+	S = hold_XRaw(subject);
 	algo = CHAR(STRING_ELT(algorithm, 0));
 	ms_mode = CHAR(STRING_ELT(matches_as, 0));
 	_init_match_reporting(ms_mode, P_length);
 	for (i = 0; i < P_length; i++) {
-		P_elt = _get_cachedXStringSet_elt(&P, i);
+		P_elt = _get_elt_from_XStringSet_holder(&P, i);
 		_set_active_PSpair(i);
 		_match_pattern_XString(&P_elt, &S,
 			max_mismatch, min_mismatch, with_indels, fixed,
@@ -251,7 +251,7 @@ SEXP match_PDict3Parts_XStringViews(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 {
 	HeadTail headtail;
 	int tb_length;
-	cachedCharSeq S, S_view;
+	Chars_holder S, S_view;
 	int nviews, v, *view_start, *view_width, view_offset;
 	MatchPDictBuf matchpdict_buf;
 	MatchBuf global_match_buf;
@@ -259,7 +259,7 @@ SEXP match_PDict3Parts_XStringViews(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	tb_length = _get_PreprocessedTB_length(pptb);
 	headtail = _new_HeadTail(pdict_head, pdict_tail, pptb,
 				max_mismatch, fixed, 1);
-	S = cache_XRaw(subject);
+	S = hold_XRaw(subject);
 	matchpdict_buf = new_MatchPDictBuf_from_PDict3Parts(matches_as,
 				pptb, pdict_head, pdict_tail);
 	global_match_buf = _new_MatchBuf(matchpdict_buf.matches.ms_code,
@@ -292,19 +292,19 @@ SEXP match_XStringSet_XStringViews(SEXP pattern,
 		SEXP with_indels, SEXP fixed,
 		SEXP algorithm, SEXP matches_as, SEXP envir)
 {
-	cachedXStringSet P;
+	XStringSet_holder P;
 	int P_length, i;
-	cachedCharSeq S, P_elt;
+	Chars_holder S, P_elt;
 	const char *algo, *ms_mode;
 
-	P = _cache_XStringSet(pattern);
-	P_length = _get_cachedXStringSet_length(&P);
-	S = cache_XRaw(subject);
+	P = _hold_XStringSet(pattern);
+	P_length = _get_length_from_XStringSet_holder(&P);
+	S = hold_XRaw(subject);
 	algo = CHAR(STRING_ELT(algorithm, 0));
 	ms_mode = CHAR(STRING_ELT(matches_as, 0));
 	_init_match_reporting(ms_mode, P_length);
 	for (i = 0; i < P_length; i++) {
-		P_elt = _get_cachedXStringSet_elt(&P, i);
+		P_elt = _get_elt_from_XStringSet_holder(&P, i);
 		_set_active_PSpair(i);
 		_match_pattern_XStringViews(&P_elt,
 			&S, views_start, views_width,
@@ -345,15 +345,15 @@ static SEXP vwhich_PDict3Parts_XStringSet(SEXP pptb, HeadTail *headtail,
 		MatchPDictBuf *matchpdict_buf)
 {
 	int S_length, j;
-	cachedXStringSet S;
+	XStringSet_holder S;
 	SEXP ans, ans_elt;
-	cachedCharSeq S_elt;
+	Chars_holder S_elt;
 
-	S = _cache_XStringSet(subject);
-	S_length = _get_cachedXStringSet_length(&S);
+	S = _hold_XStringSet(subject);
+	S_length = _get_length_from_XStringSet_holder(&S);
 	PROTECT(ans = NEW_LIST(S_length));
 	for (j = 0; j < S_length; j++) {
-		S_elt = _get_cachedXStringSet_elt(&S, j);
+		S_elt = _get_elt_from_XStringSet_holder(&S, j);
 		match_pdict(pptb, headtail, &S_elt,
 			    max_mismatch, min_mismatch, fixed,
 			    matchpdict_buf);
@@ -373,25 +373,25 @@ static SEXP vwhich_XStringSet_XStringSet(SEXP pattern,
 		SEXP with_indels, SEXP fixed,
 		SEXP algorithm)
 {
-	cachedXStringSet P, S;
+	XStringSet_holder P, S;
 	int P_length, S_length, i, j;
-	cachedCharSeq P_elt, S_elt;
+	Chars_holder P_elt, S_elt;
 	const char *algo;
 	IntAEAE ans_buf;
 
-	P = _cache_XStringSet(pattern);
-	P_length = _get_cachedXStringSet_length(&P);
-	S = _cache_XStringSet(subject);
-	S_length = _get_cachedXStringSet_length(&S);
+	P = _hold_XStringSet(pattern);
+	P_length = _get_length_from_XStringSet_holder(&P);
+	S = _hold_XStringSet(subject);
+	S_length = _get_length_from_XStringSet_holder(&S);
 	algo = CHAR(STRING_ELT(algorithm, 0));
 	ans_buf = new_IntAEAE(S_length, S_length);
 	for (j = 0; j < S_length; j++)
 		IntAE_set_nelt(ans_buf.elts + j, 0);
 	_init_match_reporting("MATCHES_AS_COUNTS", 1);
 	for (i = 0; i < P_length; i++) {
-		P_elt = _get_cachedXStringSet_elt(&P, i);
+		P_elt = _get_elt_from_XStringSet_holder(&P, i);
 		for (j = 0; j < S_length; j++) {
-			S_elt = _get_cachedXStringSet_elt(&S, j);
+			S_elt = _get_elt_from_XStringSet_holder(&S, j);
 			_match_pattern_XString(&P_elt, &S_elt,
 				max_mismatch, min_mismatch, with_indels, fixed,
 				algo);
@@ -412,14 +412,14 @@ static SEXP vcount_PDict3Parts_XStringSet(SEXP pptb, HeadTail *headtail,
 		MatchPDictBuf *matchpdict_buf)
 {
 	int tb_length, S_length, collapse0, i, j, match_count, *ans_col;
-	cachedXStringSet S;
+	XStringSet_holder S;
 	SEXP ans;
-	cachedCharSeq S_elt;
+	Chars_holder S_elt;
 	const IntAE *count_buf;
 
 	tb_length = _get_PreprocessedTB_length(pptb);
-	S = _cache_XStringSet(subject);
-	S_length = _get_cachedXStringSet_length(&S);
+	S = _hold_XStringSet(subject);
+	S_length = _get_length_from_XStringSet_holder(&S);
 	collapse0 = INTEGER(collapse)[0];
 	if (collapse0 == 0) {
 		PROTECT(ans = allocMatrix(INTSXP, tb_length, S_length));
@@ -429,7 +429,7 @@ static SEXP vcount_PDict3Parts_XStringSet(SEXP pptb, HeadTail *headtail,
 					collapse0, weight));
 	}
 	for (j = 0; j < S_length; j++) {
-		S_elt = _get_cachedXStringSet_elt(&S, j);
+		S_elt = _get_elt_from_XStringSet_holder(&S, j);
 		match_pdict(pptb, headtail, &S_elt,
 			max_mismatch, min_mismatch, fixed,
 			matchpdict_buf);
@@ -459,16 +459,16 @@ static SEXP vcount_XStringSet_XStringSet(SEXP pattern,
 		SEXP with_indels, SEXP fixed,
 		SEXP algorithm, SEXP collapse, SEXP weight)
 {
-	cachedXStringSet P, S;
+	XStringSet_holder P, S;
 	int P_length, S_length, collapse0, i, j, match_count, *ans_elt;
 	const char *algo;
 	SEXP ans;
-	cachedCharSeq P_elt, S_elt;
+	Chars_holder P_elt, S_elt;
 
-	P = _cache_XStringSet(pattern);
-	P_length = _get_cachedXStringSet_length(&P);
-	S = _cache_XStringSet(subject);
-	S_length = _get_cachedXStringSet_length(&S);
+	P = _hold_XStringSet(pattern);
+	P_length = _get_length_from_XStringSet_holder(&P);
+	S = _hold_XStringSet(subject);
+	S_length = _get_length_from_XStringSet_holder(&S);
 	algo = CHAR(STRING_ELT(algorithm, 0));
 	collapse0 = INTEGER(collapse)[0];
 	if (collapse0 == 0)
@@ -478,11 +478,11 @@ static SEXP vcount_XStringSet_XStringSet(SEXP pattern,
 					collapse0, weight));
 	_init_match_reporting("MATCHES_AS_COUNTS", 1);
 	for (i = 0; i < P_length; i++) {
-		P_elt = _get_cachedXStringSet_elt(&P, i);
+		P_elt = _get_elt_from_XStringSet_holder(&P, i);
 		if (collapse0 == 0)
 			ans_elt = INTEGER(ans) + i;
 		for (j = 0; j < S_length; j++) {
-			S_elt = _get_cachedXStringSet_elt(&S, j);
+			S_elt = _get_elt_from_XStringSet_holder(&S, j);
 			_match_pattern_XString(&P_elt, &S_elt,
 				max_mismatch, min_mismatch, with_indels, fixed,
 				algo);

@@ -116,8 +116,8 @@ void _init_byte2offset_with_INTEGER(ByteTrTable *byte2offset, SEXP bytes, int er
 	return;
 }
 
-void _init_byte2offset_with_cachedCharSeq(ByteTrTable *byte2offset,
-		const cachedCharSeq *seq,
+void _init_byte2offset_with_Chars_holder(ByteTrTable *byte2offset,
+		const Chars_holder *seq,
 		const BytewiseOpTable *bytewise_match_table)
 {
 	int j, offset, n;
@@ -138,7 +138,7 @@ void _init_byte2offset_with_cachedCharSeq(ByteTrTable *byte2offset,
 	}
 #ifdef DEBUG_BIOSTRINGS
 	if (debug) {
-		Rprintf("[DEBUG] _init_byte2offset_with_cachedCharSeq():\n");
+		Rprintf("[DEBUG] _init_byte2offset_with_Chars_holder():\n");
 		print_ByteTrTable(byte2offset);
 	}
 #endif
@@ -198,7 +198,7 @@ int _shift_twobit_signature(TwobitEncodingBuffer *teb, char c)
 	return teb->current_signature;
 }
 
-int _get_twobit_signature(TwobitEncodingBuffer *teb, const cachedCharSeq *seq)
+int _get_twobit_signature(TwobitEncodingBuffer *teb, const Chars_holder *seq)
 {
 	int i, twobit_sign;
 	const char *c;
@@ -211,7 +211,7 @@ int _get_twobit_signature(TwobitEncodingBuffer *teb, const cachedCharSeq *seq)
 }
 
 /* 'at' must contain 1-based locations in 'seq'. */
-int _get_twobit_signature_at(TwobitEncodingBuffer *teb, const cachedCharSeq *seq,
+int _get_twobit_signature_at(TwobitEncodingBuffer *teb, const Chars_holder *seq,
 		const int *at, int at_length)
 {
 	int i, j, twobit_sign;

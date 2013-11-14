@@ -9,13 +9,13 @@
 SEXP XString_inject_code(SEXP x, SEXP start, SEXP width, SEXP code)
 {
 	const char *x_classname;
-	cachedCharSeq X;
+	Chars_holder X;
 	int nranges, i, s, w;
 	const int *s_p, *w_p;
 	SEXP tag, ans;
 
 	x_classname = get_classname(x);
-	X = cache_XRaw(x);
+	X = hold_XRaw(x);
 	nranges = LENGTH(start); /* must be == LENGTH(width) */
 	PROTECT(tag = NEW_RAW(X.length));
 	memcpy(RAW(tag), X.seq, X.length);

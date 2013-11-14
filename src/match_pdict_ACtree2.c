@@ -785,7 +785,7 @@ SEXP ACtree2_summary(SEXP pptb)
  *                             G. PREPROCESSING                             *
  ****************************************************************************/
 
-static void add_pattern(ACtree *tree, const cachedCharSeq *P, int P_offset)
+static void add_pattern(ACtree *tree, const Chars_holder *P, int P_offset)
 {
 	int P_id, depth, dmax, linktag;
 	unsigned int nid1, nid2;
@@ -832,8 +832,8 @@ SEXP ACtree2_build(SEXP tb, SEXP pp_exclude, SEXP base_codes,
 {
 	ACtree tree;
 	int tb_length, tb_width, P_offset;
-	cachedXStringSet cached_tb;
-	cachedCharSeq P;
+	XStringSet_holder tb_holder;
+	Chars_holder P;
 	SEXP ans, ans_names, ans_elt;
 
 	tb_length = _get_XStringSet_length(tb);
@@ -841,13 +841,13 @@ SEXP ACtree2_build(SEXP tb, SEXP pp_exclude, SEXP base_codes,
 		error("Trusted Band is empty");
 	_init_ppdups_buf(tb_length);
 	tb_width = -1;
-	cached_tb = _cache_XStringSet(tb);
+	tb_holder = _hold_XStringSet(tb);
 	for (P_offset = 0; P_offset < tb_length; P_offset++) {
 		/* skip duplicated patterns */
 		if (pp_exclude != R_NilValue
 		 && INTEGER(pp_exclude)[P_offset] != NA_INTEGER)
 			continue;
-		P = _get_cachedXStringSet_elt(&cached_tb, P_offset);
+		P = _get_elt_from_XStringSet_holder(&tb_holder, P_offset);
 		if (tb_width == -1) {
 			if (P.length == 0)
 				error("first element in Trusted Band "
@@ -964,7 +964,7 @@ static int has_all_flinks(ACtree *tree)
 	return 1;
 }
 
-static void compute_flinks_along_pattern(ACtree *tree, const cachedCharSeq *P)
+static void compute_flinks_along_pattern(ACtree *tree, const Chars_holder *P)
 {
 	ACnode *node;
 	int n, linktag;
@@ -987,12 +987,12 @@ static void compute_flinks_along_pattern(ACtree *tree, const cachedCharSeq *P)
 	return;
 }
 
-static void compute_all_flinks(ACtree *tree, const cachedXStringSet *tb)
+static void compute_all_flinks(ACtree *tree, const XStringSet_holder *tb)
 {
 	unsigned int nnodes, nid;
 	ACnode *node;
 	int P_offset;
-	cachedCharSeq P;
+	Chars_holder P;
 
 	nnodes = TREE_SIZE(tree);
 	for (nid = 1U; nid < nnodes; nid++) {
@@ -1000,7 +1000,7 @@ static void compute_all_flinks(ACtree *tree, const cachedXStringSet *tb)
 		if (!IS_LEAFNODE(node))
 			continue;
 		P_offset = NODE_P_ID(node) - 1;
-		P = _get_cachedXStringSet_elt(tb, P_offset);
+		P = _get_elt_from_XStringSet_holder(tb, P_offset);
 		compute_flinks_along_pattern(tree, &P);
 	}
 	return;
@@ -1020,12 +1020,12 @@ SEXP ACtree2_compute_all_flinks(SEXP pptb)
 {
 	ACtree tree;
 	SEXP tb;
-	cachedXStringSet cached_tb;
+	XStringSet_holder tb_holder;
 
 	tree = pptb_asACtree(pptb);
 	tb = _get_PreprocessedTB_tb(pptb);
-	cached_tb = _cache_XStringSet(tb);
-	compute_all_flinks(&tree, &cached_tb);
+	tb_holder = _hold_XStringSet(tb);
+	compute_all_flinks(&tree, &tb_holder);
 	return R_NilValue;
 }
 
@@ -1036,7 +1036,7 @@ SEXP ACtree2_compute_all_flinks(SEXP pptb)
  ****************************************************************************/
 
 /* Does report matches */
-static void walk_tb_subject(ACtree *tree, const cachedCharSeq *S,
+static void walk_tb_subject(ACtree *tree, const Chars_holder *S,
 		TBMatchBuf *tb_matches)
 {
 	ACnode *node;
@@ -1159,7 +1159,7 @@ static void report_matches(TBMatchBuf *tb_matches, int n)
 }
 
 /* Does report matches */
-static void walk_tb_nonfixed_subject(ACtree *tree, const cachedCharSeq *S,
+static void walk_tb_nonfixed_subject(ACtree *tree, const Chars_holder *S,
 		TBMatchBuf *tb_matches)
 {
 	int max_size, n;
@@ -1195,12 +1195,12 @@ static void walk_tb_nonfixed_subject(ACtree *tree, const cachedCharSeq *S,
 }
 
 /* Entry point for the MATCH FINDING section */
-void _match_tbACtree2(SEXP pptb, const cachedCharSeq *S, int fixedS,
+void _match_tbACtree2(SEXP pptb, const Chars_holder *S, int fixedS,
 		TBMatchBuf *tb_matches)
 {
 	ACtree tree;
 	SEXP tb;
-	cachedXStringSet cached_tb;
+	XStringSet_holder tb_holder;
 
 	tree = pptb_asACtree(pptb);
 	if (fixedS) {
@@ -1209,9 +1209,9 @@ void _match_tbACtree2(SEXP pptb, const cachedCharSeq *S, int fixedS,
 	}
 	if (!has_all_flinks(&tree)) {
 		tb = _get_PreprocessedTB_tb(pptb);
-		cached_tb = _cache_XStringSet(tb);
+		tb_holder = _hold_XStringSet(tb);
 		//Rprintf("computing all flinks... ");
-		compute_all_flinks(&tree, &cached_tb);
+		compute_all_flinks(&tree, &tb_holder);
 		//Rprintf("OK\n");
 	}
 	walk_tb_nonfixed_subject(&tree, S, tb_matches);
@@ -1227,7 +1227,7 @@ void _match_tbACtree2(SEXP pptb, const cachedCharSeq *S, int fixedS,
 /* Does report matches */
 static void walk_pdict_subject(ACtree *tree,
 		SEXP low2high, HeadTail *headtail,
-		const cachedCharSeq *S,
+		const Chars_holder *S,
 		int max_nmis, int min_nmis, int fixedP,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -1255,7 +1255,7 @@ static void walk_pdict_subject(ACtree *tree,
 /* Does report matches */
 static void walk_pdict_nonfixed_subject(ACtree *tree,
 		SEXP low2high, HeadTail *headtail,
-		const cachedCharSeq *S,
+		const Chars_holder *S,
 		int max_nmis, int min_nmis, int fixedP,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -1264,7 +1264,7 @@ static void walk_pdict_nonfixed_subject(ACtree *tree,
 }
 
 void _match_pdictACtree2(SEXP pptb, HeadTail *headtail,
-		const cachedCharSeq *S,
+		const Chars_holder *S,
 		int max_nmis, int min_nmis, int fixedP, int fixedS,
 		MatchPDictBuf *matchpdict_buf)
 {

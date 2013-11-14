@@ -34,7 +34,7 @@
 
         #include "_Biostrings_stubs.c" // note the underscore!
 
-      If you also need to call C routines defined in XVector (e.g. cache_XRaw)
+      If you also need to call C routines defined in XVector (e.g. hold_XRaw)
       and/or IRanges (e.g. vector_memcpy), add an XVector_stubs.c and/or
       IRanges_stubs.c file in a similar fashion.
 
@@ -68,11 +68,11 @@
 
         SEXP print_XString_bytes(SEXP xstring)
         {
-            cachedCharSeq x;
+            Chars_holder x;
             int i;
             const char *x_char;
 
-            x = cache_XRaw(xstring);
+            x = hold_XRaw(xstring);
             for (i = 0, x_char = x.elts; i < x.nelt; i++, x_char++)
                 Rprintf("%x ", *x_char);
             Rprintf("\n");
@@ -130,12 +130,12 @@ int get_XStringSet_length(SEXP x);
 
 const char *get_XStringSet_xsbaseclassname(SEXP x);
 
-cachedXStringSet cache_XStringSet(SEXP x);
+XStringSet_holder hold_XStringSet(SEXP x);
 
-int get_cachedXStringSet_length(const cachedXStringSet *cached_x);
+int get_length_from_XStringSet_holder(const XStringSet_holder *x_holder);
 
-cachedCharSeq get_cachedXStringSet_elt(
-	const cachedXStringSet *cached_x,
+Chars_holder get_elt_from_XStringSet_holder(
+	const XStringSet_holder *x_holder,
 	int i
 );
 
@@ -168,13 +168,13 @@ SEXP reported_matches_asSEXP();
  * MIndex abstract accessor functions.
  */
 
-cachedMIndex cache_MIndex(SEXP x);
+MIndex_holder hold_MIndex(SEXP x);
 
-int get_cachedMIndex_length(const cachedMIndex *cached_x);
+int get_length_from_MIndex_holder(const MIndex_holder *x_holder);
 
-int get_cachedMIndex_elt_width0(const cachedMIndex *cached_x, int i);
+int get_width0_elt_from_MIndex_holder(const MIndex_holder *x_holder, int i);
 
-cachedIRanges get_cachedMIndex_elt(const cachedMIndex *cached_x, int i);
+IRanges_holder get_elt_from_MIndex_holder(const MIndex_holder *x_holder, int i);
 
 
 /*
@@ -182,8 +182,8 @@ cachedIRanges get_cachedMIndex_elt(const cachedMIndex *cached_x, int i);
  */
 
 int match_pattern_boyermoore(
-	const cachedCharSeq *P,
-	const cachedCharSeq *S,
+	const Chars_holder *P,
+	const Chars_holder *S,
 	int nfirstmatches,
 	int walk_backward
 );

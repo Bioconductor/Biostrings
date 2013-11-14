@@ -20,7 +20,7 @@ static int nal = 0;
 static char *al1_buf, *al2_buf, *al1, *al2;
 
 /* Returns the score of the alignment */
-static int needwunsQS(const cachedCharSeq *S1, const cachedCharSeq *S2,
+static int needwunsQS(const Chars_holder *S1, const Chars_holder *S2,
 		const int *mat, int mat_nrow, const int *lkup, int lkup_length,
 		int gap_cost, char gap_code)
 {
@@ -137,12 +137,12 @@ SEXP align_needwunsQS(SEXP s1, SEXP s2,
 		SEXP mat, SEXP mat_nrow, SEXP lkup,
 		SEXP gap_cost, SEXP gap_code)
 {
-	cachedCharSeq S1, S2;
+	Chars_holder S1, S2;
 	int nrow, score;
 	SEXP ans, ans_names, tag, ans_elt;
 
-	S1 = cache_XRaw(s1);
-	S2 = cache_XRaw(s2);
+	S1 = hold_XRaw(s1);
+	S2 = hold_XRaw(s2);
 	nrow = INTEGER(mat_nrow)[0];
 	score = needwunsQS(&S1, &S2,
 		   INTEGER(mat), nrow, INTEGER(lkup), LENGTH(lkup),

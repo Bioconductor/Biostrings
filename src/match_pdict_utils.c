@@ -202,8 +202,8 @@ static void collect_grouped_keys(int key0, SEXP low2high, IntAE *grouped_keys)
 	return;
 }
 
-static int nmismatch_in_HT(const cachedCharSeq *H, const cachedCharSeq *T,
-		const cachedCharSeq *S, int Hshift, int Tshift, int max_nmis)
+static int nmismatch_in_HT(const Chars_holder *H, const Chars_holder *T,
+		const Chars_holder *S, int Hshift, int Tshift, int max_nmis)
 {
 	int nmis;
 
@@ -215,8 +215,8 @@ static int nmismatch_in_HT(const cachedCharSeq *H, const cachedCharSeq *T,
 	return nmis;
 }
 
-static void match_HT(const cachedCharSeq *H, const cachedCharSeq *T,
-		const cachedCharSeq *S, int tb_end, int max_nmis, int min_nmis,
+static void match_HT(const Chars_holder *H, const Chars_holder *T,
+		const Chars_holder *S, int tb_end, int max_nmis, int min_nmis,
 		MatchPDictBuf *matchpdict_buf, int key)
 {
 	int HTdeltashift, nmis;
@@ -230,12 +230,12 @@ static void match_HT(const cachedCharSeq *H, const cachedCharSeq *T,
 }
 
 static void match_headtail_for_loc(const HeadTail *headtail,
-		const cachedCharSeq *S, int tb_end, int max_nmis, int min_nmis,
+		const Chars_holder *S, int tb_end, int max_nmis, int min_nmis,
 		MatchPDictBuf *matchpdict_buf)
 {
 	int nelt, i;
 	const int *key;
-	const cachedCharSeq *H, *T;
+	const Chars_holder *H, *T;
 
 	nelt = IntAE_get_nelt(&(headtail->grouped_keys));
 	for (i = 0, key = headtail->grouped_keys.elts;
@@ -251,11 +251,11 @@ static void match_headtail_for_loc(const HeadTail *headtail,
 }
 
 static void match_headtail_for_key(const HeadTail *headtail, int key,
-		const cachedCharSeq *S, const IntAE *tb_end_buf,
+		const Chars_holder *S, const IntAE *tb_end_buf,
 		int max_nmis, int min_nmis,
 		MatchPDictBuf *matchpdict_buf)
 {
-	const cachedCharSeq *H, *T;
+	const Chars_holder *H, *T;
 	int nelt, j;
 	const int *tb_end;
 
@@ -273,7 +273,7 @@ static void match_headtail_for_key(const HeadTail *headtail, int key,
 }
 
 static void match_headtail_by_loc(const HeadTail *headtail,
-		const cachedCharSeq *S, const IntAE *tb_end_buf,
+		const Chars_holder *S, const IntAE *tb_end_buf,
 		int max_nmis, int min_nmis,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -293,7 +293,7 @@ static void match_headtail_by_loc(const HeadTail *headtail,
 }
 
 static void match_headtail_by_key(HeadTail *headtail,
-		const cachedCharSeq *S, const IntAE *tb_end_buf,
+		const Chars_holder *S, const IntAE *tb_end_buf,
 		int max_nmis, int min_nmis,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -367,7 +367,7 @@ HeadTail _new_HeadTail(SEXP pdict_head, SEXP pdict_tail, SEXP pptb,
 	    grouped_keys_buflength;
 	SEXP low2high, dups, base_codes;
 	RoSeqs head, tail;
-	cachedCharSeq *H, *T;
+	Chars_holder *H, *T;
 
 	tb_length = _get_PreprocessedTB_length(pptb);
 	low2high = _get_PreprocessedTB_low2high(pptb);
@@ -464,7 +464,7 @@ static void init_nmis_bmbuf(BitMatrix *bmbuf, int nrow)
 	return;
 }
 
-static void preprocess_H(const cachedCharSeq *H,
+static void preprocess_H(const Chars_holder *H,
 		const ByteTrTable *byte2offset, BitMatrix *bmbuf0, int i)
 {
 	int j, offset;
@@ -488,7 +488,7 @@ static void preprocess_H(const cachedCharSeq *H,
 	return;
 }
 
-static void preprocess_T(const cachedCharSeq *T,
+static void preprocess_T(const Chars_holder *T,
 		const ByteTrTable *byte2offset, BitMatrix *bmbuf0, int i)
 {
 	int j, offset;
@@ -541,7 +541,7 @@ static void preprocess_tail(const RoSeqs *tail, const IntAE *grouped_keys,
 }
 
 static BitCol match_ppheadtail_for_loc(HeadTail *headtail, int tb_width,
-		const cachedCharSeq *S, int tb_end, int max_nmis, int min_nmis)
+		const Chars_holder *S, int tb_end, int max_nmis, int min_nmis)
 {
 	BitMatrix *nmis_bmbuf;
 	const BitMatrix *head_bmbuf, *tail_bmbuf;
@@ -657,7 +657,7 @@ static void flush_tmp_match_bmbuf(HeadTail *headtail, MatchPDictBuf *matchpdict_
 */
 
 static void match_ppheadtail0(HeadTail *headtail,
-		const cachedCharSeq *S, const IntAE *tb_end_buf,
+		const Chars_holder *S, const IntAE *tb_end_buf,
 		int max_nmis, int min_nmis,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -716,7 +716,7 @@ static void match_ppheadtail0(HeadTail *headtail,
 }
 
 static void match_ppheadtail(HeadTail *headtail,
-		const cachedCharSeq *S, const IntAE *tb_end_buf,
+		const Chars_holder *S, const IntAE *tb_end_buf,
 		int max_nmis, int min_nmis,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -755,7 +755,7 @@ static void match_ppheadtail(HeadTail *headtail,
 
 /*
 static void BENCHMARK_match_ppheadtail(HeadTail *headtail,
-		const cachedCharSeq *S, const IntAE *tb_end_buf,
+		const Chars_holder *S, const IntAE *tb_end_buf,
 		int max_nmis, int min_nmis,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -790,7 +790,7 @@ static void BENCHMARK_match_ppheadtail(HeadTail *headtail,
 
 void _match_pdict_flanks_at(int key0, SEXP low2high,
 		HeadTail *headtail,
-		const cachedCharSeq *S, int tb_end,
+		const Chars_holder *S, int tb_end,
 		int max_nmis, int min_nmis, int fixedP,
 		MatchPDictBuf *matchpdict_buf)
 {
@@ -812,7 +812,7 @@ void _match_pdict_flanks_at(int key0, SEXP low2high,
    _match_pdict_all_flanks() just propagates the matches to the duplicates */
 void _match_pdict_all_flanks(SEXP low2high,
 		HeadTail *headtail,
-		const cachedCharSeq *S,
+		const Chars_holder *S,
 		int max_nmis, int min_nmis,
 		MatchPDictBuf *matchpdict_buf)
 {
