@@ -94,13 +94,25 @@ replaceAt(x, at, value="")
   metadata columns are preserved.
 }
 
+\note{
+  Like \code{\link[XVector]{subseq}} (defined and documented in the
+  \pkg{XVector} package), \code{extractAt} does not copy the sequence data!
+
+  \code{extractAt} is equivalent to \code{\link[IRanges]{extractList}}
+  (defined and documented in the \pkg{IRanges} package) when \code{x} is an
+  \link{XString} object and \code{at} a \link[IRanges]{Ranges} object.
+}
+
 \author{H. Pages}
 
 \seealso{
   \itemize{
     \item The \code{\link[XVector]{subseq}} and \code{\link[XVector]{subseq<-}}
           functions in the \pkg{XVector} package for simpler forms of
-          subsequence extractions or replacements.
+          subsequence extractions and replacements.
+
+    \item \code{\link[IRanges]{extractList}} function defined and documented
+          in the \pkg{IRanges} package.
 
     \item The \code{\link{replaceLetterAt}} function for a DNA-specific
           single-letter replacement functions useful for SNP injections.

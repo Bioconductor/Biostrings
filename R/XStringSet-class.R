@@ -33,6 +33,41 @@ setClass("AAStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "seqtype" and "seqtype<-" methods.
+###
+
+setMethod("seqtype", "XStringSet",
+    function(x) seqtype(new(elementType(x)))
+)
+
+### NOT an endomorphism in general! (Because it downgrades 'x' to a
+### B/DNA/RNA/AAStringSet instance.)
+setReplaceMethod("seqtype", "XStringSet",
+    function(x, value)
+    {
+        ans_class <- paste(value, "StringSet", sep="")
+        ## Don't try to replace the code below with 'as(x, ans_class)' because
+        ## that would introduce a chicken-egg situation ('as(x, ans_class)'
+        ## actually calls the seqtype() setter when 'x' is an XStringSet
+        ## object).
+        lkup <- get_seqtype_conversion_lookup(seqtype(x), value)
+        if (!is.null(lkup))
+            x <- xvcopy(x, lkup=lkup)  # temporarily breaks 'x'!
+        new2(ans_class, pool=x@pool, ranges=x@ranges, check=FALSE)
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### splitAsListReturnedClass()
+###
+
+setMethod("splitAsListReturnedClass", "XString",
+    function(x) paste0(class(x), "Set")
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor-like methods.
 ###
 
@@ -108,48 +143,6 @@ setReplaceMethod("subseq", "XStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Unsafe constructor (not exported). Use only when 'ranges' is guaranteed
-### to contain valid ranges on 'xvector' i.e. ranges that are within the
-### limits of 'xvector'.
-###
-
-unsafe.newXStringSet <- function(xvector, ranges, use.names=FALSE, names=NULL)
-{
-    ans_class <- paste(class(xvector), "Set", sep="")
-    ans <- XVector:::unsafe.newXVectorList1(ans_class, xvector, ranges)
-    if (normargUseNames(use.names))
-        names(ans) <- names
-    ans
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "seqtype" and "seqtype<-" methods.
-###
-
-setMethod("seqtype", "XStringSet",
-    function(x) seqtype(new(elementType(x)))
-)
-
-### NOT an endomorphism in general! (Because it downgrades 'x' to a
-### B/DNA/RNA/AAStringSet instance.)
-setReplaceMethod("seqtype", "XStringSet",
-    function(x, value)
-    {
-        ans_class <- paste(value, "StringSet", sep="")
-        ## Don't try to replace the code below with 'as(x, ans_class)' because
-        ## that would introduce a chicken-egg situation ('as(x, ans_class)'
-        ## actually calls the seqtype() setter when 'x' is an XStringSet
-        ## object).
-        lkup <- get_seqtype_conversion_lookup(seqtype(x), value)
-        if (!is.null(lkup))
-            x <- xvcopy(x, lkup=lkup)  # temporarily breaks 'x'!
-        new2(ans_class, pool=x@pool, ranges=x@ranges, check=FALSE)
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The XStringSet() constructor. NOT exported.
 ###
 ### This constructor and its helper functions use the uSEW (user-specified
@@ -166,14 +159,13 @@ setReplaceMethod("seqtype", "XStringSet",
     ## We mimic how substring() replicates the name of a single string (try
     ## 'substring(c(A="abcdefghij"), 2, 6:2)').
     if (!is(x, "XString") && normargUseNames(use.names)) {
-        ans_names <- names(x)
-        if (!is.null(ans_names))
-            ans_names <- rep.int(ans_names, length(ans_ranges))
-    } else {
-        ans_names <- NULL
+        x_names <- names(x)
+        if (!is.null(x_names)) {
+            ans_names <- rep.int(x_names, length(ans_ranges))
+            names(ans_ranges) <- ans_names
+        }
     }
-    unsafe.newXStringSet(ans_xvector, ans_ranges,
-                         use.names=TRUE, names=ans_names)
+    extractList(ans_xvector, ans_ranges)
 }
 
 .charToXStringSet <- function(seqtype, x, start, end, width, use.names)
@@ -432,24 +424,6 @@ setMethod("show", "XStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Splitting
-###
-
-setMethod("splitAsListReturnedClass", "BStringSet",
-    function(x) "BStringSetList"
-)
-setMethod("splitAsListReturnedClass", "DNAStringSet",
-    function(x) "DNAStringSetList"
-)
-setMethod("splitAsListReturnedClass", "RNAStringSet",
-    function(x) "RNAStringSetList"
-)
-setMethod("splitAsListReturnedClass", "AAStringSet",
-    function(x) "AAStringSetList"
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Set Operations
 ###
 
@@ -557,8 +531,8 @@ setMethod("updateObject", "XStringSet",
             return(object)
         ans_xvector <- updateObject(object@super)
         ans_ranges <- updateObject(object@ranges)
-        unsafe.newXStringSet(ans_xvector, ans_ranges,
-                             use.names=TRUE, names=names(object))
+        names(ans_ranges) <- names(object)
+        extractList(ans_xvector, ans_ranges)
     }
 )
 

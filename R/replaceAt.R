@@ -313,12 +313,10 @@ setGeneric("replaceAt", signature="x",
 setMethod("extractAt", "XString",
     function(x, at)
     {
-        at <- .normarg_at1(at, x)
-        ## This call to unsafe.newXStringSet() is safe because .normarg_at1()
-        ## already checked that all the ranges in 'at' are within the limits
-        ## of sequence 'x'. Calling 'as(Views(x, at), "XStringSet")' would
-        ## check this again and thus be much slower (between 5x and 10x).
-        unsafe.newXStringSet(x, at)
+        at <- .make_Ranges_from_at(at)
+        ## extractList() will check that all the ranges in 'at' are within
+        ## the limits of sequence 'x'.
+        extractList(x, at)
     }
 )
 

@@ -103,8 +103,7 @@ fromXStringViewsToStringSet <- function(x,
         else
             stop("'x' has \"out of limits\" views")
     }
-    unsafe.newXStringSet(subject(x), ans_ranges,
-                         use.names=TRUE, names=names(ans_ranges))
+    extractList(subject(x), ans_ranges)
 }
 
 ### We need this so that B/DNA/RNA/AAStringSet() used below work on an

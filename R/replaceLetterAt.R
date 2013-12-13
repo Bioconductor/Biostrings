@@ -41,7 +41,7 @@ setMethod("replaceLetterAt", "DNAString",
 
 ## Current restrictions: 'x' and 'at' must be rectangular i.e. 'x' must have
 ## a constant width and 'at' must be a logical matrix.
-## TODO: Extend replaceLetterAt().
+## TODO: Get rid of these restrictions.
 setMethod("replaceLetterAt", "DNAStringSet",
     function(x, at, letter, if.not.extending="replace", verbose=FALSE)
     {
@@ -62,11 +62,11 @@ setMethod("replaceLetterAt", "DNAStringSet",
             stop("'x' and 'letter' must have the same length")
         if (!all(width(letter) == rowSums(at)))
             stop("width(letter) and rowSums(at) must be the same")
-        ans_super <- replaceLetterAt(unlist(x), as.vector(t(at)), letter,
-                                     if.not.extending=if.not.extending,
-                                     verbose=verbose)
-        ans_ranges <- successiveIRanges(width(x))
-        unsafe.newXStringSet(ans_super, ans_ranges, use.names=TRUE, names=names(x))
+        unlisted_x <- unlist(x, use.names=FALSE)
+        unlisted_ans <- replaceLetterAt(unlisted_x, as.vector(t(at)), letter,
+                                        if.not.extending=if.not.extending,
+                                        verbose=verbose)
+        relist(unlisted_ans, x)
     }
 )
 

@@ -51,6 +51,16 @@ setClass("AAStringSetList",
     )
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### splitAsListReturnedClass()
+###
+
+setMethod("splitAsListReturnedClass", "XStringSet",
+    function(x) paste0(class(x), "List")
+)
+
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor-like methods.
 ###
