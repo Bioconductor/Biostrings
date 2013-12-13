@@ -57,7 +57,7 @@ setClass("AAStringSetList",
 ###
 
 setMethod("splitAsListReturnedClass", "XStringSet",
-    function(x) paste0(class(x), "List")
+    function(x) paste0(seqtype(x), "StringSetList")
 )
 
 
