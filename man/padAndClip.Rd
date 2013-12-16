@@ -91,9 +91,10 @@ stackStrings(x, from, to, shift=0L,
 
 \seealso{
   \itemize{
-    \item The \code{\link[Rsamtools]{stackStringsFromBam}} function in
-          the \pkg{Rsamtools} package for stacking the read sequences (or
-          their quality strings) stored in a BAM file on a region of interest.
+    \item The \code{\link[GenomicAlignments]{stackStringsFromBam}} function
+          in the \pkg{GenomicAlignments} package for stacking the read
+          sequences (or their quality strings) stored in a BAM file on
+          a region of interest.
 
     \item The \link{XStringViews} class to formally represent a set of views
           on a single string.
