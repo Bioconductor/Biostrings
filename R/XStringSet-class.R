@@ -59,11 +59,15 @@ setReplaceMethod("seqtype", "XStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### splitAsListReturnedClass()
+### Going from XString to XStringSet with extractList() and family.
 ###
 
-setMethod("splitAsListReturnedClass", "XString",
+setMethod("relistReturnedClass", "XString",
     function(x) paste0(class(x), "Set")
+)
+
+setMethod("splitAsListReturnedClass", "XString",
+    function(x) {.Deprecated("relistReturnedClass"); paste0(class(x), "Set")}
 )
 
 

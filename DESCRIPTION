@@ -4,13 +4,13 @@ Title: String objects representing biological sequences, and matching
 Description: Memory efficient string containers, string matching
 	algorithms, and other utilities, for fast manipulation of large
 	biological sequences or sets of sequences.
-Version: 2.31.4
+Version: 2.31.5
 Author: H. Pages, P. Aboyoun, R. Gentleman, and S. DebRoy
 Maintainer: H. Pages <hpages@fhcrc.org>
 biocViews: SequenceMatching, Genetics, Sequencing, Infrastructure,
 	DataImport, DataRepresentation
 Depends: R (>= 2.8.0), methods, BiocGenerics (>= 0.5.4),
-	IRanges (>= 1.21.15), XVector (>= 0.3.4)
+	IRanges (>= 1.21.16), XVector (>= 0.3.5)
 Imports: graphics, methods, stats, utils, BiocGenerics, IRanges, XVector
 LinkingTo: IRanges, XVector
 Enhances: Rmpi
