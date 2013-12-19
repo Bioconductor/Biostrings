@@ -146,6 +146,12 @@ Chars_holder _get_elt_from_XStringSet_holder(
 	int i
 );
 
+XStringSet_holder _get_linear_subset_from_XStringSet_holder(
+	const XStringSet_holder *x_holder,
+	int offset,
+	int length
+);
+
 void _set_XStringSet_names(
 	SEXP x,
 	SEXP names
@@ -171,6 +177,20 @@ RoSeqs _new_RoSeqs_from_XStringSet(
 );
 
 SEXP XStringSet_unlist(SEXP x);
+
+
+/* XStringSetList_class.c */
+
+XStringSetList_holder _hold_XStringSetList(SEXP x);
+
+int _get_length_from_XStringSetList_holder(
+	const XStringSetList_holder *x_holder
+);
+
+XStringSet_holder _get_elt_from_XStringSetList_holder(
+	const XStringSetList_holder *x_holder,
+	int i
+);
 
 
 /* xscat.c */

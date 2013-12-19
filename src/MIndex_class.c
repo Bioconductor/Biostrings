@@ -100,9 +100,9 @@ IRanges_holder _get_elt_from_MIndex_holder(const MIndex_holder *x_holder, int i)
 		i = low - 1;
 	iranges_holder.classname = "IRanges";
 	iranges_holder.is_constant_width = 1;
-	iranges_holder.offset = 0;
 	iranges_holder.width = INTEGER(x_holder->width0) + i;
 	iranges_holder.start = NULL;
+	iranges_holder.SEXP_offset = 0;
 	iranges_holder.names = R_NilValue;
 	ends_elt = VECTOR_ELT(x_holder->ends, i);
 	if (ends_elt == R_NilValue) {

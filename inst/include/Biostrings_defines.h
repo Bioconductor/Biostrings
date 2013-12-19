@@ -69,6 +69,13 @@ typedef struct roseqs {
 
 typedef XVectorList_holder XStringSet_holder;
 
+typedef struct xstringset_list_holder {
+        const char *classname;
+        int length;
+        const int *end;
+        XStringSet_holder unlistData_holder;
+} XStringSetList_holder;
+
 typedef struct mindex_holder {
 	const char *classname;
 	int length;

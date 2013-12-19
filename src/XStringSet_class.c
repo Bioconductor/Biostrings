@@ -60,9 +60,17 @@ int _get_length_from_XStringSet_holder(const XStringSet_holder *x_holder)
 	return get_length_from_XVectorList_holder(x_holder);
 }
 
-Chars_holder _get_elt_from_XStringSet_holder(const XStringSet_holder *x_holder, int i)
+Chars_holder _get_elt_from_XStringSet_holder(
+		const XStringSet_holder *x_holder, int i)
 {
 	return get_elt_from_XRawList_holder(x_holder, i);
+}
+
+XStringSet_holder _get_linear_subset_from_XStringSet_holder(
+		const XStringSet_holder *x_holder, int offset, int length)
+{
+	return get_linear_subset_from_XVectorList_holder(x_holder,
+							 offset, length);
 }
 
 
