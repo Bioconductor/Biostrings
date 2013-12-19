@@ -115,7 +115,8 @@
 
 
 /*
- * Low-level manipulation of XString and XStringSet objects.
+ * Low-level manipulation of XString objects.
+ * (see XString_class.c)
  */
 
 char DNAencode(char c);
@@ -125,6 +126,11 @@ char DNAdecode(char code);
 char RNAencode(char c);
 
 char RNAdecode(char code);
+
+/*
+ * Low-level manipulation of XStringSet objects.
+ * (see XStringSet_class.c)
+ */
 
 int get_XStringSet_length(SEXP x);
 
@@ -139,11 +145,32 @@ Chars_holder get_elt_from_XStringSet_holder(
 	int i
 );
 
+XStringSet_holder get_linear_subset_from_XStringSet_holder(
+	const XStringSet_holder *x_holder,
+	int offset,
+	int length
+);
+
 void set_XStringSet_names(
 	SEXP x,
 	SEXP names
 );
 
+/*
+ * Low-level manipulation of XStringSetList objects.
+ * (see XStringSetList_class.c)
+ */
+
+XStringSetList_holder hold_XStringSetList(SEXP x);
+
+int get_length_from_XStringSetList_holder(
+	const XStringSetList_holder *x_holder
+);
+
+XStringSet_holder get_elt_from_XStringSetList_holder(
+	const XStringSetList_holder *x_holder,
+	int i
+);
 
 /*
  * Match reporting facilities.

@@ -224,7 +224,13 @@ void R_init_Biostrings(DllInfo *info)
 	REGISTER_CCALLABLE(_hold_XStringSet);
 	REGISTER_CCALLABLE(_get_length_from_XStringSet_holder);
 	REGISTER_CCALLABLE(_get_elt_from_XStringSet_holder);
+	REGISTER_CCALLABLE(_get_linear_subset_from_XStringSet_holder);
 	REGISTER_CCALLABLE(_set_XStringSet_names);
+
+/* XStringSetList_class.c */
+	REGISTER_CCALLABLE(_hold_XStringSetList);
+	REGISTER_CCALLABLE(_get_length_from_XStringSetList_holder);
+	REGISTER_CCALLABLE(_get_elt_from_XStringSetList_holder);
 
 /* match_reporting.c */
 	REGISTER_CCALLABLE(_init_match_reporting);

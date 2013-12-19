@@ -80,9 +80,33 @@ DEFINE_CCALLABLE_STUB(Chars_holder, get_elt_from_XStringSet_holder,
 	(                         x_holder,     i)
 )
 
+DEFINE_CCALLABLE_STUB(XStringSet_holder, get_linear_subset_from_XStringSet_holder,
+	(const XStringSet_holder *x_holder, int offset, int length),
+	(                         x_holder,     offset,     length)
+)
+
 DEFINE_NOVALUE_CCALLABLE_STUB(set_XStringSet_names,
 	(SEXP x, SEXP names),
 	(     x,      names)
+)
+
+/*
+ * Stubs for callables defined in XStringSetList_class.c
+ */
+
+DEFINE_CCALLABLE_STUB(XStringSetList_holder, hold_XStringSetList,
+	(SEXP x),
+	(     x)
+)
+
+DEFINE_CCALLABLE_STUB(int, get_length_from_XStringSetList_holder,
+        (const XStringSetList_holder *x_holder),
+        (                             x_holder)
+)
+
+DEFINE_CCALLABLE_STUB(XStringSet_holder, get_elt_from_XStringSetList_holder,
+        (const XStringSetList_holder *x_holder, int i),
+        (                             x_holder,     i)
 )
 
 /*
