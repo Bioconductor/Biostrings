@@ -86,6 +86,9 @@ static const R_CallMethodDef callMethods[] = {
 /* inject_code.c */
 	CALLMETHOD_DEF(XString_inject_code, 4),
 
+/* unstrsplit_methods.c */
+	CALLMETHOD_DEF(XStringSetList_unstrsplit, 3),
+
 /* SparseList_utils.c */
 	CALLMETHOD_DEF(debug_SparseList_utils, 0),
 

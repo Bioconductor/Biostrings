@@ -50,6 +50,7 @@ Collate: 00datacache.R
 	replaceLetterAt.R
 	injectHardMask.R
 	padAndClip.R
+	unstrsplit-methods.R
 	misc.R
 	SparseList-class.R
 	MIndex-class.R

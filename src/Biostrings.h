@@ -406,6 +406,15 @@ SEXP XString_inject_code(
 );
 
 
+/* unstrsplit_methods.c */
+
+SEXP XStringSetList_unstrsplit(
+	SEXP x,
+	SEXP sep,
+	SEXP seqtype
+);
+
+
 /* SparseList_utils.c */
 
 SEXP debug_SparseList_utils();

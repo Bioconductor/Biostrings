@@ -110,6 +110,7 @@ exportMethods(
 ###   replaceLetterAt.R
 ###   injectHardMask.R
 ###   padAndClip.R
+###   unstrsplit-methods.R
 ###   misc.R
 
 export(
@@ -185,7 +186,8 @@ exportMethods(
     codons, translate,
     extractAt, replaceAt,
     replaceLetterAt,
-    injectHardMask
+    injectHardMask,
+    unstrsplit
 )
 
 
