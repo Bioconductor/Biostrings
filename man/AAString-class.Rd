@@ -7,6 +7,8 @@
 
 % Constants:
 \alias{AA_ALPHABET}
+\alias{AA_STANDARD}
+\alias{AA_PROTEINOGENIC}
 
 % Constructor-like functions and generics:
 \alias{AAString}
@@ -17,6 +19,24 @@
 \description{
   An AAString object allows efficient storage
   and manipulation of a long amino acid sequence.
+}
+
+\usage{
+AAString(x="", start=1, nchar=NA)
+
+## Predefined constants:
+AA_ALPHABET       # full Amino Acid alphabet
+AA_STANDARD       # first 20 letters only
+AA_PROTEINOGENIC  # first 22 letters only
+}
+
+\arguments{
+  \item{x}{
+    A single string.
+  }
+  \item{start, nchar}{
+    Where to start reading from in \code{x} and how many letters to read.
+  }
 }
 
 \details{

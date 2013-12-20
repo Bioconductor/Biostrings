@@ -48,11 +48,11 @@ exportClasses(
 export(
     ## IUPAC_CODE_MAP.R + AMINO_ACID_CODE.R + GENETIC_CODE.R:
     IUPAC_CODE_MAP, mergeIUPACLetters,
-    AMINO_ACID_CODE, GENETIC_CODE,
-    RNA_GENETIC_CODE,
+    AMINO_ACID_CODE, AA_ALPHABET, AA_STANDARD, AA_PROTEINOGENIC,
+    GENETIC_CODE, RNA_GENETIC_CODE,
 
     ## XStringCodec-class.R:
-    DNA_BASES, RNA_BASES, DNA_ALPHABET, RNA_ALPHABET, AA_ALPHABET,
+    DNA_BASES, RNA_BASES, DNA_ALPHABET, RNA_ALPHABET,
 
     ## seqtype.R:
     seqtype, "seqtype<-", get_seqtype_conversion_lookup, alphabet,

@@ -24,8 +24,10 @@ AMINO_ACID_CODE <- c(
     Y="Tyr", # Tyrosine
     V="Val", # Valine
 
-  ## Not coded for directly in the genetic code:
+  ## 21st and 22nd proteinogenic amino acids. Not coded for directly in
+  ## the Standard Genetic Code:
     U="Sec", # Selenocysteine
+    O="Pyl", # Pyrrolysine
 
   ## Ambiguities:
     B="Asx", # Asparagine or Aspartic Acid
@@ -33,6 +35,12 @@ AMINO_ACID_CODE <- c(
     X="Xaa"  # Any amino acid
 )
 
+.AMINO_ACID_CODE_names <- names(AMINO_ACID_CODE)
+
 ### Amino Acid alphabet ("*" is a translation stop)
-AA_ALPHABET <- c(names(AMINO_ACID_CODE), "*", "-", "+")
+AA_ALPHABET <- c(.AMINO_ACID_CODE_names, "*", "-", "+")
+
+AA_STANDARD <- .AMINO_ACID_CODE_names[1:20]
+
+AA_PROTEINOGENIC <- .AMINO_ACID_CODE_names[1:22]
 
