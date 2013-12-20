@@ -62,7 +62,7 @@ document.
 \hline
 \Rfunction{rev} & Reverse the order of the sequences in an object. \\
 \hline
-\Rfunction{c} & Put in a single object the sequences from 2 or more objects. \\
+\Rfunction{c} & Combine in a single object the sequences from 2 or more objects. \\
 \hline
 \Rfunction{width}, \Rfunction{nchar} & Return the sizes (i.e. number of
     letters) of all the sequences in an object.\\
@@ -82,49 +82,18 @@ document.
     except that the ordering of DNA or Amino Acid sequences doesn't
     depend on the locale. \\
 \hline
-\Rfunction{split}, \Rfunction{relist} &
-    Analog to \Rfunction{split} and \Rfunction{relist} on character vectors,
+\Rfunction{relist}, \Rfunction{split}, \Rfunction{extractList} &
+    Analog to \Rfunction{relist} and \Rfunction{split} on character vectors,
     except that the result is a \Rclass{DNAStringSetList} or
-    \Rclass{AAStringSetList} object. \\
+    \Rclass{AAStringSetList} object.
+    \Rfunction{extractList} is a generalization of \Rfunction{relist} and
+    \Rfunction{split} that supports \emph{arbitrary} groupings. \\
 \hline
 \end{tabular}
 \end{center}
-\caption{\bf Low-level manipulation of \Rclass{DNAStringSet} or
+\caption{\bf Low-level manipulation of \Rclass{DNAStringSet} and
          \Rclass{AAStringSet} objects.}
 \label{table:Low_level_manipulation}
-\end{table}
-
-%-----------------------------------------------------------------------------
-
-\begin{table}[ht]
-\begin{center}
-\begin{tabular}{p{2.5in}|p{4in}}
-{\bf Function} & {\bf Description} \\
-\hline
-\Rfunction{reverse}\par
-\Rfunction{complement}\par
-\Rfunction{reverseComplement} &
-    Compute the reverse, complement, or reverse-complement, of a set of
-    DNA sequences. \\
-\hline
-\Rfunction{translate} &
-    Translate a set of DNA sequences into a set of Amino Acid sequences. \\
-\hline
-\Rfunction{chartr} & Translate the letters in a set of sequences. \\
-\hline
-\Rfunction{subseq}, \Rfunction{subseq<-}\par
-\Rfunction{extractAt}, \Rfunction{replaceAt} &
-    Extract/replace arbitrary substrings from/in a string or set of strings. \\
-\hline
-\Rfunction{replaceLetterAt} & Replace the letters specified by a set of
-    positions by new letters. \\
-\hline
-\Rfunction{padAndClip}, \Rfunction{stackStrings} & Pad and clip strings. \\
-\hline
-\end{tabular}
-\end{center}
-\caption{\bf Sequence editing.}
-\label{table:Sequence_editing}
 \end{table}
 
 %-----------------------------------------------------------------------------
@@ -162,6 +131,43 @@ document.
 \end{center}
 \caption{\bf Counting / tabulating.}
 \label{table:Counting_tabulating}
+\end{table}
+
+%-----------------------------------------------------------------------------
+
+\begin{table}[ht]
+\begin{center}
+\begin{tabular}{p{2.5in}|p{4in}}
+{\bf Function} & {\bf Description} \\
+\hline
+\Rfunction{reverse}\par
+\Rfunction{complement}\par
+\Rfunction{reverseComplement} &
+    Compute the reverse, complement, or reverse-complement, of a set of
+    DNA sequences. \\
+\hline
+\Rfunction{translate} &
+    Translate a set of DNA sequences into a set of Amino Acid sequences. \\
+\hline
+\Rfunction{chartr} & Translate the letters in a set of sequences. \\
+\hline
+\Rfunction{subseq}, \Rfunction{subseq<-}\par
+\Rfunction{extractAt}, \Rfunction{replaceAt} &
+    Extract/replace arbitrary substrings from/in a string or set of strings. \\
+\hline
+\Rfunction{replaceLetterAt} & Replace the letters specified by a set of
+    positions by new letters. \\
+\hline
+\Rfunction{padAndClip}, \Rfunction{stackStrings} & Pad and clip strings. \\
+\hline
+\Rfunction{unstrsplit} & A fast implementation of
+    \code{sapply(x, paste0, collapse=sep)} for collapsing the list elements
+    of a \Rclass{DNAStringSetList} or \Rclass{AAStringSetList} object. \\
+\hline
+\end{tabular}
+\end{center}
+\caption{\bf Sequence transformation and editing.}
+\label{table:Sequence_editing}
 \end{table}
 
 %-----------------------------------------------------------------------------
