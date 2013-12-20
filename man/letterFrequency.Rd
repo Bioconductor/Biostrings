@@ -10,9 +10,11 @@
 \alias{alphabetFrequency,XString-method}
 \alias{alphabetFrequency,DNAString-method}
 \alias{alphabetFrequency,RNAString-method}
+\alias{alphabetFrequency,AAString-method}
 \alias{alphabetFrequency,XStringSet-method}
 \alias{alphabetFrequency,DNAStringSet-method}
 \alias{alphabetFrequency,RNAStringSet-method}
+\alias{alphabetFrequency,AAStringSet-method}
 \alias{alphabetFrequency,XStringViews-method}
 \alias{alphabetFrequency,MaskedXString-method}
 

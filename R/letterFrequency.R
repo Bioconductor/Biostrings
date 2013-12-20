@@ -118,13 +118,27 @@
     ans
 }
 
-.XString.code_frequency <- function(x, as.prob, baseOnly)
+.XString.nucleotide_frequency <- function(x, as.prob, baseOnly)
 {
     if (!isTRUEorFALSE(as.prob))
         stop("'as.prob' must be TRUE or FALSE")
     codes <- xscodes(x, baseOnly=baseOnly)
     ans <- .Call2("XString_letter_frequency",
                  x, codes, baseOnly,
+                 PACKAGE="Biostrings")
+    if (as.prob)
+        ans <- ans / nchar(x) # nchar(x) is sum(ans) but faster
+    ans
+}
+
+.XString.amino_acid_frequency <- function(x, as.prob)
+{
+    if (!isTRUEorFALSE(as.prob))
+        stop("'as.prob' must be TRUE or FALSE")
+    codes <- as.integer(AAString(paste0(AA_ALPHABET, collapse="")))
+    names(codes) <- AA_ALPHABET    
+    ans <- .Call2("XString_letter_frequency",
+                 x, codes, TRUE,
                  PACKAGE="Biostrings")
     if (as.prob)
         ans <- ans / nchar(x) # nchar(x) is sum(ans) but faster
@@ -148,7 +162,7 @@
     ans
 }
 
-.XStringSet.code_frequency <- function(x, as.prob, collapse, baseOnly)
+.XStringSet.nucleotide_frequency <- function(x, as.prob, collapse, baseOnly)
 {
     if (!isTRUEorFALSE(as.prob))
         stop("'as.prob' must be TRUE or FALSE")
@@ -156,6 +170,25 @@
     codes <- xscodes(x, baseOnly=baseOnly)
     ans <- .Call2("XStringSet_letter_frequency",
                  x, collapse, codes, baseOnly,
+                 PACKAGE="Biostrings")
+    if (as.prob) {
+        if (collapse)
+            ans <- ans / sum(ans)
+        else
+            ans <- ans / nchar(x)
+    }
+    ans
+}
+
+.XStringSet.amino_acid_frequency <- function(x, as.prob, collapse)
+{
+    if (!isTRUEorFALSE(as.prob))
+        stop("'as.prob' must be TRUE or FALSE")
+    collapse <- .normargCollapse(collapse)
+    codes <- as.integer(AAString(paste0(AA_ALPHABET, collapse="")))
+    names(codes) <- AA_ALPHABET
+    ans <- .Call2("XStringSet_letter_frequency",
+                 x, collapse, codes, TRUE,
                  PACKAGE="Biostrings")
     if (as.prob) {
         if (collapse)
@@ -177,12 +210,17 @@ setMethod("alphabetFrequency", "XString",
 
 setMethod("alphabetFrequency", "DNAString",
     function(x, as.prob=FALSE, baseOnly=FALSE)
-        .XString.code_frequency(x, as.prob, baseOnly)
+        .XString.nucleotide_frequency(x, as.prob, baseOnly)
 )
 
 setMethod("alphabetFrequency", "RNAString",
     function(x, as.prob=FALSE, baseOnly=FALSE)
-        .XString.code_frequency(x, as.prob, baseOnly)
+        .XString.nucleotide_frequency(x, as.prob, baseOnly)
+)
+
+setMethod("alphabetFrequency", "AAString",
+    function(x, as.prob=FALSE)
+        .XString.amino_acid_frequency(x, as.prob)
 )
 
 setMethod("alphabetFrequency", "XStringSet",
@@ -192,12 +230,17 @@ setMethod("alphabetFrequency", "XStringSet",
 
 setMethod("alphabetFrequency", "DNAStringSet",
     function(x, as.prob=FALSE, collapse=FALSE, baseOnly=FALSE)
-        .XStringSet.code_frequency(x, as.prob, collapse, baseOnly)
+        .XStringSet.nucleotide_frequency(x, as.prob, collapse, baseOnly)
 )
 
 setMethod("alphabetFrequency", "RNAStringSet",
     function(x, as.prob=FALSE, collapse=FALSE, baseOnly=FALSE)
-        .XStringSet.code_frequency(x, as.prob, collapse, baseOnly)
+        .XStringSet.nucleotide_frequency(x, as.prob, collapse, baseOnly)
+)
+
+setMethod("alphabetFrequency", "AAStringSet",
+    function(x, as.prob=FALSE, collapse=FALSE)
+        .XStringSet.amino_acid_frequency(x, as.prob, collapse)
 )
 
 ### library(drosophila2probe)
