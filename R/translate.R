@@ -100,46 +100,91 @@ setMethod("codons", "MaskedRNAString", function(x) .MaskedXString.codons(x))
 ### The "translate" generic and methods.
 ###
 
-setGeneric("translate", function(x) standardGeneric("translate"))
+setGeneric("translate", signature="x",
+    function(x, if.fuzzy.codon="error") standardGeneric("translate")
+)
 
-.mkTranslationLkup <- function()
+.makeFuzzyGeneticCode <- function(keep.ambiguous.codons=FALSE)
 {
-    as.integer(charToRaw(
-        paste(GENETIC_CODE[mkAllStrings(DNA_BASES, 3)], collapse="")))
+    if (!isTRUEorFALSE(keep.ambiguous.codons))
+        stop("'keep.ambiguous.codons' must be TRUE or FALSE")
+    iupac_codes <- names(IUPAC_CODE_MAP)
+    fuzzy_codons <- mkAllStrings(iupac_codes, 3L)
+    fixed_codons <- DNAStringSet(names(GENETIC_CODE))
+    pdict <- PDict(fixed_codons)
+    fuzzy2fixed <- vwhichPDict(pdict, DNAStringSet(fuzzy_codons),
+                               fixed="pattern")
+    fuzzy2AAs <- relist(unname(GENETIC_CODE)[unlist(fuzzy2fixed)],
+                              PartitioningByEnd(fuzzy2fixed))
+    fuzzy2AAs <- unique(fuzzy2AAs)
+    nAAs <- elementLengths(fuzzy2AAs)
+    names(fuzzy2AAs) <- fuzzy_codons
+    stopifnot(all(nAAs >= 1L))
+    if (keep.ambiguous.codons) {
+        idx <- which(nAAs != 1L)
+        fuzzy2AAs[idx] <- "X"
+    } else {
+        idx <- which(nAAs == 1L)
+        fuzzy2AAs <- fuzzy2AAs[idx]
+    }
+    unlist(fuzzy2AAs)
+}
+
+.makeTranslationLkup <- function(codon_alphabet, genetic_code)
+{
+    codons <- mkAllStrings(codon_alphabet, 3)
+    i <- match(codons, names(genetic_code))
+    if (any(is.na(i)))
+        stop("some codons are not in 'genetic_code'")
+    as.integer(charToRaw(paste0(genetic_code[i], collapse="")))
 }
 
 setMethod("translate", "DNAString",
-    function(x) translate(DNAStringSet(x))[[1L]]
+    function(x, if.fuzzy.codon="error")
+        translate(DNAStringSet(x), if.fuzzy.codon=if.fuzzy.codon)[[1L]]
 )
 
 setMethod("translate", "RNAString",
-    function(x) translate(DNAString(x))
+    function(x, if.fuzzy.codon="error")
+        translate(DNAString(x), if.fuzzy.codon=if.fuzzy.codon)
 )
 
 setMethod("translate", "DNAStringSet",
-    function(x)
+    function(x, if.fuzzy.codon="error")
     {
-        lkup <- .mkTranslationLkup()
-        skipcode <- DNAcodes(FALSE)[["+"]]
+        if.fuzzy.codon <- match.arg(if.fuzzy.codon, c("error", "translate"))
+        if (if.fuzzy.codon == "error") {
+            codon_alphabet <- DNA_BASES
+            genetic_code <- GENETIC_CODE
+        } else {
+            codon_alphabet <- names(IUPAC_CODE_MAP)
+            genetic_code <- .makeFuzzyGeneticCode(keep.ambiguous.codons=TRUE)
+        }
+        dna_codes <- DNAcodes(baseOnly=FALSE)
+        skipcode <- dna_codes[["+"]]
+        lkup <- .makeTranslationLkup(codon_alphabet, genetic_code)
         .Call2("DNAStringSet_translate",
-              x, DNA_BASE_CODES, lkup, skipcode,
+              x, skipcode, dna_codes[codon_alphabet], lkup,
               PACKAGE="Biostrings")
     }
 )
 
 setMethod("translate", "RNAStringSet",
-    function(x) translate(DNAStringSet(x)))
+    function(x, if.fuzzy.codon="error")
+        translate(DNAStringSet(x), if.fuzzy.codon=if.fuzzy.codon)
+)
 
 setMethod("translate", "MaskedDNAString",
-    function(x) translate(injectHardMask(x))
+    function(x, if.fuzzy.codon="error")
+        translate(injectHardMask(x), if.fuzzy.codon=if.fuzzy.codon)
 )
 
 setMethod("translate", "MaskedRNAString",
-    function(x)
+    function(x, if.fuzzy.codon="error")
     {
         ## FIXME: Workaround until as(x, "MaskedDNAString") is available
         y <- new("MaskedDNAString", unmasked=DNAString(unmasked(x)), masks=masks(x))
-        translate(y)
+        translate(y, if.fuzzy.codon=if.fuzzy.codon)
     }
 )
 

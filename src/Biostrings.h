@@ -371,9 +371,9 @@ void gtestsim(
 
 SEXP DNAStringSet_translate(
 	SEXP x,
-	SEXP base_codes,
-	SEXP lkup,
-	SEXP skipcode
+	SEXP skipcode,
+	SEXP dna_codes,
+	SEXP lkup
 );
 
 
