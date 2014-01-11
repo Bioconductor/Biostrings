@@ -188,7 +188,7 @@ maxScore(pwm)
 reverseComplement(pwm)
 
 ## Score the first 5 positions:
-PWMscoreStartingAt(pwm, unmasked(chr3R), starting.at=1:5)
+PWMscoreStartingAt(pwm, chr3R, starting.at=1:5)
 
 ## Match the plus strand:
 hits <- matchPWM(pwm, chr3R)

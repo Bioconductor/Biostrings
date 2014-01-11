@@ -21,6 +21,7 @@
 % Accessor-like methods:
 \alias{unmasked}
 \alias{unmasked,MaskedXString-method}
+\alias{unmasked,XString-method}
 \alias{masks}
 \alias{masks,XString-method}
 \alias{masks,MaskedXString-method}

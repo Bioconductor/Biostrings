@@ -71,6 +71,7 @@ setClass("MaskedAAString",
 
 setGeneric("unmasked", function(x) standardGeneric("unmasked"))
 setMethod("unmasked", "MaskedXString", function(x) x@unmasked)
+setMethod("unmasked", "XString", function(x) x)  # no-op
 
 setGeneric("masks", function(x) standardGeneric("masks"))
 setMethod("masks", "XString", function(x) NULL)
