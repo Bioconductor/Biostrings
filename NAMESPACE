@@ -145,8 +145,7 @@ export(
     complement, reverseComplement,
 
     ## translate.R:
-    transcribe, cDNA, dna2rna, rna2dna,
-    codons, translate,
+    translate, codons,
 
     ## toComplex.R:
     toComplex,
@@ -164,7 +163,10 @@ export(
     padAndClip, stackStrings,
 
     ## misc.R:
-    N50
+    N50,
+
+    ## Old stuff (Deprecated or Defunct):
+    transcribe, cDNA, dna2rna, rna2dna
 )
 
 exportMethods(

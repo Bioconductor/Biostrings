@@ -9,24 +9,36 @@
 
 transcribe <- function(x)
 {
+    msg <- c("  transcribe() is deprecated. ",
+             "Please use 'RNAString(complement(x))' instead\n",
+             "  (which is how 'transcribe(x)' is implemented).")
+    .Deprecated(msg=paste0(msg, collapse=""))
     if (!is(x, "DNAString")) stop("transcribe() only works on DNA input")
     RNAString(complement(x))
 }
 
 cDNA <- function(x)
 {
+    msg <- c("  cDNA() is deprecated. ",
+             "Please use 'DNAString(complement(x))' instead\n",
+             "  (which is how 'cDNA(x)' is implemented).")
+    .Deprecated(msg=paste0(msg, collapse=""))
     if (!is(x, "RNAString")) stop("cDNA() only works on RNA input")
     DNAString(complement(x))
 }
 
 dna2rna <- function(x)
 {
+    msg <- "  dna2rna() is deprecated. Please use RNAString() instead."
+    .Deprecated(msg=msg)
     if (!is(x, "DNAString")) stop("dna2rna() only works on DNA input")
     RNAString(x)
 }
 
 rna2dna <- function(x)
 {
+    msg <- "  rna2dna() is deprecated. Please use DNAString() instead."
+    .Deprecated(msg=msg)
     if (!is(x, "RNAString")) stop("rna2dna() only works on RNA input")
     DNAString(x)
 }
