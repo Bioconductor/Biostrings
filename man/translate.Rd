@@ -139,6 +139,7 @@ translate(dna1)
 
 ## All codons except 1st are fuzzy:
 dna2 <- DNAString("TATANAGTNAGYMGRTRA")
+
 \dontrun{
   translate(dna2)  # error because of fuzzy codons
 }
@@ -173,7 +174,7 @@ which(width(codons(y1)) != 3)
 codons(y1)[20:28]
 
 ## ---------------------------------------------------------------------
-## 3. ADVANCED EXAMPLES
+## 3. AN ADVANCED EXAMPLE
 ## ---------------------------------------------------------------------
 ## Translation on the '-' strand:
 dna3 <- DNAStringSet(c("ATC", "GCTG", "CGACT"))
