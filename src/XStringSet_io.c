@@ -115,6 +115,7 @@ static FASTAloader new_FASTAINFO_loader(SEXP lkup, int load_descs,
 
 	if (lkup == R_NilValue) {
 		loader.lkup = NULL;
+		loader.lkup_length = 0;
 	} else {
 		loader.lkup = INTEGER(lkup);
 		loader.lkup_length = LENGTH(lkup);
@@ -179,6 +180,7 @@ static FASTAloader new_FASTA_loader(SEXP lkup, FASTA_loaderExt *loader_ext)
 
 	if (lkup == R_NilValue) {
 		loader.lkup = NULL;
+		loader.lkup_length = 0;
 	} else {
 		loader.lkup = INTEGER(lkup);
 		loader.lkup_length = LENGTH(lkup);
@@ -563,6 +565,7 @@ static FASTQ_loaderExt new_FASTQ_loaderExt(SEXP ans, SEXP lkup)
 	loader_ext.ans_holder = hold_XVectorList(ans);
 	if (lkup == R_NilValue) {
 		loader_ext.lkup = NULL;
+		loader_ext.lkup_length = 0;
 	} else {
 		loader_ext.lkup = INTEGER(lkup);
 		loader_ext.lkup_length = LENGTH(lkup);
