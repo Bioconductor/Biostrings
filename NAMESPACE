@@ -332,6 +332,7 @@ export(
 
     ## XStringQuality-class.R:
     PhredQuality, SolexaQuality, IlluminaQuality,
+    encoding,
 
     ## QualityScaledXStringSet.R:
     quality,

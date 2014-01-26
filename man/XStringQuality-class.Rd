@@ -52,6 +52,7 @@
 
 %% alphabet & encoding
 \alias{alphabet,XStringQuality-method}
+\alias{encoding}
 \alias{encoding,XStringQuality-method}
 
 \title{PhredQuality, SolexaQuality and IlluminaQuality objects}

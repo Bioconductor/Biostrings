@@ -204,9 +204,12 @@ setMethod("alphabet", "XStringQuality",
     alf[seq(offset(x) + minQuality(x) - 32L, length.out=len)]
 })
 
+setGeneric("encoding", function(x) standardGeneric("encoding"))
+
 setMethod("encoding", "XStringQuality",
     function(x) 
 {
     alf <- alphabet(x)
     setNames(seq(minQuality(x), length.out=length(alf)), alf)
 })
+
