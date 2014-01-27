@@ -111,8 +111,9 @@ replaceAt(x, at, value="")
           functions in the \pkg{XVector} package for simpler forms of
           subsequence extractions and replacements.
 
-    \item \code{\link[IRanges]{extractList}} function defined and documented
-          in the \pkg{IRanges} package.
+    \item The \code{\link[IRanges]{extractList}} and
+          \code{\link[IRanges]{unstrsplit}} functions defined and
+          documented in the \pkg{IRanges} package.
 
     \item The \code{\link{replaceLetterAt}} function for a DNA-specific
           single-letter replacement functions useful for SNP injections.
@@ -125,7 +126,7 @@ replaceAt(x, at, value="")
 
     \item The \link[IRanges]{Ranges}, \link[IRanges]{RangesList},
           \link[IRanges]{IntegerList}, and \link[IRanges]{CharacterList}
-          classes in the \pkg{IRanges} package.
+          classes defined and documented in the \pkg{IRanges} package.
   }
 }
 
