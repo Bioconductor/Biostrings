@@ -198,29 +198,33 @@ replaceAt(x3c, length(x3c) + 1L, value="**")
 ## ---------------------------------------------------------------------
 x <- BStringSet(c(seq1="ABCD", seq2="abcdefghijk", seq3="XYZ"))
 
-at5 <- IRangesList(IRanges(c(2, 1), c(3, 0)),
+at6 <- IRanges(c(1, 3), width=1)
+extractAt(x, at=at6)
+unstrsplit(extractAt(x, at=at6))
+
+at7 <- IRangesList(IRanges(c(2, 1), c(3, 0)),
                    IRanges(c(7, 2, 12, 7), c(6, 5, 11, 8)),
                    IRanges(2, 2))
-## Set inner names on 'at5'.
-unlisted_at5 <- unlist(at5)
-names(unlisted_at5) <-
-    paste0("rg", sprintf("\%02d", seq_along(unlisted_at5)))
-at5 <- relist(unlisted_at5, at5)
+## Set inner names on 'at7'.
+unlisted_at7 <- unlist(at7)
+names(unlisted_at7) <-
+    paste0("rg", sprintf("\%02d", seq_along(unlisted_at7)))
+at7 <- relist(unlisted_at7, at7)
 
-extractAt(x, at5)  # same as 'as(mapply(extractAt, x, at5), "List")'
-extractAt(x, at5[3])  # same as 'as(mapply(extractAt, x, at5[3]), "List")'
+extractAt(x, at7)  # same as 'as(mapply(extractAt, x, at7), "List")'
+extractAt(x, at7[3])  # same as 'as(mapply(extractAt, x, at7[3]), "List")'
 
-replaceAt(x, at5, value=extractAt(x, at5))  # no-op
-replaceAt(x, at5)  # deletions
+replaceAt(x, at7, value=extractAt(x, at7))  # no-op
+replaceAt(x, at7)  # deletions
 
-at6 <- IRangesList(IRanges(1:5, width=0),
+at8 <- IRangesList(IRanges(1:5, width=0),
                    IRanges(c(6, 8, 10, 7, 2, 5),
                            width=c(0, 2, 0, 0, 0, 0)),
                    IRanges(c(1, 2, 1), width=c(0, 1, 0)))
-replaceAt(x, at6, value="-")
-value6 <- relist(paste0("[", seq_along(unlist(at6)), "]"), at6)
-replaceAt(x, at6, value=value6)
-replaceAt(x, at6, value=as(c("+", "-", "*"), "List"))
+replaceAt(x, at8, value="-")
+value8 <- relist(paste0("[", seq_along(unlist(at8)), "]"), at8)
+replaceAt(x, at8, value=value8)
+replaceAt(x, at8, value=as(c("+", "-", "*"), "List"))
 
 ## Append "**" to all sequences:
 replaceAt(x, as(width(x) + 1L, "List"), value="**")
