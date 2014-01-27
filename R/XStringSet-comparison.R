@@ -51,12 +51,19 @@
 ### compare().
 ###
 
+### Method signatures for binary comparison operators.
+.OP2_SIGNATURES <- list(
+    c("XStringSet", "XStringSet"),
+    c("XStringSet", "Vector"),
+    c("XStringSet", "vector"),
+    c("Vector", "XStringSet"),
+    c("vector", "XStringSet")
+)
+
 .XStringSet.compare <- function(x, y)
     .coerce_and_call_next_method("compare", x, y)
 
-setMethod("compare", c("XStringSet", "XStringSet"), .XStringSet.compare)
-setMethod("compare", c("XStringSet", "ANY"), .XStringSet.compare)
-setMethod("compare", c("ANY", "XStringSet"), .XStringSet.compare)
+setMethods("compare", .OP2_SIGNATURES, .XStringSet.compare)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -70,7 +77,5 @@ setMethod("compare", c("ANY", "XStringSet"), .XStringSet.compare)
                                  nomatch=nomatch, incomparables=incomparables)
 }
 
-setMethod("match", c("XStringSet", "XStringSet"), .XStringSet.match)
-setMethod("match", c("XStringSet", "ANY"), .XStringSet.match)
-setMethod("match", c("ANY", "XStringSet"), .XStringSet.match)
+setMethods("match", .OP2_SIGNATURES, .XStringSet.match)
 

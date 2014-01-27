@@ -15,10 +15,10 @@
    in your package, you need to do the following:
 
    a. Add the IRanges, XVector, and Biostrings package to the 'LinkingTo:'
-      field of your DESCRIPTION file. It's very likely that you already have
-      some of them, if not all of them, listed in your 'Depends:' and/or
-      'Imports:' field. Also it's recommended that you have the methods package
-      in 'Imports:', preferably in first position.
+      field of your DESCRIPTION file. Each of them should also be listed
+      either in the 'Depends:' or in the 'Imports:' field, or in both (despite
+      'R CMD check' NOTE discouraging this). Finally it's recommended that you
+      have the methods package in 'Imports:', preferably in first position.
 
    b. If it doesn't already have one, add a NAMESPACE file to your package and
       start it with the following lines:
