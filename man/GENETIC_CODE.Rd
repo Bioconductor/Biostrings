@@ -92,8 +92,8 @@ getGeneticCode(id_or_name2, full.search=FALSE)
   }
 
   \code{getGeneticCode} returns a named character vector of length 64
-  similar to \code{GENETIC_CODE} i.e. containing 1-letter strings
-  in the Amino Acid alphabet (see \code{?AA_ALPHABET}) and with names
+  similar to \code{GENETIC_CODE} i.e. it contains 1-letter strings
+  in the Amino Acid alphabet (see \code{?AA_ALPHABET}) and its names are
   identical to \code{names(GENETIC_CODE)}.
 }
 

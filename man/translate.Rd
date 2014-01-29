@@ -45,11 +45,15 @@ codons(x)
     \link{MaskedRNAString} object for \code{codons}.
   }
   \item{genetic.code}{
-    A named character vector of length 64 similar to \code{GENETIC_CODE}
-    i.e. containing 1-letter strings in the Amino Acid alphabet (see
-    \code{?AA_ALPHABET}) and with names identical to
-    \code{names(GENETIC_CODE)}.
-    See \code{?GENETIC_CODE} for the Standard Genetic Code and its known
+    The genetic code to use for the translation of codons into Amino Acid
+    letters. It must be represented as a named character vector of length
+    64 similar to predefined constant \code{GENETIC_CODE} i.e. it must
+    contain 1-letter strings in the Amino Acid alphabet and its names must
+    be identical to \code{names(GENETIC_CODE)}.
+    The default value for \code{genetic.code} is \code{GENETIC_CODE}
+    which represents The Standard Genetic Code.
+    See \code{?AA_ALPHABET}) for the Amino Acid alphabet and
+    \code{?GENETIC_CODE} for The Standard Genetic Code and its known
     variants.
   }
   \item{if.fuzzy.codon}{
@@ -101,8 +105,9 @@ codons(x)
   \code{translate} reproduces the biological process of RNA
   translation that occurs in the cell.
   The input of the function can be either RNA or coding DNA.
-  The Standard Genetic Code (see \code{?\link{GENETIC_CODE}}) is
-  used to translate codons into amino acids.
+  By default The Standard Genetic Code (see \code{?\link{GENETIC_CODE}})
+  is used to translate codons into amino acids but the user can
+  supply a different genetic code via the \code{genetic.code} argument.
 
   \code{codons} is a utility for extracting the codons involved
   in this translation without translating them. 
