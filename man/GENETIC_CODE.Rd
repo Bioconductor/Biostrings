@@ -145,6 +145,9 @@ getGeneticCode("SGC1")  # Vertebrate Mitochondrial
 
 getGeneticCode("ascidian", full.search=TRUE)  # Ascidian Mitochondrial
 
+## Differences between a non-standard code and the Standard Code:
+idx <- which(getGeneticCode("SGC1") != GENETIC_CODE)
+rbind(SGC1=getGeneticCode("SGC1")[idx], Standard=GENETIC_CODE[idx])
 }
 
 \keyword{utilities}
