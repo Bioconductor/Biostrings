@@ -1,48 +1,147 @@
 ### =========================================================================
-### DNA/RNA transcription/translation & related functions
+### Translating DNA/RNA sequences
 ### -------------------------------------------------------------------------
 
 
+.normarg_genetic.code <- function(genetic.code)
+{
+    if (!is.character(genetic.code) || any(is.na(genetic.code)))
+        stop("'genetic.code' must be a character vector with no NAs")
+    if (!identical(names(genetic.code), names(GENETIC_CODE)))
+        stop("'genetic.code' must have the same names as ",
+             "predefined constant GENETIC_CODE")
+    if (!all(nchar(genetic.code) == 1L))
+        stop("'genetic.code' must contain 1-letter strings")
+    ## Just a warning for now. Might become an error in the future.
+    if (!all(genetic.code %in% AA_ALPHABET))
+        warning("some codons in 'genetic.code' are mapped to letters ",
+                "not in the Amino Acid\n  alphabet (AA_ALPHABET)")
+    genetic.code
+}
+
+### Returns a character vector of length 2.
+.normarg_if.fuzzy.codon <- function(if.fuzzy.codon)
+{
+    if (!is.character(if.fuzzy.codon)
+     || !(length(if.fuzzy.codon) == 1L || length(if.fuzzy.codon) == 2L))
+        stop("'if.fuzzy.codon' must be a single string or ",
+             "a character vector of length 2")
+    if (length(if.fuzzy.codon) == 1L) {
+        choices <- c("error", "solve", "error.if.X", "X")
+        if.fuzzy.codon <- match.arg(if.fuzzy.codon, choices)
+        if.fuzzy.codon <- switch(if.fuzzy.codon,
+                                 error=c("error", "error"),
+                                 solve=c("solve", "X"),
+                                 error.if.X=c("solve", "error"),
+                                 X=c("X", "X"))
+        return(if.fuzzy.codon)
+    }
+    ## From now on, 'if.fuzzy.codon' is guaranteed to have length 2.
+    if.non.ambig <- if.fuzzy.codon[[1L]]
+    choices1 <- c("error", "solve", "X")
+    if.non.ambig <- match.arg(if.non.ambig, choices1)
+
+    if.ambig <- if.fuzzy.codon[[2L]]
+    choices2 <- c("error", "X")
+    if.ambig <- match.arg(if.ambig, choices2)
+    c(if.non.ambig, if.ambig)
+}
+
+.makeFuzzyGeneticCode <- function(genetic.code, keep.ambig.codons=FALSE)
+{
+    if (!isTRUEorFALSE(keep.ambig.codons))
+        stop("'keep.ambig.codons' must be TRUE or FALSE")
+    iupac_codes <- names(IUPAC_CODE_MAP)
+    fuzzy_codons <- mkAllStrings(iupac_codes, 3L)
+    nonfuzzy_codons <- DNAStringSet(names(genetic.code))
+    fuzzy2nonfuzzy <- vwhichPDict(nonfuzzy_codons, DNAStringSet(fuzzy_codons),
+                                  fixed="pattern")
+    fuzzy2AAs <- relist(unname(genetic.code)[unlist(fuzzy2nonfuzzy)],
+                        PartitioningByEnd(fuzzy2nonfuzzy))
+    fuzzy2AAs <- unique(fuzzy2AAs)
+    nAAs <- elementLengths(fuzzy2AAs)
+    names(fuzzy2AAs) <- fuzzy_codons
+    stopifnot(all(nAAs >= 1L))
+    if (keep.ambig.codons) {
+        idx <- which(nAAs != 1L)
+        fuzzy2AAs[idx] <- "X"
+    } else {
+        idx <- which(nAAs == 1L)
+        fuzzy2AAs <- fuzzy2AAs[idx]
+    }
+    unlist(fuzzy2AAs)
+}
+
+.aa2byte <- function(aa) as.integer(charToRaw(paste0(aa, collapse="")))
+
+.makeTranslationLkup <- function(codon_alphabet, genetic.code)
+{
+    codons <- mkAllStrings(codon_alphabet, 3)
+    i <- match(codons, names(genetic.code))
+    if (any(is.na(i)))
+        stop("some codons are not in 'genetic.code'")
+    .aa2byte(genetic.code[i])
+}
+
+.translate <- function(x, genetic.code=GENETIC_CODE, if.fuzzy.codon="error")
+{
+    genetic.code <- .normarg_genetic.code(genetic.code)
+    if.fuzzy.codon <- .normarg_if.fuzzy.codon(if.fuzzy.codon)
+    if.non.ambig <- if.fuzzy.codon[[1L]]
+    if.ambig <- if.fuzzy.codon[[2L]]
+    if (if.non.ambig == "error" && if.ambig == "error") {
+        codon_alphabet <- DNA_BASES
+    } else {
+        codon_alphabet <- names(IUPAC_CODE_MAP)
+        genetic.code <- .makeFuzzyGeneticCode(genetic.code,
+                                              keep.ambig.codons=TRUE)
+    }
+    lkup <- .makeTranslationLkup(codon_alphabet, genetic.code)
+    dna_codes <- DNAcodes(baseOnly=FALSE)
+    skip_code <- dna_codes[["+"]]
+    .Call2("DNAStringSet_translate",
+           x, skip_code, dna_codes[codon_alphabet], lkup,
+           if.non.ambig, if.ambig,
+           PACKAGE="Biostrings")
+}
+
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Some simple functions for different kinds of DNA <-> RNA transformations.
+### The "translate" generic and methods.
 ###
 
-transcribe <- function(x)
-{
-    msg <- c("  transcribe() is deprecated. ",
-             "Please use 'RNAString(complement(x))' instead\n",
-             "  (which is how 'transcribe(x)' is implemented).")
-    .Deprecated(msg=paste0(msg, collapse=""))
-    if (!is(x, "DNAString")) stop("transcribe() only works on DNA input")
-    RNAString(complement(x))
-}
+setGeneric("translate", signature="x",
+    function(x, genetic.code=GENETIC_CODE, if.fuzzy.codon="error")
+        standardGeneric("translate")
+)
 
-cDNA <- function(x)
-{
-    msg <- c("  cDNA() is deprecated. ",
-             "Please use 'DNAString(complement(x))' instead\n",
-             "  (which is how 'cDNA(x)' is implemented).")
-    .Deprecated(msg=paste0(msg, collapse=""))
-    if (!is(x, "RNAString")) stop("cDNA() only works on RNA input")
-    DNAString(complement(x))
-}
+setMethod("translate", "DNAStringSet", .translate)
 
-dna2rna <- function(x)
-{
-    msg <- "  dna2rna() is deprecated. Please use RNAString() instead."
-    .Deprecated(msg=msg)
-    if (!is(x, "DNAString")) stop("dna2rna() only works on DNA input")
-    RNAString(x)
-}
+setMethod("translate", "RNAStringSet", .translate)
 
-rna2dna <- function(x)
-{
-    msg <- "  rna2dna() is deprecated. Please use DNAString() instead."
-    .Deprecated(msg=msg)
-    if (!is(x, "RNAString")) stop("rna2dna() only works on RNA input")
-    DNAString(x)
-}
+setMethod("translate", "DNAString",
+    function(x, genetic.code=GENETIC_CODE, if.fuzzy.codon="error")
+        translate(DNAStringSet(x), genetic.code=genetic.code,
+                  if.fuzzy.codon=if.fuzzy.codon)[[1L]]
+)
 
+setMethod("translate", "RNAString",
+    function(x, genetic.code=GENETIC_CODE, if.fuzzy.codon="error")
+        translate(RNAStringSet(x), genetic.code=genetic.code,
+                  if.fuzzy.codon=if.fuzzy.codon)[[1L]]
+)
+
+setMethod("translate", "MaskedDNAString",
+    function(x, genetic.code=GENETIC_CODE, if.fuzzy.codon="error")
+        translate(injectHardMask(x), genetic.code=genetic.code,
+                  if.fuzzy.codon=if.fuzzy.codon)
+)
+
+setMethod("translate", "MaskedRNAString",
+    function(x, genetic.code=GENETIC_CODE, if.fuzzy.codon="error")
+        translate(injectHardMask(x), genetic.code=genetic.code,
+                  if.fuzzy.codon=if.fuzzy.codon)
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -109,124 +208,42 @@ setMethod("codons", "MaskedRNAString", function(x) .MaskedXString.codons(x))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "translate" generic and methods.
+### Old stuff (deprecated & defunct)
 ###
 
-setGeneric("translate", signature="x",
-    function(x, if.fuzzy.codon="error") standardGeneric("translate")
-)
-
-### Returns a character vector of length 2.
-.normarg_if.fuzzy.codon <- function(if.fuzzy.codon)
+transcribe <- function(x)
 {
-    if (!is.character(if.fuzzy.codon)
-     || !(length(if.fuzzy.codon) == 1L || length(if.fuzzy.codon) == 2L))
-        stop("'if.fuzzy.codon' must be a single string or ",
-             "a character vector of length 2")
-    if (length(if.fuzzy.codon) == 1L) {
-        choices <- c("error", "solve", "error.if.X", "X")
-        if.fuzzy.codon <- match.arg(if.fuzzy.codon, choices)
-        if.fuzzy.codon <- switch(if.fuzzy.codon,
-                                 error=c("error", "error"),
-                                 solve=c("solve", "X"),
-                                 error.if.X=c("solve", "error"),
-                                 X=c("X", "X"))
-        return(if.fuzzy.codon)
-    }
-    ## From now on, 'if.fuzzy.codon' is guaranteed to have length 2.
-    if.non.ambig <- if.fuzzy.codon[[1L]]
-    choices1 <- c("error", "solve", "X")
-    if.non.ambig <- match.arg(if.non.ambig, choices1)
-
-    if.ambig <- if.fuzzy.codon[[2L]]
-    choices2 <- c("error", "X")
-    if.ambig <- match.arg(if.ambig, choices2)
-    c(if.non.ambig, if.ambig)
+    msg <- c("  transcribe() is deprecated. ",
+             "Please use 'RNAString(complement(x))' instead\n",
+             "  (which is how 'transcribe(x)' is implemented).")
+    .Deprecated(msg=paste0(msg, collapse=""))
+    if (!is(x, "DNAString")) stop("transcribe() only works on DNA input")
+    RNAString(complement(x))
 }
 
-.makeFuzzyGeneticCode <- function(keep.ambig.codons=FALSE)
+cDNA <- function(x)
 {
-    if (!isTRUEorFALSE(keep.ambig.codons))
-        stop("'keep.ambig.codons' must be TRUE or FALSE")
-    iupac_codes <- names(IUPAC_CODE_MAP)
-    fuzzy_codons <- mkAllStrings(iupac_codes, 3L)
-    nonfuzzy_codons <- DNAStringSet(names(GENETIC_CODE))
-    fuzzy2nonfuzzy <- vwhichPDict(nonfuzzy_codons, DNAStringSet(fuzzy_codons),
-                                  fixed="pattern")
-    fuzzy2AAs <- relist(unname(GENETIC_CODE)[unlist(fuzzy2nonfuzzy)],
-                        PartitioningByEnd(fuzzy2nonfuzzy))
-    fuzzy2AAs <- unique(fuzzy2AAs)
-    nAAs <- elementLengths(fuzzy2AAs)
-    names(fuzzy2AAs) <- fuzzy_codons
-    stopifnot(all(nAAs >= 1L))
-    if (keep.ambig.codons) {
-        idx <- which(nAAs != 1L)
-        fuzzy2AAs[idx] <- "X"
-    } else {
-        idx <- which(nAAs == 1L)
-        fuzzy2AAs <- fuzzy2AAs[idx]
-    }
-    unlist(fuzzy2AAs)
+    msg <- c("  cDNA() is deprecated. ",
+             "Please use 'DNAString(complement(x))' instead\n",
+             "  (which is how 'cDNA(x)' is implemented).")
+    .Deprecated(msg=paste0(msg, collapse=""))
+    if (!is(x, "RNAString")) stop("cDNA() only works on RNA input")
+    DNAString(complement(x))
 }
 
-.makeTranslationLkup <- function(codon_alphabet, genetic_code)
+dna2rna <- function(x)
 {
-    codons <- mkAllStrings(codon_alphabet, 3)
-    i <- match(codons, names(genetic_code))
-    if (any(is.na(i)))
-        stop("some codons are not in 'genetic_code'")
-    as.integer(charToRaw(paste0(genetic_code[i], collapse="")))
+    msg <- "  dna2rna() is deprecated. Please use RNAString() instead."
+    .Deprecated(msg=msg)
+    if (!is(x, "DNAString")) stop("dna2rna() only works on DNA input")
+    RNAString(x)
 }
 
-setMethod("translate", "DNAStringSet",
-    function(x, if.fuzzy.codon="error")
-    {
-        if.fuzzy.codon <- .normarg_if.fuzzy.codon(if.fuzzy.codon)
-        if.non.ambig <- if.fuzzy.codon[[1L]]
-        if.ambig <- if.fuzzy.codon[[2L]]
-        if (if.non.ambig == "error" && if.ambig == "error") {
-            codon_alphabet <- DNA_BASES
-            genetic_code <- GENETIC_CODE
-        } else {
-            codon_alphabet <- names(IUPAC_CODE_MAP)
-            genetic_code <- .makeFuzzyGeneticCode(keep.ambig.codons=TRUE)
-        }
-        dna_codes <- DNAcodes(baseOnly=FALSE)
-        skip_code <- dna_codes[["+"]]
-        lkup <- .makeTranslationLkup(codon_alphabet, genetic_code)
-        .Call2("DNAStringSet_translate",
-              x, skip_code, dna_codes[codon_alphabet], lkup,
-              if.non.ambig, if.ambig,
-              PACKAGE="Biostrings")
-    }
-)
-
-setMethod("translate", "RNAStringSet",
-    function(x, if.fuzzy.codon="error")
-        translate(DNAStringSet(x), if.fuzzy.codon=if.fuzzy.codon)
-)
-
-setMethod("translate", "DNAString",
-    function(x, if.fuzzy.codon="error")
-        translate(DNAStringSet(x), if.fuzzy.codon=if.fuzzy.codon)[[1L]]
-)
-
-setMethod("translate", "RNAString",
-    function(x, if.fuzzy.codon="error")
-        translate(DNAString(x), if.fuzzy.codon=if.fuzzy.codon)
-)
-
-setMethod("translate", "MaskedDNAString",
-    function(x, if.fuzzy.codon="error")
-        translate(injectHardMask(x), if.fuzzy.codon=if.fuzzy.codon)
-)
-
-setMethod("translate", "MaskedRNAString",
-    function(x, if.fuzzy.codon="error")
-    {
-        ## FIXME: Workaround until as(x, "MaskedDNAString") is available
-        y <- new("MaskedDNAString", unmasked=DNAString(unmasked(x)), masks=masks(x))
-        translate(y, if.fuzzy.codon=if.fuzzy.codon)
-    }
-)
+rna2dna <- function(x)
+{
+    msg <- "  rna2dna() is deprecated. Please use DNAString() instead."
+    .Deprecated(msg=msg)
+    if (!is(x, "RNAString")) stop("rna2dna() only works on RNA input")
+    DNAString(x)
+}
 

@@ -1,10 +1,10 @@
 \name{translate}
 
 \alias{translate}
-\alias{translate,DNAString-method}
-\alias{translate,RNAString-method}
 \alias{translate,DNAStringSet-method}
 \alias{translate,RNAStringSet-method}
+\alias{translate,DNAString-method}
+\alias{translate,RNAString-method}
 \alias{translate,MaskedDNAString-method}
 \alias{translate,MaskedRNAString-method}
 
@@ -29,7 +29,7 @@
 
 \usage{
 ## Translating DNA/RNA:
-translate(x, if.fuzzy.codon="error")
+translate(x, genetic.code=GENETIC_CODE, if.fuzzy.codon="error")
 
 ## Extracting codons without translating them:
 codons(x)
@@ -43,6 +43,14 @@ codons(x)
 
     A \link{DNAString}, \link{RNAString}, \link{MaskedDNAString} or
     \link{MaskedRNAString} object for \code{codons}.
+  }
+  \item{genetic.code}{
+    A named character vector of length 64 similar to \code{GENETIC_CODE}
+    i.e. containing 1-letter strings in the Amino Acid alphabet (see
+    \code{?AA_ALPHABET}) and with names identical to
+    \code{names(GENETIC_CODE)}.
+    See \code{?GENETIC_CODE} for the Standard Genetic Code and its known
+    variants.
   }
   \item{if.fuzzy.codon}{
     How fuzzy codons (i.e codon with IUPAC ambiguities) should be handled.
@@ -114,19 +122,21 @@ codons(x)
 
 \seealso{
   \itemize{
-    \item The \link{DNAStringSet} and \link{AAStringSet} classes.
-
-    \item The \link{XStringViews} and \link{MaskedXString} classes.
+    \item \code{\link{AA_ALPHABET}} for the Amino Acid alphabet.
 
     \item \code{\link{GENETIC_CODE}} for The Standard Genetic Code and
-          \code{\link{AA_ALPHABET}} for the Amino Acid alphabet.
-
-    \item The \code{\link{reverseComplement}} function.
+          its known variants.
 
     \item The examples for
           \code{\link[GenomicFeatures]{extractTranscriptsFromGenome}}
           in the \pkg{GenomicFeatures} package for computing the
           full proteome of a given organism.
+
+    \item The \code{\link{reverseComplement}} function.
+
+    \item The \link{DNAStringSet} and \link{AAStringSet} classes.
+
+    \item The \link{XStringViews} and \link{MaskedXString} classes.
   }
 }
 
@@ -134,18 +144,25 @@ codons(x)
 ## ---------------------------------------------------------------------
 ## 1. BASIC EXAMPLES
 ## ---------------------------------------------------------------------
-dna1 <- DNAString("TATAAAGTTTCTAGATAG")
+dna1 <- DNAString("TATAAATGGAGTAGATAA")
 translate(dna1)
 
+SGC1 <- getGeneticCode("SGC1")  # Vertebrate Mitochondrial code
+translate(dna1, genetic.code=SGC1)
+
 ## All codons except 1st are fuzzy:
-dna2 <- DNAString("TATANAGTNAGYMGRTRA")
+dna2 <- DNAString("TATANATGRAGYMGRTRA")
 
 \dontrun{
   translate(dna2)  # error because of fuzzy codons
 }
-## Codons 3 to 6 are non-ambiguous and can be solved. 2nd codon is
-## ambiguous and is translated to X:
+## Codons 4 to 6 are non-ambiguous and can be solved. 2nd and 3rd codons
+## are ambiguous and are translated to X:
 translate(dna2, if.fuzzy.codon="solve")
+
+## Fuzzy codons that are non-ambiguous with a given genetic code can
+## become ambiguous with another genetic code and vice versa:
+translate(dna2, genetic.code=SGC1, if.fuzzy.codon="solve")
 
 ## ---------------------------------------------------------------------
 ## 2. TRANSLATING AN OPEN READING FRAME

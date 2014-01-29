@@ -80,7 +80,7 @@ getGeneticCode(id_or_name2, full.search=FALSE)
   been replaced by U (uracil).
 
   \code{GENETIC_CODE_TABLE} is a data frame with 1 row per known genetic code
-  and the following 4 columns:
+  and the 4 following columns:
   \itemize{
     \item \code{name}: The long and very descriptive name of the genetic code.
     \item \code{name2}: The short name of the genetic code (not all genetic
@@ -92,7 +92,9 @@ getGeneticCode(id_or_name2, full.search=FALSE)
   }
 
   \code{getGeneticCode} returns a named character vector of length 64
-  similar to \code{GENETIC_CODE}.
+  similar to \code{GENETIC_CODE} i.e. containing 1-letter strings
+  in the Amino Acid alphabet (see \code{?AA_ALPHABET}) and with names
+  identical to \code{names(GENETIC_CODE)}.
 }
 
 \author{H. Pages}
