@@ -56,13 +56,13 @@ setClass("AAStringSetList",
 ### Going from XStringSet to XStringSetList with extractList() and family.
 ###
 
-setMethod("relistReturnedClass", "XStringSet",
+setMethod("relistToClass", "XStringSet",
     function(x) paste0(seqtype(x), "StringSetList")
 )
 
 setMethod("splitAsListReturnedClass", "XStringSet",
     function(x) {
-        .Deprecated("relistReturnedClass")
+        .Deprecated("relistToClass")
         paste0(seqtype(x), "StringSetList")
     }
 )

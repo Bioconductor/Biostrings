@@ -84,7 +84,7 @@ exportMethods(
     updateObject,
     names, "names<-", "[", "[[", rep, append,
     show,
-    relistReturnedClass, splitAsListReturnedClass,
+    relistToClass, splitAsListReturnedClass,
     union, intersect, setdiff, setequal,
     "%in%", match,
     compare, "==", "!=", match,
