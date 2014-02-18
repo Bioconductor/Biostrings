@@ -55,12 +55,14 @@ AA_PROTEINOGENIC  # first 22 letters only
 \section{The Amino Acid alphabet}{
   This alphabet contains all letters from the
   Single-Letter Amino Acid Code (see \code{?\link{AMINO_ACID_CODE}})
-  + the stop (\code{"*"}), the gap (\code{"-"}) and the hard masking
-  (\code{"+"}) letters.
-  It is stored in the \code{AA_ALPHABET} constant (character vector).
-  The \code{alphabet} method also returns
-  \code{AA_ALPHABET} when applied to an AAString
-  object and is provided for convenience only.
+  plus \code{"*"} (the \emph{stop} letter), \code{"-"} (the \emph{gap}
+  letter), \code{"+"} (the \emph{hard masking} letter), and \code{"."}
+  (the \emph{not a letter} or \emph{not available} letter).
+  It is stored in the \code{AA_ALPHABET} predefined constant (character
+  vector).
+
+  The \code{alphabet()} function returns \code{AA_ALPHABET} when
+  applied to an AAString object.
 }
 
 \section{Constructor-like functions and generics}{

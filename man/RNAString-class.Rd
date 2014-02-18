@@ -36,14 +36,14 @@
 }
 
 \section{The RNA alphabet}{
-  This alphabet contains all letters from the
-  IUPAC Extended Genetic Alphabet (see \code{?\link{IUPAC_CODE_MAP}})
-  where \code{"T"} is replaced by \code{"U"}
-  + the gap (\code{"-"}) and the hard masking (\code{"+"}) letters.
-  It is stored in the \code{RNA_ALPHABET} constant (character vector).
-  The \code{alphabet} method also returns
-  \code{RNA_ALPHABET} when applied to an RNAString
-  object and is provided for convenience only.
+  This alphabet is the same as the DNA alphabet, except that \code{"T"}
+  is replaced by \code{"U"}. See \code{?\link{DNA_ALPHABET}} for more
+  information about the DNA alphabet.
+  The RNA alphabet is stored in the \code{RNA_ALPHABET} predefined constant
+  (character vector).
+
+  The \code{alphabet()} function returns \code{RNA_ALPHABET} when
+  applied to an RNAString object.
 }
 
 \section{Constructor-like functions and generics}{

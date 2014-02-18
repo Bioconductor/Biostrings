@@ -38,11 +38,14 @@
 \section{The DNA alphabet}{
   This alphabet contains all letters from the
   IUPAC Extended Genetic Alphabet (see \code{?\link{IUPAC_CODE_MAP}})
-  + the gap (\code{"-"}) and the hard masking (\code{"+"}) letters.
-  It is stored in the \code{DNA_ALPHABET} constant (character vector).
-  The \code{alphabet} method also returns
-  \code{DNA_ALPHABET} when applied to a DNAString
-  object and is provided for convenience only.
+  plus \code{"-"} (the \emph{gap} letter), \code{"+"} (the \emph{hard
+  masking} letter), and \code{"."} (the \emph{not a letter} or \emph{not
+  available} letter).
+  It is stored in the \code{DNA_ALPHABET} predefined constant (character
+  vector).
+
+  The \code{alphabet()} function returns \code{DNA_ALPHABET} when
+  applied to a DNAString object.
 }
 
 \section{Constructor-like functions and generics}{
