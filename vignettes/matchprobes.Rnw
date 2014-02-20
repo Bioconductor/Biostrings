@@ -60,7 +60,7 @@ and for almost all major Affymetrix genechips, the corresponding
 packages can be downloaded from the Bioconductor website. If you
 have the reporter sequence information of a particular chip, you can
 also create such a package yourself. This is described in
-in the makeProbePackage vignette of the \Rpackage{AnnotationDbi}
+in the makeProbePackage vignette of the \Rpackage{AnnotationForge}
 package.
 
 This document assumes some basic familiarity with R and with the design
@@ -154,29 +154,29 @@ alphabetFrequency(pm, baseOnly=TRUE, collapse=TRUE)
 \label{subsec.relating}
 %------------------------------------------------------------
 <<hgu95av2dim,print=TRUE>>=
-nr = hgu95av2dim$NROW
 nc = hgu95av2dim$NCOL
+nr = hgu95av2dim$NROW
 @ 
 Each column of an \Rclass{AffyBatch} corresponds to an array, each row
 to a certain probe on the arrays. The probes are stored in a way that is
 related to their geometrical position on the array. For example, the
-\textit{hgu95av2} array is geometrically arranged into \Sexpr{nr} rows and
-\Sexpr{nc} columns; we also call them the $x$- and $y$-coordinates.  
-This results in \Sexpr{nr} $\times$
-\Sexpr{nc} $=$
-\Sexpr{nc*nr} rows of the \Rclass{AffyBatch}; we
+\textit{hgu95av2} array is geometrically arranged into \Sexpr{nc} columns
+and \Sexpr{nr} rows. We call the column and row indices the $x$- and
+$y$-coordinates, respectively.
+This results in \Sexpr{nc} $\times$ \Sexpr{nr} $=$
+\Sexpr{nc*nr} probes of the \Rclass{AffyBatch}; we
 also call them indices. To convert between $x$- and $y$-coordinates and
 indices, you can use the functions \Rfunction{xy2indices} and
 \Rfunction{indices2xy} from the \Rpackage{affy} package.
 
 The sequence data in the \textit{probe} packages is addressed by their
 $x$ and $y$--coordinates. Let us construct a vector \Robject{abseq}
-that aligns with the rows of an \textit{hgu95av2} \Rclass{AffyBatch}
+that aligns with the indices of an \textit{hgu95av2} \Rclass{AffyBatch}
 and fill in the sequences:
 <<>>=
 library(affy)
-abseq = rep(as.character(NA), nr*nc) 
-ipm = with(hgu95av2probe, xy2indices(x, y, nr=nr))
+abseq = rep(as.character(NA), nc*nr) 
+ipm = with(hgu95av2probe, xy2indices(x, y, nc=nc))
 any(duplicated(ipm))  # just a sanity check
 abseq[ipm] = hgu95av2probe$sequence
 table(is.na(abseq))
@@ -200,7 +200,7 @@ noting that each mismatch has the same $x$-coordinate as its
 associated perfect match, while its $y$-coordinate is increased by 1.
 %
 <<mismatchSeq>>=
-imm = with(hgu95av2probe, xy2indices(x, y+1, nr=nr))
+imm = with(hgu95av2probe, xy2indices(x, y+1, nc=nc))
 intersect(ipm, imm)  # just a sanity check
 abseq[imm] = as.character(mm)
 table(is.na(abseq))
