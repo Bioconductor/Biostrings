@@ -197,6 +197,14 @@ static SEXP _MatchBuf_starts_toEnvir(const MatchBuf *match_buf, SEXP env)
 	return IntAEAE_toEnvir(&(match_buf->match_starts), env, 1);
 }
 
+static SEXP _MatchBuf_widths_asLIST(const MatchBuf *match_buf)
+{
+	if (match_buf->match_widths.buflength == -1)
+		error("Biostrings internal error: _MatchBuf_widths_asLIST() "
+		      "was called in the wrong context");
+	return new_LIST_from_IntAEAE(&(match_buf->match_widths), 1);
+}
+
 SEXP _MatchBuf_ends_asLIST(const MatchBuf *match_buf)
 {
 	if (match_buf->match_starts.buflength == -1
@@ -219,10 +227,22 @@ static SEXP _MatchBuf_ends_toEnvir(const MatchBuf *match_buf, SEXP env)
 	return IntAEAE_toEnvir(&(match_buf->match_starts), env, 1);
 }
 
-SEXP _MatchBuf_as_MIndex(const MatchBuf *match_buf)
+/*
+ * Returns the result of _MatchBuf_starts_asLIST(match_buf) and
+ * _MatchBuf_widths_asLIST(match_buf) as the 2 components of an ordinary list.
+ */
+SEXP _MatchBuf_as_Ranges(const MatchBuf *match_buf)
 {
-	error("_MatchBuf_as_MIndex(): IMPLEMENT ME!");
-	return R_NilValue;
+	SEXP ans, ans_elt1, ans_elt2;
+
+	PROTECT(ans = NEW_LIST(2));
+	PROTECT(ans_elt1 = _MatchBuf_starts_asLIST(match_buf));
+	SET_VECTOR_ELT(ans, 0, ans_elt1);
+	UNPROTECT(1);
+	PROTECT(ans_elt2 = _MatchBuf_widths_asLIST(match_buf));
+	SET_VECTOR_ELT(ans, 1, ans_elt2);
+	UNPROTECT(2);
+	return ans;
 }
 
 SEXP _MatchBuf_as_SEXP(const MatchBuf *match_buf, SEXP env)
@@ -243,7 +263,7 @@ SEXP _MatchBuf_as_SEXP(const MatchBuf *match_buf, SEXP env)
 			return _MatchBuf_ends_toEnvir(match_buf, env);
 		return _MatchBuf_ends_asLIST(match_buf);
 	    case MATCHES_AS_RANGES:
-		return _MatchBuf_as_MIndex(match_buf);
+		return _MatchBuf_as_Ranges(match_buf);
 	}
 	error("Biostrings internal error in _MatchBuf_as_SEXP(): "
 	      "unknown 'match_buf->ms_code' value %d", match_buf->ms_code);

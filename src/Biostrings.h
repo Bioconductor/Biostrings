@@ -487,7 +487,7 @@ SEXP _MatchBuf_starts_asLIST(const MatchBuf *match_buf);
 
 SEXP _MatchBuf_ends_asLIST(const MatchBuf *match_buf);
 
-SEXP _MatchBuf_as_MIndex(const MatchBuf *match_buf);
+SEXP _MatchBuf_as_Ranges(const MatchBuf *match_buf);
 
 SEXP _MatchBuf_as_SEXP(
 	const MatchBuf *match_buf,
@@ -708,7 +708,7 @@ SEXP XStringSet_vmatch_pattern(
 	SEXP with_indels,
 	SEXP fixed,
 	SEXP algorithm,
-	SEXP count_only
+	SEXP ms_mode
 );
 
 

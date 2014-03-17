@@ -227,20 +227,18 @@ SEXP XStringViews_match_pattern(SEXP pattern,
 SEXP XStringSet_vmatch_pattern(SEXP pattern, SEXP subject,
 		SEXP max_mismatch, SEXP min_mismatch,
 		SEXP with_indels, SEXP fixed,
-		SEXP algorithm, SEXP count_only)
+		SEXP algorithm, SEXP ms_mode)
 {
 	Chars_holder P, S_elt;
 	XStringSet_holder S;
-	int S_length, is_count_only, j;
+	int S_length, j;
 	const char *algo;
 
 	P = hold_XRaw(pattern);
 	S = _hold_XStringSet(subject);
 	S_length = _get_XStringSet_length(subject);
 	algo = CHAR(STRING_ELT(algorithm, 0));
-	is_count_only = LOGICAL(count_only)[0];
-	_init_match_reporting(is_count_only ?
-		"MATCHES_AS_COUNTS" : "MATCHES_AS_ENDS", S_length);
+	_init_match_reporting(CHAR(STRING_ELT(ms_mode, 0)), S_length);
 	for (j = 0; j < S_length; j++) {
 		S_elt = _get_elt_from_XStringSet_holder(&S, j);
 		_set_active_PSpair(j);

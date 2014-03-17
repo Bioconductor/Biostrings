@@ -327,10 +327,11 @@ setMethod("countPattern", "MaskedXString",
 ### vector (like matchPDict() and countPDict(), respectively).
 ###
 
-.XStringSet.vmatchPattern <- function(pattern, subject,
-                                      max.mismatch, min.mismatch, with.indels, fixed,
-                                      algorithm,
-                                      count.only=FALSE)
+.XStringSet_vmatch_pattern <- function(pattern, subject,
+                                       max.mismatch, min.mismatch,
+                                       with.indels, fixed,
+                                       algorithm,
+                                       count.only)
 {
     if (!is(subject, "XStringSet"))
         subject <- XStringSet(NULL, subject)
@@ -343,17 +344,30 @@ setMethod("countPattern", "MaskedXString",
     min.mismatch <- normargMinMismatch(min.mismatch, max.mismatch)
     with.indels <- normargWithIndels(with.indels)
     fixed <- normargFixed(fixed, subject)
-    if (!isTRUEorFALSE(count.only)) 
-        stop("'count.only' must be TRUE or FALSE")
     algo <- selectAlgo(algo, pattern, max.mismatch, min.mismatch,
                        with.indels, fixed)
     # because MIndex objects do not support variable-width matches yet
     if (algo == "indels" && !count.only)
         stop("vmatchPattern() does not support indels yet")
-    C_ans <- .Call2("XStringSet_vmatch_pattern", pattern, subject,
-                   max.mismatch, min.mismatch, with.indels, fixed,
-                   algo, count.only,
-                   PACKAGE = "Biostrings")
+    .Call2("XStringSet_vmatch_pattern", pattern, subject,
+           max.mismatch, min.mismatch, with.indels, fixed, algo,
+           ifelse(count.only, "MATCHES_AS_COUNTS", "MATCHES_AS_ENDS"),
+           PACKAGE="Biostrings")
+}
+
+.XStringSet.vmatchPattern <- function(pattern, subject,
+                                      max.mismatch, min.mismatch,
+                                      with.indels, fixed,
+                                      algorithm,
+                                      count.only=FALSE)
+{
+    if (!isTRUEorFALSE(count.only)) 
+        stop("'count.only' must be TRUE or FALSE")
+    C_ans <- .XStringSet_vmatch_pattern(pattern, subject,
+                                        max.mismatch, min.mismatch,
+                                        with.indels, fixed,
+                                        algorithm,
+                                        count.only)
     if (count.only)
         return(C_ans)
     ans_width0 <- rep.int(length(pattern), length(subject))
