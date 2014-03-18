@@ -56,11 +56,11 @@ static const R_CallMethodDef callMethods[] = {
 
 /* XStringSet_io.c */
 	CALLMETHOD_DEF(debug_XStringSet_io, 0),
-	CALLMETHOD_DEF(fasta_info, 5),
-	CALLMETHOD_DEF(read_fasta_in_XStringSet, 6),
+	CALLMETHOD_DEF(fasta_info, 6),
+	CALLMETHOD_DEF(read_fasta_in_XStringSet, 7),
 	CALLMETHOD_DEF(write_XStringSet_to_fasta, 4),
-	CALLMETHOD_DEF(fastq_geometry, 3),
-	CALLMETHOD_DEF(read_fastq_in_XStringSet, 6),
+	CALLMETHOD_DEF(fastq_geometry, 4),
+	CALLMETHOD_DEF(read_fastq_in_XStringSet, 7),
 	CALLMETHOD_DEF(write_XStringSet_to_fastq, 4),
 
 /* letter_frequency.c */

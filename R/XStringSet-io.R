@@ -3,7 +3,7 @@
 ### -------------------------------------------------------------------------
 
 
-.normargInputFilepath <- function(filepath)
+.normarg_input_filepath <- function(filepath)
 {
     if (!is.character(filepath) || any(is.na(filepath)))
         stop("'filepath' must be a character vector with no NAs")
@@ -38,19 +38,19 @@
     filepath2
 }
 
-.ExternalFilePtr.close <- function(x)
+.ExternalFilePtr_close <- function(x)
     .Call2("ExternalFilePtr_close", x, PACKAGE="Biostrings")
 
 ### Returns a list of "external file pointers".
-.openInputFiles <- function(filepath)
+.open_input_files <- function(filepath)
 {
-    filepath2 <- .normargInputFilepath(filepath)
+    filepath2 <- .normarg_input_filepath(filepath)
     ans <- lapply(filepath2,
            function(fp)
            {
                efp <- .Call2("new_input_ExternalFilePtr", fp,
                             PACKAGE="Biostrings")
-               reg.finalizer(efp, .ExternalFilePtr.close, onexit=TRUE)
+               reg.finalizer(efp, .ExternalFilePtr_close, onexit=TRUE)
                efp
            })
     names(ans) <- filepath
@@ -58,7 +58,7 @@
 }
 
 ### Returns a length-1 list of "external file pointers".
-.openOutputFile <- function(filepath, append)
+.open_output_file <- function(filepath, append)
 {
     if (!isSingleString(filepath))
         stop("'filepath' must be a single string")
@@ -67,20 +67,20 @@
     filepath2 <- path.expand(filepath)
     efp <- .Call2("new_output_ExternalFilePtr", filepath2, append,
                  PACKAGE="Biostrings")
-    reg.finalizer(efp, .ExternalFilePtr.close, onexit=TRUE)
+    reg.finalizer(efp, .ExternalFilePtr_close, onexit=TRUE)
     ans <- list(efp)
     names(ans) <- filepath
     ans
 }
 
 ### 'efp_list' must be a list of "external file pointers" returned by
-### .openInputFiles() or .openOutputFiles().
-.closeFiles <- function(efp_list)
+### .open_input_files() or .open_output_files().
+.close_files <- function(efp_list)
 {
-    for (efp in efp_list) .ExternalFilePtr.close(efp)
+    for (efp in efp_list) .ExternalFilePtr_close(efp)
 }
 
-.normargNrec <- function(nrec)
+.normarg_nrec <- function(nrec)
 {
     if (!isSingleNumber(nrec))
         stop("'nrec' must be a single integer value")
@@ -89,7 +89,7 @@
     nrec
 }
 
-.normargSkip <- function(skip)
+.normarg_skip <- function(skip)
 {
     if (!isSingleNumber(skip))
         stop("'skip' must be a single integer value")
@@ -106,26 +106,30 @@
 ###
 
 ### TODO (maybe): Rename this fasta.geometry() and deprecate fasta.info()
-fasta.info <- function(filepath, nrec=-1L, skip=0L, use.names=TRUE, seqtype="B")
+fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
+                       use.names=TRUE, seqtype="B")
 {
-    efp_list <- .openInputFiles(filepath)
-    on.exit(.closeFiles(efp_list))
-    nrec <- .normargNrec(nrec)
-    skip <- .normargSkip(skip)
-    use.names <- normargUseNames(use.names)
+    efp_list <- .open_input_files(filepath)
+    on.exit(.close_files(efp_list))
+    nrec <- .normarg_nrec(nrec)
+    skip <- .normarg_skip(skip)
+    if (!isTRUEorFALSE(seek.first.rec)) 
+        stop("'seek.first.rec' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(use.names)) 
+        stop("'use.names' must be TRUE or FALSE")
     seqtype <- match.arg(seqtype, c("B", "DNA", "RNA", "AA"))
     lkup <- get_seqtype_conversion_lookup("B", seqtype)
     .Call2("fasta_info",
-          efp_list, nrec, skip, use.names, lkup,
+          efp_list, nrec, skip, seek.first.rec, use.names, lkup,
           PACKAGE="Biostrings")
 }
 
-.read.fasta.in.XStringSet <- function(efp_list, nrec, skip,
+.read_fasta_in_XStringSet <- function(efp_list, nrec, skip, seek.first.rec,
                                       use.names, elementType, lkup)
 {
     .Call2("read_fasta_in_XStringSet",
-          efp_list, nrec, skip, use.names, elementType, lkup,
-          PACKAGE="Biostrings")
+           efp_list, nrec, skip, seek.first.rec, use.names, elementType, lkup,
+           PACKAGE="Biostrings")
 }
 
 
@@ -133,21 +137,25 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, use.names=TRUE, seqtype="B")
 ### FASTQ
 ###
 
-fastq.geometry <- function(filepath, nrec=-1L, skip=0L)
+fastq.geometry <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
 {
-    efp_list <- .openInputFiles(filepath)
-    on.exit(.closeFiles(efp_list))
-    nrec <- .normargNrec(nrec)
-    skip <- .normargSkip(skip)
-    .Call2("fastq_geometry", efp_list, nrec, skip, PACKAGE="Biostrings")
+    efp_list <- .open_input_files(filepath)
+    on.exit(.close_files(efp_list))
+    nrec <- .normarg_nrec(nrec)
+    skip <- .normarg_skip(skip)
+    if (!isTRUEorFALSE(seek.first.rec)) 
+        stop("'seek.first.rec' must be TRUE or FALSE")
+    .Call2("fastq_geometry",
+           efp_list, nrec, skip, seek.first.rec,
+           PACKAGE="Biostrings")
 }
 
-.read.fastq.in.XStringSet <- function(efp_list, nrec, skip,
+.read_fastq_in_XStringSet <- function(efp_list, nrec, skip, seek.first.rec,
                                       use.names, elementType, lkup)
 {
     .Call2("read_fastq_in_XStringSet",
-          efp_list, nrec, skip, use.names, elementType, lkup,
-          PACKAGE="Biostrings")
+           efp_list, nrec, skip, seek.first.rec, use.names, elementType, lkup,
+           PACKAGE="Biostrings")
 }
 
 
@@ -156,49 +164,60 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L)
 ### readAAStringSet() functions.
 ###
 
-.readXStringSet <- function(filepath, format, nrec, skip, use.names, seqtype)
+.read_XStringSet <- function(filepath, format, nrec, skip, seek.first.rec,
+                             use.names, seqtype)
 {
-    efp_list <- .openInputFiles(filepath)
-    on.exit(.closeFiles(efp_list))
+    efp_list <- .open_input_files(filepath)
+    on.exit(.close_files(efp_list))
     if (!isSingleString(format))
         stop("'format' must be a single string")
     format <- match.arg(tolower(format), c("fasta", "fastq"))
-    nrec <- .normargNrec(nrec)
-    skip <- .normargSkip(skip)
-    if (!isTRUEorFALSE(use.names))
+    nrec <- .normarg_nrec(nrec)
+    skip <- .normarg_skip(skip)
+    if (!isTRUEorFALSE(seek.first.rec)) 
+        stop("'seek.first.rec' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(use.names)) 
         stop("'use.names' must be TRUE or FALSE")
     elementType <- paste(seqtype, "String", sep="")
     lkup <- get_seqtype_conversion_lookup("B", seqtype)
     switch(format,
-        "fasta"=.read.fasta.in.XStringSet(efp_list, nrec, skip,
+        "fasta"=.read_fasta_in_XStringSet(efp_list, nrec, skip, seek.first.rec,
                                           use.names, elementType, lkup),
-        "fastq"=.read.fastq.in.XStringSet(efp_list, nrec, skip,
+        "fastq"=.read_fastq_in_XStringSet(efp_list, nrec, skip, seek.first.rec,
                                           use.names, elementType, lkup)
     )
 }
 
 readBStringSet <- function(filepath, format="fasta",
-                           nrec=-1L, skip=0L, use.names=TRUE)
-    .readXStringSet(filepath, format, nrec, skip, use.names, "B")
+                           nrec=-1L, skip=0L, seek.first.rec=FALSE,
+                           use.names=TRUE)
+    .read_XStringSet(filepath, format, nrec, skip, seek.first.rec,
+                     use.names, "B")
 
 readDNAStringSet <- function(filepath, format="fasta",
-                             nrec=-1L, skip=0L, use.names=TRUE)
-    .readXStringSet(filepath, format, nrec, skip, use.names, "DNA")
+                             nrec=-1L, skip=0L, seek.first.rec=FALSE,
+                             use.names=TRUE)
+    .read_XStringSet(filepath, format, nrec, skip, seek.first.rec,
+                     use.names, "DNA")
 
 readRNAStringSet <- function(filepath, format="fasta",
-                             nrec=-1L, skip=0L, use.names=TRUE)
-    .readXStringSet(filepath, format, nrec, skip, use.names, "RNA")
+                             nrec=-1L, skip=0L, seek.first.rec=FALSE,
+                             use.names=TRUE)
+    .read_XStringSet(filepath, format, nrec, skip, seek.first.rec,
+                     use.names, "RNA")
 
 readAAStringSet <- function(filepath, format="fasta",
-                            nrec=-1L, skip=0L, use.names=TRUE)
-    .readXStringSet(filepath, format, nrec, skip, use.names, "AA")
+                            nrec=-1L, skip=0L, seek.first.rec=FALSE,
+                            use.names=TRUE)
+    .read_XStringSet(filepath, format, nrec, skip, seek.first.rec,
+                     use.names, "AA")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### writeXStringSet()
 ###
 
-.write.XStringSet.to.fasta <- function(x, efp_list, width=80L)
+.write_XStringSet_to_fasta <- function(x, efp_list, width=80L)
 {
     if (!isSingleNumber(width)) 
         stop("'width' must be a single integer")
@@ -212,7 +231,7 @@ readAAStringSet <- function(filepath, format="fasta",
           PACKAGE="Biostrings")
 }
 
-.write.XStringSet.to.fastq <- function(x, efp_list, qualities=NULL)
+.write_XStringSet_to_fastq <- function(x, efp_list, qualities=NULL)
 {
     if (!is.null(qualities)) {
         if (!is(qualities, "BStringSet"))
@@ -233,13 +252,13 @@ writeXStringSet <- function(x, filepath, append=FALSE, format="fasta", ...)
     if (!isSingleString(format))
         stop("'format' must be a single string")
     format <- match.arg(tolower(format), c("fasta", "fastq"))
-    efp_list <- .openOutputFile(filepath, append)
+    efp_list <- .open_output_file(filepath, append)
     res <- try(switch(format,
-                   "fasta"=.write.XStringSet.to.fasta(x, efp_list, ...),
-                   "fastq"=.write.XStringSet.to.fastq(x, efp_list, ...)
+                   "fasta"=.write_XStringSet_to_fasta(x, efp_list, ...),
+                   "fastq"=.write_XStringSet_to_fastq(x, efp_list, ...)
                ),
                silent=FALSE)
-    .closeFiles(efp_list)
+    .close_files(efp_list)
     if (is(res, "try-error") && !append) {
         ## Get the expamded path and remove the file.
         expath <- attr(efp_list[[1L]], "expath")

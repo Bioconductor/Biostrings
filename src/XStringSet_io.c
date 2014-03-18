@@ -219,11 +219,11 @@ static int translate(Chars_holder *seq_data, const int *lkup, int lkup_length)
  * the original Pearson FASTA format.
  */
 static const char *parse_FASTA_file(FILE *stream, int *recno, int *ninvalid,
-		int nrec, int skip, FASTAloader *loader)
+		int nrec, int skip, int seek_first_rec, FASTAloader *loader)
 {
 	int FASTA_comment_markup_length, FASTA_desc_markup_length,
 	    lineno, previous_line_not_complete, load_record,
-	    current_line_not_complete, new_record;
+	    ret_code, current_line_not_complete, new_record;
 	char buf[IOBUF_SIZE];
 	Chars_holder data;
 
@@ -232,11 +232,20 @@ static const char *parse_FASTA_file(FILE *stream, int *recno, int *ninvalid,
 	lineno = 0;
 	previous_line_not_complete = 0;
 	load_record = -1;
-	while (fgets(buf, IOBUF_SIZE, stream) != NULL) {
-		data.length = delete_trailing_LF_or_CRLF(buf, -1);
+	while ((ret_code = fgets2(buf, IOBUF_SIZE, stream))) {
+		if (ret_code == -1) {
+			snprintf(errmsg_buf, sizeof(errmsg_buf),
+				 "read error while reading characters "
+				 "from line %d", lineno);
+			return errmsg_buf;
+		}
+		current_line_not_complete = ret_code == 2;
+		if (current_line_not_complete) {
+			data.length = IOBUF_SIZE - 1;
+		} else {
+			data.length = delete_trailing_LF_or_CRLF(buf, -1);
+		}
 		data.seq = buf;
-		// data.length >= IOBUF_SIZE should never happen
-		current_line_not_complete = data.length >= IOBUF_SIZE - 1;
 		if (previous_line_not_complete)
 			goto parse_seq_data;
 		lineno++;
@@ -299,9 +308,10 @@ static const char *parse_FASTA_file(FILE *stream, int *recno, int *ninvalid,
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP fasta_info(SEXP efp_list, SEXP nrec, SEXP skip, SEXP use_names, SEXP lkup)
+SEXP fasta_info(SEXP efp_list, SEXP nrec, SEXP skip, SEXP seek_first_rec,
+		SEXP use_names, SEXP lkup)
 {
-	int nrec0, skip0, load_descs, i, recno, ninvalid;
+	int nrec0, skip0, seek_rec0, load_descs, i, recno, ninvalid;
 	FASTAINFO_loaderExt loader_ext;
 	FASTAloader loader;
 	FILE *stream;
@@ -310,6 +320,7 @@ SEXP fasta_info(SEXP efp_list, SEXP nrec, SEXP skip, SEXP use_names, SEXP lkup)
 
 	nrec0 = INTEGER(nrec)[0];
 	skip0 = INTEGER(skip)[0];
+	seek_rec0 = LOGICAL(seek_first_rec)[0];
 	load_descs = LOGICAL(use_names)[0];
 	loader_ext = new_FASTAINFO_loaderExt();
 	loader = new_FASTAINFO_loader(lkup, load_descs, &loader_ext);
@@ -318,7 +329,7 @@ SEXP fasta_info(SEXP efp_list, SEXP nrec, SEXP skip, SEXP use_names, SEXP lkup)
 		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
 		ninvalid = 0;
 		errmsg = parse_FASTA_file(stream, &recno, &ninvalid,
-					  nrec0, skip0, &loader);
+					  nrec0, skip0, seek_rec0, &loader);
 		if (errmsg != NULL)
 			error("reading FASTA file %s: %s",
 			      CHAR(STRING_ELT(GET_NAMES(efp_list), i)),
@@ -342,9 +353,10 @@ SEXP fasta_info(SEXP efp_list, SEXP nrec, SEXP skip, SEXP use_names, SEXP lkup)
 
 /* --- .Call ENTRY POINT --- */
 SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
+		SEXP seek_first_rec,
 		SEXP use_names, SEXP elementType, SEXP lkup)
 {
-	int nrec0, skip0, i, recno, ninvalid;
+	int nrec0, skip0, seek_rec0, i, recno, ninvalid;
 	SEXP ans_width, ans_names, ans;
 	const char *element_type;
 	char classname[40];  /* longest string should be "DNAStringSet" */
@@ -354,7 +366,9 @@ SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 
 	nrec0 = INTEGER(nrec)[0];
 	skip0 = INTEGER(skip)[0];
-	PROTECT(ans_width = fasta_info(efp_list, nrec, skip, use_names, lkup));
+	seek_rec0 = LOGICAL(seek_first_rec)[0];
+	PROTECT(ans_width = fasta_info(efp_list, nrec, skip, seek_first_rec,
+				       use_names, lkup));
 	PROTECT(ans_names = GET_NAMES(ans_width));
 	SET_NAMES(ans_width, R_NilValue);
 	element_type = CHAR(STRING_ELT(elementType, 0));
@@ -375,7 +389,7 @@ SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
 		rewind(stream);
 		parse_FASTA_file(stream, &recno, &ninvalid,
-				 nrec0, skip0, &loader);
+				 nrec0, skip0, seek_rec0, &loader);
 	}
 	UNPROTECT(3);
 	return ans;
@@ -592,26 +606,31 @@ static FASTQloader new_FASTQ_loader(int load_seqids,
  * Ignore empty lines.
  */
 static const char *parse_FASTQ_file(FILE *stream, int *recno,
-		int nrec, int skip, FASTQloader *loader)
+		int nrec, int skip, int seek_first_rec, FASTQloader *loader)
 {
 	int FASTQ_line1_markup_length, FASTQ_line3_markup_length,
-	    lineno, lineinrecno, load_record;
+	    lineno, lineinrecno, ret_code, load_record;
 	char buf[IOBUF_SIZE];
 	Chars_holder data;
 
 	FASTQ_line1_markup_length = strlen(FASTQ_line1_markup);
 	FASTQ_line3_markup_length = strlen(FASTQ_line3_markup);
 	lineno = lineinrecno = 0;
-	while (fgets(buf, IOBUF_SIZE, stream) != NULL) {
+	while ((ret_code = fgets2(buf, IOBUF_SIZE, stream))) {
 		lineno++;
-		data.length = delete_trailing_LF_or_CRLF(buf, -1);
-		// data.length >= IOBUF_SIZE should never happen
-		if (data.length >= IOBUF_SIZE - 1) {
+		if (ret_code == -1) {
+			snprintf(errmsg_buf, sizeof(errmsg_buf),
+				 "read error while reading characters "
+				 "from line %d", lineno);
+			return errmsg_buf;
+		}
+		if (ret_code == 2) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "cannot read line %d, line is too long",
 				 lineno);
 			return errmsg_buf;
 		}
+		data.length = delete_trailing_LF_or_CRLF(buf, -1);
 		if (data.length == 0)
 			continue; // we ignore empty lines
 		buf[data.length] = '\0';
@@ -671,9 +690,9 @@ static const char *parse_FASTQ_file(FILE *stream, int *recno,
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP fastq_geometry(SEXP efp_list, SEXP nrec, SEXP skip)
+SEXP fastq_geometry(SEXP efp_list, SEXP nrec, SEXP skip, SEXP seek_first_rec)
 {
-	int nrec0, skip0, i, recno;
+	int nrec0, skip0, seek_rec0, i, recno;
 	FASTQGEOM_loaderExt loader_ext;
 	FASTQloader loader;
 	FILE *stream;
@@ -682,13 +701,14 @@ SEXP fastq_geometry(SEXP efp_list, SEXP nrec, SEXP skip)
 
 	nrec0 = INTEGER(nrec)[0];
 	skip0 = INTEGER(skip)[0];
+	seek_rec0 = LOGICAL(seek_first_rec)[0];
 	loader_ext = new_FASTQGEOM_loaderExt();
 	loader = new_FASTQGEOM_loader(&loader_ext);
 	recno = 0;
 	for (i = 0; i < LENGTH(efp_list); i++) {
 		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
 		errmsg = parse_FASTQ_file(stream, &recno,
-				nrec0, skip0, &loader);
+					  nrec0, skip0, seek_rec0, &loader);
 		if (errmsg != NULL)
 			error("reading FASTQ file %s: %s",
 			      CHAR(STRING_ELT(GET_NAMES(efp_list), i)),
@@ -703,9 +723,10 @@ SEXP fastq_geometry(SEXP efp_list, SEXP nrec, SEXP skip)
 
 /* --- .Call ENTRY POINT --- */
 SEXP read_fastq_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
+		SEXP seek_first_rec,
 		SEXP use_names, SEXP elementType, SEXP lkup)
 {
-	int nrec0, skip0, load_seqids, ans_length, i, recno;
+	int nrec0, skip0, seek_rec0, load_seqids, ans_length, i, recno;
 	SEXP ans_geom, ans_width, ans, ans_names;
 	const char *element_type;
 	char classname[40];  /* longest string should be "DNAStringSet" */
@@ -715,8 +736,10 @@ SEXP read_fastq_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 
 	nrec0 = INTEGER(nrec)[0];
 	skip0 = INTEGER(skip)[0];
+	seek_rec0 = LOGICAL(seek_first_rec)[0];
 	load_seqids = LOGICAL(use_names)[0];
-	PROTECT(ans_geom = fastq_geometry(efp_list, nrec, skip));
+	PROTECT(ans_geom = fastq_geometry(efp_list, nrec, skip,
+					  seek_first_rec));
 	ans_length = INTEGER(ans_geom)[0];
 	PROTECT(ans_width = NEW_INTEGER(ans_length));
 	if (ans_length != 0) {
@@ -744,7 +767,8 @@ SEXP read_fastq_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 	for (i = 0; i < LENGTH(efp_list); i++) {
 		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
 		rewind(stream);
-		parse_FASTQ_file(stream, &recno, nrec0, skip0, &loader);
+		parse_FASTQ_file(stream, &recno,
+				 nrec0, skip0, seek_rec0, &loader);
 	}
 	if (load_seqids) {
 		PROTECT(ans_names =

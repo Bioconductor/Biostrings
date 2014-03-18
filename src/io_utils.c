@@ -174,23 +174,48 @@ SEXP ExternalFilePtr_close(SEXP e)
  */
 
 /*
- * Doesn't actually delete anything but returns the size the 'buf' char
+ * Like fgets(), except that it returns a code instead of NULL or a pointer
+ * to the buffer. The returned code can be:
+ *    2: if reading stopped because buffer was full and no EOF or newline was
+ *       read in,
+ *    1: if reading stopped after an EOF or a newline,
+ *    0: if end of file occurred while no character was read,
+ *   -1: on read error.
+ */
+int fgets2(char *buf, int buf_size, FILE *stream)
+{
+	char c;
+
+	buf[buf_size - 2] = '\0';
+	if (fgets(buf, buf_size, stream) == NULL) {
+		if (ferror(stream) != 0 || feof(stream) == 0)
+			return -1;
+		return 0;
+	}
+	c = buf[buf_size - 2];
+	if (c == '\n' || c == '\0')
+		return 1;
+	return 2;
+}
+
+/*
+ * Doesn't actually delete anything but returns the length the 'buf' char
  * array would have after deletion of the LF ("\n") or CRLF ("\r\n") chars
  * located at its end.
- * If 'size' is -1, then 'buf' must be a C string (i.e. null-terminated).
+ * If 'buf_len' is -1, then 'buf' must be a C string (i.e. null-terminated).
  */
-int delete_trailing_LF_or_CRLF(const char *buf, int size)
+int delete_trailing_LF_or_CRLF(const char *buf, int buf_len)
 {
-	if (size == -1)
-		size = strlen(buf);
-	if (size == 0)
+	if (buf_len == -1)
+		buf_len = strlen(buf);
+	if (buf_len == 0)
 		return 0;
-	if (buf[--size] != '\n')
-		return ++size;
-	if (size == 0)
+	if (buf[--buf_len] != '\n')
+		return ++buf_len;
+	if (buf_len == 0)
 		return 0;
-	if (buf[--size] != '\r')
-		return ++size;
-	return size;
+	if (buf[--buf_len] != '\r')
+		return ++buf_len;
+	return buf_len;
 }
 

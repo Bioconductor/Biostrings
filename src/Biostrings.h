@@ -67,9 +67,15 @@ SEXP new_output_ExternalFilePtr(SEXP filepath, SEXP append);
 
 SEXP ExternalFilePtr_close(SEXP x);
 
+int fgets2(
+	char *buf,
+	int buf_size,
+	FILE *stream
+);
+
 int delete_trailing_LF_or_CRLF(
 	const char *buf,
-	int size
+	int buf_len
 );
 
 
@@ -208,6 +214,7 @@ SEXP fasta_info(
 	SEXP efp_list,
 	SEXP nrec,
 	SEXP skip,
+	SEXP seek_first_rec,
 	SEXP use_names,
 	SEXP lkup
 );
@@ -216,6 +223,7 @@ SEXP read_fasta_in_XStringSet(
 	SEXP efp_list,
 	SEXP nrec,
 	SEXP skip,
+	SEXP seek_first_rec,
 	SEXP use_names,
 	SEXP elementType,
 	SEXP lkup
@@ -231,13 +239,15 @@ SEXP write_XStringSet_to_fasta(
 SEXP fastq_geometry(
 	SEXP efp_list,
 	SEXP nrec,
-	SEXP skip
+	SEXP skip,
+	SEXP seek_first_rec
 );
 
 SEXP read_fastq_in_XStringSet(
 	SEXP efp_list,
 	SEXP nrec,
 	SEXP skip,
+	SEXP seek_first_rec,
 	SEXP use_names,
 	SEXP elementType,
 	SEXP lkup
