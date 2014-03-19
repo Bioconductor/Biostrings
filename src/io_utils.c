@@ -176,26 +176,23 @@ SEXP ExternalFilePtr_close(SEXP e)
 /*
  * Like fgets(), except that it returns a code instead of NULL or a pointer
  * to the buffer. The returned code can be:
- *    2: if reading stopped because buffer was full and no EOF or newline was
+ *    2: if reading stopped after an EOF or a newline,
+ *    1: if reading stopped because buffer was full and no EOF or newline was
  *       read in,
- *    1: if reading stopped after an EOF or a newline,
  *    0: if end of file occurred while no character was read,
  *   -1: on read error.
  */
 int fgets2(char *buf, int buf_size, FILE *stream)
 {
-	char c;
-
-	buf[buf_size - 2] = '\0';
+	buf[buf_size - 1] = 'N'; // any non '\0' would do
 	if (fgets(buf, buf_size, stream) == NULL) {
 		if (ferror(stream) != 0 || feof(stream) == 0)
 			return -1;
 		return 0;
 	}
-	c = buf[buf_size - 2];
-	if (c == '\n' || c == '\0')
-		return 1;
-	return 2;
+	if (buf[buf_size - 1] == 'N' || buf[buf_size - 2] == '\n')
+		return 2;
+	return 1;
 }
 
 /*

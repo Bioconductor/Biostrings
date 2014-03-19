@@ -23,6 +23,19 @@ SEXP debug_XStringSet_io()
 #define IOBUF_SIZE 20002
 static char errmsg_buf[200];
 
+static int has_prefix(const char *s, const char *prefix)
+{
+	int i = 0;
+	char c;
+
+	while ((c = prefix[i]) != '\0') {
+		if (s[i] != c)
+			return 0;
+		i++;
+	}
+	return 1;
+}
+
 
 
 /****************************************************************************
@@ -31,7 +44,7 @@ static char errmsg_buf[200];
 
 /*
  * Even if the standard FASTA markup is made of 1-letter sympols, we want to
- * be able to eventually support longer sympols.
+ * be ready to support longer sympols just in case.
  */
 static const char *FASTA_comment_markup = ";", *FASTA_desc_markup = ">";
 
@@ -221,40 +234,46 @@ static int translate(Chars_holder *seq_data, const int *lkup, int lkup_length)
 static const char *parse_FASTA_file(FILE *stream, int *recno, int *ninvalid,
 		int nrec, int skip, int seek_first_rec, FASTAloader *loader)
 {
-	int FASTA_comment_markup_length, FASTA_desc_markup_length,
-	    lineno, previous_line_not_complete, load_record,
-	    ret_code, current_line_not_complete, new_record;
+	int lineno, EOL_in_buf, EOL_in_prev_buf,
+	    FASTA_desc_markup_length, load_record, ret_code, is_new_rec;
 	char buf[IOBUF_SIZE];
 	Chars_holder data;
 
-	FASTA_comment_markup_length = strlen(FASTA_comment_markup);
-	FASTA_desc_markup_length = strlen(FASTA_desc_markup);
 	lineno = 0;
-	previous_line_not_complete = 0;
+	EOL_in_buf = 1;
+	FASTA_desc_markup_length = strlen(FASTA_desc_markup);
 	load_record = -1;
 	while ((ret_code = fgets2(buf, IOBUF_SIZE, stream))) {
+		EOL_in_prev_buf = EOL_in_buf;
+		if (EOL_in_prev_buf)
+			lineno++;
 		if (ret_code == -1) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "read error while reading characters "
 				 "from line %d", lineno);
 			return errmsg_buf;
 		}
-		current_line_not_complete = ret_code == 2;
-		if (current_line_not_complete) {
-			data.length = IOBUF_SIZE - 1;
-		} else {
+		EOL_in_buf = ret_code == 2;
+		if (seek_first_rec) {
+			if (EOL_in_prev_buf
+			 && has_prefix(buf, FASTA_desc_markup)) {
+				seek_first_rec = 0;
+			} else {
+				continue;
+			}
+		}
+		if (EOL_in_buf) {
 			data.length = delete_trailing_LF_or_CRLF(buf, -1);
+		} else {
+			data.length = IOBUF_SIZE - 1;
 		}
 		data.seq = buf;
-		if (previous_line_not_complete)
+		if (!EOL_in_prev_buf)
 			goto parse_seq_data;
-		lineno++;
 		if (data.length == 0)
 			continue; // we ignore empty lines
-		if (data.length >= FASTA_comment_markup_length &&
-		    strncmp(data.seq, FASTA_comment_markup,
-			    FASTA_comment_markup_length) == 0) {
-			if (current_line_not_complete) {
+		if (has_prefix(data.seq, FASTA_comment_markup)) {
+			if (!EOL_in_buf) {
 				snprintf(errmsg_buf, sizeof(errmsg_buf),
 					 "cannot read line %d, "
 					 "line is too long", lineno);
@@ -263,10 +282,9 @@ static const char *parse_FASTA_file(FILE *stream, int *recno, int *ninvalid,
 			continue; // we ignore comment lines
 		}
 		buf[data.length] = '\0';
-		new_record = strncmp(data.seq, FASTA_desc_markup,
-				     FASTA_desc_markup_length) == 0;
-		if (new_record) {
-			if (current_line_not_complete) {
+		is_new_rec = has_prefix(data.seq, FASTA_desc_markup);
+		if (is_new_rec) {
+			if (!EOL_in_buf) {
 				snprintf(errmsg_buf, sizeof(errmsg_buf),
 					 "cannot read line %d, "
 					 "line is too long", lineno);
@@ -302,7 +320,11 @@ static const char *parse_FASTA_file(FILE *stream, int *recno, int *ninvalid,
 						       loader->lkup_length);
 			loader->load_seq_data(loader, &data);
 		}
-		previous_line_not_complete = current_line_not_complete;
+	}
+	if (seek_first_rec) {
+		snprintf(errmsg_buf, sizeof(errmsg_buf),
+			 "no FASTA record found");
+		return errmsg_buf;
 	}
 	return NULL;
 }
@@ -608,14 +630,19 @@ static FASTQloader new_FASTQ_loader(int load_seqids,
 static const char *parse_FASTQ_file(FILE *stream, int *recno,
 		int nrec, int skip, int seek_first_rec, FASTQloader *loader)
 {
-	int FASTQ_line1_markup_length, FASTQ_line3_markup_length,
-	    lineno, lineinrecno, ret_code, load_record;
+	int lineno,
+	    FASTQ_line1_markup_length, FASTQ_line3_markup_length,
+	    lineinrecno, ret_code, load_record;
 	char buf[IOBUF_SIZE];
 	Chars_holder data;
 
+	if (seek_first_rec)
+		error("'seek_first_rec' argument not yet supported "
+		      "when reading FASTQ files");
+	lineno = 0;
 	FASTQ_line1_markup_length = strlen(FASTQ_line1_markup);
 	FASTQ_line3_markup_length = strlen(FASTQ_line3_markup);
-	lineno = lineinrecno = 0;
+	lineinrecno = 0;
 	while ((ret_code = fgets2(buf, IOBUF_SIZE, stream))) {
 		lineno++;
 		if (ret_code == -1) {
@@ -624,7 +651,7 @@ static const char *parse_FASTQ_file(FILE *stream, int *recno,
 				 "from line %d", lineno);
 			return errmsg_buf;
 		}
-		if (ret_code == 2) {
+		if (ret_code == 1) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "cannot read line %d, line is too long",
 				 lineno);
