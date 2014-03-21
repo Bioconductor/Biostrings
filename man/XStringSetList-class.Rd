@@ -22,6 +22,7 @@
 % Methods:
 \alias{seqtype,XStringSetList-method}
 \alias{seqtype<-,XStringSetList-method}
+\alias{nchar,XStringSetList-method}
 
 \alias{show,XStringSetList-method}
 
