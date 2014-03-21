@@ -74,14 +74,7 @@ setMethod("splitAsListReturnedClass", "XStringSet",
 
 partitioning <- function(x) .Defunct("PartitioningByEnd")
 
-setMethod("nchar", "XStringSetList",
-    function(x, type="chars", allowNA=FALSE)
-    {
-        unlisted_x <- unlist(x, use.names=FALSE)
-        unlisted_ans <- nchar(unlisted_x, type=type, allowNA=allowNA)
-        relist(unlisted_ans, x)
-    }
-)
+setMethod("nchar", "XStringSetList", IRanges:::nchar_CompressedList)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
