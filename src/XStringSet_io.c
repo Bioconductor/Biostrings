@@ -234,26 +234,23 @@ static int translate(Chars_holder *seq_data, const int *lkup, int lkup_length)
 static const char *parse_FASTA_file(FILE *stream, int *recno, int *ninvalid,
 		int nrec, int skip, int seek_first_rec, FASTAloader *loader)
 {
-	int lineno, EOL_in_buf, EOL_in_prev_buf,
-	    FASTA_desc_markup_length, load_record, ret_code, is_new_rec;
+	int lineno, EOL_in_buf, EOL_in_prev_buf, ret_code,
+	    FASTA_desc_markup_length, load_rec, is_new_rec;
 	char buf[IOBUF_SIZE];
 	Chars_holder data;
 
-	lineno = 0;
-	EOL_in_buf = 1;
 	FASTA_desc_markup_length = strlen(FASTA_desc_markup);
-	load_record = -1;
-	while ((ret_code = fgets2(buf, IOBUF_SIZE, stream))) {
-		EOL_in_prev_buf = EOL_in_buf;
-		if (EOL_in_prev_buf)
-			lineno++;
+	load_rec = -1;
+	for (lineno = EOL_in_prev_buf = 1;
+	     (ret_code = fgets2(buf, IOBUF_SIZE, stream, &EOL_in_buf));
+	     lineno += EOL_in_prev_buf = EOL_in_buf)
+	{
 		if (ret_code == -1) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "read error while reading characters "
 				 "from line %d", lineno);
 			return errmsg_buf;
 		}
-		EOL_in_buf = ret_code == 2;
 		if (seek_first_rec) {
 			if (EOL_in_prev_buf
 			 && has_prefix(buf, FASTA_desc_markup)) {
@@ -290,30 +287,30 @@ static const char *parse_FASTA_file(FILE *stream, int *recno, int *ninvalid,
 					 "line is too long", lineno);
 				return errmsg_buf;
 			}
-			load_record = *recno >= skip;
-			if (load_record && nrec >= 0 && *recno >= skip + nrec)
+			load_rec = *recno >= skip;
+			if (load_rec && nrec >= 0 && *recno >= skip + nrec)
 				return NULL;
-			load_record = load_record && loader != NULL;
-			if (load_record && loader->load_desc_line != NULL) {
+			load_rec = load_rec && loader != NULL;
+			if (load_rec && loader->load_desc_line != NULL) {
 				data.seq += FASTA_desc_markup_length;
 				data.length -= FASTA_desc_markup_length;
 				loader->load_desc_line(loader, &data);
 			}
-			if (load_record && loader->load_empty_seq != NULL)
+			if (load_rec && loader->load_empty_seq != NULL)
 				loader->load_empty_seq(loader);
-			if (load_record)
+			if (load_rec)
 				loader->nrec++;
 			(*recno)++;
 			continue;
 		}
-		if (load_record == -1) {
+		if (load_rec == -1) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "\"%s\" expected at beginning of line %d",
 				 FASTA_desc_markup, lineno);
 			return errmsg_buf;
 		}
 		parse_seq_data:
-		if (load_record && loader->load_seq_data != NULL) {
+		if (load_rec && loader->load_seq_data != NULL) {
 			if (loader->lkup != NULL)
 				*ninvalid += translate(&data,
 						       loader->lkup,
@@ -630,28 +627,34 @@ static FASTQloader new_FASTQ_loader(int load_seqids,
 static const char *parse_FASTQ_file(FILE *stream, int *recno,
 		int nrec, int skip, int seek_first_rec, FASTQloader *loader)
 {
-	int lineno,
+	int lineno, EOL_in_buf, EOL_in_prev_buf, ret_code,
 	    FASTQ_line1_markup_length, FASTQ_line3_markup_length,
-	    lineinrecno, ret_code, load_record;
+	    lineinrecno, load_rec;
 	char buf[IOBUF_SIZE];
 	Chars_holder data;
 
-	if (seek_first_rec)
-		error("'seek_first_rec' argument not yet supported "
-		      "when reading FASTQ files");
-	lineno = 0;
 	FASTQ_line1_markup_length = strlen(FASTQ_line1_markup);
 	FASTQ_line3_markup_length = strlen(FASTQ_line3_markup);
 	lineinrecno = 0;
-	while ((ret_code = fgets2(buf, IOBUF_SIZE, stream))) {
-		lineno++;
+	for (lineno = EOL_in_prev_buf = 1;
+	     (ret_code = fgets2(buf, IOBUF_SIZE, stream, &EOL_in_buf));
+	     lineno += EOL_in_prev_buf = EOL_in_buf)
+	{
 		if (ret_code == -1) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "read error while reading characters "
 				 "from line %d", lineno);
 			return errmsg_buf;
 		}
-		if (ret_code == 1) {
+		if (seek_first_rec) {
+			if (EOL_in_prev_buf
+			 && has_prefix(buf, FASTQ_line1_markup)) {
+				seek_first_rec = 0;
+			} else {
+				continue;
+			}
+		}
+		if (!EOL_in_buf) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "cannot read line %d, line is too long",
 				 lineno);
@@ -667,51 +670,54 @@ static const char *parse_FASTQ_file(FILE *stream, int *recno,
 			lineinrecno = 1;
 		switch (lineinrecno) {
 		    case 1:
-			if (strncmp(buf, FASTQ_line1_markup,
-				    FASTQ_line1_markup_length) != 0) {
-			    snprintf(errmsg_buf, sizeof(errmsg_buf),
+			if (!has_prefix(buf, FASTQ_line1_markup)) {
+				snprintf(errmsg_buf, sizeof(errmsg_buf),
 				     "\"%s\" expected at beginning of line %d",
 				     FASTQ_line1_markup, lineno);
 				return errmsg_buf;
 			}
-			load_record = *recno >= skip;
-			if (load_record && nrec >= 0 && *recno >= skip + nrec)
+			load_rec = *recno >= skip;
+			if (load_rec && nrec >= 0 && *recno >= skip + nrec)
 				return NULL;
-			load_record = load_record && loader != NULL;
-			if (load_record && nrec >= 0)
-				load_record = *recno < skip + nrec;
-			if (load_record && loader->load_seqid != NULL) {
+			load_rec = load_rec && loader != NULL;
+			if (load_rec && nrec >= 0)
+				load_rec = *recno < skip + nrec;
+			if (load_rec && loader->load_seqid != NULL) {
 				data.seq += FASTQ_line1_markup_length;
 				data.length -= FASTQ_line1_markup_length;
 				loader->load_seqid(loader, &data);
 			}
 		    break;
 		    case 2:
-			if (load_record && loader->load_seq != NULL)
+			if (load_rec && loader->load_seq != NULL)
 				loader->load_seq(loader, &data);
 		    break;
 		    case 3:
-			if (strncmp(buf, FASTQ_line3_markup,
-				    FASTQ_line3_markup_length) != 0) {
+			if (!has_prefix(buf, FASTQ_line3_markup)) {
 				snprintf(errmsg_buf, sizeof(errmsg_buf),
 					 "\"%s\" expected at beginning of "
 					 "line %d", FASTQ_line3_markup, lineno);
 				return errmsg_buf;
 			}
-			if (load_record && loader->load_qualid != NULL) {
+			if (load_rec && loader->load_qualid != NULL) {
 				data.seq += FASTQ_line3_markup_length;
 				data.length -= FASTQ_line3_markup_length;
 				loader->load_qualid(loader, &data);
 			}
 		    break;
 		    case 4:
-			if (load_record && loader->load_qual != NULL)
+			if (load_rec && loader->load_qual != NULL)
 				loader->load_qual(loader, &data);
-			if (load_record)
+			if (load_rec)
 				loader->nrec++;
 			(*recno)++;
 		    break;
 		}
+	}
+	if (seek_first_rec) {
+		snprintf(errmsg_buf, sizeof(errmsg_buf),
+			 "no FASTQ record found");
+		return errmsg_buf;
 	}
 	return NULL;
 }

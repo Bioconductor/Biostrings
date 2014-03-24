@@ -182,7 +182,7 @@ SEXP ExternalFilePtr_close(SEXP e)
  *    0: if end of file occurred while no character was read,
  *   -1: on read error.
  */
-int fgets2(char *buf, int buf_size, FILE *stream)
+int fgets2(char *buf, int buf_size, FILE *stream, int *EOL_in_buf)
 {
 	buf[buf_size - 1] = 'N'; // any non '\0' would do
 	if (fgets(buf, buf_size, stream) == NULL) {
@@ -190,9 +190,8 @@ int fgets2(char *buf, int buf_size, FILE *stream)
 			return -1;
 		return 0;
 	}
-	if (buf[buf_size - 1] == 'N' || buf[buf_size - 2] == '\n')
-		return 2;
-	return 1;
+	*EOL_in_buf = buf[buf_size - 1] == 'N' || buf[buf_size - 2] == '\n';
+	return *EOL_in_buf ? 2 : 1;
 }
 
 /*

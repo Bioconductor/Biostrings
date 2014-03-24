@@ -70,7 +70,8 @@ SEXP ExternalFilePtr_close(SEXP x);
 int fgets2(
 	char *buf,
 	int buf_size,
-	FILE *stream
+	FILE *stream,
+	int *EOL_in_buf
 );
 
 int delete_trailing_LF_or_CRLF(
