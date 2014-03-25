@@ -1,8 +1,9 @@
 #include "../inst/include/Biostrings_defines.h"
 #include <string.h>
-#include <zlib.h>
 
 #define DEBUG_BIOSTRINGS 1
+
+#define INTERNAL_ERR_IN "Biostrings internal error in "
 
 #define INIT_STATIC_SYMBOL(NAME) \
 { \

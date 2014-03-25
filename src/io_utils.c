@@ -10,6 +10,12 @@
 #include <sys/types.h>
 #include <sys/stat.h> /* for fstat() */
 
+#include <zlib.h>
+
+#define UNCOMPRESSED		0
+#define GZ_TYPE			1
+#define BZ_TYPE			2 /* detected but not supported yet */
+#define XZ_TYPE			3 /* detected but not supported yet */
 
 /* Code taken from do_url() in R/src/main/connections.c */
 static void get_file_ztype(const char *path, int *ztype, int *subtype)
@@ -18,7 +24,7 @@ static void get_file_ztype(const char *path, int *ztype, int *subtype)
 	char buf[7];
 	int res;
 
-	*ztype = -1;
+	*ztype = UNCOMPRESSED;
 	*subtype = 0;
 	if ((fp = fopen(path, "rb")) == NULL)
 		return;
@@ -28,16 +34,16 @@ static void get_file_ztype(const char *path, int *ztype, int *subtype)
 	if (res != 1)
 		return;
 	if (buf[0] == '\x1f' && buf[1] == '\x8b')
-		*ztype = 0;
+		*ztype = GZ_TYPE;
 	else if (strncmp(buf, "BZh", 3) == 0)
-		*ztype = 1;
+		*ztype = BZ_TYPE;
 	else if (buf[0] == '\xFD' && strncmp(buf+1, "7zXZ", 4) == 0)
-		*ztype = 2;
+		*ztype = XZ_TYPE;
 	else if ((buf[0] == '\xFF') && strncmp(buf+1, "LZMA", 4) == 0) {
-		*ztype = 2;
+		*ztype = XZ_TYPE;
 		*subtype = 1;
 	} else if (memcmp(buf, "]\0\0\200\0", 5) == 0) {
-		*ztype = 2;
+		*ztype = XZ_TYPE;
 		*subtype = 1;
 	}
 	return;
@@ -55,7 +61,7 @@ static FILE *open_file(const char *path, const char *mode)
 	ret = fstat(fileno(fp), &buf);
 	if (ret != 0) {
 		fclose(fp);
-		error("Biostrings internal error in open_file(): "
+		error(INTERNAL_ERR_IN "open_file(): "
 		      "cannot stat file '%s'", path);
 	}
 	if (S_ISDIR(buf.st_mode)) {
@@ -67,51 +73,47 @@ static FILE *open_file(const char *path, const char *mode)
 
 
 /****************************************************************************
- * File_holder structs
+ * ZFile structs
  */
 
-typedef struct file_holder {
+typedef struct zfile {
 	const char *path;
 	const char *expath;
 	const char *mode;
 	int ztype;
 	int subtype;
 	void *file;
-} File_holder;
+} ZFile;
 
-static File_holder new_File_holder(const char *path, const char *expath,
+static ZFile new_ZFile(const char *path, const char *expath,
 		const char *mode, const char *compress, int level)
 {
-	File_holder file_holder;
+	ZFile zfile;
 	int ztype, subtype;
 	void *file;
 
-	file_holder.path = path;
-	file_holder.expath = expath;
-	file_holder.mode = mode;
+	zfile.path = path;
+	zfile.expath = expath;
+	zfile.mode = mode;
 	if (strcmp(mode, "r") == 0) {
 		get_file_ztype(expath, &ztype, &subtype);
-		file_holder.ztype = ztype;
-		file_holder.subtype = subtype;
+		zfile.ztype = ztype;
+		zfile.subtype = subtype;
 		switch (ztype) {
-		/* No compression */
-		    case -1:
-		/* gzfile */
-		    case 0:
+		    case UNCOMPRESSED:
+		    case GZ_TYPE:
 			file = gzopen(expath, "r");
 			if (file == NULL)
 				error("cannot open file '%s'", expath);
 			break;
-		/* bzfile */
-		    case 1:
+		    case BZ_TYPE:
 			error("cannot open file '%s' (bzip2-compressed files "
 			      "are not supported yet, sorry!)", path);
 			//requires #include <bzlib.h>
 			//open the file with BZFILE* bfp = BZ2_bzReadOpen(...);
 			//close it with BZ2_bzReadClose();
 			break;
-		/* xzfile */
-		    case 2:
+		    case XZ_TYPE:
 			error("cannot open file '%s' (LZMA-compressed files "
 			      "are not supported yet, sorry!)", path);
 			//requires #include <lzma.h>
@@ -119,38 +121,34 @@ static File_holder new_File_holder(const char *path, const char *expath,
 			//complicated
 			break;
 		    default:
-			error("Biostrings internal error in "
-			      "new_File_holder(): "
+			error(INTERNAL_ERR_IN "new_ZFile(): "
 			      "invalid ztype value %d", ztype);
 		}
 	} else {
-		file_holder.ztype = -1;
+		zfile.ztype = UNCOMPRESSED;
 		file = open_file(expath, mode);
 	}
-	file_holder.file = file;
-	return file_holder;
+	zfile.file = file;
+	return zfile;
 }
 
-static void File_holder_close(const File_holder *file_holder)
+static void ZFile_close(const ZFile *zfile)
 {
 	const char *mode;
 	int ztype;
 	void *file;
 
-	mode = file_holder->mode;
-	ztype = file_holder->ztype;
-	file = file_holder->file;
+	mode = zfile->mode;
+	ztype = zfile->ztype;
+	file = zfile->file;
 	if (strcmp(mode, "r") == 0) {
 		switch (ztype) {
-		/* No compression */
-		    case -1:
-		/* gzfile */
-		    case 0:
+		    case UNCOMPRESSED:
+		    case GZ_TYPE:
 			gzclose((gzFile) file);
 			break;
 		    default:
-			error("Biostrings internal error "
-			      "in File_holder_close(): "
+			error(INTERNAL_ERR_IN "ZFile_close(): "
 			      "invalid ztype value %d", ztype);
 		}
 	} else {
@@ -168,7 +166,7 @@ static void File_holder_close(const File_holder *file_holder)
  *    0: if end of file occurred while no character was read,
  *   -1: on read error.
  */
-static int File_holder_gets(const File_holder *file_holder,
+static int ZFile_gets(const ZFile *zfile,
 		char *buf, int buf_size, int *EOL_in_buf)
 {
 	int ztype;
@@ -176,13 +174,11 @@ static int File_holder_gets(const File_holder *file_holder,
 
 	buf[buf_size - 1] = 'N'; // any non '\0' would do
 
-	ztype = file_holder->ztype;
-	file = file_holder->file;
+	ztype = zfile->ztype;
+	file = zfile->file;
 	switch (ztype) {
-	/* No compression */
-	    case -1:
-	/* gzfile */
-	    case 0:
+	    case UNCOMPRESSED:
+	    case GZ_TYPE:
 		if (gzgets((gzFile) file, buf, buf_size) == Z_NULL) {
 			//if (ferror(file) != 0 || feof(file) == 0)
 			//	return -1;
@@ -190,79 +186,73 @@ static int File_holder_gets(const File_holder *file_holder,
 		}
 		break;
 	    default:
-		error("Biostrings internal error in File_holder_gets(): "
+		error(INTERNAL_ERR_IN "ZFile_gets(): "
 		      "invalid ztype value %d", ztype);
 	}
 	*EOL_in_buf = buf[buf_size - 1] == 'N' || buf[buf_size - 2] == '\n';
 	return *EOL_in_buf ? 2 : 1;
 }
 
-static void File_holder_rewind(const File_holder *file_holder)
+static void ZFile_rewind(const ZFile *zfile)
 {
 	int ztype;
 	void *file;
 
-	ztype = file_holder->ztype;
-	file = file_holder->file;
+	ztype = zfile->ztype;
+	file = zfile->file;
 	switch (ztype) {
-	/* No compression */
-	    case -1:
-	/* gzfile */
-	    case 0:
+	    case UNCOMPRESSED:
+	    case GZ_TYPE:
 		gzrewind((gzFile) file);
 		break;
 	    default:
-		error("Biostrings internal error in File_holder_rewind(): "
+		error(INTERNAL_ERR_IN "ZFile_rewind(): "
 		      "invalid ztype value %d", ztype);
 	}
 	return;
 }
 
-static int File_holder_puts(const File_holder *file_holder, const char *s)
+static int ZFile_puts(const ZFile *zfile, const char *s)
 {
 	int ztype, n;
 	void *file;
 
-	ztype = file_holder->ztype;
-	file = file_holder->file;
+	ztype = zfile->ztype;
+	file = zfile->file;
 	switch (ztype) {
-	/* No compression */
-	    case -1:
+	    case UNCOMPRESSED:
 		if ((n = fputs(s, (FILE *) file)) >= 0)
 			return n;
 		break;
-	/* gzfile */
-	    case 0:
+	    case GZ_TYPE:
 		if ((n = gzputs((gzFile) file, s)) >= 0)
 			return n;
 		break;
 	    default:
-		error("Biostrings internal error in File_holder_puts(): "
+		error(INTERNAL_ERR_IN "ZFile_puts(): "
 		      "invalid ztype value %d", ztype);
 	}
 	error("write error");
 }
 
-static void File_holder_putc(const File_holder *file_holder, int c)
+static void ZFile_putc(const ZFile *zfile, int c)
 {
 	int ztype;
 	void *file;
 
-	ztype = file_holder->ztype;
-	file = file_holder->file;
+	ztype = zfile->ztype;
+	file = zfile->file;
 	switch (ztype) {
-	/* No compression */
-	    case -1:
+	    case UNCOMPRESSED:
 		if (fputc(c, (FILE *) file) != EOF)
 			return;
 		break;
-	/* gzfile */
-	    case 0:
+	    case GZ_TYPE:
 		if (gzputc((gzFile) file, c) != -1)
 			return;
 		break;
 	    default:
-		error("Biostrings internal error in File_holder_putc(): "
+		error(INTERNAL_ERR_IN "ZFile_putc(): "
 		      "invalid ztype value %d", ztype);
 	}
 	error("write error");
@@ -275,23 +265,23 @@ static void File_holder_putc(const File_holder *file_holder, int c)
 
 int ExternalFilePtr_gets(SEXP efp, char *buf, int buf_size, int *EOL_in_buf)
 {
-	return File_holder_gets(R_ExternalPtrAddr(efp),
+	return ZFile_gets(R_ExternalPtrAddr(efp),
 				buf, buf_size, EOL_in_buf);
 }
 
 void ExternalFilePtr_rewind(SEXP efp)
 {
-	return File_holder_rewind(R_ExternalPtrAddr(efp));
+	return ZFile_rewind(R_ExternalPtrAddr(efp));
 }
 
 int ExternalFilePtr_puts(SEXP efp, const char *s)
 {
-	return File_holder_puts(R_ExternalPtrAddr(efp), s);
+	return ZFile_puts(R_ExternalPtrAddr(efp), s);
 }
 
 void ExternalFilePtr_putc(SEXP efp, int c)
 {
-	return File_holder_putc(R_ExternalPtrAddr(efp), c);
+	return ZFile_putc(R_ExternalPtrAddr(efp), c);
 }
 
 static SEXP new_ExternalFilePtr(SEXP filepath,
@@ -299,7 +289,7 @@ static SEXP new_ExternalFilePtr(SEXP filepath,
 {
 	SEXP filepath0, ans, string;
 	const char *expath;
-	File_holder file_holder, *ans_p;
+	ZFile zfile, *extptraddr;
 
 	if (!IS_CHARACTER(filepath) || LENGTH(filepath) != 1)
 		error("'filepath' must be a single string");
@@ -307,14 +297,15 @@ static SEXP new_ExternalFilePtr(SEXP filepath,
 	if (filepath0 == NA_STRING)
 		error("'filepath' is NA");
 	expath = R_ExpandFileName(translateChar(filepath0));
-	file_holder = new_File_holder(CHAR(filepath0), expath,
-				      mode, compress, level);
-	ans_p = (File_holder *) malloc(sizeof(File_holder));
-	if (ans_p == NULL)
-		error("Biostrings internal error in new_ExternalFilePtr(): "
+	zfile = new_ZFile(CHAR(filepath0), expath, mode, compress, level);
+	extptraddr = (ZFile *) malloc(sizeof(ZFile));
+	if (extptraddr == NULL) {
+		ZFile_close(&zfile);
+		error(INTERNAL_ERR_IN "new_ExternalFilePtr(): "
 		      "malloc() failed");
-	*ans_p = file_holder;
-	PROTECT(ans = R_MakeExternalPtr(ans_p, R_NilValue, R_NilValue));
+	}
+	*extptraddr = zfile;
+	PROTECT(ans = R_MakeExternalPtr(extptraddr, R_NilValue, R_NilValue));
 	PROTECT(string = mkString(expath));
 	setAttrib(ans, install("expath"), string);
 	UNPROTECT(2);
@@ -355,12 +346,12 @@ SEXP new_output_ExternalFilePtr(SEXP filepath, SEXP append,
  */
 SEXP finalize_ExternalFilePtr(SEXP efp)
 {
-	File_holder *file_holder;
+	ZFile *zfile;
 
-	file_holder = R_ExternalPtrAddr(efp);
-	if (file_holder != NULL) {
-		File_holder_close(file_holder);
-		free(file_holder);
+	zfile = R_ExternalPtrAddr(efp);
+	if (zfile != NULL) {
+		ZFile_close(zfile);
+		free(zfile);
 		R_SetExternalPtrAddr(efp, NULL);
 	}
 	return R_NilValue;
