@@ -85,7 +85,9 @@ SEXP new_input_ExternalFilePtr(SEXP filepath);
 
 SEXP new_output_ExternalFilePtr(
 	SEXP filepath,
-	SEXP append
+	SEXP append,
+	SEXP compress,
+	SEXP compression_level
 );
 
 SEXP finalize_ExternalFilePtr(SEXP efp);

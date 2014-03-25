@@ -57,16 +57,51 @@
     ans
 }
 
+.normarg_compress <- function(compress)
+{
+    if (isTRUEorFALSE(compress)) {
+        if (compress)
+            return("gzip")
+        return("no")
+    }
+    if (isSingleString(compress)) {
+        # Types of compression supported by save():
+        #VALID_COMPRESS <- c("no", "gzip", "bzip2", "xz")
+        VALID_COMPRESS <- c("no", "gzip")
+        if (!(compress %in% VALID_COMPRESS))
+            stop("when 'compress' is a single string, it must be one of ",
+                 paste(paste0("\"", VALID_COMPRESS, "\""), collapse=", "))
+        return(compress)
+    }
+    stop("'compress' must be TRUE or FALSE or a single string")
+}
+
+.normarg_compression_level <- function(compression_level, compress)
+{
+    if (!isSingleNumberOrNA(compression_level))
+        stop("'compression_level' must be a single number or NA")
+    if (is.na(compression_level))
+        return(switch(compress, no=0L, gzip=6L, bzip2=9L, xz=9L))
+    if (!is.integer(compression_level))
+        compression_level <- as.integer(compression_level)
+    if (compression_level < 0L)
+        stop("'compression_level' cannot be negative")
+    compression_level
+}
+
 ### Returns a length-1 list of "external file pointers".
-.open_output_file <- function(filepath, append)
+.open_output_file <- function(filepath, append, compress, compression_level)
 {
     if (!isSingleString(filepath))
         stop("'filepath' must be a single string")
     if (!isTRUEorFALSE(append))
         stop("'append' must be TRUE or FALSE")
+    compress <- .normarg_compress(compress)
+    compression_level <- .normarg_compression_level(compression_level, compress)
     filepath2 <- path.expand(filepath)
-    efp <- .Call2("new_output_ExternalFilePtr", filepath2, append,
-                 PACKAGE="Biostrings")
+    efp <- .Call2("new_output_ExternalFilePtr",
+                  filepath2, append, compress, compression_level,
+                  PACKAGE="Biostrings")
     reg.finalizer(efp, .finalize_ExternalFilePtr, onexit=TRUE)
     ans <- list(efp)
     names(ans) <- filepath
@@ -75,7 +110,7 @@
 
 ### 'efp_list' must be a list of "external file pointers" returned by
 ### .open_input_files() or .open_output_files().
-.close_files <- function(efp_list)
+.finalize_efp_list <- function(efp_list)
 {
     for (efp in efp_list) .finalize_ExternalFilePtr(efp)
 }
@@ -110,7 +145,7 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
                        use.names=TRUE, seqtype="B")
 {
     efp_list <- .open_input_files(filepath)
-    on.exit(.close_files(efp_list))
+    on.exit(.finalize_efp_list(efp_list))
     nrec <- .normarg_nrec(nrec)
     skip <- .normarg_skip(skip)
     if (!isTRUEorFALSE(seek.first.rec)) 
@@ -140,7 +175,7 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
 fastq.geometry <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
 {
     efp_list <- .open_input_files(filepath)
-    on.exit(.close_files(efp_list))
+    on.exit(.finalize_efp_list(efp_list))
     nrec <- .normarg_nrec(nrec)
     skip <- .normarg_skip(skip)
     if (!isTRUEorFALSE(seek.first.rec)) 
@@ -168,7 +203,7 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
                              use.names, seqtype)
 {
     efp_list <- .open_input_files(filepath)
-    on.exit(.close_files(efp_list))
+    on.exit(.finalize_efp_list(efp_list))
     if (!isSingleString(format))
         stop("'format' must be a single string")
     format <- match.arg(tolower(format), c("fasta", "fastq"))
@@ -245,20 +280,22 @@ readAAStringSet <- function(filepath, format="fasta",
           PACKAGE="Biostrings")
 }
 
-writeXStringSet <- function(x, filepath, append=FALSE, format="fasta", ...)
+writeXStringSet <- function(x, filepath, append=FALSE,
+                            compress=FALSE, compression_level=NA,
+                            format="fasta", ...)
 {
     if (!is(x, "XStringSet"))
         stop("'x' must be an XStringSet object")
     if (!isSingleString(format))
         stop("'format' must be a single string")
     format <- match.arg(tolower(format), c("fasta", "fastq"))
-    efp_list <- .open_output_file(filepath, append)
+    efp_list <- .open_output_file(filepath, append, compress, compression_level)
     res <- try(switch(format,
                    "fasta"=.write_XStringSet_to_fasta(x, efp_list, ...),
                    "fastq"=.write_XStringSet_to_fastq(x, efp_list, ...)
                ),
                silent=FALSE)
-    .close_files(efp_list)
+    .finalize_efp_list(efp_list)
     if (is(res, "try-error") && !append) {
         ## Get the expamded path and remove the file.
         expath <- attr(efp_list[[1L]], "expath")

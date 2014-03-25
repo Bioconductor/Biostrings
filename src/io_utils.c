@@ -80,7 +80,7 @@ typedef struct file_holder {
 } File_holder;
 
 static File_holder new_File_holder(const char *path, const char *expath,
-		const char *mode)
+		const char *mode, const char *compress, int level)
 {
 	File_holder file_holder;
 	int ztype, subtype;
@@ -293,7 +293,8 @@ void ExternalFilePtr_putc(SEXP efp, int c)
 	return File_holder_putc(R_ExternalPtrAddr(efp), c);
 }
 
-static SEXP new_ExternalFilePtr(SEXP filepath, const char *mode)
+static SEXP new_ExternalFilePtr(SEXP filepath,
+		const char *mode, const char *compress, int level)
 {
 	SEXP filepath0, ans, string;
 	const char *expath;
@@ -305,7 +306,8 @@ static SEXP new_ExternalFilePtr(SEXP filepath, const char *mode)
 	if (filepath0 == NA_STRING)
 		error("'filepath' is NA");
 	expath = R_ExpandFileName(translateChar(filepath0));
-	file_holder = new_File_holder(CHAR(filepath0), expath, mode);
+	file_holder = new_File_holder(CHAR(filepath0), expath,
+				      mode, compress, level);
 	ans_p = (File_holder *) malloc(sizeof(File_holder));
 	if (ans_p == NULL)
 		error("Biostrings internal error in new_ExternalFilePtr(): "
@@ -329,18 +331,22 @@ static SEXP new_ExternalFilePtr(SEXP filepath, const char *mode)
  */
 SEXP new_input_ExternalFilePtr(SEXP filepath)
 {
-	return new_ExternalFilePtr(filepath, "r");
+	return new_ExternalFilePtr(filepath, "r", NULL, 0);
 }
 
 /* --- .Call ENTRY POINT ---
  * Returns an external pointer.
  */
-SEXP new_output_ExternalFilePtr(SEXP filepath, SEXP append)
+SEXP new_output_ExternalFilePtr(SEXP filepath, SEXP append,
+		SEXP compress, SEXP compression_level)
 {
-	const char *mode;
+	const char *mode, *compress0;
+	int level;
 
 	mode = LOGICAL(append)[0] ? "a" : "w";
-	return new_ExternalFilePtr(filepath, mode);
+	compress0 = CHAR(STRING_ELT(compress, 0));
+	level = INTEGER(compression_level)[0];
+	return new_ExternalFilePtr(filepath, mode, compress0, level);
 }
 
 /* --- .Call ENTRY POINT ---
