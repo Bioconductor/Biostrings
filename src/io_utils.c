@@ -124,6 +124,7 @@ static File_holder new_File_holder(const char *path, const char *expath,
 			      "invalid ztype value %d", ztype);
 		}
 	} else {
+		file_holder.ztype = -1;
 		file = open_file(expath, mode);
 	}
 	file_holder.file = file;
