@@ -5,12 +5,12 @@
 #include "Biostrings.h"
 
 #include <stdlib.h> /* for malloc(), free() */
-#include <ctype.h> /* for isspace() */
-
-#include <sys/types.h>
 #include <sys/stat.h> /* for fstat() */
 
 #include <zlib.h>
+#ifndef _WIN32
+#include <bzlib.h>
+#endif
 
 #define UNCOMPRESSED		0
 #define GZ_TYPE			1
@@ -96,6 +96,7 @@ static ZFile new_ZFile(const char *path, const char *expath,
 	zfile.expath = expath;
 	zfile.mode = mode;
 	if (strcmp(mode, "r") == 0) {
+		/* Open file for reading. */
 		get_file_ztype(expath, &ztype, &subtype);
 		zfile.ztype = ztype;
 		zfile.subtype = subtype;
@@ -103,28 +104,38 @@ static ZFile new_ZFile(const char *path, const char *expath,
 		    case UNCOMPRESSED:
 		    case GZ_TYPE:
 			file = gzopen(expath, "r");
-			if (file == NULL)
-				error("cannot open file '%s'", expath);
 			break;
 		    case BZ_TYPE:
-			error("cannot open file '%s' (bzip2-compressed files "
-			      "are not supported yet, sorry!)", path);
-			//requires #include <bzlib.h>
-			//open the file with BZFILE* bfp = BZ2_bzReadOpen(...);
-			//close it with BZ2_bzReadClose();
+#ifndef _WIN32
+			file = BZ2_bzopen(expath, "rb");
+#else
+			error("cannot open file '%s'\n"
+                              "  bzip2-compressed files are not supported "
+                              "on Windows, sorry!", expath);
+#endif
 			break;
 		    case XZ_TYPE:
-			error("cannot open file '%s' (LZMA-compressed files "
-			      "are not supported yet, sorry!)", path);
+#ifndef _WIN32
+			error("cannot open file '%s'\n"
+                              "  LZMA-compressed files are not supported "
+                              "yet, sorry!", expath);
 			//requires #include <lzma.h>
 			//opening/closing this type of file seems quite
 			//complicated
+#else
+			error("cannot open file '%s'\n"
+                              "  LZMA-compressed files are not supported "
+                              "on Windows, sorry!", expath);
+#endif
 			break;
 		    default:
 			error(INTERNAL_ERR_IN "new_ZFile(): "
 			      "invalid ztype value %d", ztype);
 		}
+		if (file == NULL)
+			error("cannot open file '%s'", expath);
 	} else {
+		/* Open file for writing or appending. */
 		zfile.ztype = UNCOMPRESSED;
 		file = open_file(expath, mode);
 	}
@@ -147,6 +158,11 @@ static void ZFile_close(const ZFile *zfile)
 		    case GZ_TYPE:
 			gzclose((gzFile) file);
 			break;
+#ifndef _WIN32
+		    case BZ_TYPE:
+			BZ2_bzclose((BZFILE *) file);
+			break;
+#endif
 		    default:
 			error(INTERNAL_ERR_IN "ZFile_close(): "
 			      "invalid ztype value %d", ztype);
@@ -169,10 +185,12 @@ static void ZFile_close(const ZFile *zfile)
 static int ZFile_gets(const ZFile *zfile,
 		char *buf, int buf_size, int *EOL_in_buf)
 {
-	int ztype;
+	int max_buf_len, ztype, i;
 	void *file;
+	char *buf_p;
 
-	buf[buf_size - 1] = 'N'; // any non '\0' would do
+	max_buf_len = buf_size - 1;
+	buf[max_buf_len] = 'N'; // any non '\0' would do
 
 	ztype = zfile->ztype;
 	file = zfile->file;
@@ -185,15 +203,32 @@ static int ZFile_gets(const ZFile *zfile,
 			return 0;
 		}
 		break;
+#ifndef _WIN32
+	    case BZ_TYPE:
+		for (i = 0, buf_p = buf; i < max_buf_len; i++, buf_p++) {
+			if (BZ2_bzread((BZFILE *) file, buf_p, 1) == 0) {
+				if (i == 0)
+					return 0;
+				break;
+			}
+			if (*buf_p == '\n') {
+				buf_p++;
+				break;
+			}
+		}
+		*buf_p = '\0';
+		break;
+#endif
 	    default:
 		error(INTERNAL_ERR_IN "ZFile_gets(): "
 		      "invalid ztype value %d", ztype);
 	}
-	*EOL_in_buf = buf[buf_size - 1] == 'N' || buf[buf_size - 2] == '\n';
+
+	*EOL_in_buf = buf[max_buf_len] == 'N' || buf[max_buf_len - 1] == '\n';
 	return *EOL_in_buf ? 2 : 1;
 }
 
-static void ZFile_rewind(const ZFile *zfile)
+static void ZFile_rewind(ZFile *zfile)
 {
 	int ztype;
 	void *file;
@@ -205,6 +240,18 @@ static void ZFile_rewind(const ZFile *zfile)
 	    case GZ_TYPE:
 		gzrewind((gzFile) file);
 		break;
+#ifndef _WIN32
+	    case BZ_TYPE:
+		/* No rewind in the bzip2 library. So we close and re-open
+		   the file. */
+		BZ2_bzclose((BZFILE *) file);
+		file = BZ2_bzopen(zfile->expath, "rb");
+		if (file == NULL)
+			error(INTERNAL_ERR_IN "ZFile_rewind(): "
+			      "cannot re-open file '%s'", zfile->expath);
+		zfile->file = file;
+		break;
+#endif
 	    default:
 		error(INTERNAL_ERR_IN "ZFile_rewind(): "
 		      "invalid ztype value %d", ztype);

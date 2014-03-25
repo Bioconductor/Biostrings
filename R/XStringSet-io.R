@@ -30,7 +30,7 @@
         ## Ugly trick to get the type of 'con'. Is there a better way?
         filetype[i] <- showConnections(TRUE)[as.character(con), "class"]
         close(con)
-        if (!(filetype[i] %in% c("file", "gzfile")))
+        if (!(filetype[i] %in% c("file", "gzfile", "bzfile")))
             stop("file \"", filepath[i], "\" ",
                  "has unsupported type: ", filetype[i])
     }
