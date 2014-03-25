@@ -30,7 +30,7 @@
         ## Ugly trick to get the type of 'con'. Is there a better way?
         filetype[i] <- showConnections(TRUE)[as.character(con), "class"]
         close(con)
-        if (filetype[i] != "file")
+        if (!(filetype[i] %in% c("file", "gzfile")))
             stop("file \"", filepath[i], "\" ",
                  "has unsupported type: ", filetype[i])
     }
@@ -38,8 +38,8 @@
     filepath2
 }
 
-.ExternalFilePtr_close <- function(x)
-    .Call2("ExternalFilePtr_close", x, PACKAGE="Biostrings")
+.finalize_ExternalFilePtr <- function(x)
+    .Call2("finalize_ExternalFilePtr", x, PACKAGE="Biostrings")
 
 ### Returns a list of "external file pointers".
 .open_input_files <- function(filepath)
@@ -50,7 +50,7 @@
            {
                efp <- .Call2("new_input_ExternalFilePtr", fp,
                             PACKAGE="Biostrings")
-               reg.finalizer(efp, .ExternalFilePtr_close, onexit=TRUE)
+               reg.finalizer(efp, .finalize_ExternalFilePtr, onexit=TRUE)
                efp
            })
     names(ans) <- filepath
@@ -67,7 +67,7 @@
     filepath2 <- path.expand(filepath)
     efp <- .Call2("new_output_ExternalFilePtr", filepath2, append,
                  PACKAGE="Biostrings")
-    reg.finalizer(efp, .ExternalFilePtr_close, onexit=TRUE)
+    reg.finalizer(efp, .finalize_ExternalFilePtr, onexit=TRUE)
     ans <- list(efp)
     names(ans) <- filepath
     ans
@@ -77,7 +77,7 @@
 ### .open_input_files() or .open_output_files().
 .close_files <- function(efp_list)
 {
-    for (efp in efp_list) .ExternalFilePtr_close(efp)
+    for (efp in efp_list) .finalize_ExternalFilePtr(efp)
 }
 
 .normarg_nrec <- function(nrec)

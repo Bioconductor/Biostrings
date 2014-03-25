@@ -32,7 +32,7 @@ static const R_CallMethodDef callMethods[] = {
 /* io_utils.c */
 	CALLMETHOD_DEF(new_input_ExternalFilePtr, 1),
 	CALLMETHOD_DEF(new_output_ExternalFilePtr, 2),
-	CALLMETHOD_DEF(ExternalFilePtr_close, 1),
+	CALLMETHOD_DEF(finalize_ExternalFilePtr, 1),
 
 /* RoSeqs_utils.c */
 	CALLMETHOD_DEF(debug_RoSeqs_utils, 0),

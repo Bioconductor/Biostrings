@@ -1,5 +1,6 @@
 #include "../inst/include/Biostrings_defines.h"
 #include <string.h>
+#include <zlib.h>
 
 #define DEBUG_BIOSTRINGS 1
 
@@ -61,18 +62,33 @@ int _get_twobit_signature_at(
 
 /* io_utils.c */
 
-SEXP new_input_ExternalFilePtr(SEXP filepath);
-
-SEXP new_output_ExternalFilePtr(SEXP filepath, SEXP append);
-
-SEXP ExternalFilePtr_close(SEXP x);
-
-int fgets2(
+int ExternalFilePtr_gets(
+	SEXP efp,
 	char *buf,
 	int buf_size,
-	FILE *stream,
 	int *EOL_in_buf
 );
+
+void ExternalFilePtr_rewind(SEXP efp);
+
+int ExternalFilePtr_puts(
+	SEXP efp,
+	const char *s
+);
+
+void ExternalFilePtr_putc(
+	SEXP efp,
+	int c
+);
+
+SEXP new_input_ExternalFilePtr(SEXP filepath);
+
+SEXP new_output_ExternalFilePtr(
+	SEXP filepath,
+	SEXP append
+);
+
+SEXP finalize_ExternalFilePtr(SEXP efp);
 
 int delete_trailing_LF_or_CRLF(
 	const char *buf,

@@ -231,7 +231,7 @@ static int translate(Chars_holder *seq_data, const int *lkup, int lkup_length)
  * Ignore empty lines and lines starting with 'FASTA_comment_markup' like in
  * the original Pearson FASTA format.
  */
-static const char *parse_FASTA_file(FILE *stream, int *recno, int *ninvalid,
+static const char *parse_FASTA_file(SEXP efp, int *recno, int *ninvalid,
 		int nrec, int skip, int seek_first_rec, FASTAloader *loader)
 {
 	int lineno, EOL_in_buf, EOL_in_prev_buf, ret_code,
@@ -242,7 +242,8 @@ static const char *parse_FASTA_file(FILE *stream, int *recno, int *ninvalid,
 	FASTA_desc_markup_length = strlen(FASTA_desc_markup);
 	load_rec = -1;
 	for (lineno = EOL_in_prev_buf = 1;
-	     (ret_code = fgets2(buf, IOBUF_SIZE, stream, &EOL_in_buf));
+	     (ret_code = ExternalFilePtr_gets(efp, buf, IOBUF_SIZE,
+					      &EOL_in_buf));
 	     lineno += EOL_in_prev_buf = EOL_in_buf)
 	{
 		if (ret_code == -1) {
@@ -333,8 +334,7 @@ SEXP fasta_info(SEXP efp_list, SEXP nrec, SEXP skip, SEXP seek_first_rec,
 	int nrec0, skip0, seek_rec0, load_descs, i, recno, ninvalid;
 	FASTAINFO_loaderExt loader_ext;
 	FASTAloader loader;
-	FILE *stream;
-	SEXP ans, ans_names;
+	SEXP efp, ans, ans_names;
 	const char *errmsg;
 
 	nrec0 = INTEGER(nrec)[0];
@@ -345,9 +345,9 @@ SEXP fasta_info(SEXP efp_list, SEXP nrec, SEXP skip, SEXP seek_first_rec,
 	loader = new_FASTAINFO_loader(lkup, load_descs, &loader_ext);
 	recno = 0;
 	for (i = 0; i < LENGTH(efp_list); i++) {
-		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
+		efp = VECTOR_ELT(efp_list, i);
 		ninvalid = 0;
-		errmsg = parse_FASTA_file(stream, &recno, &ninvalid,
+		errmsg = parse_FASTA_file(efp, &recno, &ninvalid,
 					  nrec0, skip0, seek_rec0, &loader);
 		if (errmsg != NULL)
 			error("reading FASTA file %s: %s",
@@ -376,12 +376,11 @@ SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 		SEXP use_names, SEXP elementType, SEXP lkup)
 {
 	int nrec0, skip0, seek_rec0, i, recno, ninvalid;
-	SEXP ans_width, ans_names, ans;
+	SEXP efp, ans_width, ans_names, ans;
 	const char *element_type;
 	char classname[40];  /* longest string should be "DNAStringSet" */
 	FASTA_loaderExt loader_ext;
 	FASTAloader loader;
-	FILE *stream;
 
 	nrec0 = INTEGER(nrec)[0];
 	skip0 = INTEGER(skip)[0];
@@ -405,9 +404,9 @@ SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 	loader = new_FASTA_loader(lkup, &loader_ext);
 	recno = ninvalid = 0;
 	for (i = 0; i < LENGTH(efp_list); i++) {
-		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
-		rewind(stream);
-		parse_FASTA_file(stream, &recno, &ninvalid,
+		efp = VECTOR_ELT(efp_list, i);
+		ExternalFilePtr_rewind(efp);
+		parse_FASTA_file(efp, &recno, &ninvalid,
 				 nrec0, skip0, seek_rec0, &loader);
 	}
 	UNPROTECT(3);
@@ -424,15 +423,14 @@ SEXP write_XStringSet_to_fasta(SEXP x, SEXP efp_list, SEXP width, SEXP lkup)
 {
 	XStringSet_holder X;
 	int x_length, width0, lkup_length, i, j1, j2, dest_nbytes;
-	FILE *stream;
 	const int *lkup0;
-	SEXP x_names, desc;
+	SEXP efp, x_names, desc;
 	Chars_holder X_elt;
 	char buf[IOBUF_SIZE];
 
 	X = _hold_XStringSet(x);
 	x_length = _get_length_from_XStringSet_holder(&X);
-	stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, 0));
+	efp = VECTOR_ELT(efp_list, 0);
 	width0 = INTEGER(width)[0];
 	if (width0 >= IOBUF_SIZE)
 		error("'width' must be <= %d", IOBUF_SIZE - 1);
@@ -446,17 +444,14 @@ SEXP write_XStringSet_to_fasta(SEXP x, SEXP efp_list, SEXP width, SEXP lkup)
 	}
 	x_names = get_XVectorList_names(x);
 	for (i = 0; i < x_length; i++) {
-		if (fputs(FASTA_desc_markup, stream) == EOF)
-			error("write error");
+		ExternalFilePtr_puts(efp, FASTA_desc_markup);
 		if (x_names != R_NilValue) {
 			desc = STRING_ELT(x_names, i);
 			if (desc == NA_STRING)
 				error("'names(x)' contains NAs");
-			if (fputs(CHAR(desc), stream) == EOF)
-				error("write error");
+			ExternalFilePtr_puts(efp, CHAR(desc));
 		}
-		if (fputs("\n", stream) == EOF)
-			error("write error");
+		ExternalFilePtr_puts(efp, "\n");
 		X_elt = _get_elt_from_XStringSet_holder(&X, i);
 		for (j1 = 0; j1 < X_elt.length; j1 += width0) {
 			j2 = j1 + width0;
@@ -469,9 +464,8 @@ SEXP write_XStringSet_to_fasta(SEXP x, SEXP efp_list, SEXP width, SEXP lkup)
 				X_elt.seq, X_elt.length,
 				lkup0, lkup_length);
 			buf[dest_nbytes] = 0;
-			if (fputs(buf, stream) == EOF
-			 || fputs("\n", stream) == EOF)
-				error("write error");
+			ExternalFilePtr_puts(efp, buf);
+			ExternalFilePtr_puts(efp, "\n");
 		}
 	}
 	return R_NilValue;
@@ -624,7 +618,7 @@ static FASTQloader new_FASTQ_loader(int load_seqids,
 /*
  * Ignore empty lines.
  */
-static const char *parse_FASTQ_file(FILE *stream, int *recno,
+static const char *parse_FASTQ_file(SEXP efp, int *recno,
 		int nrec, int skip, int seek_first_rec, FASTQloader *loader)
 {
 	int lineno, EOL_in_buf, EOL_in_prev_buf, ret_code,
@@ -637,7 +631,8 @@ static const char *parse_FASTQ_file(FILE *stream, int *recno,
 	FASTQ_line3_markup_length = strlen(FASTQ_line3_markup);
 	lineinrecno = 0;
 	for (lineno = EOL_in_prev_buf = 1;
-	     (ret_code = fgets2(buf, IOBUF_SIZE, stream, &EOL_in_buf));
+	     (ret_code = ExternalFilePtr_gets(efp, buf, IOBUF_SIZE,
+					      &EOL_in_buf));
 	     lineno += EOL_in_prev_buf = EOL_in_buf)
 	{
 		if (ret_code == -1) {
@@ -728,9 +723,8 @@ SEXP fastq_geometry(SEXP efp_list, SEXP nrec, SEXP skip, SEXP seek_first_rec)
 	int nrec0, skip0, seek_rec0, i, recno;
 	FASTQGEOM_loaderExt loader_ext;
 	FASTQloader loader;
-	FILE *stream;
 	const char *errmsg;
-	SEXP ans;
+	SEXP efp, ans;
 
 	nrec0 = INTEGER(nrec)[0];
 	skip0 = INTEGER(skip)[0];
@@ -739,8 +733,8 @@ SEXP fastq_geometry(SEXP efp_list, SEXP nrec, SEXP skip, SEXP seek_first_rec)
 	loader = new_FASTQGEOM_loader(&loader_ext);
 	recno = 0;
 	for (i = 0; i < LENGTH(efp_list); i++) {
-		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
-		errmsg = parse_FASTQ_file(stream, &recno,
+		efp = VECTOR_ELT(efp_list, i);
+		errmsg = parse_FASTQ_file(efp, &recno,
 					  nrec0, skip0, seek_rec0, &loader);
 		if (errmsg != NULL)
 			error("reading FASTQ file %s: %s",
@@ -760,12 +754,11 @@ SEXP read_fastq_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 		SEXP use_names, SEXP elementType, SEXP lkup)
 {
 	int nrec0, skip0, seek_rec0, load_seqids, ans_length, i, recno;
-	SEXP ans_geom, ans_width, ans, ans_names;
+	SEXP efp, ans_geom, ans_width, ans, ans_names;
 	const char *element_type;
 	char classname[40];  /* longest string should be "DNAStringSet" */
 	FASTQ_loaderExt loader_ext;
 	FASTQloader loader;
-	FILE *stream;
 
 	nrec0 = INTEGER(nrec)[0];
 	skip0 = INTEGER(skip)[0];
@@ -798,9 +791,9 @@ SEXP read_fastq_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 	loader = new_FASTQ_loader(load_seqids, &loader_ext);
 	recno = 0;
 	for (i = 0; i < LENGTH(efp_list); i++) {
-		stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, i));
-		rewind(stream);
-		parse_FASTQ_file(stream, &recno,
+		efp = VECTOR_ELT(efp_list, i);
+		ExternalFilePtr_rewind(efp);
+		parse_FASTQ_file(efp, &recno,
 				 nrec0, skip0, seek_rec0, &loader);
 	}
 	if (load_seqids) {
@@ -849,20 +842,20 @@ static const char *get_FASTQ_rec_id(SEXP x_names, SEXP q_names, int i)
 	return CHAR(seqid);
 }
 
-static int write_FASTQ_id(FILE *stream, const char *markup, const char *id)
+static void write_FASTQ_id(SEXP efp, const char *markup, const char *id)
 {
-	return fputs(markup, stream) == EOF
-	    || fputs(id, stream) == EOF
-	    || fputs("\n", stream) == EOF;
+	ExternalFilePtr_puts(efp, markup);
+	ExternalFilePtr_puts(efp, id);
+	ExternalFilePtr_puts(efp, "\n");
 }
 
-static int write_FASTQ_seq(FILE *stream, const char *buf)
+static void write_FASTQ_seq(SEXP efp, const char *buf)
 {
-	return fputs(buf, stream) == EOF
-	    || fputs("\n", stream) == EOF;
+	ExternalFilePtr_puts(efp, buf);
+	ExternalFilePtr_puts(efp, "\n");
 }
 
-static int write_FASTQ_qual(FILE *stream, int seqlen,
+static void write_FASTQ_qual(SEXP efp, int seqlen,
 		const XStringSet_holder *Q, int i)
 {
 	Chars_holder Q_elt;
@@ -871,22 +864,18 @@ static int write_FASTQ_qual(FILE *stream, int seqlen,
 	Q_elt = _get_elt_from_XStringSet_holder(Q, i);
 	if (Q_elt.length != seqlen)
 		error("'x' and 'quality' must have the same width");
-	for (j = 0; j < seqlen; j++) {
-		if (fputc((int) *(Q_elt.seq++), stream) == EOF)
-			return 1;
-	}
-	return fputs("\n", stream) == EOF;
+	for (j = 0; j < seqlen; j++)
+		ExternalFilePtr_putc(efp, (int) *(Q_elt.seq++));
+	ExternalFilePtr_puts(efp, "\n");
 }
 
-static int write_FASTQ_fakequal(FILE *stream, int seqlen)
+static void write_FASTQ_fakequal(SEXP efp, int seqlen)
 {
 	int j;
 
-	for (j = 0; j < seqlen; j++) {
-		if (fputc((int) ';', stream) == EOF)
-			return 1;
-	}
-	return fputs("\n", stream) == EOF;
+	for (j = 0; j < seqlen; j++)
+		ExternalFilePtr_putc(efp, (int) ';');
+	ExternalFilePtr_puts(efp, "\n");
 }
 
 /* --- .Call ENTRY POINT --- */
@@ -894,9 +883,8 @@ SEXP write_XStringSet_to_fastq(SEXP x, SEXP efp_list, SEXP qualities, SEXP lkup)
 {
 	XStringSet_holder X, Q;
 	int x_length, lkup_length, i;
-	FILE *stream;
 	const int *lkup0;
-	SEXP x_names, q_names;
+	SEXP efp, x_names, q_names;
 	const char *id;
 	Chars_holder X_elt;
 	char buf[IOBUF_SIZE];
@@ -911,7 +899,7 @@ SEXP write_XStringSet_to_fastq(SEXP x, SEXP efp_list, SEXP qualities, SEXP lkup)
 	} else {
 		q_names = R_NilValue;
 	}
-	stream = R_ExternalPtrAddr(VECTOR_ELT(efp_list, 0));
+	efp = VECTOR_ELT(efp_list, 0);
 	if (lkup == R_NilValue) {
 		lkup0 = NULL;
 		lkup_length = 0;
@@ -928,16 +916,13 @@ SEXP write_XStringSet_to_fastq(SEXP x, SEXP efp_list, SEXP qualities, SEXP lkup)
 			X_elt.seq, X_elt.length,
 			lkup0, lkup_length);
 		buf[X_elt.length] = 0;
-		if (write_FASTQ_id(stream, FASTQ_line1_markup, id)
-		 || write_FASTQ_seq(stream, buf)
-		 || write_FASTQ_id(stream, FASTQ_line3_markup, id))
-			error("write error");
+		write_FASTQ_id(efp, FASTQ_line1_markup, id);
+		write_FASTQ_seq(efp, buf);
+		write_FASTQ_id(efp, FASTQ_line3_markup, id);
 		if (qualities != R_NilValue) {
-			if (write_FASTQ_qual(stream, X_elt.length, &Q, i))
-				error("write error");
+			write_FASTQ_qual(efp, X_elt.length, &Q, i);
 		} else {
-			if (write_FASTQ_fakequal(stream, X_elt.length))
-				error("write error");
+			write_FASTQ_fakequal(efp, X_elt.length);
 		}
 	}
 	return R_NilValue;

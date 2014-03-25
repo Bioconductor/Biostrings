@@ -48,6 +48,9 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
   \item{filepath}{
     A character vector (of arbitrary length when reading, of length 1
     when writing) containing the path(s) to the file(s) to read or write.
+    Reading files in gzip format (which usually have the '.gz' extension) is
+    supported.
+
     Note that special values like \code{""} or \code{"|cmd"} (typically
     supported by other I/O functions in R) are not supported here.
     Also \code{filepath} cannot be a connection.
