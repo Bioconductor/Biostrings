@@ -310,24 +310,37 @@ static void ZFile_putc(const ZFile *zfile, int c)
  * Low-level manipulation of External File Pointers
  */
 
+#define CHECK_USER_INTERRUPT() \
+{ \
+	static int i = 0; \
+	if (i++ >= 10000) { \
+		R_CheckUserInterrupt(); \
+		i = 0; \
+	} \
+}
+
 int ExternalFilePtr_gets(SEXP efp, char *buf, int buf_size, int *EOL_in_buf)
 {
+	CHECK_USER_INTERRUPT();
 	return ZFile_gets(R_ExternalPtrAddr(efp),
 				buf, buf_size, EOL_in_buf);
 }
 
 void ExternalFilePtr_rewind(SEXP efp)
 {
+	CHECK_USER_INTERRUPT();
 	return ZFile_rewind(R_ExternalPtrAddr(efp));
 }
 
 int ExternalFilePtr_puts(SEXP efp, const char *s)
 {
+	CHECK_USER_INTERRUPT();
 	return ZFile_puts(R_ExternalPtrAddr(efp), s);
 }
 
 void ExternalFilePtr_putc(SEXP efp, int c)
 {
+	CHECK_USER_INTERRUPT();
 	return ZFile_putc(R_ExternalPtrAddr(efp), c);
 }
 
