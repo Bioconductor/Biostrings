@@ -407,8 +407,8 @@ function(filepath, format, seqtype, ...)
            "stockholm" = .read.Stockholm(filepath),
            "clustal" = .read.ClustalAln(filepath),
            "phylip" = .read.PhylipAln(filepath),
-           .readXStringSet(filepath, format=format, seqtype=seqtype,
-                           nrec=-1L, skip=0L, use.names=TRUE))
+           .read_XStringSet(filepath, format=format, seqtype=seqtype,
+                            nrec=-1L, skip=0L, use.names=TRUE))
     ##TODO: BUGs with stockholm??
 }
 
