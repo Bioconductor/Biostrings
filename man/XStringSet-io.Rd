@@ -165,14 +165,14 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
 
 \details{
   gzip compression is supported by reading and writing functions on all
-  platforms. bzip2 compression is supported by reading functions only and
-  on Unix/Linux/MacOSX only (granted the bzip2 library and header files
-  are installed in the standard locations). bzip2 compression is not
-  supported on Windows.
+  platforms. bzip2 compression is supported by reading functions only,
+  and on Unix/Linux/MacOSX only (granted the bzip2 library and header
+  files are installed in the standard locations). bzip2 compression is
+  not supported on Windows.
 
   \code{readDNAStringSet} and family (i.e. \code{readBStringSet},
   \code{readDNAStringSet}, \code{readRNAStringSet} and \code{readAAStringSet})
-  load sequences from an input file (or set of input files) into an
+  load sequences from an input file (or multiple input files) into an
   \link{XStringSet} object. When multiple input files are specified,
   all must have the same format (i.e. FASTA or FASTQ) and files with
   different compression types can be mixed with non-compressed files. 
