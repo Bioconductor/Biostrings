@@ -417,7 +417,8 @@ int ExternalFilePtr_gets(SEXP efp, char *buf, int buf_size, int *EOL_in_buf)
 void ExternalFilePtr_rewind(SEXP efp)
 {
 	CHECK_USER_INTERRUPT();
-	return iZFile_rewind(R_ExternalPtrAddr(efp));
+	iZFile_rewind(R_ExternalPtrAddr(efp));
+	return;
 }
 
 int ExternalFilePtr_puts(SEXP efp, const char *s)
@@ -429,7 +430,8 @@ int ExternalFilePtr_puts(SEXP efp, const char *s)
 void ExternalFilePtr_putc(SEXP efp, int c)
 {
 	CHECK_USER_INTERRUPT();
-	return oZFile_putc(R_ExternalPtrAddr(efp), c);
+	oZFile_putc(R_ExternalPtrAddr(efp), c);
+	return;
 }
 
 static SEXP new_ExternalFilePtr(SEXP filepath,
