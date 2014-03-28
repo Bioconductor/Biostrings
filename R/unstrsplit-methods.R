@@ -13,3 +13,9 @@ setMethod("unstrsplit", "XStringSetList",
     }
 )
 
+setMethod("unstrsplit", "XStringSet",
+    function(x, sep="")
+    {
+        x
+    }
+)
