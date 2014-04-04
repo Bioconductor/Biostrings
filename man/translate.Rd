@@ -114,15 +114,20 @@ codons(x)
 }
 
 \value{
-  An \link{AAStringSet} or \link{AAString} object for \code{translate}.
+  For \code{translate}: An \link{AAString} object when \code{x} is a
+  \link{DNAString}, \link{RNAString}, \link{MaskedDNAString}, or
+  \link{MaskedRNAString} object.
+  An \link{AAStringSet} object \emph{parallel} to \code{x} (i.e. with 1
+  amino acid sequence per DNA or RNA sequence in \code{x}) when \code{x}
+  is a \link{DNAStringSet} or \link{RNAStringSet} object. If \code{x} has
+  names on it, they're propagated to the returned object.
 
-  An \link{XStringViews} object with 1 view per codon for \code{codons}.
-  When \code{x} is a \link{MaskedDNAString} or \link{MaskedRNAString}
-  object, its masked parts are interpreted as introns and filled with
-  the + letter in the returned object. Therefore codons that span across
-  masked regions are represented by views that have a width > 3 and
-  contain the + letter. Note that each view is guaranteed to contain
-  exactly 3 base letters.
+  For \code{codons}: An \link{XStringViews} object with 1 view per codon.
+  When \code{x} is a \link{MaskedDNAString} or \link{MaskedRNAString} object,
+  its masked parts are interpreted as introns and filled with the + letter
+  in the returned object. Therefore codons that span across masked regions
+  are represented by views that have a width > 3 and contain the + letter.
+  Note that each view is guaranteed to contain exactly 3 base letters.
 }
 
 \seealso{

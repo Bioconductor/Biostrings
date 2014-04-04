@@ -99,10 +99,12 @@
     lkup <- .makeTranslationLkup(codon_alphabet, genetic.code)
     dna_codes <- DNAcodes(baseOnly=FALSE)
     skip_code <- dna_codes[["+"]]
-    .Call2("DNAStringSet_translate",
-           x, skip_code, dna_codes[codon_alphabet], lkup,
-           if.non.ambig, if.ambig,
-           PACKAGE="Biostrings")
+    ans <- .Call2("DNAStringSet_translate",
+                  x, skip_code, dna_codes[codon_alphabet], lkup,
+                  if.non.ambig, if.ambig,
+                  PACKAGE="Biostrings")
+    names(ans) <- names(x)
+    ans
 }
 
 
