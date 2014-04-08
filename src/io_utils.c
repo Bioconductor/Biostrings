@@ -14,14 +14,14 @@
 #include <stdlib.h> /* for malloc(), free() */
 
 #include <zlib.h>
-#ifndef _WIN32
-#include <bzlib.h>
-#endif
+//#ifndef _WIN32
+//#include <bzlib.h>
+//#endif
 
 #define UNCOMPRESSED		0
 #define GZ_TYPE			1
-#define BZ_TYPE			2 /* detected but not supported yet */
-#define XZ_TYPE			3 /* detected but not supported yet */
+#define BZ2_TYPE		2 /* detected but not supported */
+#define XZ_TYPE			3 /* detected but not supported */
 
 typedef struct zfile {
 	const char *path;
@@ -45,28 +45,29 @@ static void *iZFile_open(const char *expath, int ztype, int subtype)
 	    case GZ_TYPE:
 		file = gzopen(expath, "r");
 		break;
-	    case BZ_TYPE:
-#ifndef _WIN32
-		file = BZ2_bzopen(expath, "rb");
-#else
+	    case BZ2_TYPE:
 		error("cannot open file '%s'\n"
-		      "  bzip2-compressed files are not supported "
-		      "on Windows, sorry!", expath);
-#endif
+		      "  bzip2-compressed files are not supported", expath);
+//#ifndef _WIN32
+//		file = BZ2_bzopen(expath, "rb");
+//#else
+//		error("cannot open file '%s'\n"
+//		      "  bzip2-compressed files are not supported "
+//		      "on Windows, sorry!", expath);
+//#endif
 		break;
 	    case XZ_TYPE:
-#ifndef _WIN32
 		error("cannot open file '%s'\n"
-		      "  LZMA-compressed files are not supported "
-		      "yet, sorry!", expath);
+		      "  LZMA-compressed files are not supported", expath);
+//#ifndef _WIN32
 		//requires #include <lzma.h>
 		//opening/closing this type of file seems quite
 		//complicated
-#else
-		error("cannot open file '%s'\n"
-		      "  LZMA-compressed files are not supported "
-		      "on Windows, sorry!", expath);
-#endif
+//#else
+//		error("cannot open file '%s'\n"
+//		      "  LZMA-compressed files are not supported "
+//		      "on Windows, sorry!", expath);
+//#endif
 		break;
 	    default:
 		error(INTERNAL_ERR_IN "iZFile_open(): "
@@ -87,11 +88,11 @@ static void iZFile_close(const ZFile *zfile)
 	    case GZ_TYPE:
 		gzclose((gzFile) file);
 		break;
-#ifndef _WIN32
-	    case BZ_TYPE:
-		BZ2_bzclose((BZFILE *) file);
-		break;
-#endif
+//#ifndef _WIN32
+//	    case BZ2_TYPE:
+//		BZ2_bzclose((BZFILE *) file);
+//		break;
+//#endif
 	    default:
 		error(INTERNAL_ERR_IN "iZFile_close(): "
 		      "invalid ztype value %d", ztype);
@@ -111,9 +112,10 @@ static void iZFile_close(const ZFile *zfile)
 static int iZFile_gets(const ZFile *zfile,
 		char *buf, int buf_size, int *EOL_in_buf)
 {
-	int max_buf_len, ztype, i;
+	int max_buf_len, ztype;
 	void *file;
-	char *buf_p;
+	//int i;
+	//char *buf_p;
 
 	max_buf_len = buf_size - 1;
 	buf[max_buf_len] = 'N'; // any non '\0' would do
@@ -129,22 +131,22 @@ static int iZFile_gets(const ZFile *zfile,
 			return 0;
 		}
 		break;
-#ifndef _WIN32
-	    case BZ_TYPE:
-		for (i = 0, buf_p = buf; i < max_buf_len; i++, buf_p++) {
-			if (BZ2_bzread((BZFILE *) file, buf_p, 1) == 0) {
-				if (i == 0)
-					return 0;
-				break;
-			}
-			if (*buf_p == '\n') {
-				buf_p++;
-				break;
-			}
-		}
-		*buf_p = '\0';
-		break;
-#endif
+//#ifndef _WIN32
+//	    case BZ2_TYPE:
+//		for (i = 0, buf_p = buf; i < max_buf_len; i++, buf_p++) {
+//			if (BZ2_bzread((BZFILE *) file, buf_p, 1) == 0) {
+//				if (i == 0)
+//					return 0;
+//				break;
+//			}
+//			if (*buf_p == '\n') {
+//				buf_p++;
+//				break;
+//			}
+//		}
+//		*buf_p = '\0';
+//		break;
+//#endif
 	    default:
 		error(INTERNAL_ERR_IN "iZFile_gets(): "
 		      "invalid ztype value %d", ztype);
@@ -166,18 +168,18 @@ static void iZFile_rewind(ZFile *zfile)
 	    case GZ_TYPE:
 		gzrewind((gzFile) file);
 		break;
-#ifndef _WIN32
-	    case BZ_TYPE:
-		/* No rewind in the bzip2 library. So we close and re-open
-		   the file. */
-		BZ2_bzclose((BZFILE *) file);
-		file = BZ2_bzopen(zfile->expath, "rb");
-		if (file == NULL)
-			error(INTERNAL_ERR_IN "iZFile_rewind(): "
-			      "cannot re-open file '%s'", zfile->expath);
-		zfile->file = file;
-		break;
-#endif
+//#ifndef _WIN32
+//	    case BZ2_TYPE:
+//		/* No rewind in the bzip2 library. So we close and re-open
+//		   the file. */
+//		BZ2_bzclose((BZFILE *) file);
+//		file = BZ2_bzopen(zfile->expath, "rb");
+//		if (file == NULL)
+//			error(INTERNAL_ERR_IN "iZFile_rewind(): "
+//			      "cannot re-open file '%s'", zfile->expath);
+//		zfile->file = file;
+//		break;
+//#endif
 	    default:
 		error(INTERNAL_ERR_IN "iZFile_rewind(): "
 		      "invalid ztype value %d", ztype);
@@ -201,28 +203,29 @@ static void *oZFile_open(const char *expath, const char *mode,
 	    case GZ_TYPE:
 		file = gzopen(expath, mode);
 		break;
-	    case BZ_TYPE:
-#ifndef _WIN32
-		file = BZ2_bzopen(expath, mode);
-#else
+	    case BZ2_TYPE:
 		error("cannot open file '%s'\n"
-		      "  bzip2-compressed files are not supported "
-		      "on Windows, sorry!", expath);
-#endif
+		      "  bzip2-compressed files are not supported", expath);
+//#ifndef _WIN32
+//		file = BZ2_bzopen(expath, mode);
+//#else
+//		error("cannot open file '%s'\n"
+//		      "  bzip2-compressed files are not supported "
+//		      "on Windows, sorry!", expath);
+//#endif
 		break;
 	    case XZ_TYPE:
-#ifndef _WIN32
 		error("cannot open file '%s'\n"
-		      "  LZMA-compressed files are not supported "
-		      "yet, sorry!", expath);
+		      "  LZMA-compressed files are not supported", expath);
+//#ifndef _WIN32
 		//requires #include <lzma.h>
 		//opening/closing this type of file seems quite
 		//complicated
-#else
-		error("cannot open file '%s'\n"
-		      "  LZMA-compressed files are not supported "
-		      "on Windows, sorry!", expath);
-#endif
+//#else
+//		error("cannot open file '%s'\n"
+//		      "  LZMA-compressed files are not supported "
+//		      "on Windows, sorry!", expath);
+//#endif
 		break;
 	    default:
 		error(INTERNAL_ERR_IN "oZFile_open(): "
@@ -245,11 +248,11 @@ static void oZFile_close(const ZFile *zfile)
 	    case GZ_TYPE:
 		gzclose((gzFile) file);
 		break;
-#ifndef _WIN32
-	    case BZ_TYPE:
-		BZ2_bzclose((BZFILE *) file);
-		break;
-#endif
+//#ifndef _WIN32
+//	    case BZ2_TYPE:
+//		BZ2_bzclose((BZFILE *) file);
+//		break;
+//#endif
 	    default:
 		error(INTERNAL_ERR_IN "oZFile_close(): "
 		      "invalid ztype value %d", ztype);
@@ -326,7 +329,7 @@ static void detect_file_ztype(const char *expath, int *ztype, int *subtype)
 	if (buf[0] == '\x1f' && buf[1] == '\x8b')
 		*ztype = GZ_TYPE;
 	else if (strncmp(buf, "BZh", 3) == 0)
-		*ztype = BZ_TYPE;
+		*ztype = BZ2_TYPE;
 	else if (buf[0] == '\xFD' && strncmp(buf+1, "7zXZ", 4) == 0)
 		*ztype = XZ_TYPE;
 	else if ((buf[0] == '\xFF') && strncmp(buf+1, "LZMA", 4) == 0) {
@@ -346,7 +349,7 @@ static int compress2ztype(const char *compress)
 	if (strcmp(compress, "gzip") == 0)
 		return GZ_TYPE;
 	if (strcmp(compress, "bzip2") == 0)
-		return BZ_TYPE;
+		return BZ2_TYPE;
 	if (strcmp(compress, "xz") == 0)
 		return XZ_TYPE;
 	error(INTERNAL_ERR_IN "compress2ztype(): "

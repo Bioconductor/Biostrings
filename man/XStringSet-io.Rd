@@ -126,9 +126,6 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
     \code{FALSE} (the default), or a single string specifying whether writing
     to the file is to use compression.
     The only type of compression supported at the moment is \code{"gzip"}.
-    Except on Windows where they're not supported at all, bzip2-compressed
-    files are supported by the reading functions but not by
-    \code{writeXStringSet}.
 
     Passing \code{TRUE} is equivalent to passing \code{"gzip"}.
   }
@@ -165,10 +162,7 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
 
 \details{
   gzip compression is supported by reading and writing functions on all
-  platforms. bzip2 compression is supported by reading functions only,
-  and on Unix/Linux/MacOSX only (granted the bzip2 library and header
-  files are installed in the standard locations). bzip2 compression is
-  not supported on Windows.
+  platforms.
 
   \code{readDNAStringSet} and family (i.e. \code{readBStringSet},
   \code{readDNAStringSet}, \code{readRNAStringSet} and \code{readAAStringSet})
