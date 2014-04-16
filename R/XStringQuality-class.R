@@ -30,7 +30,7 @@ setMethod("minQuality", "SolexaQuality", function(x) -5L)
 setMethod("minQuality", "IlluminaQuality", function(x) 0L)
 
 setGeneric("maxQuality", function(x) standardGeneric("maxQuality"))
-setMethod("maxQuality", "PhredQuality", function(x) 99L)
+setMethod("maxQuality", "PhredQuality", function(x) 93L) # 126 - 33; valid printable ASCII
 setMethod("maxQuality", "SolexaQuality", function(x) 99L)
 setMethod("maxQuality", "IlluminaQuality", function(x) 99L)
 
