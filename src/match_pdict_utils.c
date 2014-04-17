@@ -5,7 +5,7 @@
  *                                                                          *
  ****************************************************************************/
 #include "Biostrings.h"
-#include "IRanges_interface.h"
+#include "S4Vectors_interface.h"
 #include <S.h> /* for Salloc() */
 
 #include <limits.h> /* for ULONG_MAX */
