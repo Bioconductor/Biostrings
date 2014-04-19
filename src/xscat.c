@@ -1,8 +1,9 @@
 #include "Biostrings.h"
-#include "IRanges_interface.h"
 #include "XVector_interface.h"
-#include <S.h> /* for Salloc() */
+#include "IRanges_interface.h"
+#include "S4Vectors_interface.h"
 
+#include <S.h> /* for Salloc() */
 
 /*
  * --- .Call ENTRY POINT ---

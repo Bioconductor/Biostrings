@@ -37,7 +37,7 @@
     prealigned_gap_start <- start(gap_ranges) + start(axset@range) - 1L
     postaligned_gap_start <- .pre2postaligned(prealigned_gap_start, axset) -
                              width(gap_ranges)
-    #IRanges:::fancy_mseq(width(gap_ranges), postaligned_gap_start - 1L) 
+    #S4Vectors:::fancy_mseq(width(gap_ranges), postaligned_gap_start - 1L) 
     IRanges(postaligned_gap_start, width=width(gap_ranges))
 }
 

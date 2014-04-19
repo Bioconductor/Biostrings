@@ -112,7 +112,7 @@ replaceAt(x, at, value="")
           subsequence extractions and replacements.
 
     \item The \code{\link[IRanges]{extractList}} and
-          \code{\link[IRanges]{unstrsplit}} functions defined and
+          \code{\link[S4Vectors]{unstrsplit}} functions defined and
           documented in the \pkg{IRanges} package.
 
     \item The \code{\link{replaceLetterAt}} function for a DNA-specific
