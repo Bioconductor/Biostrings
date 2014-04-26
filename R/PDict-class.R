@@ -286,7 +286,7 @@ setMethod("dups", "PDict",
 setMethod("[[", "PDict",
     function(x, i, j, ...)
     {
-        i <- IRanges:::normalizeDoubleBracketSubscript(i, x)
+        i <- normalizeDoubleBracketSubscript(i, x)
         x@dict0[[i]]
     }
 )

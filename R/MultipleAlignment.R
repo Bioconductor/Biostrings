@@ -305,7 +305,7 @@ function(rows, markupPattern)
     nseq <- unique(width(alnLines))
     if (length(nseq) != 1)
         stop("missing alignment rows")
-    rows <- IRanges:::extractROWS(rows, alnLines)
+    rows <- extractROWS(rows, alnLines)
     spaces <- regexpr("\\s+", rows)
     ids <- substr(rows, 1L, spaces - 1L)
     nsplits <- length(rows) %/% nseq
