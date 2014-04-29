@@ -188,7 +188,7 @@ setMethod("show", "XStringSetList",
 )
 
 ### Display in a DataTable.
-showAsCell <- IRanges:::showAsCell
+showAsCell <- S4Vectors:::showAsCell
 setMethod("showAsCell", "XStringSetList",
      function(object) showAsCell(CharacterList(object))
 )

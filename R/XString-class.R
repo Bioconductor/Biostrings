@@ -209,6 +209,28 @@ setMethod("as.character", "XString",
 
 setMethod("toString", "XString", function(x, ...) as.character(x))
 
+### FIXME: Sometimes returns a vector sometimes a factor. This needs to be
+### sorted out. The use case is that as.data.frame() relies on this.
+setMethod("as.vector", "XString",
+    function(x)
+    {
+        codes <- xscodes(x)
+        x_alphabet <- names(codes)
+        if (is.null(x_alphabet)) {
+            ans <- rawToChar(as.raw(x), multiple=TRUE)
+            x_alphabet <- alphabet(x)
+            if (!is.null(x_alphabet))
+                ans <- factor(ans, levels=x_alphabet)
+            return(ans)
+        }
+        code2pos <- integer(length(codes))
+        code2pos[codes] <- seq_along(codes)
+        ans <- code2pos[as.integer(x)]
+        attributes(ans) <- list(levels=x_alphabet, class="factor")
+        ans
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.

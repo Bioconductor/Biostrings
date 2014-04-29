@@ -33,6 +33,7 @@
 \alias{coerce,character,XString-method}
 \alias{as.character,XString-method}
 \alias{toString,XString-method}
+\alias{as.vector,XString-method}
 
 % "show" method:
 \alias{show,XString-method}
