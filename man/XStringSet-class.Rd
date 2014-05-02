@@ -46,6 +46,7 @@
 
 \alias{unlist,XStringSet-method}
 \alias{as.character,XStringSet-method}
+\alias{as.data.frame,XStringSet-method}
 \alias{as.vector,XStringSet-method}
 \alias{toString,XStringSet-method}
 \alias{as.matrix,XStringSet-method}

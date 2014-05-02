@@ -484,6 +484,14 @@ setMethod("as.character", "XStringSet",
     }
 )
 
+setMethod("as.data.frame", "XStringSet",
+    function(x, row.names=NULL, optional=FALSE, ...)
+    {
+        x <- as.character(x)
+        as.data.frame(x, row.names=NULL, optional=optional, ...)
+    }
+)
+
 setMethod("as.vector", "XStringSet",
     function(x, mode="any")
     {

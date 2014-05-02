@@ -91,6 +91,7 @@ exportMethods(
     "%in%", match,
     compare, "==", "!=", match,
     coerce, as.character, unlist, as.matrix, as.list, toString, toComplex,
+    as.data.frame,
     narrow, subseq, threebands, "subseq<-", collapse, gaps,
     Views,
     unmasked, maskedwidth, maskedratio, masks, "masks<-"
