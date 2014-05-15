@@ -1,6 +1,22 @@
-The chr*fa and someORF.fa files were extracted from
-ftp://genome-ftp.stanford.edu/pub/yeast/sequence
-on 1 Nov 2005. -- VJC
+- The chr*fa and someORF.fa files were extracted from
+  ftp://genome-ftp.stanford.edu/pub/yeast/sequence
+  on 1 Nov 2005. -- VJC
 
-Only the someORF.fa and fastaEx.fa files have been kept from Biostrings 1
-(original names were someORF.fsa and fastaEx). -- H. Pages
+- Only the someORF.fa and fastaEx.fa files have been kept from Biostrings 1
+  (original names were someORF.fsa and fastaEx). -- H. Pages
+
+- dm3_upstream1000.fa.gz was obtained with the following R code (using BioC
+  devel on 14 May 2014):
+
+    library(BSgenome.Dmelanogaster.UCSC.dm3)
+    genome <- BSgenome.Dmelanogaster.UCSC.dm3
+    library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)  # version 2.14.0
+    txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene
+    gn <- sort(genes(txdb))
+    seqlevels(gn, force=TRUE) <- paste0("chr", c("2L", "2R", "3L", "3R", "4", "X"))
+    up1000 <- flank(gn, width=1000)
+    dm3_upstream1000 <- getSeq(genome, up1000)
+    writeXStringSet(dm3_upstream1000, "dm3_upstream1000.fa")
+
+  and then by running gzip on dm3_upstream1000.fa from the Unix command line.
+
