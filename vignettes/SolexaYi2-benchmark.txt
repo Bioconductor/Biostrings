@@ -129,7 +129,7 @@ Vcells 922524858 7038.4 1440408486 10989.5 1370974508 10459.8
  51.455   0.956  52.410 
 > object.size(m0)/1024/1024
 [1] 468.3648
-> system.time(cm0 <- countIndex(m0))
+> system.time(cm0 <- elementLengths(m0))
    user  system elapsed 
  23.217   0.000  23.218 
 > sum(cm0)
@@ -141,7 +141,7 @@ Vcells 922524858 7038.4 1440408486 10989.5 1370974508 10459.8
 641.280   4.552 649.840 
 > object.size(m1)/1024/1024
 [1] 1038.721
-> system.time(cm1 <- countIndex(m1))
+> system.time(cm1 <- elementLengths(m1))
    user  system elapsed 
  11.412   0.072  13.297 
 > sum(cm1)
@@ -155,7 +155,7 @@ Vcells 922524858 7038.4 1440408486 10989.5 1370974508 10459.8
 12290.748    42.695 12442.805
 > object.size(m2)/1024/1024
 [1] 2007.031
-> system.time(cm2 <- countIndex(m2))
+> system.time(cm2 <- elementLengths(m2))
    user  system elapsed 
   8.116   0.416  56.458 
 > sum(cm2)
@@ -291,7 +291,7 @@ Vcells 922503022 7038.2 1371723488 10465.5 1370952672 10459.6
  60.604   0.024  60.628 
 > object.size(m0)/1024/1024
 [1] 468.3648
-> system.time(cm0 <- countIndex(m0))
+> system.time(cm0 <- elementLengths(m0))
    user  system elapsed 
  30.946   0.000  30.945 
 > sum(cm0)
@@ -303,7 +303,7 @@ Vcells 922503022 7038.2 1371723488 10465.5 1370952672 10459.6
 643.588   3.665 647.242 
 > object.size(m1)/1024/1024
 [1] 1038.721
-> system.time(cm1 <- countIndex(m1))
+> system.time(cm1 <- elementLengths(m1))
    user  system elapsed 
  12.153   0.024  12.180 
 > sum(cm1)
@@ -317,7 +317,7 @@ Vcells 922503022 7038.2 1371723488 10465.5 1370952672 10459.6
 16388.369    14.624 16402.895 
 > object.size(m2)/1024/1024
 [1] 2007.031
-> system.time(cm2 <- countIndex(m2))
+> system.time(cm2 <- elementLengths(m2))
    user  system elapsed 
   9.944   0.028   9.973 
 > sum(cm2)

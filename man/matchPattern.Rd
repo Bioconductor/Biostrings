@@ -206,14 +206,22 @@ matchPattern("TTTATGNTTGGTA", chrX, fixed="subject")
 ## B. vmatchPattern()/vcountPattern()
 ## ---------------------------------------------------------------------
 
+## Load Fly upstream sequences (i.e. the sequences 1000 bases upstream of
+## annotated transcription starts):
+dm3_upstream_filepath <- system.file("extdata",
+                                     "dm3_upstream1000.fa.gz",
+                                     package="Biostrings")
+dm3_upstream <- readDNAStringSet(dm3_upstream_filepath)
+dm3_upstream
+
 Ebox <- DNAString("CANNTG")
-subject <- Celegans$upstream5000
+subject <- dm3_upstream
 mindex <- vmatchPattern(Ebox, subject, fixed=FALSE)
-count_index <- countIndex(mindex)  # Get the number of matches per
-                                   # subject element.
-sum(count_index)  # Total number of matches.
-table(count_index)
-i0 <- which(count_index == max(count_index))
+nmatch_per_seq <- elementLengths(mindex)  # Get the number of matches per
+                                          # subject element.
+sum(nmatch_per_seq)  # Total number of matches.
+table(nmatch_per_seq)
+i0 <- which(nmatch_per_seq == max(nmatch_per_seq))
 subject[i0]  # The subject element with most matches.
 
 ## The matches in 'subject[i0]' as an IRanges object:

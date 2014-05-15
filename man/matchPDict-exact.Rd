@@ -256,13 +256,13 @@ length(start_index)                  # Same as the original dictionary.
 start_index[[8220]]                  # Starts of the 8220th pattern.
 end_index <- endIndex(mi0)           # Get the end index.
 end_index[[8220]]                    # Ends of the 8220th pattern.
-count_index <- countIndex(mi0)       # Get the number of matches per pattern.
-count_index[[8220]]
+nmatch_per_pat <- elementLengths(mi0) # Get the number of matches per pattern.
+nmatch_per_pat[[8220]]
 mi0[[8220]]                          # Get the matches for the 8220th pattern.
 start(mi0[[8220]])                   # Equivalent to startIndex(mi0)[[8220]].
-sum(count_index)                     # Total number of matches.
-table(count_index)
-i0 <- which(count_index == max(count_index))
+sum(nmatch_per_pat)                  # Total number of matches.
+table(nmatch_per_pat)
+i0 <- which(nmatch_per_pat == max(nmatch_per_pat))
 pdict0[[i0]]                         # The pattern with most occurrences.
 mi0[[i0]]                            # Its matches as an IRanges object.
 Views(chr3R, mi0[[i0]])              # And as an XStringViews object.
@@ -313,8 +313,8 @@ unlist(mi0n)[1:10]  # keep track of where the matches are coming from
 ## regarding their positions), then countPDict() will be faster,
 ## especially when there is a high number of matches:
 
-count_index0 <- countPDict(pdict0, chr3R)
-stopifnot(identical(count_index0, count_index))
+nmatch_per_pat0 <- countPDict(pdict0, chr3R)
+stopifnot(identical(nmatch_per_pat0, nmatch_per_pat))
 
 if (interactive()) {
   ## What's the impact of the dictionary width on performance?
@@ -338,7 +338,7 @@ if (interactive()) {
     ans_matchtime <- system.time(
                        mi0 <- matchPDict(pdict, subject)
                      )[["elapsed"]]
-    ans_totalcount <- sum(countIndex(mi0))
+    ans_totalcount <- sum(elementLengths(mi0))
     list(
       width=ans_width,
       pptime=ans_pptime,
@@ -396,8 +396,16 @@ stopifnot(all(sapply(seq_len(length(dictD)),
 ## ---------------------------------------------------------------------
 ## E. vcountPDict()
 ## ---------------------------------------------------------------------
-subject <- Dmelanogaster$upstream1000[1:100]
-subject
+
+## Load Fly upstream sequences (i.e. the sequences 1000 bases upstream of
+## annotated transcription starts):
+dm3_upstream_filepath <- system.file("extdata",
+                                     "dm3_upstream1000.fa.gz",
+                                     package="Biostrings")
+dm3_upstream <- readDNAStringSet(dm3_upstream_filepath)
+dm3_upstream
+
+subject <- dm3_upstream[1:100]
 mat1 <- vcountPDict(pdict0, subject)
 dim(mat1)  # length(pdict0) x length(subject)
 nhit_per_probe <- rowSums(mat1)
@@ -413,10 +421,10 @@ if (interactive()) {
   ## This will fail (with message "allocMatrix: too many elements
   ## specified") because, on most platforms, vectors and matrices in R
   ## are limited to 2^31 elements:
-  subject <- Dmelanogaster$upstream1000
+  subject <- dm3_upstream
   vcountPDict(pdict0, subject)
-  length(pdict0) * length(Dmelanogaster$upstream1000)
-  1 * length(pdict0) * length(Dmelanogaster$upstream1000)  # > 2^31
+  length(pdict0) * length(dm3_upstream)
+  1 * length(pdict0) * length(dm3_upstream)  # > 2^31
   ## But this will work:
   nhit_per_seq <- vcountPDict(pdict0, subject, collapse=2)
   sum(nhit_per_seq >= 1)  # nb of subject sequences with at least 1 hit
@@ -430,8 +438,7 @@ if (interactive()) {
 ## vcountPattern()
 ## ---------------------------------------------------------------------
 pdict3 <- PDict(dict3)
-subject <- Dmelanogaster$upstream1000
-subject
+subject <- dm3_upstream
 
 ## The 4 following calls are equivalent (from faster to slower):
 mat3a <- vcountPDict(pdict3, subject)

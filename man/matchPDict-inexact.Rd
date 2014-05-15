@@ -141,7 +141,7 @@
   subject <- DNAString("TAGTACCAGTTTCGGG")
 
   m <- matchPDict(pdict, subject)
-  countIndex(m)  # pattern 2 and 5 have 1 exact match
+  elementLengths(m)  # pattern 2 and 5 have 1 exact match
   m[[2]]
 
   ## We can take advantage of the fact that our Trusted Band doesn't cover
@@ -149,20 +149,20 @@
   ## (the tail in our case):
 
   m <- matchPDict(pdict, subject, fixed=FALSE)
-  countIndex(m)  # now pattern 1 has 1 match too
+  elementLengths(m)  # now pattern 1 has 1 match too
   m[[1]]
 
   m <- matchPDict(pdict, subject, max.mismatch=1)
-  countIndex(m)  # now pattern 4 has 1 match too
+  elementLengths(m)  # now pattern 4 has 1 match too
   m[[4]]
 
   m <- matchPDict(pdict, subject, max.mismatch=1, fixed=FALSE)
-  countIndex(m)  # now pattern 3 has 1 match too
+  elementLengths(m)  # now pattern 3 has 1 match too
   m[[3]]  # note that this match is "out of limit"
   Views(subject, m[[3]])
 
   m <- matchPDict(pdict, subject, max.mismatch=2)
-  countIndex(m)  # pattern 4 gets 1 additional match
+  elementLengths(m)  # pattern 4 gets 1 additional match
   m[[4]]
 
   ## Unlist all matches:

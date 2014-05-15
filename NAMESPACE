@@ -226,7 +226,7 @@ exportClasses(
 
 export(
     ## MIndex-class.R
-    width0, startIndex, endIndex, countIndex,
+    width0, startIndex, endIndex,
     extractAllMatches,
 
     ## lowlevel-matching.R
@@ -267,13 +267,16 @@ export(
     tb, tb.width, nnodes, hasAllFlinks, computeAllFlinks,
     patternFrequency, PDict,
     matchPDict, countPDict, whichPDict,
-    vmatchPDict, vcountPDict, vwhichPDict
+    vmatchPDict, vcountPDict, vwhichPDict,
+
+    ## old stuff (deprecated or defunct):
+    countIndex
 )
 
 exportMethods(
     initialize,
     length, names, "names<-", show, "[[",
-    startIndex, endIndex, countIndex, unlist,
+    startIndex, endIndex, unlist,
     neditStartingAt, neditEndingAt,
     isMatchingStartingAt, isMatchingEndingAt,
     mismatch, nmatch, nmismatch,

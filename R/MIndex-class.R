@@ -45,10 +45,6 @@ setMethod("elementLengths", "MIndex",
     function(x) elementLengths(endIndex(x))
 )
 
-setGeneric("countIndex", function(x) standardGeneric("countIndex"))
-
-setMethod("countIndex", "MIndex", function(x) elementLengths(x))
-
 setMethod("unlist", "MIndex",
     function(x, recursive=TRUE, use.names=TRUE)
     {
@@ -147,7 +143,7 @@ setMethod("[[", "ByPos_MIndex",
 ###   > mindex[[6]] # Error in mindex[[6]] : subscript out of bounds
 ###   > startIndex(mindex)
 ###   > endIndex(mindex)
-###   > countIndex(mindex)
+###   > elementLengths(mindex)
 ###
 setMethod("startIndex", "ByPos_MIndex",
     function(x)
@@ -248,7 +244,7 @@ if (FALSE) {
   ###   > mindex[["aa"]] # Error in mindex[["aa"]] : pattern name ‘aa’ not found
   ###   > startIndex(mindex)
   ###   > endIndex(mindex)
-  ###   > countIndex(mindex)
+  ###   > elementLengths(mindex)
   ###
   setMethod("startIndex", "SparseMIndex",
     function(x)
@@ -270,3 +266,15 @@ if (FALSE) {
   )
 
 }
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Old stuff (deprecated & defunct)
+###
+
+countIndex <- function(x)
+{
+    .Deprecated("elementLengths")
+    elementLengths(x)
+}
+
