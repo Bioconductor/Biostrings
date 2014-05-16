@@ -5,7 +5,7 @@
 - Only the someORF.fa and fastaEx.fa files have been kept from Biostrings 1
   (original names were someORF.fsa and fastaEx). -- H. Pages
 
-- dm3_upstream1000.fa.gz was obtained with the following R code (using BioC
+- dm3_upstream2000.fa.gz was obtained with the following R code (using BioC
   devel on 14 May 2014):
 
     library(BSgenome.Dmelanogaster.UCSC.dm3)
@@ -13,10 +13,15 @@
     library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)  # version 2.14.0
     txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene
     gn <- sort(genes(txdb))
-    seqlevels(gn, force=TRUE) <- paste0("chr", c("2L", "2R", "3L", "3R", "4", "X"))
-    up1000 <- flank(gn, width=1000)
-    dm3_upstream1000 <- getSeq(genome, up1000)
-    writeXStringSet(dm3_upstream1000, "dm3_upstream1000.fa")
 
-  and then by running gzip on dm3_upstream1000.fa from the Unix command line.
+    ## Because the chrU and chrUextra sequences are made of concatenated
+    ## scaffolds (see http://genome.ucsc.edu/cgi-bin/hgGateway?db=dm3),
+    ## extracting the upstream sequences for genes located on these
+    ## scaffolds is not reliable. So we exclude them:
+    exclude <- c("chrU", "chrUextra")
+    seqlevels(gn, force=TRUE) <- setdiff(seqlevels(gn), exclude)
+
+    up2000 <- flank(gn, width=2000)
+    dm3_upstream2000 <- getSeq(genome, up2000)
+    writeXStringSet(dm3_upstream2000, "dm3_upstream2000.fa.gz", compress=TRUE)
 

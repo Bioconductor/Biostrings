@@ -397,10 +397,10 @@ stopifnot(all(sapply(seq_len(length(dictD)),
 ## E. vcountPDict()
 ## ---------------------------------------------------------------------
 
-## Load Fly upstream sequences (i.e. the sequences 1000 bases upstream of
+## Load Fly upstream sequences (i.e. the sequences 2000 bases upstream of
 ## annotated transcription starts):
 dm3_upstream_filepath <- system.file("extdata",
-                                     "dm3_upstream1000.fa.gz",
+                                     "dm3_upstream2000.fa.gz",
                                      package="Biostrings")
 dm3_upstream <- readDNAStringSet(dm3_upstream_filepath)
 dm3_upstream

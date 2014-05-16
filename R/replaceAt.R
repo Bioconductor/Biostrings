@@ -377,25 +377,26 @@ res2c <- extractAt(x, at[[3]])
 stopifnot(identical_XStringSetList(res2a, res2c))
 
 ### Testing performance with 2 millions small extractions at random
-### locations in Celegans upstream5000:
-library(BSgenome.Celegans.UCSC.ce2)
-genome <- BSgenome.Celegans.UCSC.ce2
-upstream5000 <- genome$upstream5000
+### locations in Fly upstream sequences:
+dm3_upstream_filepath <- system.file("extdata",
+                                     "dm3_upstream2000.fa.gz",
+                                     package="Biostrings")
+dm3_upstream <- readDNAStringSet(dm3_upstream_filepath)
 set.seed(33)
 NE <- 2000000L  # total number of extractions
 sample_size <- NE * 1.1
-some_ranges <- IRanges(sample(5001L, sample_size, replace=TRUE),
+some_ranges <- IRanges(sample(2001L, sample_size, replace=TRUE),
                        width=sample(0:75, sample_size, replace=TRUE))
-some_ranges <- head(some_ranges[end(some_ranges) <= 5000L], n=NE)
-split_factor <- factor(sample(length(upstream5000), NE, replace=TRUE),
-                       levels=seq_along(upstream5000))
+some_ranges <- head(some_ranges[end(some_ranges) <= 2000L], n=NE)
+split_factor <- factor(sample(length(dm3_upstream), NE, replace=TRUE),
+                       levels=seq_along(dm3_upstream))
 at <- unname(split(some_ranges, split_factor))
 
 ### Timings: 1.899s 1.159 0.610s  (old 2.576s 1.568s 1.114s)
-system.time(res3a <- extractAt(upstream5000, at)) 
+system.time(res3a <- extractAt(dm3_upstream, at)) 
 
 ### This is about 20x slower than the above on my machine.
-system.time(res3b <- as(mapply(extractAt, upstream5000, at), "List"))
+system.time(res3b <- as(mapply(extractAt, dm3_upstream, at), "List"))
 stopifnot(identical_XStringSetList(res3a, res3b))
 
 }  #                <<<--- end testing extractAt() --->>>
@@ -537,18 +538,21 @@ res1b <- mendoapply(replaceAt, x, at)
 stopifnot(identical_XStringSet(res1a, res1b))
 
 ### Testing performance with half-million single-letter insertions at random
-### locations in Celegans upstream1000:
-upstream1000 <- genome$upstream1000
+### locations in Fly upstream sequences:
+dm3_upstream_filepath <- system.file("extdata",
+                                     "dm3_upstream2000.fa.gz",
+                                     package="Biostrings")
+dm3_upstream <- readDNAStringSet(dm3_upstream_filepath)
 set.seed(33)
-split_factor <- factor(sample(length(upstream1000), 500000L, replace=TRUE),
-                       levels=seq_along(upstream1000))
-at5 <- unname(split(sample(1001L, 500000L, replace=TRUE),
+split_factor <- factor(sample(length(dm3_upstream), 500000L, replace=TRUE),
+                       levels=seq_along(dm3_upstream))
+at5 <- unname(split(sample(2001L, 500000L, replace=TRUE),
                     split_factor))
 ### Takes < 2s on my machine.
-system.time(res5a <- replaceAt(upstream1000, at5, value="-"))
+system.time(res5a <- replaceAt(dm3_upstream, at5, value="-"))
 ### This is about 40x slower than the above on my machine.
 system.time(res5b <- mendoapply(replaceAt,
-                                upstream1000, as(at5, "List"), as("-", "List")))
+                                dm3_upstream, as(at5, "List"), as("-", "List")))
 stopifnot(identical_XStringSet(res5a, res5b))
 
 }  #                <<<--- end testing replaceAt() --->>>
