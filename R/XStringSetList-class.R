@@ -165,15 +165,18 @@ setReplaceMethod("seqtype", "XStringSetList",
 ### User interface to the XStringSetList() constructor
 ###
 
+BStringSetList <- function(..., use.names=TRUE)
+    XStringSetList("B", ..., use.names=use.names)
+
 DNAStringSetList <- function(..., use.names=TRUE)
-{
     XStringSetList("DNA", ..., use.names=use.names)
-}
+
+RNAStringSetList <- function(..., use.names=TRUE)
+    XStringSetList("RNA", ..., use.names=use.names)
 
 AAStringSetList <- function(..., use.names=TRUE)
-{
     XStringSetList("AA", ..., use.names=use.names)
-}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.

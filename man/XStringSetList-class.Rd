@@ -52,7 +52,9 @@
 
 \usage{
 ## Constructors:
+BStringSetList(..., use.names=TRUE)
 DNAStringSetList(..., use.names=TRUE)
+RNAStringSetList(..., use.names=TRUE)
 AAStringSetList(..., use.names=TRUE)
 }
 

@@ -329,6 +329,7 @@ setMethod("extractAt", "XStringSet",
         unlisted_at <- unlist(at, use.names=FALSE)
         unlisted_ans <- subseq(x2, start=start(unlisted_at),
                                    width=width(unlisted_at))
+        names(unlisted_ans) <- names(unlisted_at)
         ans <- relist(unlisted_ans, at)
         names(ans) <- names(x)
         ans
@@ -367,11 +368,11 @@ names(unlisted_at) <- paste0("rg", sprintf("%02d", seq_along(unlisted_at)))
 at <- relist(unlisted_at, at)
 
 res1a <- extractAt(x, at)
-res1b <- as(mapply(extractAt, x, at), "List")
+res1b <- BStringSetList(mapply(extractAt, x, at))
 stopifnot(identical_XStringSetList(res1a, res1b))
 
 res2a <- extractAt(x, at[3])
-res2b <- as(mapply(extractAt, x, at[3]), "List")
+res2b <- BStringSetList(mapply(extractAt, x, at[3]))
 stopifnot(identical_XStringSetList(res2a, res2b))
 res2c <- extractAt(x, at[[3]])
 stopifnot(identical_XStringSetList(res2a, res2c))
@@ -382,6 +383,8 @@ dm3_upstream_filepath <- system.file("extdata",
                                      "dm3_upstream2000.fa.gz",
                                      package="Biostrings")
 dm3_upstream <- readDNAStringSet(dm3_upstream_filepath)
+dm3_upstream <- dm3_upstream[width(dm3_upstream) == 2000L]
+
 set.seed(33)
 NE <- 2000000L  # total number of extractions
 sample_size <- NE * 1.1
@@ -392,11 +395,11 @@ split_factor <- factor(sample(length(dm3_upstream), NE, replace=TRUE),
                        levels=seq_along(dm3_upstream))
 at <- unname(split(some_ranges, split_factor))
 
-### Timings: 1.899s 1.159 0.610s  (old 2.576s 1.568s 1.114s)
+### Timing: 0.564s
 system.time(res3a <- extractAt(dm3_upstream, at)) 
 
-### This is about 20x slower than the above on my machine.
-system.time(res3b <- as(mapply(extractAt, dm3_upstream, at), "List"))
+### Equivalent but about 250x slower than the above on my machine.
+system.time(res3b <- DNAStringSetList(mapply(extractAt, dm3_upstream, at)))
 stopifnot(identical_XStringSetList(res3a, res3b))
 
 }  #                <<<--- end testing extractAt() --->>>
@@ -491,14 +494,14 @@ randomDisjointRanges <- function(min_start, max_end, min_width, max_width, n)
 }
 
 at4 <- randomDisjointRanges(1L, nchar(chrI), 0L, 20L, 500000L)
-### Takes < 2s on my machine (64-bit Ubuntu).
+### Takes < 1s on my machine (64-bit Ubuntu).
 system.time(current <- replaceAt(chrI, at4, Views(chrI, at4)))
 stopifnot(current == chrI)
 
 ### Testing performance with half-million single-letter insertions at random
 ### locations in Celegans chrI:
 at5 <- randomDisjointRanges(1L, nchar(chrI), 0L, 0L, 500000L)
-### Takes < 2s on my machine (64-bit Ubuntu).
+### Takes < 1s on my machine (64-bit Ubuntu).
 system.time(current <- replaceAt(chrI, at5, value="-"))
 m <- matchPattern("-", current)
 stopifnot(identical(sort(start(at5)), start(m) - seq_along(at5) + 1L))
@@ -539,18 +542,14 @@ stopifnot(identical_XStringSet(res1a, res1b))
 
 ### Testing performance with half-million single-letter insertions at random
 ### locations in Fly upstream sequences:
-dm3_upstream_filepath <- system.file("extdata",
-                                     "dm3_upstream2000.fa.gz",
-                                     package="Biostrings")
-dm3_upstream <- readDNAStringSet(dm3_upstream_filepath)
 set.seed(33)
 split_factor <- factor(sample(length(dm3_upstream), 500000L, replace=TRUE),
                        levels=seq_along(dm3_upstream))
 at5 <- unname(split(sample(2001L, 500000L, replace=TRUE),
                     split_factor))
-### Takes < 2s on my machine.
+### Takes < 1s on my machine.
 system.time(res5a <- replaceAt(dm3_upstream, at5, value="-"))
-### This is about 40x slower than the above on my machine.
+### Equivalent but about 1400x slower than the above on my machine.
 system.time(res5b <- mendoapply(replaceAt,
                                 dm3_upstream, as(at5, "List"), as("-", "List")))
 stopifnot(identical_XStringSet(res5a, res5b))
