@@ -428,16 +428,15 @@ if (interactive()) {
   ## But this will work:
   nhit_per_seq <- vcountPDict(pdict0, subject, collapse=2)
   sum(nhit_per_seq >= 1)  # nb of subject sequences with at least 1 hit
-  table(nhit_per_seq)
-  which(nhit_per_seq == 37)  # 603
-  sum(countPDict(pdict0, subject[[603]]))  # 37
+  table(nhit_per_seq)  # max is 74
+  which.max(nhit_per_seq)  # 223
+  sum(countPDict(pdict0, subject[[223]]))  # 74
 }
 
 ## ---------------------------------------------------------------------
 ## F. RELATIONSHIP BETWEEN vcountPDict(), countPDict() AND
 ## vcountPattern()
 ## ---------------------------------------------------------------------
-pdict3 <- PDict(dict3)
 subject <- dm3_upstream
 
 ## The 4 following calls are equivalent (from faster to slower):
@@ -470,6 +469,8 @@ stopifnot(identical(nhitps3a, nhitps3c))
 ## ---------------------------------------------------------------------
 ## G. vwhichPDict()
 ## ---------------------------------------------------------------------
+subject <- dm3_upstream
+
 ## The 4 following calls are equivalent (from faster to slower):
 vwp3a <- vwhichPDict(pdict3, subject)
 vwp3b <- vwhichPDict(dict3, subject)
@@ -482,7 +483,7 @@ stopifnot(identical(vwp3a, vwp3d))
 table(sapply(vwp3a, length))
 which.min(sapply(vwp3a, length))
 ## Get the trinucleotides not represented in reference sequence 9181:
-dict3[-vwp3a[[9181]]]  # 21 trinucleotides
+dict3[-vwp3a[[15428]]]  # 25 trinucleotides
 
 ## ---------------------------------------------------------------------
 ## H. MAPPING PROBE SET IDS BETWEEN CHIPS WITH vwhichPDict()
@@ -491,7 +492,7 @@ dict3[-vwp3a[[9181]]]  # 21 trinucleotides
 ## set IDs between the hgu95av2 and hgu133a chips (Affymetrix).
 ## 2 probe set IDs are considered mapped iff they share at least one
 ## probe.
-## WARNING: This example takes about 25 minutes to run.
+## WARNING: This example takes about 10 minutes to run.
 if (interactive()) {
 
   library(hgu95av2probe)
@@ -501,7 +502,7 @@ if (interactive()) {
   pdict2 <- PDict(probes2)
 
   ## Get the mapping from probes1 to probes2 (based on exact matching):
-  map1to2 <- vwhichPDict(pdict2, probes1)  # takes about 10 minutes
+  map1to2 <- vwhichPDict(pdict2, probes1) 
 
   ## The following helper function uses the probe level mapping to induce
   ## the mapping at the probe set IDs level (from hgu95av2 to hgu133a).
@@ -541,7 +542,7 @@ if (interactive()) {
     unique(hgu133aprobe$Probe.Set.Name[ii2])
   }
 
-  mapPSIDs1to2alt <- lapply(psIDs1, mapProbeSetIDs1to2alt)  # about 10 min.
+  mapPSIDs1to2alt <- lapply(psIDs1, mapProbeSetIDs1to2alt)  # about 5 min.
   names(mapPSIDs1to2alt) <- psIDs1
 
   ## 'mapPSIDs1to2alt' and 'mapPSIDs1to2' contain the same mapping:

@@ -403,7 +403,7 @@ static SEXP vwhich_XStringSet_XStringSet(SEXP pattern,
 			_drop_reported_matches();
 		}
 	}
-	return new_LIST_from_IntAEAE(&ans_buf, 1);
+	return new_LIST_from_IntAEAE(&ans_buf, 0);
 }
 
 static SEXP vcount_PDict3Parts_XStringSet(SEXP pptb, HeadTail *headtail,
