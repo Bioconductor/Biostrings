@@ -395,7 +395,7 @@ split_factor <- factor(sample(length(dm3_upstream), NE, replace=TRUE),
                        levels=seq_along(dm3_upstream))
 at <- unname(split(some_ranges, split_factor))
 
-### Timing: 0.564s
+### Takes < 1s on my machine.
 system.time(res3a <- extractAt(dm3_upstream, at)) 
 
 ### Equivalent but about 250x slower than the above on my machine.

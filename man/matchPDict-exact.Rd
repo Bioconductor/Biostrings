@@ -482,8 +482,12 @@ stopifnot(identical(vwp3a, vwp3d))
 
 table(sapply(vwp3a, length))
 which.min(sapply(vwp3a, length))
-## Get the trinucleotides not represented in reference sequence 9181:
+## Get the trinucleotides not represented in reference sequence 15428:
 dict3[-vwp3a[[15428]]]  # 25 trinucleotides
+
+## Sanity check:
+tnf <- trinucleotideFrequency(subject[[15428]])
+stopifnot(all(names(tnf)[tnf == 0] == dict3[-vwp3a[[15428]]]))
 
 ## ---------------------------------------------------------------------
 ## H. MAPPING PROBE SET IDS BETWEEN CHIPS WITH vwhichPDict()
