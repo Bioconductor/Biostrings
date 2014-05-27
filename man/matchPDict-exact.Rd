@@ -429,8 +429,8 @@ if (interactive()) {
   nhit_per_seq <- vcountPDict(pdict0, subject, collapse=2)
   sum(nhit_per_seq >= 1)  # nb of subject sequences with at least 1 hit
   table(nhit_per_seq)  # max is 74
-  which.max(nhit_per_seq)  # 223
-  sum(countPDict(pdict0, subject[[223]]))  # 74
+  which.max(nhit_per_seq)  # 1133
+  sum(countPDict(pdict0, subject[[1133]]))  # 74
 }
 
 ## ---------------------------------------------------------------------
@@ -482,12 +482,12 @@ stopifnot(identical(vwp3a, vwp3d))
 
 table(sapply(vwp3a, length))
 which.min(sapply(vwp3a, length))
-## Get the trinucleotides not represented in reference sequence 15428:
-dict3[-vwp3a[[15428]]]  # 25 trinucleotides
+## Get the trinucleotides not represented in upstream sequence 21823:
+dict3[-vwp3a[[21823]]]  # 2 trinucleotides
 
 ## Sanity check:
-tnf <- trinucleotideFrequency(subject[[15428]])
-stopifnot(all(names(tnf)[tnf == 0] == dict3[-vwp3a[[15428]]]))
+tnf <- trinucleotideFrequency(subject[[21823]])
+stopifnot(all(names(tnf)[tnf == 0] == dict3[-vwp3a[[21823]]]))
 
 ## ---------------------------------------------------------------------
 ## H. MAPPING PROBE SET IDS BETWEEN CHIPS WITH vwhichPDict()
