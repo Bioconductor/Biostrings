@@ -221,13 +221,14 @@ nmatch_per_seq <- elementLengths(mindex)  # Get the number of matches per
                                           # subject element.
 sum(nmatch_per_seq)  # Total number of matches.
 table(nmatch_per_seq)
-i0 <- which(nmatch_per_seq == max(nmatch_per_seq))
-subject[i0]  # The subject element with most matches.
 
-## The matches in 'subject[i0]' as an IRanges object:
-mindex[[i0]]
-## The matches in 'subject[i0]' as an XStringViews object:
-Views(subject[[i0]], mindex[[i0]])
+## Let's have a closer look at one of the upstream sequences with most
+## matches:
+i0 <- which.max(nmatch_per_seq)
+subject0 <- subject[[i0]]
+ir0 <- mindex[[i0]]   # matches in 'subject0' as an IRanges object
+ir0
+Views(subject0, ir0)  # matches in 'subject0' as a Views object
 
 ## ---------------------------------------------------------------------
 ## C. WITH INDELS
