@@ -181,7 +181,7 @@ as.matrix(m2)
 ## With DNA sequence of yeast chromosome number 1:
 data(yeastSEQCHR1)
 yeast1 <- DNAString(yeastSEQCHR1)
-PpiI <- "GAACNNNNNCTC" # a restriction enzyme pattern
+PpiI <- "GAACNNNNNCTC"  # a restriction enzyme pattern
 match1.PpiI <- matchPattern(PpiI, yeast1, fixed=FALSE)
 match2.PpiI <- matchPattern(PpiI, yeast1, max.mismatch=1, fixed=FALSE)
 
@@ -190,13 +190,13 @@ library(BSgenome.Celegans.UCSC.ce2)
 chrII <- Celegans[["chrII"]]
 alphabetFrequency(chrII)
 matchPattern("N", chrII)
-matchPattern("TGGGTGTCTTT", chrII) # no match
-matchPattern("TGGGTGTCTTT", chrII, fixed=FALSE) # 1 match
+matchPattern("TGGGTGTCTTT", chrII)  # no match
+matchPattern("TGGGTGTCTTT", chrII, fixed=FALSE)  # 1 match
 
 ## Using wildcards ("N") in the pattern on a genome containing N-blocks:
 library(BSgenome.Dmelanogaster.UCSC.dm3)
 chrX <- maskMotif(Dmelanogaster$chrX, "N")
-as(chrX, "Views") # 4 non masked regions
+as(chrX, "Views")  # 4 non masked regions
 matchPattern("TTTATGNTTGGTA", chrX, fixed=FALSE)
 ## Can also be achieved with no mask:
 masks(chrX) <- NULL
@@ -216,7 +216,7 @@ dm3_upstream
 
 Ebox <- DNAString("CANNTG")
 subject <- dm3_upstream
-mindex <- vmatchPattern(Ebox, subject, fixed=FALSE)
+mindex <- vmatchPattern(Ebox, subject, fixed="subject")
 nmatch_per_seq <- elementLengths(mindex)  # Get the number of matches per
                                           # subject element.
 sum(nmatch_per_seq)  # Total number of matches.
