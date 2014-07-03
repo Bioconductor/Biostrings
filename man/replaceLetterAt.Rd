@@ -40,7 +40,7 @@ replaceLetterAt(x, at, letter, if.not.extending="replace", verbose=FALSE)
 
     If \code{x} is a \link{DNAString} object, then \code{at} is typically
     an integer vector with no NAs but a logical vector or
-    \link[IRanges:Rle-class]{Rle} 
+    \link[S4Vectors]{Rle} 
     object is valid too. Locations can be repeated and in this case the
     last replacement to occur at a given location prevails.
 
