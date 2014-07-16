@@ -67,25 +67,25 @@ void print_AlignInfo(const struct AlignInfo *alignInfoPtr)
 	int string_len, i;
 	const char *string_seq, *c;
 
-	printf("- string: ");
+	Rprintf("- string: ");
 	string_len = alignInfoPtr->string.length;
 	string_seq = alignInfoPtr->string.seq;
 	for (i = 0, c = string_seq; i < string_len; i++, c++)
-		printf("%c", *c);
-	printf("\n");
+		Rprintf("%c", *c);
+	Rprintf("\n");
 
-	printf("- quality: ");
+	Rprintf("- quality: ");
 	string_len = alignInfoPtr->quality.length;
 	string_seq = alignInfoPtr->quality.seq;
 	for (i = 0, c = string_seq; i < string_len; i++, c++)
-		printf("%c", *c);
-	printf("\n");
+		Rprintf("%c", *c);
+	Rprintf("\n");
 
-	printf("- endGap: %d\n", alignInfoPtr->endGap);
-	printf("- lengthMismatch: %d\n", alignInfoPtr->lengthMismatch);
-	printf("- lengthIndel: %d\n", alignInfoPtr->lengthIndel);
-	printf("- startRange: %d\n", alignInfoPtr->startRange);
-	printf("- widthRange: %d\n", alignInfoPtr->widthRange);
+	Rprintf("- endGap: %d\n", alignInfoPtr->endGap);
+	Rprintf("- lengthMismatch: %d\n", alignInfoPtr->lengthMismatch);
+	Rprintf("- lengthIndel: %d\n", alignInfoPtr->lengthIndel);
+	Rprintf("- startRange: %d\n", alignInfoPtr->startRange);
+	Rprintf("- widthRange: %d\n", alignInfoPtr->widthRange);
 	return;
 }
 
@@ -119,6 +119,100 @@ struct IndelBuffer {
 };
 void function4(struct IndelBuffer *);
 
+/* Traceback through the score matrices */
+static void traceback(const struct AlignBuffer *alignBufferPtr,
+		      char currTraceMatrix,
+		      struct AlignInfo *align1InfoPtr,
+		      struct AlignInfo *align2InfoPtr)
+{
+	int i, j;
+	char prevTraceMatrix = '?';
+	const char *sTraceMatrix = alignBufferPtr->sTraceMatrix;
+	const char *iTraceMatrix = alignBufferPtr->iTraceMatrix;
+	const char *dTraceMatrix = alignBufferPtr->dTraceMatrix;
+	const int nCharString1 = align1InfoPtr->string.length;
+	const int nCharString2 = align2InfoPtr->string.length;
+	const int nCharString1Minus1 = nCharString1 - 1;
+	const int nCharString2Minus1 = nCharString2 - 1;
+
+	//Rprintf("align1InfoPtr:\n");
+	//print_AlignInfo(align1InfoPtr);
+	//Rprintf("align2InfoPtr:\n");
+	//print_AlignInfo(align2InfoPtr);
+
+	i = nCharString1 - align1InfoPtr->startRange;
+	j = nCharString2 - align2InfoPtr->startRange;
+	while (currTraceMatrix != TERMINATION && i >= 0 && j >= 0) {
+		switch (currTraceMatrix) {
+		case INSERTION:
+			if (I_TRACE_MATRIX(i, j) != TERMINATION) {
+				if (j == nCharString2Minus1) {
+					align1InfoPtr->startRange++;
+				} else {
+					align1InfoPtr->widthRange++;
+					if (prevTraceMatrix != INSERTION) {
+						align2InfoPtr->startIndel[align2InfoPtr->lengthIndel] = nCharString2 - j;
+						align2InfoPtr->lengthIndel++;
+					}
+					align2InfoPtr->widthIndel[align2InfoPtr->lengthIndel - 1] += 1;
+				}
+			}
+			prevTraceMatrix = currTraceMatrix;
+			currTraceMatrix = I_TRACE_MATRIX(i, j);
+			i--;
+			break;
+		case DELETION:
+			if (D_TRACE_MATRIX(i, j) != TERMINATION) {
+				if (i == nCharString1Minus1) {
+					align2InfoPtr->startRange++;
+				} else {
+					align2InfoPtr->widthRange++;
+					if (prevTraceMatrix != DELETION) {
+						align1InfoPtr->startIndel[align1InfoPtr->lengthIndel] = nCharString1 - i;
+						align1InfoPtr->lengthIndel++;
+					}
+					align1InfoPtr->widthIndel[align1InfoPtr->lengthIndel - 1] += 1;
+				}
+			}
+			prevTraceMatrix = currTraceMatrix;
+			currTraceMatrix = D_TRACE_MATRIX(i, j);
+			j--;
+			break;
+	    	case SUBSTITUTION:
+			prevTraceMatrix = currTraceMatrix;
+			currTraceMatrix = S_TRACE_MATRIX(i, j);
+			if (currTraceMatrix != TERMINATION) {
+				align1InfoPtr->widthRange++;
+				align2InfoPtr->widthRange++;
+			}
+			if (currTraceMatrix != TERMINATION
+			 && align1InfoPtr->string.seq[nCharString1Minus1 - i] != align2InfoPtr->string.seq[nCharString2Minus1 - j]) {
+				align1InfoPtr->mismatch[align1InfoPtr->lengthMismatch] = nCharString1 - i;
+				align2InfoPtr->mismatch[align2InfoPtr->lengthMismatch] = nCharString2 - j;
+				align1InfoPtr->lengthMismatch++;
+				align2InfoPtr->lengthMismatch++;
+			}
+			i--;
+			j--;
+			break;
+		default:
+			error("unknown traceback code %d", currTraceMatrix);
+			break;
+		}
+	}
+
+	const int offset1 = align1InfoPtr->startRange - 1;
+	if (offset1 > 0 && align1InfoPtr->lengthIndel > 0) {
+		for (i = 0; i < align1InfoPtr->lengthIndel; i++)
+			align1InfoPtr->startIndel[i] -= offset1;
+	}
+	const int offset2 = align2InfoPtr->startRange - 1;
+	if (offset2 > 0 && align2InfoPtr->lengthIndel > 0) {
+		for (j = 0; j < align2InfoPtr->lengthIndel; j++)
+			align2InfoPtr->startIndel[j] -= offset2;
+	}
+	return;
+}
 
 /* Returns the score of the optimal pairwise alignment */
 static double pairwiseAlignment(
@@ -141,10 +235,6 @@ static double pairwiseAlignment(
 {
 	int i, j, iMinus1, jMinus1;
 
-	//printf("align1InfoPtr:\n");
-	//print_AlignInfo(align1InfoPtr);
-	//printf("align2InfoPtr:\n");
-	//print_AlignInfo(align2InfoPtr);
 	/* Step 1:  Get information on input XString objects */
 	const int nCharString1 = align1InfoPtr->string.length;
 	const int nCharString2 = align2InfoPtr->string.length;
@@ -477,78 +567,8 @@ static double pairwiseAlignment(
 		}
 
 		/* Step 4:  Traceback through the score matrices */
-		i = nCharString1 - align1InfoPtr->startRange;
-		j = nCharString2 - align2InfoPtr->startRange;
-		char prevTraceMatrix = '?';
-		while (currTraceMatrix != TERMINATION && i >= 0 && j >= 0) {
-			switch (currTraceMatrix) {
-	    		case INSERTION:
-	    			if (I_TRACE_MATRIX(i, j) != TERMINATION) {
-		    			if (j == nCharString2Minus1) {
-		    				align1InfoPtr->startRange++;
-		    			} else {
-		    				align1InfoPtr->widthRange++;
-		    				if (prevTraceMatrix != INSERTION) {
-		    					align2InfoPtr->startIndel[align2InfoPtr->lengthIndel] = nCharString2 - j;
-		    					align2InfoPtr->lengthIndel++;
-		    				}
-		    				align2InfoPtr->widthIndel[align2InfoPtr->lengthIndel - 1] += 1;
-		    			}
-	    			}
-	    			prevTraceMatrix = currTraceMatrix;
-					currTraceMatrix = I_TRACE_MATRIX(i, j);
-	    			i--;
-	    			break;
-	    		case DELETION:
-	    			if (D_TRACE_MATRIX(i, j) != TERMINATION) {
-		    			if (i == nCharString1Minus1) {
-		    				align2InfoPtr->startRange++;
-		    			} else {
-		    				align2InfoPtr->widthRange++;
-		    				if (prevTraceMatrix != DELETION) {
-		    					align1InfoPtr->startIndel[align1InfoPtr->lengthIndel] = nCharString1 - i;
-		    					align1InfoPtr->lengthIndel++;
-		    				}
-		    				align1InfoPtr->widthIndel[align1InfoPtr->lengthIndel - 1] += 1;
-		    			}
-	    			}
-	    			prevTraceMatrix = currTraceMatrix;
-					currTraceMatrix = D_TRACE_MATRIX(i, j);
-	    			j--;
-	    			break;
-	    		case SUBSTITUTION:
-				prevTraceMatrix = currTraceMatrix;
-				currTraceMatrix = S_TRACE_MATRIX(i, j);
-	    			if (currTraceMatrix != TERMINATION) {
-		    			align1InfoPtr->widthRange++;
-		    			align2InfoPtr->widthRange++;
-	    			}
-					if (currTraceMatrix != TERMINATION && align1InfoPtr->string.seq[nCharString1Minus1 - i] !=
-						align2InfoPtr->string.seq[nCharString2Minus1 - j]) {
-						align1InfoPtr->mismatch[align1InfoPtr->lengthMismatch] = nCharString1 - i;
-						align2InfoPtr->mismatch[align2InfoPtr->lengthMismatch] = nCharString2 - j;
-						align1InfoPtr->lengthMismatch++;
-						align2InfoPtr->lengthMismatch++;
-					}
-					i--;
-	    			j--;
-	    			break;
-	    		default:
-	    			error("unknown traceback code %d", currTraceMatrix);
-	    			break;
-			}
-		}
-
-		const int offset1 = align1InfoPtr->startRange - 1;
-		if (offset1 > 0 && align1InfoPtr->lengthIndel > 0) {
-			for (i = 0; i < align1InfoPtr->lengthIndel; i++)
-				align1InfoPtr->startIndel[i] -= offset1;
-		}
-		const int offset2 = align2InfoPtr->startRange - 1;
-		if (offset2 > 0 && align2InfoPtr->lengthIndel > 0) {
-			for (j = 0; j < align2InfoPtr->lengthIndel; j++)
-				align2InfoPtr->startIndel[j] -= offset2;
-		}
+		traceback(alignBufferPtr, currTraceMatrix,
+			  align1InfoPtr, align2InfoPtr);
 	}
 
 	return (double) maxScore;
