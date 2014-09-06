@@ -70,14 +70,14 @@ AAStringSetList(..., use.names=TRUE)
 }
 
 \section{Methods}{
-  The XStringSetList class extends the \link[IRanges]{List} class defined
+  The XStringSetList class extends the \link[S4Vectors]{List} class defined
   in the \pkg{IRanges} package. Using a less technical jargon, this just means
   that an XStringSetList object is a list-like object that can be manipulated
   like an ordinary list. Or, said otherwise, most of the operations that work
   on an ordinary list (e.g. \code{length}, \code{names}, \code{[}, \code{[[},
   \code{c}, \code{unlist}, etc...) should work on an XStringSetList object.
   In addition, Bioconductor specific list operations like
-  \code{\link[IRanges]{elementLengths}} and
+  \code{\link[S4Vectors]{elementLengths}} and
   \code{\link[IRanges]{PartitioningByEnd}} (defined in the \pkg{IRanges}
   package) are supported too.
 }
@@ -86,7 +86,7 @@ AAStringSetList(..., use.names=TRUE)
 
 \seealso{
   \link{XStringSet-class},
-  \link[IRanges]{List-class}
+  \link[S4Vectors]{List-class}
 }
 
 \examples{
