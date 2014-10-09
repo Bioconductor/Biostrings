@@ -31,7 +31,8 @@ AMINO_ACID_CODE <- c(
 
   ## Ambiguities:
     B="Asx", # Asparagine or Aspartic Acid
-    Z="Glx", # Glutamine or Glutamic acid
+    J="Xle", # Leucine or Isoleucine
+    Z="Glx", # Glutamine or Glutamic Acid
     X="Xaa"  # Any amino acid
 )
 
