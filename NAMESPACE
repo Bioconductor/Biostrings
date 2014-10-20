@@ -73,10 +73,7 @@ export(
     BStringSetList, DNAStringSetList, RNAStringSetList, AAStringSetList,
 
     ## xscat.R:
-    xscat,
-
-    ## Old stuff (Deprecated or Defunct):
-    partitioning
+    xscat
 )
 
 exportMethods(
@@ -86,7 +83,7 @@ exportMethods(
     updateObject,
     names, "names<-", "[", "[[", rep, append,
     show,
-    relistToClass, splitAsListReturnedClass,
+    relistToClass,
     union, intersect, setdiff, setequal,
     "%in%", match,
     compare, "==", "!=", match,

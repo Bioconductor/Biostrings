@@ -26,9 +26,6 @@
 
 \alias{show,XStringSetList-method}
 
-% Old stuff (Deprecated or Defunct):
-\alias{partitioning}
-
 
 \title{XStringSetList objects}
 

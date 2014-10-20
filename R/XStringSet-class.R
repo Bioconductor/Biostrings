@@ -66,10 +66,6 @@ setMethod("relistToClass", "XString",
     function(x) paste0(class(x), "Set")
 )
 
-setMethod("splitAsListReturnedClass", "XString",
-    function(x) {.Deprecated("relistToClass"); paste0(class(x), "Set")}
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor-like methods.

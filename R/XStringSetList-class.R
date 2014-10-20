@@ -60,19 +60,10 @@ setMethod("relistToClass", "XStringSet",
     function(x) paste0(seqtype(x), "StringSetList")
 )
 
-setMethod("splitAsListReturnedClass", "XStringSet",
-    function(x) {
-        .Deprecated("relistToClass")
-        paste0(seqtype(x), "StringSetList")
-    }
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor-like methods.
 ###
-
-partitioning <- function(x) .Defunct("PartitioningByEnd")
 
 setMethod("nchar", "XStringSetList", IRanges:::nchar_CompressedList)
 
