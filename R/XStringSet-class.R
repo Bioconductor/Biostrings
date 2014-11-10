@@ -484,7 +484,7 @@ setMethod("as.data.frame", "XStringSet",
     function(x, row.names=NULL, optional=FALSE, ...)
     {
         x <- as.character(x)
-        as.data.frame(x, row.names=NULL, optional=optional, ...)
+        as.data.frame(x, row.names=NULL, optional=optional, ..., stringsAsFactors=FALSE)
     }
 )
 
