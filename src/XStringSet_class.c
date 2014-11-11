@@ -3,9 +3,9 @@
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
-#include "S4Vectors_interface.h"
-#include "IRanges_interface.h"
 #include "XVector_interface.h"
+#include "IRanges_interface.h"
+#include "S4Vectors_interface.h"
 
 static int debug = 0;
 

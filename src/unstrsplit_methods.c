@@ -1,6 +1,6 @@
 #include "Biostrings.h"
-#include "IRanges_interface.h"
 #include "XVector_interface.h"
+#include "IRanges_interface.h"
 
 
 static int compute_joined_strings_length(const XStringSet_holder *x_holder,

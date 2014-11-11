@@ -3,8 +3,8 @@
                              Author: Herve Pages
  ****************************************************************************/
 #include "Biostrings.h"
-#include "IRanges_interface.h"
 #include "XVector_interface.h"
+#include "IRanges_interface.h"
 
 /*
  * Table used for fast look up between A, C, G, T internal codes and the

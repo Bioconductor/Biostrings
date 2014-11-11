@@ -8,8 +8,8 @@
  * words of the same length.                                                *
  ****************************************************************************/
 #include "Biostrings.h"
-#include "IRanges_interface.h"
 #include "XVector_interface.h"
+#include "IRanges_interface.h"
 
 static int debug = 0;
 
