@@ -1,5 +1,6 @@
 #include "Biostrings.h"
 #include "IRanges_interface.h"
+#include "S4Vectors_interface.h"
 #include <R_ext/Utils.h>        /* R_CheckUserInterrupt */
 
 #include <float.h>
@@ -684,21 +685,26 @@ SEXP XStringSet_align_pairwiseAlignment(
 	/* Create the alignment buffer object */
 	struct AlignBuffer alignBuffer;
 	int nCharString1 = 0, nCharString2 = 0, nCharProduct = 0;
+	reset_ovflow_flag();
 	if (multipleSubjects) {
 		for (i = 0; i < numberOfStrings; i++) {
 			int nchar1 = _get_elt_from_XStringSet_holder(&pattern_holder, i).length;
 			int nchar2 = _get_elt_from_XStringSet_holder(&subject_holder, i).length;
 			nCharString1 = MAX(nCharString1, nchar1);
 			nCharString2 = MAX(nCharString2, nchar2);
-			nCharProduct = MAX(nCharProduct, nchar1 * nchar2);
+			nCharProduct = MAX(nCharProduct,
+					   safe_int_mult(nchar1, nchar2));
 		}
 	} else {
 		for (i = 0; i < numberOfStrings; i++) {
 			nCharString1 = MAX(nCharString1, _get_elt_from_XStringSet_holder(&pattern_holder, i).length);
 		}
 		nCharString2 = align2Info.string.length;
-		nCharProduct = nCharString1 * nCharString2;
+		nCharProduct = safe_int_mult(nCharString1, nCharString2);
 	}
+	if (get_ovflow_flag())
+		error("max(nchar(pattern) * nchar(subject)) is too big "
+		      "(must be <= %d)", INT_MAX);
 	const int alignmentBufferSize = nCharString1 + 1;
 	alignBuffer.currMatrix = (float *) R_alloc((long) 3 * alignmentBufferSize, sizeof(float));
 	alignBuffer.prevMatrix = (float *) R_alloc((long) 3 * alignmentBufferSize, sizeof(float));
