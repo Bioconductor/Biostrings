@@ -11,10 +11,10 @@ static void test_match_pattern_indels(const char *p, const char *s,
 
 	Rprintf("P=%s S=%s max_nmis=%d expected_matches=%s\n", p, s,
 		max_nmis, expected_matches);
-	P.seq = p;
-	P.length = strlen(P.seq);
-	S.seq = s;
-	S.length = strlen(S.seq);
+	P.ptr = p;
+	P.length = strlen(P.ptr);
+	S.ptr = s;
+	S.length = strlen(S.ptr);
 	_match_pattern_indels(&P, &S, max_nmis, 1, 1);
 	return;
 }
@@ -52,7 +52,7 @@ static void print_match(int start, int width,
 		error("sizeof(mbuf) too small");
 	j0 = start - 1;
 	end = j0 + width;
-	snprintf(mbuf, width + 1, "%s", S->seq + j0);
+	snprintf(mbuf, width + 1, "%s", S->ptr + j0);
 	nedit0 = _nedit_for_Ploffset(P, S, j0, P->length, 1, &width0,
 				     bytewise_match_table);
 	Rprintf("start=%d end=%d (%s) nedit0=%d\n", start, end, mbuf, nedit0);
@@ -114,13 +114,13 @@ void _match_pattern_indels(const Chars_holder *P, const Chars_holder *S,
 	j0 = 0;
 	while (j0 < S->length) {
 		while (1) {
-			c0 = S->seq[j0];
+			c0 = S->ptr[j0];
 			i0 = byte2offset.byte2code[(unsigned char) c0];
 			if (i0 != NA_INTEGER) break;
 			j0++;
 			if (j0 >= S->length) goto done;
 		}
-		P1.seq = P->seq + i0 + 1;
+		P1.ptr = P->ptr + i0 + 1;
 		P1.length = P->length - i0 - 1;
 		max_nmis1 = max_nmis - i0;
 /*

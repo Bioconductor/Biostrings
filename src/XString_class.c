@@ -116,10 +116,10 @@ void _copy_CHARSXP_to_Chars_holder(Chars_holder *dest, SEXP src,
 
 	i1 = start_in_src - 1;
 	i2 = i1 + dest->length - 1;
-	/* dest.seq is a const char * so we need to cast it
+	/* dest.ptr is a const char * so we need to cast it
 	   to char * before we can write to it */
 	Ocopy_bytes_from_i1i2_with_lkup(i1, i2,
-			(char *) dest->seq, dest->length,
+			(char *) dest->ptr, dest->length,
 			CHAR(src), LENGTH(src),
 			lkup, lkup_length);
 	return;
@@ -137,7 +137,7 @@ SEXP _new_CHARSXP_from_Chars_holder(const Chars_holder *x, SEXP lkup)
 	char *new_buf;
 
 	if (lkup == R_NilValue)
-		return mkCharLen(x->seq, x->length);
+		return mkCharLen(x->ptr, x->length);
 	new_buflength = x->length;
 	if (new_buflength > buflength) {
 		new_buf = (char *) realloc(buf, new_buflength);
@@ -149,7 +149,7 @@ SEXP _new_CHARSXP_from_Chars_holder(const Chars_holder *x, SEXP lkup)
 	}
 	Ocopy_bytes_to_i1i2_with_lkup(0, x->length - 1,
 		buf, buflength,
-		x->seq, x->length,
+		x->ptr, x->length,
 		INTEGER(lkup), LENGTH(lkup));
 	return mkCharLen(buf, x->length);
 }

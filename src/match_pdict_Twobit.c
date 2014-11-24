@@ -178,7 +178,7 @@ void walk_subject(const int *twobit_sign2pos, TwobitEncodingBuffer *teb,
 	const char *s;
 
 	_reset_twobit_signature(teb);
-	for (n = 1, s = S->seq; n <= S->length; n++, s++) {
+	for (n = 1, s = S->ptr; n <= S->length; n++, s++) {
 		twobit_sign = _shift_twobit_signature(teb, *s);
 		if (twobit_sign == NA_INTEGER)
 			continue;

@@ -52,7 +52,7 @@ static void _match_PWM_XString(const double *pwm, int pwm_ncol,
 	double score;
 
 	for (n1 = 0, n2 = pwm_ncol; n2 <= S->length; n1++, n2++) {
-		score = compute_pwm_score(pwm, pwm_ncol, S->seq, S->length, n1);
+		score = compute_pwm_score(pwm, pwm_ncol, S->ptr, S->length, n1);
 		if (score >= minscore)
 			_report_match(n1 + 1, pwm_ncol);
 	}
@@ -93,7 +93,7 @@ SEXP PWM_score_starting_at(SEXP pwm, SEXP subject, SEXP starting_at,
 			continue;
 		}
 		*ans_elt = compute_pwm_score(REAL(pwm), pwm_ncol,
-				S.seq, S.length, *start_elt - 1);
+				S.ptr, S.length, *start_elt - 1);
 	}
 	UNPROTECT(1);
 	return ans;
@@ -170,7 +170,7 @@ SEXP XStringViews_match_PWM(SEXP pwm,
 		view_offset = *start_p - 1;
 		if (view_offset < 0 || view_offset + *width_p > S.length)
 			error("'subject' has \"out of limits\" views");
-		S_view.seq = S.seq + view_offset;
+		S_view.ptr = S.ptr + view_offset;
 		S_view.length = *width_p;
 		_set_match_shift(view_offset);
 		_match_PWM_XString(REAL(pwm), pwm_ncol, &S_view, minscore);

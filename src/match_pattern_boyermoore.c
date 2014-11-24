@@ -99,7 +99,7 @@ static void init_ppP_seq(const Chars_holder *P, int walk_backward)
 		LCP = 0;
 	}
 	for (j1 = 0, j2 = P->length - 1; j1 < P->length; j1++, j2--) {
-		c = P->seq[walk_backward ? j2 : j1];
+		c = P->ptr[walk_backward ? j2 : j1];
 		if (LCP != -1 && j1 < ppP.seqlength && c == ppP.seq[j1])
 			LCP++;
 		else
@@ -380,7 +380,7 @@ static void init_ppP_MWshift_table()
  */
 
 #define GET_S_LETTER(S, n, walk_backward) \
-	((walk_backward) ? (S)->seq[(S)->length - 1 - (n)] : (S)->seq[(n)])
+	((walk_backward) ? (S)->ptr[(S)->length - 1 - (n)] : (S)->ptr[(n)])
 
 #define ADJUST_MW(i, j, shift) \
 { \

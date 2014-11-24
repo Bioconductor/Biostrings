@@ -471,7 +471,7 @@ static void preprocess_H(const Chars_holder *H,
 	const char *c;
 	BitMatrix *bmbuf;
 
-	for (j = 0, c = H->seq + H->length - 1; j < H->length; j++, c--) {
+	for (j = 0, c = H->ptr + H->length - 1; j < H->length; j++, c--) {
 		offset = byte2offset->byte2code[(unsigned char) *c];
 		if (offset == NA_INTEGER)
 			error("preprocess_H(): don't know how to handle "
@@ -495,7 +495,7 @@ static void preprocess_T(const Chars_holder *T,
 	const char *c;
 	BitMatrix *bmbuf;
 
-	for (j = 0, c = T->seq; j < T->length; j++, c++) {
+	for (j = 0, c = T->ptr; j < T->length; j++, c++) {
 		offset = byte2offset->byte2code[(unsigned char) *c];
 		if (offset == NA_INTEGER)
 			error("preprocess_T(): don't know how to handle "
@@ -559,7 +559,7 @@ static BitCol match_ppheadtail_for_loc(HeadTail *headtail, int tb_width,
 		// 'j2' should be a safe location in 'S' because we call
 		// match_ppheadtail_for_loc() only when 'tb_end' is guaranteed
 		// not to be too close to 'S' boundaries.
-		s = S->seq[j2];
+		s = S->ptr[j2];
 		offset = headtail->ppheadtail.byte2offset.byte2code[(unsigned char) s];
 		if (offset == NA_INTEGER) {
 			_BitMatrix_Rrot1(nmis_bmbuf);
@@ -577,7 +577,7 @@ static BitCol match_ppheadtail_for_loc(HeadTail *headtail, int tb_width,
 		// 'j2' should be a safe location in 'S' because we call
 		// match_ppheadtail_for_loc() only when 'tb_end' is guaranteed
 		// not to be too close from 'S' boundaries.
-		s = S->seq[j2];
+		s = S->ptr[j2];
 		offset = headtail->ppheadtail.byte2offset.byte2code[(unsigned char) s];
 		if (offset == NA_INTEGER) {
 			_BitMatrix_Rrot1(nmis_bmbuf);

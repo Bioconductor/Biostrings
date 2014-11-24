@@ -43,7 +43,7 @@ SEXP XString_xscat(SEXP args)
 		arg = VECTOR_ELT(args, j);
 		arg_holder = hold_XRaw(arg);
 		memcpy((char *) RAW(ans_tag) + tag_offset,
-		       arg_holder.seq,
+		       arg_holder.ptr,
 		       arg_holder.length * sizeof(char));
 		tag_offset += arg_holder.length;
 	}
@@ -128,11 +128,11 @@ SEXP XStringSet_xscat(SEXP args)
 				ii[j] = 0; /* recycle */
 			arg_elt_holder = _get_elt_from_XStringSet_holder(
 							args_holder + j, ii[j]);
-			/* ans_elt_holder->seq is a const char * so we need to
+			/* ans_elt_holder->ptr is a const char * so we need to
 			   cast it to char * in order to write to it */
-			memcpy((char *) ans_elt_holder.seq +
+			memcpy((char *) ans_elt_holder.ptr +
 			                ans_elt_holder.length,
-			       arg_elt_holder.seq,
+			       arg_elt_holder.ptr,
 			       arg_elt_holder.length * sizeof(char));
 			ans_elt_holder.length += arg_elt_holder.length;
 			ii[j]++;

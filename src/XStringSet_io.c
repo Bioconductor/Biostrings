@@ -84,7 +84,7 @@ static void FASTAINFO_load_desc_line(FASTAloader *loader,
 	loader_ext = loader->ext;
 	ans_names_buf = &(loader_ext->ans_names_buf);
 	// This works only because desc_line->seq is nul-terminated!
-	append_string_to_CharAEAE(ans_names_buf, desc_line->seq);
+	append_string_to_CharAEAE(ans_names_buf, desc_line->ptr);
 	return;
 }
 
@@ -171,10 +171,10 @@ static void FASTA_load_seq_data(FASTAloader *loader,
 
 	loader_ext = loader->ext;
 	ans_elt_holder = &(loader_ext->ans_elt_holder);
-	/* ans_elt_holder->seq is a const char * so we need to cast it to
+	/* ans_elt_holder->ptr is a const char * so we need to cast it to
 	   char * in order to write to it */
-	memcpy((char *) ans_elt_holder->seq + ans_elt_holder->length,
-	       seq_data->seq, seq_data->length * sizeof(char));
+	memcpy((char *) ans_elt_holder->ptr + ans_elt_holder->length,
+	       seq_data->ptr, seq_data->length * sizeof(char));
 	ans_elt_holder->length += seq_data->length;
 	return;
 }
@@ -211,12 +211,12 @@ static int translate(Chars_holder *seq_data, const int *lkup, int lkup_length)
 	char *dest;
 	int nbinvalid, i, j, key, val;
 
-	/* seq_data->seq is a const char * so we need to cast it to
+	/* seq_data->ptr is a const char * so we need to cast it to
 	   char * before we can write to it */
-	dest = (char *) seq_data->seq;
+	dest = (char *) seq_data->ptr;
 	nbinvalid = j = 0;
 	for (i = 0; i < seq_data->length; i++) {
-		key = (unsigned char) seq_data->seq[i];
+		key = (unsigned char) seq_data->ptr[i];
 		if (key >= lkup_length || (val = lkup[key]) == NA_INTEGER) {
 			nbinvalid++;
 			continue;
@@ -265,12 +265,12 @@ static const char *parse_FASTA_file(SEXP efp, int *recno, int *ninvalid,
 		} else {
 			data.length = IOBUF_SIZE - 1;
 		}
-		data.seq = buf;
+		data.ptr = buf;
 		if (!EOL_in_prev_buf)
 			goto parse_seq_data;
 		if (data.length == 0)
 			continue; // we ignore empty lines
-		if (has_prefix(data.seq, FASTA_comment_markup)) {
+		if (has_prefix(data.ptr, FASTA_comment_markup)) {
 			if (!EOL_in_buf) {
 				snprintf(errmsg_buf, sizeof(errmsg_buf),
 					 "cannot read line %d, "
@@ -280,7 +280,7 @@ static const char *parse_FASTA_file(SEXP efp, int *recno, int *ninvalid,
 			continue; // we ignore comment lines
 		}
 		buf[data.length] = '\0';
-		is_new_rec = has_prefix(data.seq, FASTA_desc_markup);
+		is_new_rec = has_prefix(data.ptr, FASTA_desc_markup);
 		if (is_new_rec) {
 			if (!EOL_in_buf) {
 				snprintf(errmsg_buf, sizeof(errmsg_buf),
@@ -293,7 +293,7 @@ static const char *parse_FASTA_file(SEXP efp, int *recno, int *ninvalid,
 				return NULL;
 			load_rec = load_rec && loader != NULL;
 			if (load_rec && loader->load_desc_line != NULL) {
-				data.seq += FASTA_desc_markup_length;
+				data.ptr += FASTA_desc_markup_length;
 				data.length -= FASTA_desc_markup_length;
 				loader->load_desc_line(loader, &data);
 			}
@@ -461,7 +461,7 @@ SEXP write_XStringSet_to_fasta(SEXP x, SEXP efp_list, SEXP width, SEXP lkup)
 			j2--;
 			Ocopy_bytes_from_i1i2_with_lkup(j1, j2,
 				buf, dest_nbytes,
-				X_elt.seq, X_elt.length,
+				X_elt.ptr, X_elt.length,
 				lkup0, lkup_length);
 			buf[dest_nbytes] = 0;
 			ExternalFilePtr_puts(efp, buf);
@@ -561,8 +561,8 @@ static void FASTQ_load_seqid(FASTQloader *loader, const Chars_holder *seqid)
 
 	loader_ext = loader->ext;
 	ans_names_buf = &(loader_ext->ans_names_buf);
-	// This works only because seqid->seq is nul-terminated!
-	append_string_to_CharAEAE(ans_names_buf, seqid->seq);
+	// This works only because seqid->ptr is nul-terminated!
+	append_string_to_CharAEAE(ans_names_buf, seqid->ptr);
 	return;
 }
 
@@ -574,11 +574,11 @@ static void FASTQ_load_seq(FASTQloader *loader, const Chars_holder *seq)
 	loader_ext = loader->ext;
 	ans_elt_holder = get_elt_from_XRawList_holder(&(loader_ext->ans_holder),
 						loader->nrec);
-	/* ans_elt_holder.seq is a const char * so we need to cast it to
+	/* ans_elt_holder.ptr is a const char * so we need to cast it to
 	   char * before we can write to it */
 	Ocopy_bytes_to_i1i2_with_lkup(0, ans_elt_holder.length - 1,
-		(char *) ans_elt_holder.seq, ans_elt_holder.length,
-		seq->seq, seq->length,
+		(char *) ans_elt_holder.ptr, ans_elt_holder.length,
+		seq->ptr, seq->length,
 		loader_ext->lkup, loader_ext->lkup_length);
 	return;
 }
@@ -659,7 +659,7 @@ static const char *parse_FASTQ_file(SEXP efp, int *recno,
 		if (data.length == 0)
 			continue; // we ignore empty lines
 		buf[data.length] = '\0';
-		data.seq = buf;
+		data.ptr = buf;
 		lineinrecno++;
 		if (lineinrecno > 4)
 			lineinrecno = 1;
@@ -678,7 +678,7 @@ static const char *parse_FASTQ_file(SEXP efp, int *recno,
 			if (load_rec && nrec >= 0)
 				load_rec = *recno < skip + nrec;
 			if (load_rec && loader->load_seqid != NULL) {
-				data.seq += FASTQ_line1_markup_length;
+				data.ptr += FASTQ_line1_markup_length;
 				data.length -= FASTQ_line1_markup_length;
 				loader->load_seqid(loader, &data);
 			}
@@ -695,7 +695,7 @@ static const char *parse_FASTQ_file(SEXP efp, int *recno,
 				return errmsg_buf;
 			}
 			if (load_rec && loader->load_qualid != NULL) {
-				data.seq += FASTQ_line3_markup_length;
+				data.ptr += FASTQ_line3_markup_length;
 				data.length -= FASTQ_line3_markup_length;
 				loader->load_qualid(loader, &data);
 			}
@@ -865,7 +865,7 @@ static void write_FASTQ_qual(SEXP efp, int seqlen,
 	if (Q_elt.length != seqlen)
 		error("'x' and 'quality' must have the same width");
 	for (j = 0; j < seqlen; j++)
-		ExternalFilePtr_putc(efp, (int) *(Q_elt.seq++));
+		ExternalFilePtr_putc(efp, (int) *(Q_elt.ptr++));
 	ExternalFilePtr_puts(efp, "\n");
 }
 
@@ -913,7 +913,7 @@ SEXP write_XStringSet_to_fastq(SEXP x, SEXP efp_list, SEXP qualities, SEXP lkup)
 		X_elt = _get_elt_from_XStringSet_holder(&X, i);
 		Ocopy_bytes_from_i1i2_with_lkup(0, X_elt.length - 1,
 			buf, X_elt.length,
-			X_elt.seq, X_elt.length,
+			X_elt.ptr, X_elt.length,
 			lkup0, lkup_length);
 		buf[X_elt.length] = 0;
 		write_FASTQ_id(efp, FASTQ_line1_markup, id);

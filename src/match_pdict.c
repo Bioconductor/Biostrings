@@ -275,7 +275,7 @@ SEXP match_PDict3Parts_XStringViews(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		view_offset = *view_start - 1;
 		if (view_offset < 0 || view_offset + *view_width > S.length)
 			error("'subject' has \"out of limits\" views");
-		S_view.seq = S.seq + view_offset;
+		S_view.ptr = S.ptr + view_offset;
 		S_view.length = *view_width;
 		match_pdict(pptb, &headtail, &S_view,
 			    max_mismatch, min_mismatch, fixed,

@@ -23,7 +23,7 @@ static int fast_translate(const Chars_holder *dna, Chars_holder *aa,
 
 	aa->length = phase = 0;
 	_reset_twobit_signature(teb);
-	for (i = 0, c = dna->seq; i < dna->length; i++, c++) {
+	for (i = 0, c = dna->ptr; i < dna->length; i++, c++) {
 		if (*c == skip_code)
 			continue;
 		lkup_key = _shift_twobit_signature(teb, *c);
@@ -37,9 +37,9 @@ static int fast_translate(const Chars_holder *dna, Chars_holder *aa,
 			continue;
 		}
 		aa_letter = (char) INTEGER(lkup)[lkup_key];
-		/* aa->seq is a const char * so we need to cast it to
+		/* aa->ptr is a const char * so we need to cast it to
 		   char * before we can write to it */
-		((char *) aa->seq)[aa->length++] = aa_letter;
+		((char *) aa->ptr)[aa->length++] = aa_letter;
 		phase = 0;
 	}
 	return phase;
@@ -59,7 +59,7 @@ static int translate(const Chars_holder *dna, Chars_holder *aa,
 	char aa_letter;
 
 	aa->length = phase = 0;
-	for (i = 0, c = dna->seq; i < dna->length; i++, c++) {
+	for (i = 0, c = dna->ptr; i < dna->length; i++, c++) {
 		if (*c == skip_code)
 			continue;
 		offset = byte2offset->byte2code[(unsigned char) *c];
@@ -107,9 +107,9 @@ static int translate(const Chars_holder *dna, Chars_holder *aa,
 				}
 			}
 		}
-		/* aa->seq is a const char * so we need to cast it to
+		/* aa->ptr is a const char * so we need to cast it to
 		   char * before we can write to it */
-		((char *) aa->seq)[aa->length++] = aa_letter;
+		((char *) aa->ptr)[aa->length++] = aa_letter;
 		phase = 0;
 	}
 	return phase;

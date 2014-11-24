@@ -107,7 +107,7 @@ SEXP XString_replace_letter_at(SEXP x, SEXP at, SEXP letter, SEXP lkup,
 	set_notextend_action(CHAR(STRING_ELT(if_not_extending, 0)));
 
 	PROTECT(tag = NEW_RAW(X.length));
-	memcpy((char *) RAW(tag), X.seq, X.length);
+	memcpy((char *) RAW(tag), X.ptr, X.length);
 	skip_or_merge_count = letter_ncharsum = 0;
 	at_p = INTEGER(at);
 	for (i = 0; i < letter_length; i++) {

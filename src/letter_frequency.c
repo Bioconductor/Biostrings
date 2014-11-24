@@ -64,7 +64,7 @@ static void update_letter_freqs(int *row, int nrow, const Chars_holder *X, SEXP 
 	int i, offset;
 	const char *c;
 
-	for (i = 0, c = X->seq; i < X->length; i++, c++) {
+	for (i = 0, c = X->ptr; i < X->length; i++, c++) {
 		offset = (unsigned char) *c;
 		if (codes != R_NilValue) {
 			offset = byte2offset.byte2code[offset];
@@ -84,7 +84,7 @@ static void update_letter_freqs_without_codes(int *row, int nrow,
 	const char *c;
 	int k = X->length;
 
-	for (i = 0, c = X->seq; i < k; i++, c++) {
+	for (i = 0, c = X->ptr; i < k; i++, c++) {
 		offset = byte2offset.byte2code[(unsigned char) *c];
 		if (offset != NA_INTEGER)
 			row[offset * nrow]++;
@@ -150,7 +150,7 @@ static void update_letter_freqs2(int *mat, const Chars_holder *X, SEXP codes,
 	int i1, i2, j1, j2, *col, i, offset;
 	const char *c;
 
-	/* i1, i2 are 0-based indices in X->seq
+	/* i1, i2 are 0-based indices in X->ptr
 	   (range i1 <= i < i2 must be safe) */
 	i1 = 0;
 	i2 = X->length;
@@ -166,7 +166,7 @@ static void update_letter_freqs2(int *mat, const Chars_holder *X, SEXP codes,
 		i2 -= j2 - mat_ncol;
 		/* j2 = mat_ncol; not needed */
 	}
-	c = X->seq + i1;
+	c = X->ptr + i1;
 	col = mat + j1 * mat_nrow;
 	for (i = i1; i < i2; i++, c++, col += mat_nrow) {
 		offset = (unsigned char) *c;
@@ -190,7 +190,7 @@ static void update_int_oligo_freqs(int *mat, int mat_nrow,
 	max_start = X->length - width;
 	if (step == 1) {
 		_reset_twobit_signature(teb);
-		for (start = 1 - width, c = X->seq;
+		for (start = 1 - width, c = X->ptr;
 		     start <= max_start;
 		     start++, c++)
 		{
@@ -201,7 +201,7 @@ static void update_int_oligo_freqs(int *mat, int mat_nrow,
 	} else if (step < width) {
 		/* 1 < step < width */
 		_reset_twobit_signature(teb);
-		for (start = 1 - width, c = X->seq;
+		for (start = 1 - width, c = X->ptr;
 		     start <= max_start;
 		     start++, c++)
 		{
@@ -213,7 +213,7 @@ static void update_int_oligo_freqs(int *mat, int mat_nrow,
 		/* 1 <= width <= step */
 		for (start = 0; start <= max_start; start += step) {
 			_reset_twobit_signature(teb);
-			for (i = 1, c = X->seq + start; i < width; i++, c++)
+			for (i = 1, c = X->ptr + start; i < width; i++, c++)
 				_shift_twobit_signature(teb, *c);
 			offset = _shift_twobit_signature(teb, *c);
 			if (offset != NA_INTEGER)
@@ -233,7 +233,7 @@ static void update_double_oligo_freqs(double *mat, int mat_nrow,
 	max_start = X->length - width;
 	if (step == 1) {
 		_reset_twobit_signature(teb);
-		for (start = 1 - width, c = X->seq;
+		for (start = 1 - width, c = X->ptr;
 		     start <= max_start;
 		     start++, c++)
 		{
@@ -244,7 +244,7 @@ static void update_double_oligo_freqs(double *mat, int mat_nrow,
 	} else if (step < width) {
 		/* 1 < step < width */
 		_reset_twobit_signature(teb);
-		for (start = 1 - width, c = X->seq;
+		for (start = 1 - width, c = X->ptr;
 		     start <= max_start;
 		     start++, c++)
 		{
@@ -256,7 +256,7 @@ static void update_double_oligo_freqs(double *mat, int mat_nrow,
 		/* 1 <= width <= step */
 		for (start = 0; start <= max_start; start += step) {
 			_reset_twobit_signature(teb);
-			for (i = 1, c = X->seq + start; i < width; i++, c++)
+			for (i = 1, c = X->ptr + start; i < width; i++, c++)
 				_shift_twobit_signature(teb, *c);
 			offset = _shift_twobit_signature(teb, *c);
 			if (offset != NA_INTEGER)
@@ -546,7 +546,7 @@ SEXP XString_letterFrequencyInSlidingView(SEXP x, SEXP view_width,
 	PROTECT(ans = allocMatrix(INTSXP, ans_nrow, ans_width));
 	ans_row = INTEGER(ans);
 	// memset unnecessary -- done in letter_freq_in_sliding_view()
-	for (i = 0, c = X.seq, first = -1; i < ans_nrow; i++, ans_row++, c++)
+	for (i = 0, c = X.ptr, first = -1; i < ans_nrow; i++, ans_row++, c++)
 		first = letter_freq_in_sliding_view(ans_row, ans_nrow, c,
 				first, ans_width, k);
 
@@ -864,7 +864,7 @@ static void update_two_way_letter_freqs(int *mat, int ans_nrow,
     error("Strings 'x' and 'y' must have the same length");
   }
   
-  for (i = 0, xc = X->seq, yc = Y->seq; i < X->length; i++, xc++, yc++) {
+  for (i = 0, xc = X->ptr, yc = Y->ptr; i < X->length; i++, xc++, yc++) {
     x_offset = xbyte2offset.byte2code[(unsigned char) *xc];
     y_offset = ybyte2offset.byte2code[(unsigned char) *yc];
     if (x_offset != NA_INTEGER && y_offset != NA_INTEGER) {
@@ -1014,10 +1014,10 @@ static void update_two_way_letter_freqs_by_quality(int *mat,
   }
   
   for (i = 0; i < X->length; i++) {
-    x_offset = byte2offset.byte2code[(unsigned char) X->seq[i]];
-    y_offset = byte2offset.byte2code[(unsigned char) Y->seq[i]];
-    qx_offset = quality_byte2offset.byte2code[(unsigned char) QX->seq[i]];
-    qy_offset = quality_byte2offset.byte2code[(unsigned char) QY->seq[i]];
+    x_offset = byte2offset.byte2code[(unsigned char) X->ptr[i]];
+    y_offset = byte2offset.byte2code[(unsigned char) Y->ptr[i]];
+    qx_offset = quality_byte2offset.byte2code[(unsigned char) QX->ptr[i]];
+    qy_offset = quality_byte2offset.byte2code[(unsigned char) QY->ptr[i]];
     min_q_offset = qx_offset < qy_offset ? qx_offset : qy_offset; 
     if (x_offset != NA_INTEGER && y_offset != NA_INTEGER) {
       mat[x_offset + y_offset * seq_width + min_q_offset * seq_width_squared]++;

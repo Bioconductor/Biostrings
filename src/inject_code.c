@@ -19,7 +19,7 @@ SEXP XString_inject_code(SEXP x, SEXP start, SEXP width, SEXP code)
 	X = hold_XRaw(x);
 	nranges = LENGTH(start); /* must be == LENGTH(width) */
 	PROTECT(tag = NEW_RAW(X.length));
-	memcpy(RAW(tag), X.seq, X.length);
+	memcpy(RAW(tag), X.ptr, X.length);
 	for (i = 0, s_p = INTEGER(start),  w_p = INTEGER(width);
 	     i < nranges;
 	     i++, s_p++, w_p++)

@@ -48,9 +48,9 @@ static void match_naive_exact(const Chars_holder *P, const Chars_holder *S)
 
 	if (P->length <= 0)
 		error("empty pattern");
-	p = P->seq;
+	p = P->ptr;
 	plen = P->length;
-	s = S->seq;
+	s = S->ptr;
 	slen = S->length;
 	for (start = 1, n2 = plen; n2 <= slen; start++, n2++, s++) {
 		if (memcmp(p, s, plen) == 0)
@@ -142,7 +142,7 @@ void _match_pattern_XStringViews(const Chars_holder *P,
 		view_offset = *view_start - 1;
 		if (view_offset < 0 || view_offset + *view_width > S->length)
 			error("'subject' has \"out of limits\" views");
-		S_view.seq = S->seq + view_offset;
+		S_view.ptr = S->ptr + view_offset;
 		S_view.length = *view_width;
 		_set_match_shift(view_offset);
 		_match_pattern_XString(P, &S_view,

@@ -149,10 +149,10 @@ static void set_pmaskmap(
 		for (i = 0; i < P->length; i++) {
 			pmask <<= 1;
 			if (is_fixed) {
-				if (((unsigned char) P->seq[i]) != nncode)
+				if (((unsigned char) P->ptr[i]) != nncode)
 					pmask |= 1UL;
 			} else {
-				if ((((unsigned char) P->seq[i]) & nncode) == 0)
+				if ((((unsigned char) P->ptr[i]) & nncode) == 0)
 					pmask |= 1UL;
 			}
 		}
@@ -209,7 +209,7 @@ static int next_match(
 
 	while (*Lpos < S->length) {
 		if (*Rpos < S->length) {
-			nncode = (unsigned char) S->seq[*Rpos];
+			nncode = (unsigned char) S->ptr[*Rpos];
 			pmask = pmaskmap[nncode];
 #ifdef DEBUG_BIOSTRINGS
 			if (debug) {

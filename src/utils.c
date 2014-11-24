@@ -127,7 +127,7 @@ void _init_byte2offset_with_Chars_holder(ByteTrTable *byte2offset,
 	for (j = 0; j < 256; j++) {
 		y = (unsigned char) j;
 		offset = NA_INTEGER;
-		for (n = 0, c = seq->seq; n < seq->length; n++, c++) {
+		for (n = 0, c = seq->ptr; n < seq->length; n++, c++) {
 			x = (unsigned char) *c;
 			if (bytewise_match_table->xy2val[x][y]) {
 				offset = n;
@@ -205,7 +205,7 @@ int _get_twobit_signature(TwobitEncodingBuffer *teb, const Chars_holder *seq)
 
 	if (seq->length != teb->buflength)
 		error("_get_twobit_signature(): seq->length != teb->buflength");
-	for (i = 0, c = seq->seq; i < seq->length; i++, c++)
+	for (i = 0, c = seq->ptr; i < seq->length; i++, c++)
 		twobit_sign = _shift_twobit_signature(teb, *c);
 	return twobit_sign;
 }
@@ -222,7 +222,7 @@ int _get_twobit_signature_at(TwobitEncodingBuffer *teb, const Chars_holder *seq,
 		j = at[i];
 		if (j == NA_INTEGER || j < 1 || j > seq->length)
 			return -1;
-		twobit_sign = _shift_twobit_signature(teb, seq->seq[j - 1]);
+		twobit_sign = _shift_twobit_signature(teb, seq->ptr[j - 1]);
 	}
 	return twobit_sign;
 }

@@ -38,9 +38,9 @@ static int needwunsQS(const Chars_holder *S1, const Chars_holder *S2,
 	for (i1 = 1, j1 = 0; i1 <= S1->length; i1++, j1++) {
 		for (i2 = 1, j2 = 0; i2 <= S2->length; i2++, j2++) {
 			int lkup_val, m1, m2, scR, scD, scI;
-			SET_LKUP_VAL_INT(lkup, lkup_length, S1->seq[j1]);
+			SET_LKUP_VAL_INT(lkup, lkup_length, S1->ptr[j1]);
 			m1 = lkup_val;
-			SET_LKUP_VAL_INT(lkup, lkup_length, S2->seq[j2]);
+			SET_LKUP_VAL_INT(lkup, lkup_length, S2->ptr[j2]);
 			m2 = lkup_val;
 			scR = SCO(j1, j2) + mat[mat_nrow * m1 + m2];
 			scD = SCO(j1, i2) - gap_cost;
@@ -99,18 +99,18 @@ static int needwunsQS(const Chars_holder *S1, const Chars_holder *S2,
 			tr = TRA(i1, i2);
 		switch (tr) {
 		    case 'D':
-			*al1 = S1->seq[j1];
+			*al1 = S1->ptr[j1];
 			*al2 = gap_code;
 			i1--;
 			break;
 		    case 'I':
 			*al1 = gap_code;
-			*al2 = S2->seq[j2];
+			*al2 = S2->ptr[j2];
 			i2--;
 			break;
 		    case 'R':
-			*al1 = S1->seq[j1];
-			*al2 = S2->seq[j2];
+			*al1 = S1->ptr[j1];
+			*al2 = S2->ptr[j2];
 			i1--;
 			i2--;
 			break;

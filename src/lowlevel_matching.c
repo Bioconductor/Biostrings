@@ -88,7 +88,7 @@ int _nmismatch_at_Pshift(const Chars_holder *P,
 	if (bytewise_match_table == NULL)
 		bytewise_match_table = &fixedPfixedS_match_table;
 	nmis = 0;
-	for (i = 0, j = Pshift, p = P->seq, s = S->seq + Pshift;
+	for (i = 0, j = Pshift, p = P->ptr, s = S->ptr + Pshift;
 	     i < P->length;
 	     i++, j++, p++, s++)
 	{
@@ -127,7 +127,7 @@ static int row1_buf[MAX_ROW_LENGTH], row2_buf[MAX_ROW_LENGTH];
 #define PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, y2val, row_length) \
 { \
 	int nedit, B2, nedit2; \
-	nedit = (prev_row)[(B)] + ((Si) < 0 || (Si) >= (S)->length || !y2val[(unsigned char) (S)->seq[(Si)]]); \
+	nedit = (prev_row)[(B)] + ((Si) < 0 || (Si) >= (S)->length || !y2val[(unsigned char) (S)->ptr[(Si)]]); \
 	if ((B2 = (B) - 1) >= 0 && (nedit2 = (curr_row)[B2] + 1) < nedit) \
 		nedit = nedit2; \
 	if ((B2 = (B) + 1) < (row_length) && (nedit2 = (prev_row)[B2] + 1) < nedit) \
@@ -203,7 +203,7 @@ int _nedit_for_Ploffset(const Chars_holder *P, const Chars_holder *S,
 	// this stage because the smallest value in curr_row is guaranteed
 	// to be <= a < max_nedit.
 	for (a = 1, Pi = 0; a < max_nedit; a++, Pi++) {
-		Pc = P->seq[Pi]; // Pi < a < max_nedit <= P->length
+		Pc = P->ptr[Pi]; // Pi < a < max_nedit <= P->length
 		y2val = bytewise_match_table->xy2val[(unsigned char) Pc];
 		SWAP_NEDIT_BUFS(prev_row, curr_row);
 		B = max_nedit - a;
@@ -216,7 +216,7 @@ int _nedit_for_Ploffset(const Chars_holder *P, const Chars_holder *S,
 	}
 
 	// STAGE 2: no attempt is made to bailout during this stage either.
-	Pc = P->seq[Pi];
+	Pc = P->ptr[Pi];
 	y2val = bytewise_match_table->xy2val[(unsigned char) Pc];
 	SWAP_NEDIT_BUFS(prev_row, curr_row);
 	B = 0;
@@ -237,7 +237,7 @@ int _nedit_for_Ploffset(const Chars_holder *P, const Chars_holder *S,
 
 	// STAGE 3 (2nd for() loop): with attempt to bailout.
 	for ( ; Pi < P->length; Pi++, a++, min_Si++) {
-		Pc = P->seq[Pi];
+		Pc = P->ptr[Pi];
 		y2val = bytewise_match_table->xy2val[(unsigned char) Pc];
 		SWAP_NEDIT_BUFS(prev_row, curr_row);
 		min_nedit = a;
@@ -302,7 +302,7 @@ int _nedit_for_Proffset(const Chars_holder *P, const Chars_holder *S,
 	// this stage because the smallest value in curr_row is guaranteed
 	// to be <= a < max_nedit.
 	for (a = 1, Pi = P->length - 1; a < max_nedit; a++, Pi--) {
-		Pc = P->seq[Pi];
+		Pc = P->ptr[Pi];
 		y2val = bytewise_match_table->xy2val[(unsigned char) Pc];
 		SWAP_NEDIT_BUFS(prev_row, curr_row);
 		B = max_nedit - a;
@@ -315,7 +315,7 @@ int _nedit_for_Proffset(const Chars_holder *P, const Chars_holder *S,
 	}
 
 	// STAGE 2: no attempt is made to bailout during this stage either.
-	Pc = P->seq[Pi];
+	Pc = P->ptr[Pi];
 	y2val = bytewise_match_table->xy2val[(unsigned char) Pc];
 	SWAP_NEDIT_BUFS(prev_row, curr_row);
 	B = 0;
@@ -336,7 +336,7 @@ int _nedit_for_Proffset(const Chars_holder *P, const Chars_holder *S,
 
 	// STAGE 3 (2nd for() loop): with attempt to bailout.
 	for ( ; Pi >= 0; Pi--, a++, max_Si--) {
-		Pc = P->seq[Pi];
+		Pc = P->ptr[Pi];
 		y2val = bytewise_match_table->xy2val[(unsigned char) Pc];
 		SWAP_NEDIT_BUFS(prev_row, curr_row);
 		min_nedit = a;
@@ -452,7 +452,7 @@ static void match_pattern_at(const Chars_holder *P, const Chars_holder *S,
 				max_nmis, with_indels0, fixedP, fixedS);
 		if (auto_reduce_pattern0 && i < at_length) {
 			if (at_type0 == 0)
-				my_p.seq++;
+				my_p.ptr++;
 			my_p.length--;
 		}
 		if (ans_type0 == 0) {

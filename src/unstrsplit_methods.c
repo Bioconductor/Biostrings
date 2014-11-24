@@ -35,7 +35,7 @@ static void join_strings_in_buf(char *dest, const XStringSet_holder *x_holder,
 			dest += sep_len;
 		}
 		x_elt_holder = _get_elt_from_XStringSet_holder(x_holder, i);
-		memcpy(dest, x_elt_holder.seq, x_elt_holder.length);
+		memcpy(dest, x_elt_holder.ptr, x_elt_holder.length);
 		dest += x_elt_holder.length;
 	}
 	return;
@@ -93,8 +93,8 @@ SEXP XStringSetList_unstrsplit(SEXP x, SEXP sep, SEXP seqtype)
 					&x_holder, i);
 		ans_elt_holder = _get_elt_from_XStringSet_holder(
 					&ans_holder, i);
-		join_strings_in_buf((char *) ans_elt_holder.seq, &x_elt_holder,
-					sep_holder.seq, sep_holder.length);
+		join_strings_in_buf((char *) ans_elt_holder.ptr, &x_elt_holder,
+					sep_holder.ptr, sep_holder.length);
 	}
 
 	PROTECT(ans_names = duplicate(get_CompressedList_names(x)));

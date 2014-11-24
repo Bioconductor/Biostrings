@@ -795,7 +795,7 @@ static void add_pattern(ACtree *tree, const Chars_holder *P, int P_offset)
 	dmax = TREE_DEPTH(tree) - 1;
 	for (depth = 0, nid1 = 0U; depth <= dmax; depth++, nid1 = nid2) {
 		node1 = GET_NODE(tree, nid1);
-		linktag = CHAR2LINKTAG(tree, P->seq[depth]);
+		linktag = CHAR2LINKTAG(tree, P->ptr[depth]);
 		if (linktag == NA_INTEGER)
 			error("non base DNA letter found in Trusted Band "
 			      "for pattern %d", P_id);
@@ -972,7 +972,7 @@ static void compute_flinks_along_pattern(ACtree *tree, const Chars_holder *P)
 	unsigned int nid, flink;
 
 	node = GET_NODE(tree, 0U);
-	node_path = P->seq;
+	node_path = P->ptr;
 	for (n = 1; n <= P->length; n++) {
 		linktag = CHAR2LINKTAG(tree, *node_path);
 		nid = transition(tree, node, node_path, linktag);
@@ -1045,7 +1045,7 @@ static void walk_tb_subject(ACtree *tree, const Chars_holder *S,
 	unsigned int nid;
 
 	node = GET_NODE(tree, 0U);
-	node_path = S->seq;
+	node_path = S->ptr;
 	for (n = 1; n <= S->length; n++) {
 		linktag = CHAR2LINKTAG(tree, *node_path);
 		nid = transition(tree, node, node_path, linktag);
@@ -1171,7 +1171,7 @@ static void walk_tb_nonfixed_subject(ACtree *tree, const Chars_holder *S,
 		      "PLEASE REPORT THIS! THANKS.\n");
 	node_subset_size = max_size = 1;
 	node_subset[0] = GET_NODE(tree, 0U);
-	for (n = 1, c = (unsigned char *) S->seq; n <= S->length; n++, c++) {
+	for (n = 1, c = (unsigned char *) S->ptr; n <= S->length; n++, c++) {
 		if (*c >= 16) {
 			/* '*c' is not an IUPAC (base or extended) code */
 			node_subset[0] = GET_NODE(tree, 0U);
@@ -1237,7 +1237,7 @@ static void walk_pdict_subject(ACtree *tree,
 	const char *node_path;
 
 	node = GET_NODE(tree, 0U);
-	node_path = S->seq;
+	node_path = S->ptr;
 	for (n = 1; n <= S->length; n++) {
 		linktag = CHAR2LINKTAG(tree, *node_path);
 		nid = transition(tree, node, node_path, linktag);

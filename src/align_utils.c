@@ -121,7 +121,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	for (i = 0, rangeStart = INTEGER(get_IRanges_start(range)), rangeWidth = INTEGER(get_IRanges_width(range));
 	         i < numberOfAlignments; i++, rangeStart++, rangeWidth++) {
 		Chars_holder origString = _get_elt_from_XStringSet_holder(&unaligned_holder, stringElement);
-		char *origStringPtr = (char *) (origString.seq + (*rangeStart - 1));
+		char *origStringPtr = (char *) (origString.ptr + (*rangeStart - 1));
 		IRanges_holder indelElement = get_elt_from_CompressedIRangesList_holder(&indel_holder, i);
 		int numberOfIndel = get_length_from_IRanges_holder(&indelElement);
 		if (numberOfIndel == 0) {
@@ -211,7 +211,7 @@ SEXP PairwiseAlignmentsSingleSubject_align_aligned(SEXP alignment, SEXP gapCode,
 	         i < numberOfAlignments;
 	         i++, rangeStartPattern++, rangeWidthPattern++, rangeStartSubject++, rangeWidthSubject++) {
 		Chars_holder origString = _get_elt_from_XStringSet_holder(&unalignedPattern_holder, i);
-		char *origStringPtr = (char *) (origString.seq + (*rangeStartPattern - 1));
+		char *origStringPtr = (char *) (origString.ptr + (*rangeStartPattern - 1));
 		IRanges_holder indelElementPattern = get_elt_from_CompressedIRangesList_holder(&indelPattern_holder, i);
 		IRanges_holder indelElementSubject = get_elt_from_CompressedIRangesList_holder(&indelSubject_holder, i);
 		int numberOfIndelPattern = get_length_from_IRanges_holder(&indelElementPattern);
