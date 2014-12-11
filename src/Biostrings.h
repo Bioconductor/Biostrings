@@ -853,6 +853,11 @@ SEXP find_palindromes(
 	SEXP L2R_lkup
 );
 
+SEXP palindrome_arm_length(
+	SEXP x,
+	SEXP L2R_lkup
+);
+
 
 /* BitMatrix.c */
 
