@@ -52,12 +52,14 @@
 }
 
 \usage{
-findPalindromes(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
+findPalindromes(subject, min.armlength=4,
+                max.looplength=1, min.looplength=0, max.mismatch=0)
 palindromeArmLength(x, max.mismatch=0, ...)
 palindromeLeftArm(x, max.mismatch=0, ...)
 palindromeRightArm(x, max.mismatch=0, ...)
 
-findComplementedPalindromes(subject, min.armlength=4, max.looplength=1, min.looplength=0, max.mismatch=0)
+findComplementedPalindromes(subject, min.armlength=4,
+                max.looplength=1, min.looplength=0, max.mismatch=0)
 complementedPalindromeArmLength(x, max.mismatch=0, ...)
 complementedPalindromeLeftArm(x, max.mismatch=0, ...)
 complementedPalindromeRightArm(x, max.mismatch=0, ...)
@@ -154,23 +156,35 @@ complementedPalindromeRightArm(x, max.mismatch=0, ...)
 }
 
 \examples{
-  ## Note that complemented palindromes (like palindromes) can be nested
-  findComplementedPalindromes(DNAString("ACGTTNAACGT-ACGTTNAACGT"))
+x0 <- BString("abbbaabbcbbaccacabbbccbcaabbabacca")
+pals <- findPalindromes(x0, min.armlength=3, max.looplength=5)
+pals
+palindromeArmLength(pals)
+palindromeLeftArm(pals)
+palindromeRightArm(pals)
 
-  ## A real use case
-  library(BSgenome.Dmelanogaster.UCSC.dm3)
-  chrX <- Dmelanogaster$chrX
-  chrX_pals <- findComplementedPalindromes(chrX, min.armlength=50, max.looplength=20)
-  complementedPalindromeArmLength(chrX_pals)  # 251
+## Whitespaces matter:
+x1 <- BString("Delia saw I was aileD")
+palindromeArmLength(x1)
+palindromeLeftArm(x1)
+palindromeRightArm(x1)
 
-  ## Of course, whitespaces matter
-  palindromeArmLength(BString("was it a car or a cat I saw"))
+x2 <- BString("was it a car or a cat I saw")
+palindromeArmLength(x2)
+palindromeLeftArm(x2)
+palindromeRightArm(x2)
 
-  ## Note that the 2 arms of a strict palindrome (or strict complemented
-  ## palindrome) are equal to the full sequence.
-  palindromeLeftArm(BString("Delia saw I was aileD"))
-  complementedPalindromeLeftArm(DNAString("N-ACGTT-AACGT-N"))
-  palindromeLeftArm(DNAString("N-AAA-N-N-TTT-N"))
+## Note that complemented palindromes (like palindromes) can be nested:
+x3 <- DNAString("ACGTTNAACGTCCAAAATTTTCCACGTTNAACGT")
+findComplementedPalindromes(x3, max.looplength=19)
+
+## A real use case
+library(BSgenome.Dmelanogaster.UCSC.dm3)
+chrX <- Dmelanogaster$chrX
+chrX_pals <- findComplementedPalindromes(chrX, min.armlength=40,
+                                               max.looplength=80)
+chrX_pals
+complementedPalindromeArmLength(chrX_pals)  # 251 70 262
 }
 
 \keyword{methods}
