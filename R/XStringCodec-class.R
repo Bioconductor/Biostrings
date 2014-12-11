@@ -142,10 +142,10 @@ DNAcodes <- function(baseOnly) .DNAorRNAcodes(DNA_BASE_CODES, baseOnly)
 RNAcodes <- function(baseOnly) .DNAorRNAcodes(RNA_BASE_CODES, baseOnly)
 
 ### DNA and RNA alphabets.
-.DNA_CODES <- DNAcodes(FALSE)
-.RNA_CODES <- RNAcodes(FALSE)
-DNA_ALPHABET <- names(.DNA_CODES)
-RNA_ALPHABET <- names(.RNA_CODES)
+DNA_CODES <- DNAcodes(FALSE)
+RNA_CODES <- RNAcodes(FALSE)
+DNA_ALPHABET <- names(DNA_CODES)
+RNA_ALPHABET <- names(RNA_CODES)
 
 ### DNA_BASES could be defined more simply as being 'names(DNA_BASE_CODES)'
 ### but calling DNAcodes() gives us the guarantee that the order of the
@@ -163,8 +163,8 @@ RNA_BASES <- names(RNAcodes(TRUE))
     new("XStringCodec", letters, codes, extra_letters, extra_codes)
 }
 
-DNA_STRING_CODEC <- .XStringCodec.DNAorRNA(.DNA_CODES)
-RNA_STRING_CODEC <- .XStringCodec.DNAorRNA(.RNA_CODES)
+DNA_STRING_CODEC <- .XStringCodec.DNAorRNA(DNA_CODES)
+RNA_STRING_CODEC <- .XStringCodec.DNAorRNA(RNA_CODES)
 
 
 ### Return the lookup table that transforms a DNA sequence into its

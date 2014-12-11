@@ -1,9 +1,10 @@
 #include "Biostrings.h"
+#include "XVector_interface.h"
+#include "IRanges_interface.h"
 
 #include <stdio.h>
 
 
-/****************************************************************************/
 static int debug = 0;
 
 SEXP debug_find_palindromes()
@@ -17,149 +18,75 @@ SEXP debug_find_palindromes()
 	return R_NilValue;
 }
 
-/****************************************************************************/
-
-static void naive_palindrome_search(const char *S, int nS,
-		int armlen_min, int looplen_max)
+static void find_palindromes_at(const char *x, int x_len,
+	int i1, int i2, int max_loop_len1, int min_arm_len,
+	const int *lkup, int lkup_len)
 {
-	int n1, n2, armlen, looplen, Lpos, Rpos, all_letter0;
-	char letter0;
+	int arm_len, valid_indices, key, val, is_match;
+	char x1, x2;
 
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] naive_palindrome_search(): "
-			"nS=%d armlen_min=%d looplen_max=%d\n",
-			nS, armlen_min, looplen_max);
-	}
-#endif
-	for (n1 = armlen_min, n2 = 2 * armlen_min; n2 <= nS; n1++, n2++) {
-		for (looplen = 0; looplen <= looplen_max; looplen++) {
-			armlen = 0;
-			Lpos = n1 - 1;
-			Rpos = n1 + looplen;
-			while (0 <= Lpos && Rpos < nS && S[Lpos] == S[Rpos]) {
-				if (looplen == 0) {
-					if (armlen == 0) {
-						letter0 = S[Rpos];
-						all_letter0 = 1;
-					} else {
-						if (S[Rpos] != letter0)
-							all_letter0 = 0;
-					} 
-				}
-				armlen++;
-				Lpos--;
-				Rpos++;
-			}
-			Lpos++;
-			if (looplen == 0 && armlen != 0 && all_letter0) {
-				// The current palindrome is in fact the left part of a region where the
-				// same letter (letter0) is repeated. We move to the right end of this region.
-				while (Rpos < nS && S[Rpos] == letter0)
-					Rpos++;
-				if (Rpos - Lpos < 2 * armlen_min)
-					continue;
-				Rpos--;
-				n1 = Rpos;
-				n2 = Rpos + armlen_min;
+	arm_len = 0;
+	while (((valid_indices = i1 >= 0 && i2 < x_len) &&
+                i2 - i1 <= max_loop_len1) || arm_len != 0)
+	{
+		if (valid_indices) {
+			x1 = x[i1];
+			x2 = x[i2];
+			if (lkup == NULL) {
+				is_match = x1 == x2;
 			} else {
-				if (armlen < armlen_min)
-					continue;
-				Rpos--;
+				key = (unsigned char) x1;
+				if (key >= lkup_len
+				 || (val = lkup[key]) == NA_INTEGER)
+					is_match = FALSE;
+				else
+					is_match = val == x2;
 			}
-			_report_match(Lpos + 1, Rpos - Lpos + 1);
-			break;
+			if (is_match) {
+				arm_len++;
+				goto next;
+			}
 		}
+		if (arm_len >= min_arm_len)
+			_report_match(i1 + 2, i2 - i1 - 1);
+		arm_len = 0;
+	next:
+		i1--;
+		i2++;
 	}
 	return;
 }
 
-static void naive_antipalindrome_search(const char *S, int nS,
-		int armlen_min, int looplen_max,
-		const int *lkup, int lkup_length)
+/* --- .Call ENTRY POINT --- */
+SEXP find_palindromes(SEXP x, SEXP min_armlength, SEXP max_looplength,
+		      SEXP L2R_lkup)
 {
-	int n1, n2, armlen, looplen, Lpos, Rpos, all_letter0, lkup_key, lkup_val;
-	char letter0;
+	Chars_holder x_holder;
+	int x_len, min_arm_len, max_loop_len1, lkup_len, n;
+	const int *lkup;
 
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] naive_antipalindrome_search(): "
-			"nS=%d armlen_min=%d looplen_max=%d\n",
-			nS, armlen_min, looplen_max);
+	x_holder = hold_XRaw(x);
+	x_len = x_holder.length;
+	min_arm_len = INTEGER(min_armlength)[0];
+	max_loop_len1 = INTEGER(max_looplength)[0] + 1;
+	if (L2R_lkup == R_NilValue) {
+		lkup = NULL;
+		lkup_len = 0;
+	} else {
+		lkup = INTEGER(L2R_lkup);
+		lkup_len = LENGTH(L2R_lkup);
 	}
-#endif
-	for (n1 = armlen_min, n2 = 2 * armlen_min; n2 <= nS; n1++, n2++) {
-		for (looplen = 0; looplen <= looplen_max; looplen++) {
-			armlen = 0;
-			Lpos = n1 - 1;
-			Rpos = n1 + looplen;
-			while (0 <= Lpos && Rpos < nS) {
-				lkup_key = (unsigned char) S[Lpos];
-				if (lkup_key >= lkup_length || (lkup_val = lkup[lkup_key]) == NA_INTEGER) {
-					error("key %d not in lookup table", lkup_key);
-				}
-				if (((char) lkup_val) != S[Rpos])
-					break;
-				if (looplen == 0) {
-					if (armlen == 0) {
-						letter0 = S[Rpos];
-						// Will be 1 iff S[Rpos] is its own complementary (only
-						// IUPAC letter N and the gap letter - have this property)
-						all_letter0 = S[Lpos] == S[Rpos];
-					} else {
-						if (S[Rpos] != letter0)
-							all_letter0 = 0;
-					} 
-				}
-				armlen++;
-				Lpos--;
-				Rpos++;
-			}
-			Lpos++;
-			if (looplen == 0 && armlen != 0 && all_letter0) {
-				// The current palindrome is in fact the left part of a region where the
-				// same letter (letter0) is repeated. We move to the right end of this region.
-				while (Rpos < nS && S[Rpos] == letter0)
-					Rpos++;
-				if (Rpos - Lpos < 2 * armlen_min)
-					continue;
-				Rpos--;
-				n1 = Rpos;
-				n2 = Rpos + armlen_min;
-			} else {
-				if (armlen < armlen_min)
-					continue;
-				Rpos--;
-			}
-			_report_match(Lpos + 1, Rpos - Lpos + 1);
-			break;
-		}
-	}
-	return;
-}
-
-/*
- *
- */
-SEXP find_palindromes(SEXP s_xp, SEXP s_offset, SEXP s_length,
-                SEXP min_armlength, SEXP max_looplength, SEXP L2R_lkup)
-{
-	int subj_offset, subj_length, armlen_min, looplen_max;
-	const Rbyte *subj;
-
-	subj_offset = INTEGER(s_offset)[0];
-	subj_length = INTEGER(s_length)[0];
-	subj = RAW(R_ExternalPtrTag(s_xp)) + subj_offset;
-	armlen_min = INTEGER(min_armlength)[0];
-	looplen_max = INTEGER(max_looplength)[0];
 	_init_match_reporting("MATCHES_AS_RANGES", 1);
-	if (L2R_lkup == R_NilValue)
-		naive_palindrome_search((char *) subj, subj_length,
-			armlen_min, looplen_max);
-	else
-		naive_antipalindrome_search((char *) subj, subj_length,
-			armlen_min, looplen_max,
-			INTEGER(L2R_lkup), LENGTH(L2R_lkup));
+	for (n = 0; n < x_len; n++) {
+		/* Find palindromes centered on n. */
+		find_palindromes_at(x_holder.ptr, x_len, n - 1, n + 1,
+				    max_loop_len1, min_arm_len,
+				    lkup, lkup_len);
+		/* Find palindromes centered on n + 0.5. */
+		find_palindromes_at(x_holder.ptr, x_len, n, n + 1,
+				    max_loop_len1, min_arm_len,
+				    lkup, lkup_len);
+	}
 	return _reported_matches_asSEXP();
 }
 

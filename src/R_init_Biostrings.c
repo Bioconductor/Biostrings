@@ -140,7 +140,7 @@ static const R_CallMethodDef callMethods[] = {
 
 /* find_palindromes.c */
 	CALLMETHOD_DEF(debug_find_palindromes, 0),
-	CALLMETHOD_DEF(find_palindromes, 6),
+	CALLMETHOD_DEF(find_palindromes, 4),
 
 /* BitMatrix.c */
 	CALLMETHOD_DEF(debug_BitMatrix, 0),
