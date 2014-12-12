@@ -272,9 +272,5 @@ if (FALSE) {
 ### Old stuff (deprecated & defunct)
 ###
 
-countIndex <- function(x)
-{
-    .Deprecated("elementLengths")
-    elementLengths(x)
-}
+countIndex <- function(x) .Defunct("elementLengths")
 
