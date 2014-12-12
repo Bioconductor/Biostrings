@@ -141,11 +141,19 @@ palindromeRightArm(x, max.mismatch=0, ...)
 
 \examples{
 x0 <- BString("abbbaabbcbbaccacabbbccbcaabbabacca")
-pals <- findPalindromes(x0, min.armlength=3, max.looplength=5)
-pals
-palindromeArmLength(pals)
-palindromeLeftArm(pals)
-palindromeRightArm(pals)
+
+pals0a <- findPalindromes(x0, min.armlength=3, max.looplength=5)
+pals0a
+palindromeArmLength(pals0a)
+palindromeLeftArm(pals0a)
+palindromeRightArm(pals0a)
+
+pals0b <- findPalindromes(x0, min.armlength=9, max.looplength=5,
+                          max.mismatch=3)
+pals0b
+palindromeArmLength(pals0b, max.mismatch=3)
+palindromeLeftArm(pals0b, max.mismatch=3)
+palindromeRightArm(pals0b, max.mismatch=3)
 
 ## Whitespaces matter:
 x1 <- BString("Delia saw I was aileD")
@@ -167,12 +175,18 @@ findPalindromes(RNAString(x3))
 x4 <- DNAString("ACGTTNAACGTCCAAAATTTTCCACGTTNAACGT")
 findPalindromes(x4, max.looplength=19)
 
-## A real use case
+## A real use case:
 library(BSgenome.Dmelanogaster.UCSC.dm3)
 chrX <- Dmelanogaster$chrX
-chrX_pals <- findPalindromes(chrX, min.armlength=40, max.looplength=80)
-chrX_pals
-palindromeArmLength(chrX_pals)  # 251 70 262
+chrX_pals0 <- findPalindromes(chrX, min.armlength=40, max.looplength=80)
+chrX_pals0
+palindromeArmLength(chrX_pals0)  # 251 70 262
+
+## Allowing up to 2 mismatches between the 2 arms:
+chrX_pals2 <- findPalindromes(chrX, min.armlength=40, max.looplength=80,
+                              max.mismatch=2)
+chrX_pals2
+palindromeArmLength(chrX_pals2, max.mismatch=2)  # 254 77 44 48 40 264
 }
 
 \keyword{methods}

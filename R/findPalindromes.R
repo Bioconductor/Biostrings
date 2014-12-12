@@ -44,10 +44,10 @@
         stop("'min.looplength' >= 1 not yet supported (will be very soon)")
     ## check max.mismatch
     max.mismatch <- normargMaxMismatch(max.mismatch)
-    if (max.mismatch != 0)
-        stop("'max.mismatch' != 0 not yet supported (will be very soon)")
     C_ans <- .Call2("find_palindromes",
-                    subject, min.armlength, max.looplength, L2R_lkup,
+                    subject,
+                    min.armlength, max.looplength, max.mismatch,
+                    L2R_lkup,
                     PACKAGE="Biostrings")
     unsafe.newXStringViews(subject, start(C_ans), width(C_ans))
 }
@@ -136,10 +136,8 @@ setMethod("findPalindromes", "MaskedXString",
 .palindrome_arm_length <- function(x, max.mismatch, L2R_lkup)
 {
     max.mismatch <- normargMaxMismatch(max.mismatch)
-    if (max.mismatch != 0)
-        stop("'max.mismatch' != 0 not yet supported (will be very soon)")
     armlength <- .Call2("palindrome_arm_length",
-                        x, L2R_lkup,
+                        x, max.mismatch, L2R_lkup,
                         PACKAGE="Biostrings")
     if (armlength == 0L)
         stop("'x' is not a palindrome (no arms found)")
