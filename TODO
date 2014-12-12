@@ -139,9 +139,6 @@ STRING MATCHING
 - Add some convenience function (e.g. a wrapper to .valid.algos()) to let the
   curious user know which algos are available/used for a given search problem.
 
-- Rework findPalindromes() (and findComplementedPalindromes()) so that they
-  return maximum palindromes only.
-
 - PDict()/matchPDict()/countPDict()/whichPDict():
 
   o PDict(), matchPDict(): Support fuzzy matching with variable width

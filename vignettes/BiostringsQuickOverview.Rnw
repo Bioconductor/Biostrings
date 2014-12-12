@@ -226,9 +226,8 @@ document.
     Find all the amplicons that match a pair of probes in a reference
     sequence. \\
 \hline
-\Rfunction{findPalindromes}\par
-\Rfunction{findComplementedPalindromes} &
-    Find palindromic or complemented palindromic regions in a sequence. \\
+\Rfunction{findPalindromes} &
+    Find palindromic regions in a sequence. \\
 \hline
 \end{tabular}
 \end{center}

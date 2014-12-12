@@ -1,15 +1,9 @@
 ### =========================================================================
-### findPalindromes() and findComplementedPalindromes()
+### findPalindromes() and family
 ### -------------------------------------------------------------------------
 
 
-.get_DNAorRNA_L2R_lkup <- function()
-{
-    keys <- vals <- unname(DNA_CODES[c(DNA_BASES, "-")])
-    buildLookupTable(keys, vals)
-}
-
-.get_DNAorRNA_complemented_L2R_lkup <- function()
+.get_DNAorRNA_palindrome_L2R_lkup <- function()
 {
     keys <- unname(DNA_CODES[c(DNA_BASES, "-")])
     vals <- unname(DNA_CODES[c(rev(DNA_BASES), "-")])
@@ -18,8 +12,7 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The findPalindromes() and findComplementedPalindromes() generics and
-### methods.
+### The findPalindromes() generic and methods
 ###
 
 ### Return an IRanges object.
@@ -65,12 +58,6 @@ setGeneric("findPalindromes", signature="subject",
                       max.mismatch=0)
         standardGeneric("findPalindromes")
 )
-setGeneric("findComplementedPalindromes", signature="subject",
-    function(subject, min.armlength=4,
-                      max.looplength=1, min.looplength=0,
-                      max.mismatch=0)
-        standardGeneric("findComplementedPalindromes")
-)
 
 setMethod("findPalindromes", "XString",
     function(subject, min.armlength=4,
@@ -88,7 +75,7 @@ setMethod("findPalindromes", "DNAString",
                       max.looplength=1, min.looplength=0,
                       max.mismatch=0)
     {
-        L2R_lkup <- .get_DNAorRNA_L2R_lkup()
+        L2R_lkup <- .get_DNAorRNA_palindrome_L2R_lkup()
         .find_palindromes(subject, min.armlength,
                           max.looplength, min.looplength,
                           max.mismatch, L2R_lkup)
@@ -100,31 +87,7 @@ setMethod("findPalindromes", "RNAString",
                       max.looplength=1, min.looplength=0,
                       max.mismatch=0)
     {
-        L2R_lkup <- .get_DNAorRNA_L2R_lkup()
-        .find_palindromes(subject, min.armlength,
-                          max.looplength, min.looplength,
-                          max.mismatch, L2R_lkup)
-    }
-)
-
-setMethod("findComplementedPalindromes", "DNAString",
-    function(subject, min.armlength=4,
-                      max.looplength=1, min.looplength=0,
-                      max.mismatch=0)
-    {
-        L2R_lkup <- .get_DNAorRNA_complemented_L2R_lkup()
-        .find_palindromes(subject, min.armlength,
-                          max.looplength, min.looplength,
-                          max.mismatch, L2R_lkup)
-    }
-)
-
-setMethod("findComplementedPalindromes", "RNAString",
-    function(subject, min.armlength=4,
-                      max.looplength=1, min.looplength=0,
-                      max.mismatch=0)
-    {
-        L2R_lkup <- .get_DNAorRNA_complemented_L2R_lkup()
+        L2R_lkup <- .get_DNAorRNA_palindrome_L2R_lkup()
         .find_palindromes(subject, min.armlength,
                           max.looplength, min.looplength,
                           max.mismatch, L2R_lkup)
@@ -152,27 +115,6 @@ setMethod("findPalindromes", "XStringViews",
     }
 )
 
-setMethod("findComplementedPalindromes", "XStringViews",
-    function(subject, min.armlength=4,
-                      max.looplength=1, min.looplength=0,
-                      max.mismatch=0)
-    {
-        tmp <- vector(mode="list", length=length(subject))
-        offsets <- start(subject) - 1L
-        for (i in seq_along(subject)) {
-            pals <- findComplementedPalindromes(subject[[i]],
-                                                min.armlength=min.armlength,
-                                                max.looplength=max.looplength,
-                                                min.looplength=min.looplength,
-                                                max.mismatch=max.mismatch)
-            tmp[[i]] <- shift(ranges(pals), shift=offsets[i])
-        }
-        ans_ranges <- do.call("c", tmp)
-        unsafe.newXStringViews(subject(subject),
-                               start(ans_ranges), width(ans_ranges))
-    }
-)
-
 setMethod("findPalindromes", "MaskedXString",
     function(subject, min.armlength=4,
                       max.looplength=1, min.looplength=0,
@@ -186,23 +128,9 @@ setMethod("findPalindromes", "MaskedXString",
     }
 )
 
-setMethod("findComplementedPalindromes", "MaskedXString",
-    function(subject, min.armlength=4,
-                      max.looplength=1, min.looplength=0,
-                      max.mismatch=0)
-    {
-        findComplementedPalindromes(toXStringViewsOrXString(subject),
-                                    min.armlength=min.armlength,
-                                    max.looplength=max.looplength,
-                                    min.looplength=min.looplength,
-                                    max.mismatch=max.mismatch)
-    }
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The palindromeArmLength() and complementedPalindromeArmLength() generics
-### and methods.
+### The palindromeArmLength() generic and methods
 ###
 
 .palindrome_arm_length <- function(x, max.mismatch, L2R_lkup)
@@ -223,11 +151,6 @@ setGeneric("palindromeArmLength", signature="x",
         standardGeneric("palindromeArmLength")
 )
 
-setGeneric("complementedPalindromeArmLength", signature="x",
-    function(x, max.mismatch=0, ...)
-        standardGeneric("complementedPalindromeArmLength")
-)
-
 setMethod("palindromeArmLength", "XString",
     function(x, max.mismatch=0, ...)
     {
@@ -238,7 +161,7 @@ setMethod("palindromeArmLength", "XString",
 setMethod("palindromeArmLength", "DNAString",
     function(x, max.mismatch=0, ...)
     {
-        L2R_lkup <- .get_DNAorRNA_L2R_lkup()
+        L2R_lkup <- .get_DNAorRNA_palindrome_L2R_lkup()
         .palindrome_arm_length(x, max.mismatch, L2R_lkup)
     }
 )
@@ -246,23 +169,7 @@ setMethod("palindromeArmLength", "DNAString",
 setMethod("palindromeArmLength", "RNAString",
     function(x, max.mismatch=0, ...)
     {
-        L2R_lkup <- .get_DNAorRNA_L2R_lkup()
-        .palindrome_arm_length(x, max.mismatch, L2R_lkup)
-    }
-)
-
-setMethod("complementedPalindromeArmLength", "DNAString",
-    function(x, max.mismatch=0, ...)
-    {
-        L2R_lkup <- .get_DNAorRNA_complemented_L2R_lkup()
-        .palindrome_arm_length(x, max.mismatch, L2R_lkup)
-    }
-)
-
-setMethod("complementedPalindromeArmLength", "RNAString",
-    function(x, max.mismatch=0, ...)
-    {
-        L2R_lkup <- .get_DNAorRNA_complemented_L2R_lkup()
+        L2R_lkup <- .get_DNAorRNA_palindrome_L2R_lkup()
         .palindrome_arm_length(x, max.mismatch, L2R_lkup)
     }
 )
@@ -279,31 +186,19 @@ setMethod("palindromeArmLength", "XStringViews",
     }
 )
 
-setMethod("complementedPalindromeArmLength", "XStringViews",
-    function(x, max.mismatch=0, ...)
-    {
-        if (length(x) == 0)
-            return(integer(0))
-        sapply(seq_len(length(x)),
-               function(i)
-                   complementedPalindromeArmLength(x[[i]],
-                       max.mismatch=max.mismatch, ...))
-    }
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The palindromeLeftArm() and complementedPalindromeLeftArm() generics and
-### methods.
+### The palindromeLeftArm() and palindromeRightArm() generics and methods
 ###
 
 setGeneric("palindromeLeftArm", signature="x",
     function(x, max.mismatch=0, ...)
         standardGeneric("palindromeLeftArm")
 )
-setGeneric("complementedPalindromeLeftArm", signature="x",
+
+setGeneric("palindromeRightArm", signature="x",
     function(x, max.mismatch=0, ...)
-        standardGeneric("complementedPalindromeLeftArm")
+        standardGeneric("palindromeRightArm")
 )
 
 setMethod("palindromeLeftArm", "XString",
@@ -312,46 +207,6 @@ setMethod("palindromeLeftArm", "XString",
             start=1L,
             end=palindromeArmLength(x, max.mismatch=max.mismatch, ...)
         )
-)
-setMethod("complementedPalindromeLeftArm", "XString",
-    function(x, max.mismatch=0, ...)
-        subseq(x,
-            start=1L,
-            end=complementedPalindromeArmLength(x, max.mismatch=max.mismatch, ...)
-        )
-)
-
-setMethod("palindromeLeftArm", "XStringViews",
-    function(x, max.mismatch=0, ...)
-    {
-        ans_start <- start(x)
-        ans_width <- palindromeArmLength(x, max.mismatch=max.mismatch, ...)
-        unsafe.newXStringViews(subject(x), ans_start, ans_width)
-    }
-)
-setMethod("complementedPalindromeLeftArm", "XStringViews",
-    function(x, max.mismatch=0, ...)
-    {
-        ans_start <- start(x)
-        ans_width <- complementedPalindromeArmLength(x,
-                         max.mismatch=max.mismatch, ...)
-        unsafe.newXStringViews(subject(x), ans_start, ans_width)
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The palindromeRightArm() and complementedPalindromeRightArm() generics
-### and methods.
-###
-
-setGeneric("palindromeRightArm", signature="x",
-    function(x, max.mismatch=0, ...)
-        standardGeneric("palindromeRightArm")
-)
-setGeneric("complementedPalindromeRightArm", signature="x",
-    function(x, max.mismatch=0, ...)
-        standardGeneric("complementedPalindromeRightArm")
 )
 
 setMethod("palindromeRightArm", "XString",
@@ -362,12 +217,13 @@ setMethod("palindromeRightArm", "XString",
         subseq(x, start=start, end=nchar(x))
     }
 )
-setMethod("complementedPalindromeRightArm", "XString",
+
+setMethod("palindromeLeftArm", "XStringViews",
     function(x, max.mismatch=0, ...)
     {
-        start <- nchar(x) - complementedPalindromeArmLength(x,
-                                max.mismatch=max.mismatch, ...) + 1L
-        subseq(x, start=start, end=nchar(x))
+        ans_start <- start(x)
+        ans_width <- palindromeArmLength(x, max.mismatch=max.mismatch, ...)
+        unsafe.newXStringViews(subject(x), ans_start, ans_width)
     }
 )
 
@@ -380,9 +236,163 @@ setMethod("palindromeRightArm", "XStringViews",
         unsafe.newXStringViews(subject(x), ans_start, ans_width)
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Old stuff (deprecated & defunct)
+###
+
+setGeneric("findComplementedPalindromes", signature="subject",
+    function(subject, min.armlength=4,
+                      max.looplength=1, min.looplength=0,
+                      max.mismatch=0)
+        standardGeneric("findComplementedPalindromes")
+)
+
+setMethod("findComplementedPalindromes", "DNAString",
+    function(subject, min.armlength=4,
+                      max.looplength=1, min.looplength=0,
+                      max.mismatch=0)
+    {
+        .Deprecated("findPalindromes")
+        L2R_lkup <- .get_DNAorRNA_palindrome_L2R_lkup()
+        .find_palindromes(subject, min.armlength,
+                          max.looplength, min.looplength,
+                          max.mismatch, L2R_lkup)
+    }
+)
+
+setMethod("findComplementedPalindromes", "RNAString",
+    function(subject, min.armlength=4,
+                      max.looplength=1, min.looplength=0,
+                      max.mismatch=0)
+    {
+        .Deprecated("findPalindromes")
+        L2R_lkup <- .get_DNAorRNA_palindrome_L2R_lkup()
+        .find_palindromes(subject, min.armlength,
+                          max.looplength, min.looplength,
+                          max.mismatch, L2R_lkup)
+    }
+)
+
+setMethod("findComplementedPalindromes", "XStringViews",
+    function(subject, min.armlength=4,
+                      max.looplength=1, min.looplength=0,
+                      max.mismatch=0)
+    {
+        .Deprecated("findPalindromes")
+        tmp <- vector(mode="list", length=length(subject))
+        offsets <- start(subject) - 1L
+        for (i in seq_along(subject)) {
+            pals <- findComplementedPalindromes(subject[[i]],
+                                                min.armlength=min.armlength,
+                                                max.looplength=max.looplength,
+                                                min.looplength=min.looplength,
+                                                max.mismatch=max.mismatch)
+            tmp[[i]] <- shift(ranges(pals), shift=offsets[i])
+        }
+        ans_ranges <- do.call("c", tmp)
+        unsafe.newXStringViews(subject(subject),
+                               start(ans_ranges), width(ans_ranges))
+    }
+)
+
+setMethod("findComplementedPalindromes", "MaskedXString",
+    function(subject, min.armlength=4,
+                      max.looplength=1, min.looplength=0,
+                      max.mismatch=0)
+    {
+        .Deprecated("findPalindromes")
+        findComplementedPalindromes(toXStringViewsOrXString(subject),
+                                    min.armlength=min.armlength,
+                                    max.looplength=max.looplength,
+                                    min.looplength=min.looplength,
+                                    max.mismatch=max.mismatch)
+    }
+)
+
+setGeneric("complementedPalindromeArmLength", signature="x",
+    function(x, max.mismatch=0, ...)
+        standardGeneric("complementedPalindromeArmLength")
+)
+
+setMethod("complementedPalindromeArmLength", "DNAString",
+    function(x, max.mismatch=0, ...)
+    {
+        .Deprecated("palindromeArmLength")
+        L2R_lkup <- .get_DNAorRNA_palindrome_L2R_lkup()
+        .palindrome_arm_length(x, max.mismatch, L2R_lkup)
+    }
+)
+
+setMethod("complementedPalindromeArmLength", "RNAString",
+    function(x, max.mismatch=0, ...)
+    {
+        .Deprecated("palindromeArmLength")
+        L2R_lkup <- .get_DNAorRNA_palindrome_L2R_lkup()
+        .palindrome_arm_length(x, max.mismatch, L2R_lkup)
+    }
+)
+
+setMethod("complementedPalindromeArmLength", "XStringViews",
+    function(x, max.mismatch=0, ...)
+    {
+        .Deprecated("palindromeArmLength")
+        if (length(x) == 0)
+            return(integer(0))
+        sapply(seq_len(length(x)),
+               function(i)
+                   complementedPalindromeArmLength(x[[i]],
+                       max.mismatch=max.mismatch, ...))
+    }
+)
+
+setGeneric("complementedPalindromeLeftArm", signature="x",
+    function(x, max.mismatch=0, ...)
+        standardGeneric("complementedPalindromeLeftArm")
+)
+
+setMethod("complementedPalindromeLeftArm", "XString",
+    function(x, max.mismatch=0, ...)
+    {
+        .Deprecated("palindromeLeftArm")
+        subseq(x,
+            start=1L,
+            end=complementedPalindromeArmLength(x, max.mismatch=max.mismatch, ...)
+        )
+    }
+)
+
+setMethod("complementedPalindromeLeftArm", "XStringViews",
+    function(x, max.mismatch=0, ...)
+    {
+        .Deprecated("palindromeLeftArm")
+        ans_start <- start(x)
+        ans_width <- complementedPalindromeArmLength(x,
+                         max.mismatch=max.mismatch, ...)
+        unsafe.newXStringViews(subject(x), ans_start, ans_width)
+    }
+)
+
+setGeneric("complementedPalindromeRightArm", signature="x",
+    function(x, max.mismatch=0, ...)
+        standardGeneric("complementedPalindromeRightArm")
+)
+
+setMethod("complementedPalindromeRightArm", "XString",
+    function(x, max.mismatch=0, ...)
+    {
+        .Deprecated("palindromeRightArm")
+        start <- nchar(x) - complementedPalindromeArmLength(x,
+                                max.mismatch=max.mismatch, ...) + 1L
+        subseq(x, start=start, end=nchar(x))
+    }
+)
+
 setMethod("complementedPalindromeRightArm", "XStringViews",
     function(x, max.mismatch=0, ...)
     {
+        .Deprecated("palindromeRightArm")
         ans_width <- complementedPalindromeArmLength(x,
                          max.mismatch=max.mismatch, ...)
         ans_start <- end(x) - ans_width + 1L

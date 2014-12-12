@@ -255,10 +255,8 @@ export(
     PWM, PWMscoreStartingAt, matchPWM, countPWM,
 
     ## findPalindromes.R
-    findPalindromes, findComplementedPalindromes,
-    palindromeArmLength, complementedPalindromeArmLength,
-    palindromeLeftArm, complementedPalindromeLeftArm,
-    palindromeRightArm, complementedPalindromeRightArm,
+    findPalindromes, palindromeArmLength,
+    palindromeLeftArm, palindromeRightArm,
 
     ## PDict-class.R + matchPDict.R
     tb, tb.width, nnodes, hasAllFlinks, computeAllFlinks,
@@ -267,6 +265,8 @@ export(
     vmatchPDict, vcountPDict, vwhichPDict,
 
     ## old stuff (deprecated or defunct):
+    findComplementedPalindromes, complementedPalindromeArmLength,
+    complementedPalindromeLeftArm, complementedPalindromeRightArm,
     countIndex
 )
 
