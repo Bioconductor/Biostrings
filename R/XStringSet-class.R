@@ -480,11 +480,13 @@ setMethod("as.character", "XStringSet",
     }
 )
 
+### TODO: Turn this into an S3/S4 combo for as.data.frame.XStringSet
 setMethod("as.data.frame", "XStringSet",
-    function(x, row.names=NULL, optional=FALSE, ...)
+    function(x, row.names=NULL, optional=FALSE)
     {
         x <- as.character(x)
-        as.data.frame(x, row.names=NULL, optional=optional, ..., stringsAsFactors=FALSE)
+        as.data.frame(x, row.names=NULL, optional=optional,
+                         stringsAsFactors=FALSE)
     }
 )
 
