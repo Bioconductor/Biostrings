@@ -71,31 +71,31 @@ typedef struct fasta_loader {
  */
 
 typedef struct fastainfo_loader_ext {
-	CharAEAE ans_names_buf;
-	IntAE seqlengths_buf;
+	CharAEAE desc_buf;
+	IntAE seqlength_buf;
 } FASTAINFO_loaderExt;
 
 static void FASTAINFO_load_desc_line(FASTAloader *loader,
 		const Chars_holder *desc_line)
 {
 	FASTAINFO_loaderExt *loader_ext;
-	CharAEAE *ans_names_buf;
+	CharAEAE *desc_buf;
 
 	loader_ext = loader->ext;
-	ans_names_buf = &(loader_ext->ans_names_buf);
+	desc_buf = &(loader_ext->desc_buf);
 	// This works only because desc_line->seq is nul-terminated!
-	append_string_to_CharAEAE(ans_names_buf, desc_line->ptr);
+	append_string_to_CharAEAE(desc_buf, desc_line->ptr);
 	return;
 }
 
 static void FASTAINFO_load_empty_seq(FASTAloader *loader)
 {
 	FASTAINFO_loaderExt *loader_ext;
-	IntAE *seqlengths_buf;
+	IntAE *seqlength_buf;
 
 	loader_ext = loader->ext;
-	seqlengths_buf = &(loader_ext->seqlengths_buf);
-	IntAE_insert_at(seqlengths_buf, IntAE_get_nelt(seqlengths_buf), 0);
+	seqlength_buf = &(loader_ext->seqlength_buf);
+	IntAE_insert_at(seqlength_buf, IntAE_get_nelt(seqlength_buf), 0);
 	return;
 }
 
@@ -103,11 +103,11 @@ static void FASTAINFO_load_seq_data(FASTAloader *loader,
 		const Chars_holder *seq_data)
 {
 	FASTAINFO_loaderExt *loader_ext;
-	IntAE *seqlengths_buf;
+	IntAE *seqlength_buf;
 
 	loader_ext = loader->ext;
-	seqlengths_buf = &(loader_ext->seqlengths_buf);
-	seqlengths_buf->elts[IntAE_get_nelt(seqlengths_buf) - 1] +=
+	seqlength_buf = &(loader_ext->seqlength_buf);
+	seqlength_buf->elts[IntAE_get_nelt(seqlength_buf) - 1] +=
 		seq_data->length;
 	return;
 }
@@ -116,8 +116,8 @@ static FASTAINFO_loaderExt new_FASTAINFO_loaderExt()
 {
 	FASTAINFO_loaderExt loader_ext;
 
-	loader_ext.ans_names_buf = new_CharAEAE(0, 0);
-	loader_ext.seqlengths_buf = new_IntAE(0, 0, 0);
+	loader_ext.desc_buf = new_CharAEAE(0, 0);
+	loader_ext.seqlength_buf = new_IntAE(0, 0, 0);
 	return loader_ext;
 }
 
@@ -327,24 +327,66 @@ static const char *parse_FASTA_file(SEXP efp, int *recno, int *ninvalid,
 	return NULL;
 }
 
-/* --- .Call ENTRY POINT --- */
-SEXP fasta_info(SEXP efp_list, SEXP nrec, SEXP skip, SEXP seek_first_rec,
-		SEXP use_names, SEXP lkup)
+static SEXP make_fasta_index_data_frame(const CharAEAE *desc_buf,
+					const IntAE *seqlength_buf,
+					const IntAE *fileno_buf)
 {
-	int nrec0, skip0, seek_rec0, load_descs, i, recno, ninvalid;
+	SEXP df, colnames, tmp;
+
+	PROTECT(df = NEW_LIST(3));
+
+	PROTECT(colnames = NEW_CHARACTER(3));
+	PROTECT(tmp = mkChar("desc"));
+	SET_STRING_ELT(colnames, 0, tmp);
+	UNPROTECT(1);
+	PROTECT(tmp = mkChar("seqlength"));
+	SET_STRING_ELT(colnames, 1, tmp);
+	UNPROTECT(1);
+	PROTECT(tmp = mkChar("fileno"));
+	SET_STRING_ELT(colnames, 2, tmp);
+	UNPROTECT(1);
+	SET_NAMES(df, colnames);
+	UNPROTECT(1);
+
+	PROTECT(tmp = new_CHARACTER_from_CharAEAE(desc_buf));
+	SET_ELEMENT(df, 0, tmp);
+	UNPROTECT(1);
+
+	PROTECT(tmp = new_INTEGER_from_IntAE(seqlength_buf));
+	SET_ELEMENT(df, 1, tmp);
+	UNPROTECT(1);
+
+	PROTECT(tmp = new_INTEGER_from_IntAE(fileno_buf));
+	SET_ELEMENT(df, 2, tmp);
+	UNPROTECT(1);
+
+	/* list_as_data_frame() performs IN-PLACE coercion */
+	list_as_data_frame(df, IntAE_get_nelt(seqlength_buf));
+	UNPROTECT(1);
+	return df;
+}
+
+/* --- .Call ENTRY POINT --- */
+SEXP fasta_index(SEXP efp_list, SEXP nrec, SEXP skip, SEXP seek_first_rec,
+		 SEXP lkup)
+{
+	int nrec0, skip0, seek_rec0, i, recno, ninvalid, old_nrec, new_nrec, k;
 	FASTAINFO_loaderExt loader_ext;
 	FASTAloader loader;
-	SEXP efp, ans, ans_names;
+	CharAEAE *desc_buf;
+	IntAE *seqlength_buf, fileno_buf;
+	SEXP efp;
 	const char *errmsg;
 
 	nrec0 = INTEGER(nrec)[0];
 	skip0 = INTEGER(skip)[0];
 	seek_rec0 = LOGICAL(seek_first_rec)[0];
-	load_descs = LOGICAL(use_names)[0];
 	loader_ext = new_FASTAINFO_loaderExt();
-	loader = new_FASTAINFO_loader(lkup, load_descs, &loader_ext);
-	recno = 0;
-	for (i = 0; i < LENGTH(efp_list); i++) {
+	loader = new_FASTAINFO_loader(lkup, 1, &loader_ext);
+	desc_buf = &(loader_ext.desc_buf);
+	seqlength_buf = &(loader_ext.seqlength_buf);
+	fileno_buf = new_IntAE(0, 0, 0);
+	for (i = recno = 0; i < LENGTH(efp_list); i++) {
 		efp = VECTOR_ELT(efp_list, i);
 		ninvalid = 0;
 		errmsg = parse_FASTA_file(efp, &recno, &ninvalid,
@@ -358,15 +400,27 @@ SEXP fasta_info(SEXP efp_list, SEXP nrec, SEXP skip, SEXP seek_first_rec,
 				"invalid one-letter sequence codes",
 				CHAR(STRING_ELT(GET_NAMES(efp_list), i)),
 				ninvalid);
+		old_nrec = IntAE_get_nelt(&fileno_buf);
+		new_nrec = IntAE_get_nelt(seqlength_buf);
+		for (k = old_nrec; k < new_nrec; k++)
+			IntAE_insert_at(&fileno_buf, k, i + 1);
 	}
-	PROTECT(ans = new_INTEGER_from_IntAE(&(loader_ext.seqlengths_buf)));
-	if (load_descs) {
-		PROTECT(ans_names =
-		    new_CHARACTER_from_CharAEAE(&(loader_ext.ans_names_buf)));
-		SET_NAMES(ans, ans_names);
-		UNPROTECT(1);
-	}
-	UNPROTECT(1);
+	return make_fasta_index_data_frame(desc_buf,
+					   seqlength_buf,
+					   &fileno_buf);
+}
+
+static SEXP fasta_seqlengths(SEXP efp_list, SEXP nrec, SEXP skip,
+			     SEXP seek_first_rec, SEXP lkup)
+{
+	SEXP fasta_idx, ans, ans_names;
+
+	PROTECT(fasta_idx = fasta_index(efp_list, nrec, skip, seek_first_rec,
+					lkup));
+	PROTECT(ans = duplicate(VECTOR_ELT(fasta_idx, 1)));
+	PROTECT(ans_names = duplicate(VECTOR_ELT(fasta_idx, 0)));
+	SET_NAMES(ans, ans_names);
+	UNPROTECT(3);
 	return ans;
 }
 
@@ -385,8 +439,8 @@ SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 	nrec0 = INTEGER(nrec)[0];
 	skip0 = INTEGER(skip)[0];
 	seek_rec0 = LOGICAL(seek_first_rec)[0];
-	PROTECT(ans_width = fasta_info(efp_list, nrec, skip, seek_first_rec,
-				       use_names, lkup));
+	PROTECT(ans_width = fasta_seqlengths(efp_list, nrec, skip,
+					     seek_first_rec, lkup));
 	PROTECT(ans_names = GET_NAMES(ans_width));
 	SET_NAMES(ans_width, R_NilValue);
 	element_type = CHAR(STRING_ELT(elementType, 0));
@@ -399,7 +453,8 @@ SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 		      "'classname' buffer too small");
 	}
 	PROTECT(ans = alloc_XRawList(classname, element_type, ans_width));
-	_set_XStringSet_names(ans, ans_names);
+	if (LOGICAL(use_names)[0])
+		_set_XStringSet_names(ans, ans_names);
 	loader_ext = new_FASTA_loaderExt(ans);
 	loader = new_FASTA_loader(lkup, &loader_ext);
 	recno = ninvalid = 0;

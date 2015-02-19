@@ -140,9 +140,8 @@
 ### FASTA
 ###
 
-### TODO (maybe): Rename this fasta.geometry() and deprecate fasta.info()
-fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
-                       use.names=TRUE, seqtype="B")
+fasta.index <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
+                        seqtype="B")
 {
     efp_list <- .open_input_files(filepath)
     on.exit(.finalize_efp_list(efp_list))
@@ -150,13 +149,28 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
     skip <- .normarg_skip(skip)
     if (!isTRUEorFALSE(seek.first.rec)) 
         stop("'seek.first.rec' must be TRUE or FALSE")
-    if (!isTRUEorFALSE(use.names)) 
-        stop("'use.names' must be TRUE or FALSE")
     seqtype <- match.arg(seqtype, c("B", "DNA", "RNA", "AA"))
     lkup <- get_seqtype_conversion_lookup("B", seqtype)
-    .Call2("fasta_info",
-          efp_list, nrec, skip, seek.first.rec, use.names, lkup,
-          PACKAGE="Biostrings")
+    ans <- .Call2("fasta_index",
+                  efp_list, nrec, skip, seek.first.rec, lkup,
+                  PACKAGE="Biostrings")
+    ans$filepath <- filepath[ans$fileno]
+    ans
+}
+
+### TODO (maybe): Rename this fasta.seqlengths() and deprecate fasta.info()
+fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
+                       seqtype="B", use.names=TRUE)
+{
+    if (!isTRUEorFALSE(use.names))
+        stop("'use.names' must be TRUE or FALSE")
+    fasta_idx <- fasta.index(filepath, nrec=nrec, skip=skip,
+                             seek.first.rec=seek.first.rec,
+                             seqtype=seqtype)
+    ans <- fasta_idx[ , "seqlength"]
+    if (use.names)
+        names(ans) <- fasta_idx[ , "desc"]
+    ans
 }
 
 .read_fasta_in_XStringSet <- function(efp_list, nrec, skip, seek.first.rec,

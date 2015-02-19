@@ -117,7 +117,7 @@ exportMethods(
 export(
     ## XStringSet-io.R:
     readBStringSet, readDNAStringSet, readRNAStringSet, readAAStringSet,
-    fasta.info, fastq.geometry,
+    fasta.index, fasta.info, fastq.geometry,
     writeXStringSet,
     saveXStringSet,
 

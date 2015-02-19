@@ -230,12 +230,11 @@ SEXP XStringSet_xscat(SEXP args);
 
 SEXP debug_XStringSet_io();
 
-SEXP fasta_info(
+SEXP fasta_index(
 	SEXP efp_list,
 	SEXP nrec,
 	SEXP skip,
 	SEXP seek_first_rec,
-	SEXP use_names,
 	SEXP lkup
 );
 

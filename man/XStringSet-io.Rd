@@ -35,8 +35,8 @@ readAAStringSet(filepath, format="fasta",
 ## Extract basic information about FASTA (or FASTQ) files
 ## without actually loading the sequence data:
 fasta.info(filepath,
-           nrec=-1L, skip=0L, seek.first.rec=FALSE, use.names=TRUE,
-           seqtype="B")
+           nrec=-1L, skip=0L, seek.first.rec=FALSE, seqtype="B",
+           use.names=TRUE)
 fastq.geometry(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
 
 ## Write an XStringSet object to a FASTA (or FASTQ) file:
