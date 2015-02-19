@@ -6,7 +6,7 @@
 .normarg_input_filepath <- function(filepath)
 {
     if (!is.character(filepath) || any(is.na(filepath)))
-        stop("'filepath' must be a character vector with no NAs")
+        stop(wmsg("'filepath' must be a character vector with no NAs"))
     ## First pass: expand local paths and download any remote file.
     filepath2 <- character(length(filepath))
     for (i in seq_len(length(filepath))) {
@@ -31,8 +31,8 @@
         filetype[i] <- showConnections(TRUE)[as.character(con), "class"]
         close(con)
         if (!(filetype[i] %in% c("file", "gzfile")))
-            stop("file \"", filepath[i], "\" ",
-                 "has unsupported type: ", filetype[i])
+            stop(wmsg("file \"", filepath[i], "\" ",
+                      "has unsupported type: ", filetype[i]))
     }
     names(filepath2) <- filetype
     filepath2
@@ -69,23 +69,24 @@
         #VALID_COMPRESS <- c("no", "gzip", "bzip2", "xz")
         VALID_COMPRESS <- c("no", "gzip")
         if (!(compress %in% VALID_COMPRESS))
-            stop("when 'compress' is a single string, it must be one of ",
-                 paste(paste0("\"", VALID_COMPRESS, "\""), collapse=", "))
+            stop(wmsg("when 'compress' is a single string, it must be one of ",
+                      paste(paste0("\"", VALID_COMPRESS, "\""),
+                            collapse=", ")))
         return(compress)
     }
-    stop("'compress' must be TRUE or FALSE or a single string")
+    stop(wmsg("'compress' must be TRUE or FALSE or a single string"))
 }
 
 .normarg_compression_level <- function(compression_level, compress)
 {
     if (!isSingleNumberOrNA(compression_level))
-        stop("'compression_level' must be a single number or NA")
+        stop(wmsg("'compression_level' must be a single number or NA"))
     if (is.na(compression_level))
         return(switch(compress, no=0L, gzip=6L, bzip2=9L, xz=9L))
     if (!is.integer(compression_level))
         compression_level <- as.integer(compression_level)
     if (compression_level < 0L)
-        stop("'compression_level' cannot be negative")
+        stop(wmsg("'compression_level' cannot be negative"))
     compression_level
 }
 
@@ -93,9 +94,9 @@
 .open_output_file <- function(filepath, append, compress, compression_level)
 {
     if (!isSingleString(filepath))
-        stop("'filepath' must be a single string")
+        stop(wmsg("'filepath' must be a single string"))
     if (!isTRUEorFALSE(append))
-        stop("'append' must be TRUE or FALSE")
+        stop(wmsg("'append' must be TRUE or FALSE"))
     compress <- .normarg_compress(compress)
     compression_level <- .normarg_compression_level(compression_level, compress)
     filepath2 <- path.expand(filepath)
@@ -118,7 +119,7 @@
 .normarg_nrec <- function(nrec)
 {
     if (!isSingleNumber(nrec))
-        stop("'nrec' must be a single integer value")
+        stop(wmsg("'nrec' must be a single integer value"))
     if (!is.integer(nrec))
         nrec <- as.integer(nrec)
     nrec
@@ -127,11 +128,11 @@
 .normarg_skip <- function(skip)
 {
     if (!isSingleNumber(skip))
-        stop("'skip' must be a single integer value")
+        stop(wmsg("'skip' must be a single integer value"))
     if (!is.integer(skip))
         skip <- as.integer(skip)
     if (skip < 0L)
-        stop("'skip' cannot be negative")
+        stop(wmsg("'skip' cannot be negative"))
     skip
 }
 
@@ -148,7 +149,7 @@ fasta.index <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
     nrec <- .normarg_nrec(nrec)
     skip <- .normarg_skip(skip)
     if (!isTRUEorFALSE(seek.first.rec)) 
-        stop("'seek.first.rec' must be TRUE or FALSE")
+        stop(wmsg("'seek.first.rec' must be TRUE or FALSE"))
     seqtype <- match.arg(seqtype, c("B", "DNA", "RNA", "AA"))
     lkup <- get_seqtype_conversion_lookup("B", seqtype)
     ans <- .Call2("fasta_index",
@@ -163,7 +164,7 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
                        seqtype="B", use.names=TRUE)
 {
     if (!isTRUEorFALSE(use.names))
-        stop("'use.names' must be TRUE or FALSE")
+        stop(wmsg("'use.names' must be TRUE or FALSE"))
     fasta_idx <- fasta.index(filepath, nrec=nrec, skip=skip,
                              seek.first.rec=seek.first.rec,
                              seqtype=seqtype)
@@ -173,12 +174,50 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
     ans
 }
 
-.read_fasta_in_XStringSet <- function(efp_list, nrec, skip, seek.first.rec,
-                                      use.names, elementType, lkup)
+.read_XStringSet_from_fasta <- function(efp_list, nrec, skip, seek.first.rec,
+                                        use.names, elementType, lkup)
 {
-    .Call2("read_fasta_in_XStringSet",
+    .Call2("read_XStringSet_from_fasta",
            efp_list, nrec, skip, seek.first.rec, use.names, elementType, lkup,
            PACKAGE="Biostrings")
+}
+
+.read_XStringSet_from_fasta_index <- function(fasta_idx,
+                                              use.names, elementType, lkup)
+{
+    ## Check 'fasta_idx'.
+    .REQUIRED_COLS <- c("offset", "desc", "seqlength", "filepath")
+    if (!all(.REQUIRED_COLS %in% colnames(fasta_idx)))
+        stop(wmsg("invalid FASTA index: a FASTA index must be a data frame ",
+                  "with columns: ", paste0(.REQUIRED_COLS, collapse=", ")))
+    offset <- fasta_idx[, "offset"]
+    if (!is.numeric(offset) || any(is.na(offset)) || any(offset < 0))
+        stop(wmsg("invalid FASTA index: the \"offset\" column must be ",
+                  "a numeric vector with no NAs and no negative values"))
+    desc <- fasta_idx[, "desc"]
+    if (!is.character(desc) || any(is.na(desc)))
+        stop(wmsg("invalid FASTA index: the \"desc\" column must be ",
+                  "a character vector with no NAs"))
+    seqlength <- fasta_idx[, "seqlength"]
+    if (!is.integer(seqlength)
+     || S4Vectors:::anyMissingOrOutside(seqlength, lower=0L))
+        stop(wmsg("invalid FASTA index: the \"seqlength\" column must be ",
+                  "an integer vector with no NAs and no negative values"))
+    filepath <- fasta_idx[, "filepath"]
+    if (!is.character(filepath) || any(is.na(filepath)))
+        stop(wmsg("invalid FASTA index: the \"filepath\" column must be ",
+                  "a character vector with no NAs"))
+
+    ## Call read_XStringSet_from_fasta_index() C function.
+    filepath <- factor(filepath, levels=unique(filepath))
+    efp_list <- .open_input_files(levels(filepath))
+    on.exit(.finalize_efp_list(efp_list))
+    ans <- .Call2("read_XStringSet_from_fasta_index",
+                  efp_list, filepath, offset, seqlength, elementType, lkup,
+                  PACKAGE="Biostrings")
+    if (use.names)
+        names(ans) <- desc
+    ans
 }
 
 
@@ -193,16 +232,16 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
     nrec <- .normarg_nrec(nrec)
     skip <- .normarg_skip(skip)
     if (!isTRUEorFALSE(seek.first.rec)) 
-        stop("'seek.first.rec' must be TRUE or FALSE")
+        stop(wmsg("'seek.first.rec' must be TRUE or FALSE"))
     .Call2("fastq_geometry",
            efp_list, nrec, skip, seek.first.rec,
            PACKAGE="Biostrings")
 }
 
-.read_fastq_in_XStringSet <- function(efp_list, nrec, skip, seek.first.rec,
-                                      use.names, elementType, lkup)
+.read_XStringSet_from_fastq <- function(efp_list, nrec, skip, seek.first.rec,
+                                        use.names, elementType, lkup)
 {
-    .Call2("read_fastq_in_XStringSet",
+    .Call2("read_XStringSet_from_fastq",
            efp_list, nrec, skip, seek.first.rec, use.names, elementType, lkup,
            PACKAGE="Biostrings")
 }
@@ -213,27 +252,39 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
 ### readAAStringSet() functions.
 ###
 
-.read_XStringSet <- function(filepath, format, nrec, skip, seek.first.rec,
-                             use.names, seqtype)
+.read_XStringSet <- function(filepath, format,
+                             nrec=-1L, skip=0L, seek.first.rec=FALSE,
+                             use.names=TRUE, seqtype="B")
 {
+    if (!isSingleString(format))
+        stop(wmsg("'format' must be a single string"))
+    format <- match.arg(tolower(format), c("fasta", "fastq"))
+    if (!isTRUEorFALSE(use.names)) 
+        stop(wmsg("'use.names' must be TRUE or FALSE"))
+    elementType <- paste(seqtype, "String", sep="")
+    lkup <- get_seqtype_conversion_lookup("B", seqtype)
+    if (format == "fasta" && is.data.frame(filepath)) {
+        if (!(identical(nrec, -1L) &&
+              identical(skip, 0L) &&
+              identical(seek.first.rec, FALSE)))
+            warning(wmsg("'nrec', 'skip', and 'seek.first.rec' are ",
+                         "ignored when 'filepath' is a data frame"))
+        return(.read_XStringSet_from_fasta_index(filepath,
+                                                 use.names, elementType, lkup))
+    }
     efp_list <- .open_input_files(filepath)
     on.exit(.finalize_efp_list(efp_list))
-    if (!isSingleString(format))
-        stop("'format' must be a single string")
-    format <- match.arg(tolower(format), c("fasta", "fastq"))
     nrec <- .normarg_nrec(nrec)
     skip <- .normarg_skip(skip)
     if (!isTRUEorFALSE(seek.first.rec)) 
-        stop("'seek.first.rec' must be TRUE or FALSE")
-    if (!isTRUEorFALSE(use.names)) 
-        stop("'use.names' must be TRUE or FALSE")
-    elementType <- paste(seqtype, "String", sep="")
-    lkup <- get_seqtype_conversion_lookup("B", seqtype)
+        stop(wmsg("'seek.first.rec' must be TRUE or FALSE"))
     switch(format,
-        "fasta"=.read_fasta_in_XStringSet(efp_list, nrec, skip, seek.first.rec,
-                                          use.names, elementType, lkup),
-        "fastq"=.read_fastq_in_XStringSet(efp_list, nrec, skip, seek.first.rec,
-                                          use.names, elementType, lkup)
+        "fasta"=.read_XStringSet_from_fasta(efp_list,
+                                            nrec, skip, seek.first.rec,
+                                            use.names, elementType, lkup),
+        "fastq"=.read_XStringSet_from_fastq(efp_list,
+                                            nrec, skip, seek.first.rec,
+                                            use.names, elementType, lkup)
     )
 }
 
@@ -269,11 +320,11 @@ readAAStringSet <- function(filepath, format="fasta",
 .write_XStringSet_to_fasta <- function(x, efp_list, width=80L)
 {
     if (!isSingleNumber(width)) 
-        stop("'width' must be a single integer")
+        stop(wmsg("'width' must be a single integer"))
     if (!is.integer(width)) 
         width <- as.integer(width)
     if (width < 1L) 
-        stop("'width' must be an integer >= 1")
+        stop(wmsg("'width' must be an integer >= 1"))
     lkup <- get_seqtype_conversion_lookup(seqtype(x), "B")
     .Call2("write_XStringSet_to_fasta",
           x, efp_list, width, lkup,
@@ -284,9 +335,9 @@ readAAStringSet <- function(filepath, format="fasta",
 {
     if (!is.null(qualities)) {
         if (!is(qualities, "BStringSet"))
-            stop("'qualities' must be NULL or a BStringSet object")
+            stop(wmsg("'qualities' must be NULL or a BStringSet object"))
         if (length(qualities) != length(x))
-            stop("'x' and 'qualities' must have the same length")
+            stop(wmsg("'x' and 'qualities' must have the same length"))
     }
     lkup <- get_seqtype_conversion_lookup(seqtype(x), "B")
     .Call2("write_XStringSet_to_fastq",
@@ -299,9 +350,9 @@ writeXStringSet <- function(x, filepath, append=FALSE,
                             format="fasta", ...)
 {
     if (!is(x, "XStringSet"))
-        stop("'x' must be an XStringSet object")
+        stop(wmsg("'x' must be an XStringSet object"))
     if (!isSingleString(format))
-        stop("'format' must be a single string")
+        stop(wmsg("'format' must be a single string"))
     format <- match.arg(tolower(format), c("fasta", "fastq"))
     efp_list <- .open_output_file(filepath, append, compress, compression_level)
     res <- try(switch(format,
@@ -314,7 +365,7 @@ writeXStringSet <- function(x, filepath, append=FALSE,
         ## Get the expamded path and remove the file.
         expath <- attr(efp_list[[1L]], "expath")
         if (!file.remove(expath))
-            warning("cannot remove file '", expath, "'")
+            warning(wmsg("cannot remove file '", expath, "'"))
     }
     invisible(NULL)
 }
@@ -328,15 +379,15 @@ saveXStringSet <- function(x, objname, dirpath=".",
                            save.dups=FALSE, verbose=TRUE)
 {
     if (!is(x, "XStringSet"))
-        stop("'x' must be an XStringSet object")
+        stop(wmsg("'x' must be an XStringSet object"))
     if (!isSingleString(objname))
-        stop("'objname' must be a single string")
+        stop(wmsg("'objname' must be a single string"))
     if (!isSingleString(dirpath))
-        stop("'dirpath' must be a single string")
+        stop(wmsg("'dirpath' must be a single string"))
     if (!isTRUEorFALSE(save.dups))
-        stop("'save.dups' must be TRUE or FALSE")
+        stop(wmsg("'save.dups' must be TRUE or FALSE"))
     if (!isTRUEorFALSE(verbose))
-        stop("'verbose' must be TRUE or FALSE")
+        stop(wmsg("'verbose' must be TRUE or FALSE"))
     x_dups <- NULL
     ## Don't use 'is(x, "DNAStringSet")' here since we only want to use the
     ## "pre-compression trick" on a DNAStringSet *instance*. There is no
@@ -373,7 +424,7 @@ saveXStringSet <- function(x, objname, dirpath=".",
     filepath <- file.path(dirpath, objfile)
     if (save.dups) {
         if (is.null(x_dups))
-            stop("could not determine 'x_dups'")
+            stop(wmsg("could not determine 'x_dups'"))
         objname2 <- paste(objname, "_dups", sep="")
         assign(objname2, x_dups)
         objname <- c(objname, objname2)

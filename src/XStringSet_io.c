@@ -57,7 +57,7 @@ typedef struct fasta_loader {
 	const int *lkup;
 	int lkup_length;
 	void (*load_desc_line)(struct fasta_loader *loader,
-			       int recno, long long int rec_offset,
+			       int recno, long long int offset,
 			       const Chars_holder *desc_line);
 	void (*load_empty_seq)(struct fasta_loader *loader);
 	void (*load_seq_data)(struct fasta_loader *loader,
@@ -72,10 +72,9 @@ typedef struct fasta_loader {
 
 typedef struct fastaindex_loader_ext {
 	IntAE recno_buf;
-	LongLongIntAE rec_offset_buf;
+	LongLongIntAE offset_buf;
 	CharAEAE desc_buf;
 	IntAE seqlength_buf;
-	LongLongIntAE seq_offset_buf;
 } FASTAINDEX_loaderExt;
 
 static FASTAINDEX_loaderExt new_FASTAINDEX_loaderExt()
@@ -83,20 +82,19 @@ static FASTAINDEX_loaderExt new_FASTAINDEX_loaderExt()
 	FASTAINDEX_loaderExt loader_ext;
 
 	loader_ext.recno_buf = new_IntAE(0, 0, 0);
-	loader_ext.rec_offset_buf = new_LongLongIntAE(0, 0, 0);
+	loader_ext.offset_buf = new_LongLongIntAE(0, 0, 0);
 	loader_ext.desc_buf = new_CharAEAE(0, 0);
 	loader_ext.seqlength_buf = new_IntAE(0, 0, 0);
-	loader_ext.seq_offset_buf = new_LongLongIntAE(0, 0, 0);
 	return loader_ext;
 }
 
 static void FASTAINDEX_load_desc_line(FASTAloader *loader,
-				      int recno, long long int rec_offset,
+				      int recno, long long int offset,
 				      const Chars_holder *desc_line)
 {
 	FASTAINDEX_loaderExt *loader_ext;
 	IntAE *recno_buf;
-	LongLongIntAE *rec_offset_buf;
+	LongLongIntAE *offset_buf;
 	CharAEAE *desc_buf;
 
 	loader_ext = loader->ext;
@@ -104,10 +102,10 @@ static void FASTAINDEX_load_desc_line(FASTAloader *loader,
 	recno_buf = &(loader_ext->recno_buf);
 	IntAE_insert_at(recno_buf, IntAE_get_nelt(recno_buf), recno + 1);
 
-	rec_offset_buf = &(loader_ext->rec_offset_buf);
-	LongLongIntAE_insert_at(rec_offset_buf,
-				LongLongIntAE_get_nelt(rec_offset_buf),
-				rec_offset);
+	offset_buf = &(loader_ext->offset_buf);
+	LongLongIntAE_insert_at(offset_buf,
+				LongLongIntAE_get_nelt(offset_buf),
+				offset);
 
 	desc_buf = &(loader_ext->desc_buf);
 	// This works only because desc_line->seq is nul-terminated!
@@ -354,10 +352,10 @@ static const char *parse_FASTA_file(SEXP efp, int *recno, int *ninvalid,
 }
 
 static SEXP make_fasta_index_data_frame(const IntAE *recno_buf,
-					const LongLongIntAE *rec_offset_buf,
+					const IntAE *fileno_buf,
+					const LongLongIntAE *offset_buf,
 					const CharAEAE *desc_buf,
-					const IntAE *seqlength_buf,
-					const IntAE *fileno_buf)
+					const IntAE *seqlength_buf)
 {
 	SEXP df, colnames, tmp;
 	int i;
@@ -368,16 +366,16 @@ static SEXP make_fasta_index_data_frame(const IntAE *recno_buf,
 	PROTECT(tmp = mkChar("recno"));
 	SET_STRING_ELT(colnames, 0, tmp);
 	UNPROTECT(1);
-	PROTECT(tmp = mkChar("rec_offset"));
+	PROTECT(tmp = mkChar("fileno"));
 	SET_STRING_ELT(colnames, 1, tmp);
 	UNPROTECT(1);
-	PROTECT(tmp = mkChar("desc"));
+	PROTECT(tmp = mkChar("offset"));
 	SET_STRING_ELT(colnames, 2, tmp);
 	UNPROTECT(1);
-	PROTECT(tmp = mkChar("seqlength"));
+	PROTECT(tmp = mkChar("desc"));
 	SET_STRING_ELT(colnames, 3, tmp);
 	UNPROTECT(1);
-	PROTECT(tmp = mkChar("fileno"));
+	PROTECT(tmp = mkChar("seqlength"));
 	SET_STRING_ELT(colnames, 4, tmp);
 	UNPROTECT(1);
 	SET_NAMES(df, colnames);
@@ -387,21 +385,21 @@ static SEXP make_fasta_index_data_frame(const IntAE *recno_buf,
 	SET_ELEMENT(df, 0, tmp);
 	UNPROTECT(1);
 
-	PROTECT(tmp = NEW_NUMERIC(LongLongIntAE_get_nelt(rec_offset_buf)));
-	for (i = 0; i < LENGTH(tmp); i++)
-		REAL(tmp)[i] = (double) rec_offset_buf->elts[i];
+	PROTECT(tmp = new_INTEGER_from_IntAE(fileno_buf));
 	SET_ELEMENT(df, 1, tmp);
 	UNPROTECT(1);
 
-	PROTECT(tmp = new_CHARACTER_from_CharAEAE(desc_buf));
+	PROTECT(tmp = NEW_NUMERIC(LongLongIntAE_get_nelt(offset_buf)));
+	for (i = 0; i < LENGTH(tmp); i++)
+		REAL(tmp)[i] = (double) offset_buf->elts[i];
 	SET_ELEMENT(df, 2, tmp);
 	UNPROTECT(1);
 
-	PROTECT(tmp = new_INTEGER_from_IntAE(seqlength_buf));
+	PROTECT(tmp = new_CHARACTER_from_CharAEAE(desc_buf));
 	SET_ELEMENT(df, 3, tmp);
 	UNPROTECT(1);
 
-	PROTECT(tmp = new_INTEGER_from_IntAE(fileno_buf));
+	PROTECT(tmp = new_INTEGER_from_IntAE(seqlength_buf));
 	SET_ELEMENT(df, 4, tmp);
 	UNPROTECT(1);
 
@@ -412,8 +410,8 @@ static SEXP make_fasta_index_data_frame(const IntAE *recno_buf,
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP fasta_index(SEXP efp_list, SEXP nrec, SEXP skip, SEXP seek_first_rec,
-		 SEXP lkup)
+SEXP fasta_index(SEXP efp_list,
+		 SEXP nrec, SEXP skip, SEXP seek_first_rec, SEXP lkup)
 {
 	int nrec0, skip0, seek_rec0, i, recno, ninvalid, old_nrec, new_nrec, k;
 	FASTAINDEX_loaderExt loader_ext;
@@ -449,29 +447,29 @@ SEXP fasta_index(SEXP efp_list, SEXP nrec, SEXP skip, SEXP seek_first_rec,
 			IntAE_insert_at(&fileno_buf, k, i + 1);
 	}
 	return make_fasta_index_data_frame(&(loader_ext.recno_buf),
-					   &(loader_ext.rec_offset_buf),
+					   &fileno_buf,
+					   &(loader_ext.offset_buf),
 					   &(loader_ext.desc_buf),
-					   seqlength_buf,
-					   &fileno_buf);
+					   seqlength_buf);
 }
 
-static SEXP fasta_seqlengths(SEXP efp_list, SEXP nrec, SEXP skip,
-			     SEXP seek_first_rec, SEXP lkup)
+static SEXP fasta_seqlengths(SEXP efp_list,
+			SEXP nrec, SEXP skip, SEXP seek_first_rec, SEXP lkup)
 {
-	SEXP fasta_idx, ans, ans_names;
+	SEXP fasta_idx, seqlengths, descs;
 
-	PROTECT(fasta_idx = fasta_index(efp_list, nrec, skip, seek_first_rec,
-					lkup));
-	PROTECT(ans = duplicate(VECTOR_ELT(fasta_idx, 3)));
-	PROTECT(ans_names = duplicate(VECTOR_ELT(fasta_idx, 2)));
-	SET_NAMES(ans, ans_names);
+	PROTECT(fasta_idx = fasta_index(efp_list,
+					nrec, skip, seek_first_rec, lkup));
+	PROTECT(seqlengths = duplicate(VECTOR_ELT(fasta_idx, 4)));
+	PROTECT(descs = duplicate(VECTOR_ELT(fasta_idx, 3)));
+	SET_NAMES(seqlengths, descs);
 	UNPROTECT(3);
-	return ans;
+	return seqlengths;
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
-		SEXP seek_first_rec,
+SEXP read_XStringSet_from_fasta(SEXP efp_list,
+		SEXP nrec, SEXP skip, SEXP seek_first_rec,
 		SEXP use_names, SEXP elementType, SEXP lkup)
 {
 	int nrec0, skip0, seek_rec0, i, recno, ninvalid;
@@ -494,7 +492,7 @@ SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 	{
 		UNPROTECT(2);
 		error("Biostrings internal error in "
-		      "read_fasta_in_XStringSet(): "
+		      "read_XStringSet_from_fasta(): "
 		      "'classname' buffer too small");
 	}
 	PROTECT(ans = alloc_XRawList(classname, element_type, ans_width));
@@ -510,6 +508,43 @@ SEXP read_fasta_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 				 nrec0, skip0, seek_rec0, &loader);
 	}
 	UNPROTECT(3);
+	return ans;
+}
+
+/* --- .Call ENTRY POINT --- */
+SEXP read_XStringSet_from_fasta_index(SEXP efp_list,
+		SEXP fileno, SEXP offset, SEXP seqlength,
+		SEXP elementType, SEXP lkup)
+{
+	int ans_len, recno, ninvalid, i;
+	const char *element_type;
+	char classname[40];  /* longest string should be "DNAStringSet" */
+	FASTA_loaderExt loader_ext;
+	FASTAloader loader;
+	SEXP efp, ans;
+
+	ans_len = LENGTH(seqlength);
+	element_type = CHAR(STRING_ELT(elementType, 0));
+	if (snprintf(classname, sizeof(classname), "%sSet", element_type)
+	    >= sizeof(classname))
+	{
+		error("Biostrings internal error in "
+		      "read_XStringSet_from_fasta_index(): "
+		      "'classname' buffer too small");
+	}
+	PROTECT(ans = alloc_XRawList(classname, element_type, seqlength));
+	loader_ext = new_FASTA_loaderExt(ans);
+	loader = new_FASTA_loader(lkup, &loader_ext);
+	ninvalid = 0;
+	for (i = 0; i < ans_len; i++) {
+		efp = VECTOR_ELT(efp_list, INTEGER(fileno)[i] - 1);
+		ExternalFilePtr_seek(efp, (long long int) REAL(offset)[i],
+				     SEEK_SET);
+		recno = 0;
+		parse_FASTA_file(efp, &recno, &ninvalid,
+				 1, 0, 0, &loader);
+	}
+	UNPROTECT(1);
 	return ans;
 }
 
@@ -848,7 +883,7 @@ SEXP fastq_geometry(SEXP efp_list, SEXP nrec, SEXP skip, SEXP seek_first_rec)
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP read_fastq_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
+SEXP read_XStringSet_from_fastq(SEXP efp_list, SEXP nrec, SEXP skip,
 		SEXP seek_first_rec,
 		SEXP use_names, SEXP elementType, SEXP lkup)
 {
@@ -870,7 +905,7 @@ SEXP read_fastq_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 	if (ans_length != 0) {
 		if (INTEGER(ans_geom)[1] == NA_INTEGER) {
 			UNPROTECT(2);
-			error("read_fastq_in_XStringSet(): FASTQ files with "
+			error("read_XStringSet_from_fastq(): FASTQ files with "
 			      "variable sequence lengths are not supported yet");
 		}
 		for (recno = 0; recno < ans_length; recno++)
@@ -882,7 +917,7 @@ SEXP read_fastq_in_XStringSet(SEXP efp_list, SEXP nrec, SEXP skip,
 	{
 		UNPROTECT(2);
 		error("Biostrings internal error in "
-		      "read_fastq_in_XStringSet(): "
+		      "read_XStringSet_from_fastq(): "
 		      "'classname' buffer too small");
 	}
 	PROTECT(ans = alloc_XRawList(classname, element_type, ans_width));

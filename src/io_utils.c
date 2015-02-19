@@ -156,6 +156,32 @@ static int iZFile_gets(const ZFile *zfile,
 	return *EOL_in_buf ? 2 : 1;
 }
 
+static void iZFile_seek(ZFile *zfile, long long int offset, int whence)
+{
+	int ztype;
+	void *file;
+
+	ztype = zfile->ztype;
+	file = zfile->file;
+	switch (ztype) {
+	    case UNCOMPRESSED:
+	    case GZ_TYPE:
+		gzseek((gzFile) file, (z_off_t) offset, whence);
+		break;
+//#ifndef _WIN32
+//	    case BZ2_TYPE:
+//		error(INTERNAL_ERR_IN "iZFile_seek(): "
+//		      "iZFile_seek() not supported on bz2-compressed files");
+//		zfile->file = file;
+//		break;
+//#endif
+	    default:
+		error(INTERNAL_ERR_IN "iZFile_seek(): "
+		      "invalid ztype value %d", ztype);
+	}
+	return;
+}
+
 static void iZFile_rewind(ZFile *zfile)
 {
 	int ztype;
@@ -415,6 +441,13 @@ int ExternalFilePtr_gets(SEXP efp, char *buf, int buf_size, int *EOL_in_buf)
 {
 	CHECK_USER_INTERRUPT();
 	return iZFile_gets(R_ExternalPtrAddr(efp), buf, buf_size, EOL_in_buf);
+}
+
+void ExternalFilePtr_seek(SEXP efp, long long int offset, int whence)
+{
+	CHECK_USER_INTERRUPT();
+	iZFile_seek(R_ExternalPtrAddr(efp), offset, whence);
+	return;
 }
 
 void ExternalFilePtr_rewind(SEXP efp)

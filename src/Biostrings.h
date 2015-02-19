@@ -70,6 +70,12 @@ int ExternalFilePtr_gets(
 	int *EOL_in_buf
 );
 
+void ExternalFilePtr_seek(
+	SEXP efp,
+	long long int offset,
+	int whence
+);
+
 void ExternalFilePtr_rewind(SEXP efp);
 
 int ExternalFilePtr_puts(
@@ -238,12 +244,21 @@ SEXP fasta_index(
 	SEXP lkup
 );
 
-SEXP read_fasta_in_XStringSet(
+SEXP read_XStringSet_from_fasta(
 	SEXP efp_list,
 	SEXP nrec,
 	SEXP skip,
 	SEXP seek_first_rec,
 	SEXP use_names,
+	SEXP elementType,
+	SEXP lkup
+);
+
+SEXP read_XStringSet_from_fasta_index(
+	SEXP efp_list,
+	SEXP fileno,
+	SEXP offset,
+	SEXP seqlength,
 	SEXP elementType,
 	SEXP lkup
 );
@@ -262,7 +277,7 @@ SEXP fastq_geometry(
 	SEXP seek_first_rec
 );
 
-SEXP read_fastq_in_XStringSet(
+SEXP read_XStringSet_from_fastq(
 	SEXP efp_list,
 	SEXP nrec,
 	SEXP skip,
