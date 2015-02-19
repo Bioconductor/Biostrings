@@ -154,7 +154,7 @@ fasta.index <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
     ans <- .Call2("fasta_index",
                   efp_list, nrec, skip, seek.first.rec, lkup,
                   PACKAGE="Biostrings")
-    ans$filepath <- filepath[ans$fileno]
+    ans$filepath <- filepath[ans[ , "fileno"]]
     ans
 }
 
