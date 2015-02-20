@@ -195,8 +195,8 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
     \item \code{recno}: The rank of the record in the (virtually) concatenated
           input files.
     \item \code{fileno}: The rank of the file where the record is located.
-    \item \code{offset}: The offset of the record relative to the start of its
-          file and measured in bytes.
+    \item \code{offset}: The offset of the record relative to the start of the
+          file where it's located and measured in bytes.
     \item \code{desc}: The description line (a.k.a. header) of the record.
     \item \code{seqlength}: The length of the sequence in the record (not
           counting invalid letters).

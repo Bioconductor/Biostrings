@@ -457,94 +457,31 @@ SEXP fasta_index(SEXP efp_list,
 					   seqlength_buf);
 }
 
-static SEXP fasta_seqlengths(SEXP efp_list,
-			SEXP nrec, SEXP skip, SEXP seek_first_rec, SEXP lkup)
-{
-	SEXP fai, seqlengths, descs;
-
-	PROTECT(fai = fasta_index(efp_list, nrec, skip, seek_first_rec, lkup));
-	PROTECT(seqlengths = duplicate(VECTOR_ELT(fai, 4)));
-	PROTECT(descs = duplicate(VECTOR_ELT(fai, 3)));
-	SET_NAMES(seqlengths, descs);
-	UNPROTECT(3);
-	return seqlengths;
-}
-
-/* --- .Call ENTRY POINT --- */
-SEXP read_XStringSet_from_fasta(SEXP efp_list,
-		SEXP nrec, SEXP skip, SEXP seek_first_rec,
-		SEXP use_names, SEXP elementType, SEXP lkup)
-{
-	int nrec0, skip0, seek_rec0, i, recno;
-	SEXP ans_width, ans_names, ans, efp;
-	const char *element_type;
-	char classname[40];  /* longest string should be "DNAStringSet" */
-	FASTA_loaderExt loader_ext;
-	FASTAloader loader;
-	long long int offset, ninvalid;
-
-	nrec0 = INTEGER(nrec)[0];
-	skip0 = INTEGER(skip)[0];
-	seek_rec0 = LOGICAL(seek_first_rec)[0];
-	PROTECT(ans_width = fasta_seqlengths(efp_list, nrec, skip,
-					     seek_first_rec, lkup));
-	PROTECT(ans_names = GET_NAMES(ans_width));
-	SET_NAMES(ans_width, R_NilValue);
-	element_type = CHAR(STRING_ELT(elementType, 0));
-	if (snprintf(classname, sizeof(classname), "%sSet", element_type)
-	    >= sizeof(classname))
-	{
-		UNPROTECT(2);
-		error("Biostrings internal error in "
-		      "read_XStringSet_from_fasta(): "
-		      "'classname' buffer too small");
-	}
-	PROTECT(ans = alloc_XRawList(classname, element_type, ans_width));
-	if (LOGICAL(use_names)[0])
-		_set_XStringSet_names(ans, ans_names);
-	loader_ext = new_FASTA_loaderExt(ans);
-	loader = new_FASTA_loader(lkup, &loader_ext);
-	for (i = recno = 0; i < LENGTH(efp_list); i++) {
-		efp = VECTOR_ELT(efp_list, i);
-		ExternalFilePtr_rewind(efp);
-		offset = ninvalid = 0LL;
-		parse_FASTA_file(efp, nrec0, skip0, seek_rec0,
-				 &loader, &recno, &offset, &ninvalid);
-	}
-	UNPROTECT(3);
-	return ans;
-}
-
-/* UGLY HACK! This an attempt at working around slow ExternalFilePtr_seek()
-   on compressed files. Works only if we are lucky enough that the forward
-   move takes us exactly at the beginning of a new line. This is actually
-   the case in the context where we're using this :-) */
-static void ExternalFilePtr_forward(SEXP efp, long long int offset)
-{
-	int ret_code, EOL_in_buf, nbyte_in;
-	char buf[IOBUF_SIZE];
-
-	if (offset < 0LL)
-		error("Biostrings internal error in "
-		      "ExternalFilePtr_forward(): "
-		      "nb of bytes to skip is negative");
-	while (offset > 0LL) {
-		ret_code = ExternalFilePtr_gets(efp, buf, IOBUF_SIZE,
-						&EOL_in_buf);
-		if (ret_code == -1)
-			error("Biostrings internal error in "
-			      "ExternalFilePtr_forward(): "
-			      "unexpected reading error");
-		nbyte_in = EOL_in_buf ? strlen(buf) : IOBUF_SIZE - 1;
-		offset -= nbyte_in;
-	}
-	if (offset < 0LL)
-		error("Biostrings internal error in "
-		      "ExternalFilePtr_forward(): "
-		      "forward failed (went too far)");
-	return;
-}
-
+/* --- .Call ENTRY POINT ---
+ * "FASTA blocks" are groups of consecutive FASTA records.
+ * Args:
+ *   seqlength:   Integer vector with 1 element per record. The elements must
+ *                be placed in the order that the records are going to be read.
+ *   efp_list:    A list of N "External File Pointers" (see io_utils.c) with 1
+ *                element per input file. Files are going to be accessed from
+ *                first to last element in the list.
+ *   nrec_list:   A list of N integer vectors (1 element per input file).
+ *                Each integer vector has 1 value per FASTA block, which is the
+ *                number of records in the block. IMPORTANT: Even if not
+ *                required, the blocks in each integer vector should be sorted
+ *                so they are going to be read from first to last block in the
+ *                file. This ensures that the calls to ExternalFilePtr_seek()
+ *                below are fast (moving backward on a compressed file can be
+ *                *extremely* slow).
+ *   offset_list: A list of N numeric vectors (1 element per input file) with
+ *                the same shape as 'nrec_list', i.e. each numeric vector has 1
+ *                value per FASTA block. This value is the offset of the block
+ *                (i.e. of its first record) relative to the start of the file
+ *                and measured in bytes.
+ *   elementType: The elementType of the XStringSet to return (its class is
+ *                inferred from this).
+ *   lkup:        Lookup table for encoding the incoming sequence bytes.
+ */
 SEXP read_XStringSet_from_fasta_blocks(SEXP seqlength,
 		SEXP efp_list, SEXP nrec_list, SEXP offset_list,
 		SEXP elementType, SEXP lkup)
@@ -576,7 +513,6 @@ SEXP read_XStringSet_from_fasta_blocks(SEXP seqlength,
 			nrec_j = INTEGER(nrec)[j];
 			offset_j = llround(REAL(offset)[j]);
 			ExternalFilePtr_seek(efp, offset_j, SEEK_SET);
-			//TODO: try ExternalFilePtr_forward() instead
 			recno = 0;
 			ninvalid = 0LL;
 			parse_FASTA_file(efp, nrec_j, 0, 0,

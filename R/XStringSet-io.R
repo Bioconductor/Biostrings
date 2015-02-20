@@ -174,14 +174,6 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
     ans
 }
 
-.read_XStringSet_from_fasta <- function(efp_list, nrec, skip, seek.first.rec,
-                                        use.names, elementType, lkup)
-{
-    .Call2("read_XStringSet_from_fasta",
-           efp_list, nrec, skip, seek.first.rec, use.names, elementType, lkup,
-           PACKAGE="Biostrings")
-}
-
 .check_fasta_index <- function(fai)
 {
     .REQUIRED_COLS <- c("recno", "fileno", "offset",
@@ -224,7 +216,8 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
                   "a character vector with no NAs"))
 }
 
-.get_fasta_blocks_from_normalized_fasta_index <- function(norm_fai)
+### "FASTA blocks" are groups of consecutive FASTA records.
+.compute_sorted_fasta_blocks_from_normalized_fasta_index <- function(norm_fai)
 {
     recno <- norm_fai[ , "recno"]
     fileno <- norm_fai[ , "fileno"]
@@ -246,8 +239,8 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
     norm_recno <- sort(unique(recno))
     norm_fai <- fai[match(norm_recno, recno), , drop=FALSE]
 
-    ## Compute the FASTA blocks (groups of consecutive records).
-    fasta_blocks <- .get_fasta_blocks_from_normalized_fasta_index(norm_fai)
+    fasta_blocks <-
+        .compute_sorted_fasta_blocks_from_normalized_fasta_index(norm_fai)
 
     ## Call read_XStringSet_from_fasta_blocks() C function.
     norm_fileno <- norm_fai[ , "fileno"]
@@ -293,11 +286,18 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
            PACKAGE="Biostrings")
 }
 
-.read_XStringSet_from_fastq <- function(efp_list, nrec, skip, seek.first.rec,
+.read_XStringSet_from_fastq <- function(filepath, nrec, skip, seek.first.rec,
                                         use.names, elementType, lkup)
 {
+    efp_list <- .open_input_files(filepath)
+    on.exit(.finalize_efp_list(efp_list))
+    nrec <- .normarg_nrec(nrec)
+    skip <- .normarg_skip(skip)
+    if (!isTRUEorFALSE(seek.first.rec)) 
+        stop(wmsg("'seek.first.rec' must be TRUE or FALSE"))
     .Call2("read_XStringSet_from_fastq",
-           efp_list, nrec, skip, seek.first.rec, use.names, elementType, lkup,
+           efp_list, nrec, skip, seek.first.rec,
+           use.names, elementType, lkup,
            PACKAGE="Biostrings")
 }
 
@@ -318,29 +318,29 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
         stop(wmsg("'use.names' must be TRUE or FALSE"))
     elementType <- paste(seqtype, "String", sep="")
     lkup <- get_seqtype_conversion_lookup("B", seqtype)
-    if (format == "fasta" && is.data.frame(filepath)) {
+
+    ## Read FASTQ.
+    if (format == "fastq") {
+        ans <- .read_XStringSet_from_fastq(filepath,
+                                           nrec, skip, seek.first.rec,
+                                           use.names, elementType, lkup)
+        return(ans)
+    }
+
+    ## Read FASTA.
+    if (is.data.frame(filepath)) {
         if (!(identical(nrec, -1L) &&
               identical(skip, 0L) &&
               identical(seek.first.rec, FALSE)))
             warning(wmsg("'nrec', 'skip', and 'seek.first.rec' are ",
                          "ignored when 'filepath' is a data frame"))
-        return(.read_XStringSet_from_fasta_index(filepath,
-                                                 use.names, elementType, lkup))
+        fai <- filepath
+    } else {
+        fai <- fasta.index(filepath, nrec=nrec, skip=skip,
+                           seek.first.rec=seek.first.rec,
+                           seqtype=seqtype)
     }
-    efp_list <- .open_input_files(filepath)
-    on.exit(.finalize_efp_list(efp_list))
-    nrec <- .normarg_nrec(nrec)
-    skip <- .normarg_skip(skip)
-    if (!isTRUEorFALSE(seek.first.rec)) 
-        stop(wmsg("'seek.first.rec' must be TRUE or FALSE"))
-    switch(format,
-        "fasta"=.read_XStringSet_from_fasta(efp_list,
-                                            nrec, skip, seek.first.rec,
-                                            use.names, elementType, lkup),
-        "fastq"=.read_XStringSet_from_fastq(efp_list,
-                                            nrec, skip, seek.first.rec,
-                                            use.names, elementType, lkup)
-    )
+    .read_XStringSet_from_fasta_index(fai, use.names, elementType, lkup)
 }
 
 readBStringSet <- function(filepath, format="fasta",
