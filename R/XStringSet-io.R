@@ -165,12 +165,12 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
 {
     if (!isTRUEorFALSE(use.names))
         stop(wmsg("'use.names' must be TRUE or FALSE"))
-    fasta_idx <- fasta.index(filepath, nrec=nrec, skip=skip,
-                             seek.first.rec=seek.first.rec,
-                             seqtype=seqtype)
-    ans <- fasta_idx[ , "seqlength"]
+    fai <- fasta.index(filepath, nrec=nrec, skip=skip,
+                       seek.first.rec=seek.first.rec,
+                       seqtype=seqtype)
+    ans <- fai[ , "seqlength"]
     if (use.names)
-        names(ans) <- fasta_idx[ , "desc"]
+        names(ans) <- fai[ , "desc"]
     ans
 }
 
@@ -182,79 +182,77 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
            PACKAGE="Biostrings")
 }
 
-.check_fasta_idx <- function(fasta_idx)
+.check_fasta_index <- function(fai)
 {
     .REQUIRED_COLS <- c("recno", "fileno", "offset",
                         "desc", "seqlength", "filepath")
-    if (!all(.REQUIRED_COLS %in% colnames(fasta_idx)))
+    if (!all(.REQUIRED_COLS %in% colnames(fai)))
         stop(wmsg("invalid FASTA index: a FASTA index must be a data frame ",
                   "with columns: ", paste0(.REQUIRED_COLS, collapse=", ")))
 
-    recno <- fasta_idx[ , "recno"]
+    recno <- fai[ , "recno"]
     if (!is.integer(recno)
      || S4Vectors:::anyMissingOrOutside(recno, lower=1L))
         stop(wmsg("invalid FASTA index: the \"recno\" column must be ",
                   "an integer vector with no NAs and with positive values"))
 
-    fileno <- fasta_idx[ , "fileno"]
+    fileno <- fai[ , "fileno"]
     if (!is.integer(fileno)
      || S4Vectors:::anyMissingOrOutside(fileno, lower=1L))
         stop(wmsg("invalid FASTA index: the \"fileno\" column must be ",
                   "an integer vector with no NAs and with positive values"))
 
-    offset <- fasta_idx[ , "offset"]
+    offset <- fai[ , "offset"]
     if (!is.numeric(offset) || any(is.na(offset)) || any(offset < 0))
         stop(wmsg("invalid FASTA index: the \"offset\" column must be ",
                   "a numeric vector with no NAs and no negative values"))
 
-    desc <- fasta_idx[ , "desc"]
+    desc <- fai[ , "desc"]
     if (!is.character(desc) || any(is.na(desc)))
         stop(wmsg("invalid FASTA index: the \"desc\" column must be ",
                   "a character vector with no NAs"))
 
-    seqlength <- fasta_idx[ , "seqlength"]
+    seqlength <- fai[ , "seqlength"]
     if (!is.integer(seqlength)
      || S4Vectors:::anyMissingOrOutside(seqlength, lower=0L))
         stop(wmsg("invalid FASTA index: the \"seqlength\" column must be ",
                   "an integer vector with no NAs and no negative values"))
 
-    filepath <- fasta_idx[ , "filepath"]
+    filepath <- fai[ , "filepath"]
     if (!is.character(filepath) || any(is.na(filepath)))
         stop(wmsg("invalid FASTA index: the \"filepath\" column must be ",
                   "a character vector with no NAs"))
 }
 
-.get_fasta_blocks_from_normalized_fasta_index <- function(norm_fasta_idx)
+.get_fasta_blocks_from_normalized_fasta_index <- function(norm_fai)
 {
-    recno <- norm_fasta_idx[ , "recno"]
-    fileno <- norm_fasta_idx[ , "fileno"]
-    offset <- norm_fasta_idx[ , "offset"]
+    recno <- norm_fai[ , "recno"]
+    fileno <- norm_fai[ , "fileno"]
+    offset <- norm_fai[ , "offset"]
     recno2 <- recno - seq_along(recno)
     break_idx <- which(!S4Vectors:::duplicatedIntegerPairs(recno2, fileno))
     data.frame(fileno=fileno[break_idx],
-               nrec=diff(c(break_idx, nrow(norm_fasta_idx) + 1L)),
+               nrec=diff(c(break_idx, nrow(norm_fai) + 1L)),
                offset=offset[break_idx])
 }
 
-.read_XStringSet_from_fasta_index <- function(fasta_idx,
-                                              use.names, elementType, lkup)
+.read_XStringSet_from_fasta_index <- function(fai, use.names, elementType, lkup)
 {
-    .check_fasta_idx(fasta_idx)
+    .check_fasta_index(fai)
 
     ## Normalize the FASTA index (i.e. remove duplicated rows and order by
     ## ascending recno).
-    recno <- fasta_idx[ , "recno"]
+    recno <- fai[ , "recno"]
     norm_recno <- sort(unique(recno))
-    norm_fasta_idx <- fasta_idx[match(norm_recno, recno), , drop=FALSE]
+    norm_fai <- fai[match(norm_recno, recno), , drop=FALSE]
 
     ## Compute the FASTA blocks (groups of consecutive records).
-    fasta_blocks <-
-        .get_fasta_blocks_from_normalized_fasta_index(norm_fasta_idx)
+    fasta_blocks <- .get_fasta_blocks_from_normalized_fasta_index(norm_fai)
 
     ## Call read_XStringSet_from_fasta_blocks() C function.
-    norm_fileno <- norm_fasta_idx[ , "fileno"]
-    norm_seqlength <- norm_fasta_idx[ , "seqlength"]
-    norm_filepath <- norm_fasta_idx[ , "filepath"]
+    norm_fileno <- norm_fai[ , "fileno"]
+    norm_seqlength <- norm_fai[ , "seqlength"]
+    norm_filepath <- norm_fai[ , "filepath"]
     nrec_list <- split(fasta_blocks[ , "nrec"], fasta_blocks[ , "fileno"],
                        drop=TRUE)
     offset_list <- split(fasta_blocks[ , "offset"], fasta_blocks[ , "fileno"],
@@ -273,7 +271,7 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
 
     ## Set names on XStringSet object.
     if (use.names)
-        names(ans) <- fasta_idx[ , "desc"]
+        names(ans) <- fai[ , "desc"]
     ans
 }
 

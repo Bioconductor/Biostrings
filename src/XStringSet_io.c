@@ -460,12 +460,11 @@ SEXP fasta_index(SEXP efp_list,
 static SEXP fasta_seqlengths(SEXP efp_list,
 			SEXP nrec, SEXP skip, SEXP seek_first_rec, SEXP lkup)
 {
-	SEXP fasta_idx, seqlengths, descs;
+	SEXP fai, seqlengths, descs;
 
-	PROTECT(fasta_idx = fasta_index(efp_list,
-					nrec, skip, seek_first_rec, lkup));
-	PROTECT(seqlengths = duplicate(VECTOR_ELT(fasta_idx, 4)));
-	PROTECT(descs = duplicate(VECTOR_ELT(fasta_idx, 3)));
+	PROTECT(fai = fasta_index(efp_list, nrec, skip, seek_first_rec, lkup));
+	PROTECT(seqlengths = duplicate(VECTOR_ELT(fai, 4)));
+	PROTECT(descs = duplicate(VECTOR_ELT(fai, 3)));
 	SET_NAMES(seqlengths, descs);
 	UNPROTECT(3);
 	return seqlengths;
