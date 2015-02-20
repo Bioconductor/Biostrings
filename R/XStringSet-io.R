@@ -210,11 +210,92 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
 
     ## Call read_XStringSet_from_fasta_index() C function.
     filepath <- factor(filepath, levels=unique(filepath))
+    fileno <- as.integer(filepath)
     efp_list <- .open_input_files(levels(filepath))
     on.exit(.finalize_efp_list(efp_list))
     ans <- .Call2("read_XStringSet_from_fasta_index",
-                  efp_list, filepath, offset, seqlength, elementType, lkup,
+                  efp_list, fileno, offset, seqlength, elementType, lkup,
                   PACKAGE="Biostrings")
+
+    ## Set names on XStringSet object.
+    if (use.names)
+        names(ans) <- desc
+    ans
+}
+
+.reduce_fasta_index <- function(norm_fasta_idx)
+{
+    recno <- norm_fasta_idx[ , "recno"]
+    fileno <- norm_fasta_idx[ , "fileno"]
+    offset <- norm_fasta_idx[ , "offset"]
+    recno2 <- recno - S4Vectors:::fancy_mseq(runLength(Rle(fileno))) + 1L
+    break_idx <- which(!S4Vectors:::duplicatedIntegerPairs(recno2, fileno))
+    data.frame(fileno=fileno[break_idx],
+               nrec=diff(c(break_idx, nrow(norm_fasta_idx) + 1L)),
+               offset=offset[break_idx])
+}
+
+.read_XStringSet_from_fasta_index2 <- function(fasta_idx,
+                                               use.names, elementType, lkup)
+{
+    ## Check 'fasta_idx'.
+    .REQUIRED_COLS <- c("recno", "fileno", "offset",
+                        "desc", "seqlength", "filepath")
+    if (!all(.REQUIRED_COLS %in% colnames(fasta_idx)))
+        stop(wmsg("invalid FASTA index: a FASTA index must be a data frame ",
+                  "with columns: ", paste0(.REQUIRED_COLS, collapse=", ")))
+    recno <- fasta_idx[, "recno"]
+    if (!is.integer(recno)
+     || S4Vectors:::anyMissingOrOutside(recno, lower=1L))
+        stop(wmsg("invalid FASTA index: the \"recno\" column must be ",
+                  "an integer vector with no NAs and with positive values"))
+    fileno <- fasta_idx[, "fileno"]
+    if (!is.integer(fileno)
+     || S4Vectors:::anyMissingOrOutside(fileno, lower=1L))
+        stop(wmsg("invalid FASTA index: the \"fileno\" column must be ",
+                  "an integer vector with no NAs and with positive values"))
+    offset <- fasta_idx[, "offset"]
+    if (!is.numeric(offset) || any(is.na(offset)) || any(offset < 0))
+        stop(wmsg("invalid FASTA index: the \"offset\" column must be ",
+                  "a numeric vector with no NAs and no negative values"))
+    desc <- fasta_idx[, "desc"]
+    if (!is.character(desc) || any(is.na(desc)))
+        stop(wmsg("invalid FASTA index: the \"desc\" column must be ",
+                  "a character vector with no NAs"))
+    seqlength <- fasta_idx[, "seqlength"]
+    if (!is.integer(seqlength)
+     || S4Vectors:::anyMissingOrOutside(seqlength, lower=0L))
+        stop(wmsg("invalid FASTA index: the \"seqlength\" column must be ",
+                  "an integer vector with no NAs and no negative values"))
+    filepath <- fasta_idx[, "filepath"]
+    if (!is.character(filepath) || any(is.na(filepath)))
+        stop(wmsg("invalid FASTA index: the \"filepath\" column must be ",
+                  "a character vector with no NAs"))
+
+    ## Normalize the FASTA index (i.e. remove duplicated rows and order by
+    ## ascending recno).
+    norm_recno <- sort(unique(recno))
+    norm_fasta_idx <- fasta_idx[match(norm_recno, recno), , drop=FALSE]
+
+    ## Reduce the normalized FASTA index.
+    reduced_fasta_idx <- .reduce_fasta_index(norm_fasta_idx)
+
+    ## Call read_XStringSet_from_fasta_index() C function.
+    nrec_list <- split(reduced_fasta_idx[ , "nrec"],
+                       reduced_fasta_idx[ , "fileno"])
+    offset_list <- split(reduced_fasta_idx[ , "offset"],
+                         reduced_fasta_idx[ , "fileno"])
+    efp_list <- .open_input_files(filepath[as.integer(names(nrec_list))])
+    on.exit(.finalize_efp_list(efp_list))
+    C_ans <- .Call2("read_XStringSet_from_reduced_fasta_index",
+                    seqlength, efp_list, nrec_list, offset_list,
+                    elementType, lkup,
+                    PACKAGE="Biostrings")
+
+    ## Re-order XStringSet object so it's parallel to 'recno'.
+    ans <- C_ans[match(recno, norm_recno)]
+
+    ## Set names on XStringSet object.
     if (use.names)
         names(ans) <- desc
     ans

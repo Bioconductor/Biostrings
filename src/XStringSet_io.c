@@ -441,7 +441,7 @@ SEXP fasta_index(SEXP efp_list,
 			      CHAR(STRING_ELT(GET_NAMES(efp_list), i)),
 			      errmsg_buf);
 		if (ninvalid != 0LL)
-			warning("reading FASTA file %s: ignored %ll "
+			warning("reading FASTA file %s: ignored %lld "
 				"invalid one-letter sequence codes",
 				CHAR(STRING_ELT(GET_NAMES(efp_list), i)),
 				ninvalid);
@@ -516,17 +516,47 @@ SEXP read_XStringSet_from_fasta(SEXP efp_list,
 	return ans;
 }
 
+/* UGLY HACK! This an attempt at working around slow ExternalFilePtr_seek()
+   on compressed files. Works only if we are lucky enough that the forward
+   move takes us exactly at the beginning of a new line. This is actually
+   the case in the context where we're using this :-) */
+static void ExternalFilePtr_forward(SEXP efp, long long int offset)
+{
+	int ret_code, EOL_in_buf, nbyte_in;
+	char buf[IOBUF_SIZE];
+
+	if (offset < 0LL)
+		error("Biostrings internal error in "
+		      "ExternalFilePtr_forward(): "
+		      "nb of bytes to skip is negative");
+	while (offset > 0LL) {
+		ret_code = ExternalFilePtr_gets(efp, buf, IOBUF_SIZE,
+						&EOL_in_buf);
+		if (ret_code == -1)
+			error("Biostrings internal error in "
+			      "ExternalFilePtr_forward(): "
+			      "unexpected reading error");
+		nbyte_in = EOL_in_buf ? strlen(buf) : IOBUF_SIZE - 1;
+		offset -= nbyte_in;
+	}
+	if (offset < 0LL)
+		error("Biostrings internal error in "
+		      "ExternalFilePtr_forward(): "
+		      "forward failed (went too far)");
+	return;
+}
+
 /* --- .Call ENTRY POINT --- */
 SEXP read_XStringSet_from_fasta_index(SEXP efp_list,
 		SEXP fileno, SEXP offset, SEXP seqlength,
 		SEXP elementType, SEXP lkup)
 {
-	int ans_len, recno, i;
+	int ans_len, recno, i, fileno_i;
 	const char *element_type;
 	char classname[40];  /* longest string should be "DNAStringSet" */
 	FASTA_loaderExt loader_ext;
 	FASTAloader loader;
-	SEXP efp, ans;
+	SEXP ans, efp;
 	long long int offset_i, ninvalid;
 
 	ans_len = LENGTH(seqlength);
@@ -543,9 +573,11 @@ SEXP read_XStringSet_from_fasta_index(SEXP efp_list,
 	loader = new_FASTA_loader(lkup, &loader_ext);
 	for (i = 0; i < ans_len; i++) {
 		//Rprintf("%d/%d\n", i, ans_len);
-		efp = VECTOR_ELT(efp_list, INTEGER(fileno)[i] - 1);
+		fileno_i = INTEGER(fileno)[i];
+		efp = VECTOR_ELT(efp_list, fileno_i - 1);
 		//Rprintf("- extract efp DONE\n");
 		offset_i = llround(REAL(offset)[i]);
+		//ExternalFilePtr_forward(efp, offset_i - prev_offset_i);
 		ExternalFilePtr_seek(efp, offset_i, SEEK_SET);
 		//Rprintf("- seek DONE\n");
 		recno = 0;
@@ -553,6 +585,47 @@ SEXP read_XStringSet_from_fasta_index(SEXP efp_list,
 		parse_FASTA_file(efp, 1, 0, 0,
 				 &loader, &recno, &offset_i, &ninvalid);
 		//Rprintf("- load record DONE\n");
+	}
+	UNPROTECT(1);
+	return ans;
+}
+
+SEXP read_XStringSet_from_reduced_fasta_index(SEXP seqlength,
+		SEXP efp_list, SEXP nrec_list, SEXP offset_list,
+		SEXP elementType, SEXP lkup)
+{
+	const char *element_type;
+	char classname[40];  /* longest string should be "DNAStringSet" */
+	SEXP ans, efp, nrec, offset;
+	FASTA_loaderExt loader_ext;
+	FASTAloader loader;
+	int i, j, nrec_j, recno;
+	long long int offset_j, ninvalid;
+
+	element_type = CHAR(STRING_ELT(elementType, 0));
+	if (snprintf(classname, sizeof(classname), "%sSet", element_type)
+	    >= sizeof(classname))
+	{
+		error("Biostrings internal error in "
+		      "read_XStringSet_from_reduced_fasta_index(): "
+		      "'classname' buffer too small");
+	}
+	PROTECT(ans = alloc_XRawList(classname, element_type, seqlength));
+	loader_ext = new_FASTA_loaderExt(ans);
+	loader = new_FASTA_loader(lkup, &loader_ext);
+	for (i = 0; i < LENGTH(efp_list); i++) {
+		efp = VECTOR_ELT(efp_list, i);
+		nrec = VECTOR_ELT(nrec_list, i);
+		offset = VECTOR_ELT(offset_list, i);
+		for (j = 0; j < LENGTH(nrec); j++) {
+			nrec_j = INTEGER(nrec)[j];
+			offset_j = llround(REAL(offset)[j]);
+			ExternalFilePtr_seek(efp, offset_j, SEEK_SET);
+			recno = 0;
+			ninvalid = 0LL;
+			parse_FASTA_file(efp, nrec_j, 0, 0,
+					 &loader, &recno, &offset_j, &ninvalid);
+		}
 	}
 	UNPROTECT(1);
 	return ans;

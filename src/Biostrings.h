@@ -263,6 +263,15 @@ SEXP read_XStringSet_from_fasta_index(
 	SEXP lkup
 );
 
+SEXP read_XStringSet_from_reduced_fasta_index(
+	SEXP seqlength,
+	SEXP efp_list,
+	SEXP nrec_list,
+	SEXP offset_list,
+	SEXP elementType,
+	SEXP lkup
+);
+
 SEXP write_XStringSet_to_fasta(
 	SEXP x,
 	SEXP efp_list,
