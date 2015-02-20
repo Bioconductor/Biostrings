@@ -460,24 +460,25 @@ SEXP fasta_index(SEXP efp_list,
 /* --- .Call ENTRY POINT ---
  * "FASTA blocks" are groups of consecutive FASTA records.
  * Args:
- *   seqlength:   Integer vector with 1 element per record. The elements must
- *                be placed in the order that the records are going to be read.
+ *   seqlength:   Integer vector with 1 element per record to read. The
+ *                elements must be placed in the order that the records are
+ *                going to be read.
  *   efp_list:    A list of N "External File Pointers" (see io_utils.c) with 1
  *                element per input file. Files are going to be accessed from
- *                first to last element in the list.
+ *                first to last in the list.
  *   nrec_list:   A list of N integer vectors (1 element per input file).
  *                Each integer vector has 1 value per FASTA block, which is the
  *                number of records in the block. IMPORTANT: Even if not
- *                required, the blocks in each integer vector should be sorted
- *                so they are going to be read from first to last block in the
- *                file. This ensures that the calls to ExternalFilePtr_seek()
- *                below are fast (moving backward on a compressed file can be
- *                *extremely* slow).
+ *                required, the blocks in each integer vector should preferably
+ *                be placed in the same order as in the file. This ensures that
+ *                the calls to ExternalFilePtr_seek() are always moving forward
+ *                in the file and are therefore efficient (moving backward on a
+ *                compressed file can be *extremely* slow).
  *   offset_list: A list of N numeric vectors (1 element per input file) with
  *                the same shape as 'nrec_list', i.e. each numeric vector has 1
  *                value per FASTA block. This value is the offset of the block
- *                (i.e. of its first record) relative to the start of the file
- *                and measured in bytes.
+ *                (i.e. the offset of its first record) relative to the start
+ *                of the file. Measured in bytes.
  *   elementType: The elementType of the XStringSet to return (its class is
  *                inferred from this).
  *   lkup:        Lookup table for encoding the incoming sequence bytes.

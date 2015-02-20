@@ -196,7 +196,7 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
           input files.
     \item \code{fileno}: The rank of the file where the record is located.
     \item \code{offset}: The offset of the record relative to the start of the
-          file where it's located and measured in bytes.
+          file where it's located. Measured in bytes.
     \item \code{desc}: The description line (a.k.a. header) of the record.
     \item \code{seqlength}: The length of the sequence in the record (not
           counting invalid letters).
@@ -286,7 +286,7 @@ i <- sample(nrow(fai), 10)  # randomly pick up 10 sequences
 x4 <- readDNAStringSet(fai[i, ])
 
 ## Sanity check:
-stopifnot(identical(as.character(readDNAStringSet(filepath4))[i],
+stopifnot(identical(as.character(readDNAStringSet(filepath4)[i]),
                     as.character(x4)))
 
 ## Write FASTA files:
