@@ -13,7 +13,7 @@ Depends: R (>= 2.8.0), methods, BiocGenerics (>= 0.11.3),
 	S4Vectors (>= 0.5.21), IRanges (>= 2.1.2), XVector (>= 0.7.3)
 Imports: graphics, methods, stats, utils, BiocGenerics, IRanges, XVector,
 	zlibbioc
-LinkingTo: S4Vectors, IRanges, XVector
+LinkingTo: S4Vectors (>= 0.5.21), IRanges, XVector
 Enhances: Rmpi
 Suggests: BSgenome (>= 1.13.14),
 	BSgenome.Celegans.UCSC.ce2 (>= 1.3.11),
