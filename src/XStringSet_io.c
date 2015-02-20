@@ -546,51 +546,7 @@ static void ExternalFilePtr_forward(SEXP efp, long long int offset)
 	return;
 }
 
-/* --- .Call ENTRY POINT --- */
-SEXP read_XStringSet_from_fasta_index(SEXP efp_list,
-		SEXP fileno, SEXP offset, SEXP seqlength,
-		SEXP elementType, SEXP lkup)
-{
-	int ans_len, recno, i, fileno_i;
-	const char *element_type;
-	char classname[40];  /* longest string should be "DNAStringSet" */
-	FASTA_loaderExt loader_ext;
-	FASTAloader loader;
-	SEXP ans, efp;
-	long long int offset_i, ninvalid;
-
-	ans_len = LENGTH(seqlength);
-	element_type = CHAR(STRING_ELT(elementType, 0));
-	if (snprintf(classname, sizeof(classname), "%sSet", element_type)
-	    >= sizeof(classname))
-	{
-		error("Biostrings internal error in "
-		      "read_XStringSet_from_fasta_index(): "
-		      "'classname' buffer too small");
-	}
-	PROTECT(ans = alloc_XRawList(classname, element_type, seqlength));
-	loader_ext = new_FASTA_loaderExt(ans);
-	loader = new_FASTA_loader(lkup, &loader_ext);
-	for (i = 0; i < ans_len; i++) {
-		//Rprintf("%d/%d\n", i, ans_len);
-		fileno_i = INTEGER(fileno)[i];
-		efp = VECTOR_ELT(efp_list, fileno_i - 1);
-		//Rprintf("- extract efp DONE\n");
-		offset_i = llround(REAL(offset)[i]);
-		//ExternalFilePtr_forward(efp, offset_i - prev_offset_i);
-		ExternalFilePtr_seek(efp, offset_i, SEEK_SET);
-		//Rprintf("- seek DONE\n");
-		recno = 0;
-		ninvalid = 0LL;
-		parse_FASTA_file(efp, 1, 0, 0,
-				 &loader, &recno, &offset_i, &ninvalid);
-		//Rprintf("- load record DONE\n");
-	}
-	UNPROTECT(1);
-	return ans;
-}
-
-SEXP read_XStringSet_from_reduced_fasta_index(SEXP seqlength,
+SEXP read_XStringSet_from_fasta_blocks(SEXP seqlength,
 		SEXP efp_list, SEXP nrec_list, SEXP offset_list,
 		SEXP elementType, SEXP lkup)
 {
@@ -607,7 +563,7 @@ SEXP read_XStringSet_from_reduced_fasta_index(SEXP seqlength,
 	    >= sizeof(classname))
 	{
 		error("Biostrings internal error in "
-		      "read_XStringSet_from_reduced_fasta_index(): "
+		      "read_XStringSet_from_fasta_blocks(): "
 		      "'classname' buffer too small");
 	}
 	PROTECT(ans = alloc_XRawList(classname, element_type, seqlength));
@@ -621,6 +577,7 @@ SEXP read_XStringSet_from_reduced_fasta_index(SEXP seqlength,
 			nrec_j = INTEGER(nrec)[j];
 			offset_j = llround(REAL(offset)[j]);
 			ExternalFilePtr_seek(efp, offset_j, SEEK_SET);
+			//TODO: try ExternalFilePtr_forward() instead
 			recno = 0;
 			ninvalid = 0LL;
 			parse_FASTA_file(efp, nrec_j, 0, 0,
