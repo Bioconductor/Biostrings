@@ -8,6 +8,7 @@
 \alias{readAAStringSet}
 
 \alias{fasta.info}
+\alias{fasta.index}
 \alias{fastq.geometry}
 
 \alias{writeXStringSet}
@@ -37,6 +38,9 @@ readAAStringSet(filepath, format="fasta",
 fasta.info(filepath,
            nrec=-1L, skip=0L, seek.first.rec=FALSE, seqtype="B",
            use.names=TRUE)
+fasta.index(filepath,
+            nrec=-1L, skip=0L, seek.first.rec=FALSE, seqtype="B")
+
 fastq.geometry(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
 
 ## Write an XStringSet object to a FASTA (or FASTQ) file:
@@ -185,6 +189,30 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
   \code{seqtype} argument above for how to control the set of valid
   one-letter sequence codes.
 
+  The \code{fasta.index} utility returns a data frame with 1 row per
+  FASTA record in the input files and the following columns:
+  \itemize{
+    \item \code{recno}: The rank of the record in the (virtually) concatenated
+          input files.
+    \item \code{fileno}: The rank of the file where the record is located.
+    \item \code{offset}: The offset of the record relative to the start of its
+          file and measured in bytes.
+    \item \code{desc}: The description line (a.k.a. header) of the record.
+    \item \code{seqlength}: The length of the sequence in the record (not
+          counting invalid letters).
+    \item \code{filepath}: The user-specified path to the file where the
+          record is located.
+  }
+  A subset of this data frame can be passed to \code{readDNAStringSet}
+  and family for direct access to an arbitrary subset of sequences. More
+  precisely, if \code{fai} is a FASTA index that was obtained with
+  \code{fasta.index(filepath, ..., seqtype="DNA")}, then
+  \code{readDNAStringSet(fai[i, ])} is equivalent to
+  \code{readDNAStringSet(filepath, ...)[i]} for any valid subscript \code{i},
+  except that the former only loads the requested sequences in memory
+  and thus will be more memory efficient if only a small subset of sequences
+  is requested.
+
   The \code{fastq.geometry} utility returns an integer vector describing
   the "geometry" of the FASTQ files i.e. a vector of length 2 where the
   first element is the total number of FASTQ records in the files and
@@ -248,6 +276,19 @@ x23
 x3 <- readDNAStringSet(filepath3)
 stopifnot(identical(as.character(x23), as.character(c(x2, x3))))
 
+## Use a FASTA index to load only an arbitrary subset of sequences:
+filepath4 <- system.file("extdata", "dm3_upstream2000.fa.gz",
+                         package="Biostrings")
+fai <- fasta.index(filepath4, seqtype="DNA")
+head(fai)
+head(fai$desc)
+i <- sample(nrow(fai), 10)  # randomly pick up 10 sequences
+x4 <- readDNAStringSet(fai[i, ])
+
+## Sanity check:
+stopifnot(identical(as.character(readDNAStringSet(filepath4))[i],
+                    as.character(x4)))
+
 ## Write FASTA files:
 out23a <- tempfile()
 writeXStringSet(x23, out23a)
@@ -263,6 +304,7 @@ stopifnot(identical(readLines(out23a), readLines(out23b)))
 ## ---------------------------------------------------------------------
 ## B. READ/WRITE FASTQ FILES
 ## ---------------------------------------------------------------------
+
 filepath <- system.file("extdata", "s_1_sequence.txt",
                         package="Biostrings")
 fastq.geometry(filepath)
