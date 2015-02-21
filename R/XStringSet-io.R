@@ -217,8 +217,8 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
 }
 
 ### "FASTA blocks" are groups of consecutive FASTA records.
-### 'norm_fai' must already be normalized (i.e. no duplicated rows and ordered
-### by ascending recno). This is NOT checked!
+### Fasta index 'norm_fai' must already be normalized (i.e. no duplicated rows
+### and ordered by ascending recno). This is NOT checked!
 .compute_sorted_fasta_blocks_from_normalized_fasta_index <- function(norm_fai)
 {
     recno <- norm_fai[ , "recno"]
@@ -233,6 +233,36 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
                offset=offset[first_in_block_idx])
 }
 
+### Fasta index 'norm_fai' must already be normalized (i.e. no duplicated rows
+### and ordered by ascending recno). This is NOT checked!
+.read_XStringSet_from_normalized_fasta_index <- function(norm_fai,
+                                                         elementType, lkup)
+{
+    ## Prepare 'nrec_list' and 'offset_list'.
+    fasta_blocks <-
+        .compute_sorted_fasta_blocks_from_normalized_fasta_index(norm_fai)
+    nrec_list <- split(fasta_blocks[ , "nrec"], fasta_blocks[ , "fileno"],
+                       drop=TRUE)
+    offset_list <- split(fasta_blocks[ , "offset"], fasta_blocks[ , "fileno"],
+                         drop=TRUE)
+
+    ## Prepare 'efp_list'.
+    filepath <- norm_fai[ , "filepath"]
+    fileno <- norm_fai[ , "fileno"]
+    used_fileno <- as.integer(names(nrec_list))
+    used_filepath <- filepath[match(used_fileno, fileno)]
+    efp_list <- .open_input_files(used_filepath)
+    on.exit(.finalize_efp_list(efp_list))
+
+    ## Prepare 'seqlength'.
+    seqlength <- norm_fai[ , "seqlength"]
+
+    .Call2("read_XStringSet_from_fasta_blocks",
+           seqlength, efp_list, nrec_list, offset_list,
+           elementType, lkup,
+           PACKAGE="Biostrings")
+}
+
 .read_XStringSet_from_fasta_index <- function(fai, use.names, elementType, lkup)
 {
     .check_fasta_index(fai)
@@ -243,25 +273,8 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
     norm_recno <- sort(unique(recno))
     norm_fai <- fai[match(norm_recno, recno), , drop=FALSE]
 
-    fasta_blocks <-
-        .compute_sorted_fasta_blocks_from_normalized_fasta_index(norm_fai)
-
-    ## Call read_XStringSet_from_fasta_blocks() C function.
-    norm_fileno <- norm_fai[ , "fileno"]
-    norm_seqlength <- norm_fai[ , "seqlength"]
-    norm_filepath <- norm_fai[ , "filepath"]
-    nrec_list <- split(fasta_blocks[ , "nrec"], fasta_blocks[ , "fileno"],
-                       drop=TRUE)
-    offset_list <- split(fasta_blocks[ , "offset"], fasta_blocks[ , "fileno"],
-                         drop=TRUE)
-    used_fileno <- as.integer(names(nrec_list))
-    used_filepath <- norm_filepath[match(used_fileno, norm_fileno)]
-    efp_list <- .open_input_files(used_filepath)
-    on.exit(.finalize_efp_list(efp_list))
-    C_ans <- .Call2("read_XStringSet_from_fasta_blocks",
-                    norm_seqlength, efp_list, nrec_list, offset_list,
-                    elementType, lkup,
-                    PACKAGE="Biostrings")
+    C_ans <- .read_XStringSet_from_normalized_fasta_index(norm_fai,
+                                                          elementType, lkup)
 
     ## Re-order XStringSet object so it's parallel to 'recno'.
     ans <- C_ans[match(recno, norm_recno)]
