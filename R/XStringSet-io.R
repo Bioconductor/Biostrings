@@ -217,45 +217,45 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
 }
 
 ### "FASTA blocks" are groups of consecutive FASTA records.
-### Fasta index 'norm_fai' must already be normalized (i.e. no duplicated rows
-### and ordered by ascending recno). This is NOT checked!
-.compute_sorted_fasta_blocks_from_normalized_fasta_index <- function(norm_fai)
+### Fasta index 'ssorted_fai' must be strictly sorted by "recno". This is NOT
+### checked!
+.compute_sorted_fasta_blocks_from_ssorted_fasta_index <- function(ssorted_fai)
 {
-    recno <- norm_fai[ , "recno"]
-    fileno <- norm_fai[ , "fileno"]
-    offset <- norm_fai[ , "offset"]
+    recno <- ssorted_fai[ , "recno"]
+    fileno <- ssorted_fai[ , "fileno"]
+    offset <- ssorted_fai[ , "offset"]
     blockid <- recno - seq_along(recno)  # this block id is unique only within
                                          # a given file
     is_first_in_block <- !S4Vectors:::duplicatedIntegerPairs(blockid, fileno)
     first_in_block_idx <- which(is_first_in_block)
     data.frame(fileno=fileno[first_in_block_idx],
-               nrec=diff(c(first_in_block_idx, nrow(norm_fai) + 1L)),
+               nrec=diff(c(first_in_block_idx, nrow(ssorted_fai) + 1L)),
                offset=offset[first_in_block_idx])
 }
 
-### Fasta index 'norm_fai' must already be normalized (i.e. no duplicated rows
-### and ordered by ascending recno). This is NOT checked!
-.read_XStringSet_from_normalized_fasta_index <- function(norm_fai,
-                                                         elementType, lkup)
+### Fasta index 'ssorted_fai' must be strictly sorted by "recno". This is NOT
+### checked!
+.read_XStringSet_from_ssorted_fasta_index <- function(ssorted_fai,
+                                                      elementType, lkup)
 {
     ## Prepare 'nrec_list' and 'offset_list'.
     fasta_blocks <-
-        .compute_sorted_fasta_blocks_from_normalized_fasta_index(norm_fai)
+        .compute_sorted_fasta_blocks_from_ssorted_fasta_index(ssorted_fai)
     nrec_list <- split(fasta_blocks[ , "nrec"], fasta_blocks[ , "fileno"],
                        drop=TRUE)
     offset_list <- split(fasta_blocks[ , "offset"], fasta_blocks[ , "fileno"],
                          drop=TRUE)
 
     ## Prepare 'efp_list'.
-    filepath <- norm_fai[ , "filepath"]
-    fileno <- norm_fai[ , "fileno"]
+    filepath <- ssorted_fai[ , "filepath"]
+    fileno <- ssorted_fai[ , "fileno"]
     used_fileno <- as.integer(names(nrec_list))
     used_filepath <- filepath[match(used_fileno, fileno)]
     efp_list <- .open_input_files(used_filepath)
     on.exit(.finalize_efp_list(efp_list))
 
     ## Prepare 'seqlength'.
-    seqlength <- norm_fai[ , "seqlength"]
+    seqlength <- ssorted_fai[ , "seqlength"]
 
     .Call2("read_XStringSet_from_fasta_blocks",
            seqlength, efp_list, nrec_list, offset_list,
@@ -267,17 +267,17 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
 {
     .check_fasta_index(fai)
 
-    ## Normalize the FASTA index (i.e. remove duplicated rows and order by
-    ## ascending recno).
+    ## Create a "strictly sorted" version of 'fai' by removing duplicated rows
+    ## and sorting them by ascending "recno".
     recno <- fai[ , "recno"]
-    norm_recno <- sort(unique(recno))
-    norm_fai <- fai[match(norm_recno, recno), , drop=FALSE]
+    ssorted_recno <- sort(unique(recno))
+    ssorted_fai <- fai[match(ssorted_recno, recno), , drop=FALSE]
 
-    C_ans <- .read_XStringSet_from_normalized_fasta_index(norm_fai,
+    C_ans <- .read_XStringSet_from_ssorted_fasta_index(ssorted_fai,
                                                           elementType, lkup)
 
     ## Re-order XStringSet object so it's parallel to 'recno'.
-    ans <- C_ans[match(recno, norm_recno)]
+    ans <- C_ans[match(recno, ssorted_recno)]
 
     ## Set names on XStringSet object.
     if (use.names)
