@@ -159,9 +159,8 @@ fasta.index <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
     ans
 }
 
-### TODO (maybe): Rename this fasta.seqlengths() and deprecate fasta.info()
-fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
-                       seqtype="B", use.names=TRUE)
+fasta.seqlengths <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
+                             seqtype="B", use.names=TRUE)
 {
     if (!isTRUEorFALSE(use.names))
         stop(wmsg("'use.names' must be TRUE or FALSE"))
@@ -268,15 +267,15 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
     .check_fasta_index(fai)
 
     ## Create a "strictly sorted" version of 'fai' by removing duplicated rows
-    ## and sorting them by ascending "recno".
+    ## and sorting the remaining rows by ascending "recno".
     recno <- fai[ , "recno"]
     ssorted_recno <- sort(unique(recno))
     ssorted_fai <- fai[match(ssorted_recno, recno), , drop=FALSE]
 
     C_ans <- .read_XStringSet_from_ssorted_fasta_index(ssorted_fai,
-                                                          elementType, lkup)
+                                                       elementType, lkup)
 
-    ## Re-order XStringSet object so it's parallel to 'recno'.
+    ## Re-order XStringSet object to make it parallel to 'recno'.
     ans <- C_ans[match(recno, ssorted_recno)]
 
     ## Set names on XStringSet object.
@@ -506,5 +505,16 @@ saveXStringSet <- function(x, objname, dirpath=".",
     save(list=objname, file=filepath)
     if (verbose)
         cat("OK\n")
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Old stuff (deprecated & defunct)
+###
+
+fasta.info <- function(...)
+{
+    .Deprecated("fasta.seqlengths")
+    fasta.seqlengths(...)
 }
 

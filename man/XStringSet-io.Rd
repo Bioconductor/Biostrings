@@ -7,13 +7,16 @@
 \alias{readRNAStringSet}
 \alias{readAAStringSet}
 
-\alias{fasta.info}
+\alias{fasta.seqlengths}
 \alias{fasta.index}
 \alias{fastq.geometry}
 
 \alias{writeXStringSet}
 
 \alias{saveXStringSet}
+
+% Old stuff (Deprecated or Defunct):
+\alias{fasta.info}
 
 
 \title{Read/write an XStringSet object from/to a file}
@@ -35,9 +38,9 @@ readAAStringSet(filepath, format="fasta",
 
 ## Extract basic information about FASTA (or FASTQ) files
 ## without actually loading the sequence data:
-fasta.info(filepath,
-           nrec=-1L, skip=0L, seek.first.rec=FALSE, seqtype="B",
-           use.names=TRUE)
+fasta.seqlengths(filepath,
+                 nrec=-1L, skip=0L, seek.first.rec=FALSE, seqtype="B",
+                 use.names=TRUE)
 fasta.index(filepath,
             nrec=-1L, skip=0L, seek.first.rec=FALSE, seqtype="B")
 
@@ -182,9 +185,9 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
   When multiple input FASTQ files are specified, all must have the same
   "width" (i.e. all their sequences must have the same length).
 
-  The \code{fasta.info} utility returns an integer vector with one element
-  per FASTA record in the input files. Each element is the length of the
-  sequence found in the corresponding record, that is, the number of
+  The \code{fasta.seqlengths} utility returns an integer vector with one
+  element per FASTA record in the input files. Each element is the length
+  of the sequence found in the corresponding record, that is, the number of
   valid one-letter sequence codes in the record. See description of the
   \code{seqtype} argument above for how to control the set of valid
   one-letter sequence codes.
@@ -253,13 +256,13 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
 
 ## Read a non-compressed FASTA files:
 filepath1 <- system.file("extdata", "someORF.fa", package="Biostrings")
-fasta.info(filepath1, seqtype="DNA")
+fasta.seqlengths(filepath1, seqtype="DNA")
 x1 <- readDNAStringSet(filepath1)
 x1
 
 ## Read a gzip-compressed FASTA file:
 filepath2 <- system.file("extdata", "someORF.fa.gz", package="Biostrings")
-fasta.info(filepath2, seqtype="DNA")
+fasta.seqlengths(filepath2, seqtype="DNA")
 x2 <- readDNAStringSet(filepath2)
 x2
 
@@ -268,7 +271,7 @@ stopifnot(identical(as.character(x1), as.character(x2)))
 
 ## Read 2 FASTA files at once:
 filepath3 <- system.file("extdata", "fastaEx.fa", package="Biostrings")
-fasta.info(c(filepath2, filepath3), seqtype="DNA")
+fasta.seqlengths(c(filepath2, filepath3), seqtype="DNA")
 x23 <- readDNAStringSet(c(filepath2, filepath3))
 x23
 

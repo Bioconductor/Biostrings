@@ -117,7 +117,7 @@ exportMethods(
 export(
     ## XStringSet-io.R:
     readBStringSet, readDNAStringSet, readRNAStringSet, readAAStringSet,
-    fasta.index, fasta.info, fastq.geometry,
+    fasta.index, fasta.seqlengths, fastq.geometry,
     writeXStringSet,
     saveXStringSet,
 
@@ -167,7 +167,7 @@ export(
     N50,
 
     ## Old stuff (Deprecated or Defunct):
-    transcribe, cDNA, dna2rna, rna2dna
+    fasta.info, transcribe, cDNA, dna2rna, rna2dna
 )
 
 exportMethods(
