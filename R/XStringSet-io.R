@@ -217,16 +217,20 @@ fasta.info <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
 }
 
 ### "FASTA blocks" are groups of consecutive FASTA records.
+### 'norm_fai' must already be normalized (i.e. no duplicated rows and ordered
+### by ascending recno). This is NOT checked!
 .compute_sorted_fasta_blocks_from_normalized_fasta_index <- function(norm_fai)
 {
     recno <- norm_fai[ , "recno"]
     fileno <- norm_fai[ , "fileno"]
     offset <- norm_fai[ , "offset"]
-    recno2 <- recno - seq_along(recno)
-    break_idx <- which(!S4Vectors:::duplicatedIntegerPairs(recno2, fileno))
-    data.frame(fileno=fileno[break_idx],
-               nrec=diff(c(break_idx, nrow(norm_fai) + 1L)),
-               offset=offset[break_idx])
+    blockid <- recno - seq_along(recno)  # this block id is unique only within
+                                         # a given file
+    is_first_in_block <- !S4Vectors:::duplicatedIntegerPairs(blockid, fileno)
+    first_in_block_idx <- which(is_first_in_block)
+    data.frame(fileno=fileno[first_in_block_idx],
+               nrec=diff(c(first_in_block_idx, nrow(norm_fai) + 1L)),
+               offset=offset[first_in_block_idx])
 }
 
 .read_XStringSet_from_fasta_index <- function(fai, use.names, elementType, lkup)
