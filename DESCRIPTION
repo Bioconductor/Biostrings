@@ -6,7 +6,7 @@ Description: Memory efficient string containers, string matching
 	biological sequences or sets of sequences.
 Version: 2.35.11
 Author: H. Pages, P. Aboyoun, R. Gentleman, and S. DebRoy
-Maintainer: H. Pages <hpages@fhcrc.org>
+Maintainer: H. Pages <hpages@fredhutch.org>
 biocViews: SequenceMatching, Alignment, Sequencing, Genetics,
 	DataImport, DataRepresentation, Infrastructure
 Depends: R (>= 2.8.0), methods, BiocGenerics (>= 0.11.3),
