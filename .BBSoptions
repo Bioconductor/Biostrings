@@ -24,5 +24,5 @@ AlertOn: ERROR, WARNINGS
 
 # Default value for 'AlertTo' is the email address of the Maintainer found in
 # the DESCRIPTION file of the package.
-AlertTo: hpages@fhcrc.org, herve.pages@laposte.net
+AlertTo: hpages@fredhutch.org, herve.pages@laposte.net
 

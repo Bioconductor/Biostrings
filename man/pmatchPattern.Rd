@@ -33,7 +33,7 @@
   WARNING: These functions are experimental and might
   not work properly! Full documentation will come later.
 
-  Please send questions/comments to hpages@fhcrc.org
+  Please send questions/comments to hpages@fredhutch.org
 
   Thanks for your comprehension!
 }
