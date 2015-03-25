@@ -62,7 +62,8 @@ char _DNAencode(char c)
 
 	code = DNA_enc_byte2code.byte2code[(unsigned char) c];
 	if (code == NA_INTEGER)
-		error("_DNAencode(): key %d not in lookup table", (int) c);
+		error("_DNAencode(): invalid DNAString "
+		      "input character: '%c' (byte value %d)", c, (int) c);
 	return code;
 }
 
@@ -72,7 +73,8 @@ char _DNAdecode(char code)
 
 	c = DNA_dec_byte2code.byte2code[(unsigned char) code];
 	if (c == NA_INTEGER)
-		error("_DNAdecode(): key %d not in lookup table", (int) code);
+		error("_DNAdecode(): invalid DNAString "
+		      "internal code: %d", (int) code);
 	return c;
 }
 
@@ -90,7 +92,8 @@ char _RNAencode(char c)
 
 	code = RNA_enc_byte2code.byte2code[(unsigned char) c];
 	if (code == NA_INTEGER)
-		error("_RNAencode(): key %d not in lookup table", (int) c);
+		error("_RNAencode(): invalid RNAString "
+		      "input character: '%c' (byte value %d)", c, (int) c);
 	return code;
 }
 
@@ -100,7 +103,8 @@ char _RNAdecode(char code)
 
 	c = RNA_dec_byte2code.byte2code[(unsigned char) code];
 	if (c == NA_INTEGER)
-		error("_RNAdecode(): key %d not in lookup table", (int) code);
+		error("_RNAdecode(): invalid RNAString "
+		      "internal code: %d", (int) code);
 	return (char) c;
 }
 
