@@ -133,7 +133,7 @@ K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics, 
   ## Fit a global pairwise alignment using edit distance scoring
   pairwiseAlignment(s1, s2,
                     substitutionMatrix = nucleotideSubstitutionMatrix(0, -1, TRUE),
-                    gapOpening = 0, gapExtension = -1)
+                    gapOpening = 0, gapExtension = 1)
 
   ## Examine quality-based match and mismatch bit scores for DNA/RNA
   ## strings in pairwiseAlignment.
@@ -155,13 +155,13 @@ K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics, 
   ## Align two amino acid sequences with the BLOSUM62 matrix
   aa1 <- AAString("HXBLVYMGCHFDCXVBEHIKQZ")
   aa2 <- AAString("QRNYMYCFQCISGNEYKQN")
-  pairwiseAlignment(aa1, aa2, substitutionMatrix = "BLOSUM62", gapOpening = -3, gapExtension = -1)
+  pairwiseAlignment(aa1, aa2, substitutionMatrix = "BLOSUM62", gapOpening = 3, gapExtension = 1)
 
   ## See how the gap penalty influences the alignment
-  pairwiseAlignment(aa1, aa2, substitutionMatrix = "BLOSUM62", gapOpening = -6, gapExtension = -2)
+  pairwiseAlignment(aa1, aa2, substitutionMatrix = "BLOSUM62", gapOpening = 6, gapExtension = 2)
 
   ## See how the substitution matrix influences the alignment
-  pairwiseAlignment(aa1, aa2, substitutionMatrix = "BLOSUM50", gapOpening = -3, gapExtension = -1)
+  pairwiseAlignment(aa1, aa2, substitutionMatrix = "BLOSUM50", gapOpening = 3, gapExtension = 1)
 
   if (interactive()) {
     ## Compare our BLOSUM62 with BLOSUM62 from ftp://ftp.ncbi.nih.gov/blast/matrices/

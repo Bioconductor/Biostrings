@@ -19,13 +19,13 @@ pairwiseAlignment(pattern, subject, \dots)
                   subjectQuality=PhredQuality(22L),
                   type="global",
                   substitutionMatrix=NULL, fuzzyMatrix=NULL,
-                  gapOpening=-10, gapExtension=-4,
+                  gapOpening=10, gapExtension=4,
                   scoreOnly=FALSE)
 
 \S4method{pairwiseAlignment}{QualityScaledXStringSet,QualityScaledXStringSet}(pattern, subject,
                   type="global",
                   substitutionMatrix=NULL, fuzzyMatrix=NULL, 
-                  gapOpening=-10, gapExtension=-4,
+                  gapOpening=10, gapExtension=4,
                   scoreOnly=FALSE)
 }
 
@@ -139,13 +139,13 @@ against a reference sequence.
   mat <- nucleotideSubstitutionMatrix(match = 1, mismatch = -3, baseOnly = TRUE)
   globalAlign <-
     pairwiseAlignment(s1, s2, substitutionMatrix = mat,
-                      gapOpening = -5, gapExtension = -2)
+                      gapOpening = 5, gapExtension = 2)
   localAlign <-
     pairwiseAlignment(s1, s2, type = "local", substitutionMatrix = mat,
-                      gapOpening = -5, gapExtension = -2)
+                      gapOpening = 5, gapExtension = 2)
   overlapAlign <-
     pairwiseAlignment(s1, s2, type = "overlap", substitutionMatrix = mat,
-                      gapOpening = -5, gapExtension = -2)
+                      gapOpening = 5, gapExtension = 2)
 
   # Then use quality-based method for generating a substitution matrix
   pairwiseAlignment(s1, s2,
@@ -171,7 +171,7 @@ against a reference sequence.
   ## Amino acid global alignment
   pairwiseAlignment(AAString("PAWHEAE"), AAString("HEAGAWGHEE"),
                     substitutionMatrix = "BLOSUM50",
-                    gapOpening = 0, gapExtension = -8)
+                    gapOpening = 0, gapExtension = 8)
 }
 \keyword{models}
 \keyword{methods}

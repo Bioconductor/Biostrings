@@ -11,7 +11,7 @@ function(x,
          type = "global",
          substitutionMatrix = NULL,
          gapOpening = 0,
-         gapExtension = -1)
+         gapExtension = 1)
 {
   ## Check arguments
   method <-
@@ -37,7 +37,7 @@ function(x,
       type <- "global"
       typeCode <- 1L
       gapOpening <- 0
-      gapExtension <- -1
+      gapExtension <- 1
       if (ignoreCase)
         caseAdjustedAlphabet <- tolower(names(alphabetToCodes))
       else
@@ -48,12 +48,12 @@ function(x,
     } else {
       type <- match.arg(type, c("global", "local", "overlap"))
       typeCode <- c("global" = 1L, "local" = 2L, "overlap" = 3L)[[type]]
-      gapOpening <- as.double(- abs(gapOpening))
+      gapOpening <- as.double(abs(gapOpening))
       if (length(gapOpening) != 1 || is.na(gapOpening))
-        stop("'gapOpening' must be a non-positive numeric vector of length 1")
-      gapExtension <- as.double(- abs(gapExtension))
+        stop("'gapOpening' must be a non-negative numeric vector of length 1")
+      gapExtension <- as.double(abs(gapExtension))
       if (length(gapExtension) != 1 || is.na(gapExtension))
-        stop("'gapExtension' must be a non-positive numeric vector of length 1")
+        stop("'gapExtension' must be a non-negative numeric vector of length 1")
     }
 
     useQuality <- FALSE
@@ -134,17 +134,17 @@ function(x,
          type = "global",
          fuzzyMatrix = NULL,
          gapOpening = 0,
-         gapExtension = -1)
+         gapExtension = 1)
 {
   ## Check arguments
   type <- match.arg(type, c("global", "local", "overlap"))
   typeCode <- c("global" = 1L, "local" = 2L, "overlap" = 3L)[[type]]
-  gapOpening <- as.double(- abs(gapOpening))
+  gapOpening <- as.double(abs(gapOpening))
   if (length(gapOpening) != 1 || is.na(gapOpening))
-    stop("'gapOpening' must be a non-positive numeric vector of length 1")
-  gapExtension <- as.double(- abs(gapExtension))
+    stop("'gapOpening' must be a non-negative numeric vector of length 1")
+  gapExtension <- as.double(abs(gapExtension))
   if (length(gapExtension) != 1 || is.na(gapExtension))
-    stop("'gapExtension' must be a non-positive numeric vector of length 1")
+    stop("'gapExtension' must be a non-negative numeric vector of length 1")
 
   ## Process string information
   if (is.null(xscodec(x))) {
@@ -233,7 +233,7 @@ setMethod("stringDist",
           function(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE,
                    upper = FALSE, type = "global", quality = PhredQuality(22L),
                    substitutionMatrix = NULL, fuzzyMatrix = NULL,
-                   gapOpening = 0, gapExtension = -1) {
+                   gapOpening = 0, gapExtension = 1) {
             if (method != "quality") {
               XStringSet.stringDist(x = BStringSet(x),
                                     method = method,
@@ -260,7 +260,7 @@ setMethod("stringDist",
           function(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE,
                    upper = FALSE, type = "global", quality = PhredQuality(22L),
                    substitutionMatrix = NULL, fuzzyMatrix = NULL,
-                   gapOpening = 0, gapExtension = -1) {
+                   gapOpening = 0, gapExtension = 1) {
             if (method != "quality") {
               XStringSet.stringDist(x = x,
                                     method = method,
@@ -286,7 +286,7 @@ setMethod("stringDist",
           signature(x = "QualityScaledXStringSet"),
           function(x, method = "quality", ignoreCase = FALSE, diag = FALSE,
                    upper = FALSE, type = "global", substitutionMatrix = NULL,
-                   fuzzyMatrix = NULL, gapOpening = 0, gapExtension = -1) {
+                   fuzzyMatrix = NULL, gapOpening = 0, gapExtension = 1) {
             if (method != "quality") {
               XStringSet.stringDist(x = as(x, "XStringSet"),
                                    method = method,

@@ -192,8 +192,8 @@
     if (!isSingleStringOrNA(Matrix))
         stop("'Matrix' must be a single string or NA")
 
-    Gap_penalty <- sprintf("%.1f", - (x@gapOpening + x@gapExtension))
-    Extend_penalty <- sprintf("%.1f", - x@gapExtension)
+    Gap_penalty <- sprintf("%.1f", (x@gapOpening + x@gapExtension))
+    Extend_penalty <- sprintf("%.1f", x@gapExtension)
     prettyPercentage <- function(ratio)
         sprintf("%.1f%%", round(ratio * 100, digits=1L))
     Identity_percentage <- prettyPercentage(Identity / alignment.length)

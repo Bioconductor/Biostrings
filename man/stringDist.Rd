@@ -15,10 +15,10 @@ stringDist(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE, upper = 
 \S4method{stringDist}{XStringSet}(x, method = "levenshtein", ignoreCase = FALSE, diag = FALSE,
                    upper = FALSE, type = "global", quality = PhredQuality(22L),
                    substitutionMatrix = NULL, fuzzyMatrix = NULL, gapOpening = 0,
-                   gapExtension = -1)
+                   gapExtension = 1)
 \S4method{stringDist}{QualityScaledXStringSet}(x, method = "quality", ignoreCase = FALSE,
                    diag = FALSE, upper = FALSE, type = "global", substitutionMatrix = NULL,
-                   fuzzyMatrix = NULL, gapOpening = 0, gapExtension = -1)
+                   fuzzyMatrix = NULL, gapOpening = 0, gapExtension = 1)
 }
 \arguments{
   \item{x}{a character vector or an \code{\link{XStringSet}} object.}
@@ -86,7 +86,7 @@ Returns an object of class \code{"dist"}.
   stringDist(srPhiX174[1:4])
   stringDist(srPhiX174[1:4], method = "quality",
              quality = SolexaQuality(quPhiX174[1:4]),
-             gapOpening = -10, gapExtension = -4)
+             gapOpening = 10, gapExtension = 4)
 }
 \keyword{character}
 \keyword{multivariate}

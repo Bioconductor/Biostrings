@@ -87,8 +87,8 @@ writePairwiseAlignments(x, file="", Matrix=NA, block.width=50)
   \code{gapOpening} and \code{gapExtension} arguments. With the
   following relationship:
   \itemize{
-    \item Gap_penalty = - gapOpening - gapExtension
-    \item Extend_penalty = - gapExtension
+    \item Gap_penalty = gapOpening + gapExtension
+    \item Extend_penalty = gapExtension
   }
 }
 
@@ -152,7 +152,7 @@ subject  # original subject
 data(BLOSUM62)
 x4 <- pairwiseAlignment(pattern, subject,
                         substitutionMatrix=BLOSUM62,
-                        gapOpening=-9.5, gapExtension=-0.5)
+                        gapOpening=9.5, gapExtension=0.5)
 x4
 writePairwiseAlignments(x4, Matrix="BLOSUM62")
 }

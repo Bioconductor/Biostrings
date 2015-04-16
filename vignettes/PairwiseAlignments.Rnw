@@ -109,7 +109,7 @@ penalties influence alignment scores in the following manner:
   pairings within the substring ranges determined by the type of pairwise
   sequence alignment. This scoring scheme can be fixed for character
   pairings or quality-dependent for character pairings. (Characters that align
-  with a gap are penalized according to the ``Gap Penalty" framework.)
+  with a gap are penalized according to the ``Gap Penalty'' framework.)
   \begin{description}
     \item{Fixed substitution scoring - }
     Fixed substitution scoring schemes associate each aligned character
@@ -177,7 +177,7 @@ The gap penalties are regulated by the \Rfunarg{gapOpening} and
 
 <<main3>>=
 pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
-                  gapOpening = 0, gapExtension = -1)
+                  gapOpening = 0, gapExtension = 1)
 @
 
 The substitution scoring scheme is set using three arguments, two of which are
@@ -195,7 +195,7 @@ submat <-
 diag(submat) <- 0
 pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
                   substitutionMatrix = submat,
-                  gapOpening = 0, gapExtension = -1)
+                  gapOpening = 0, gapExtension = 1)
 @
 
 When the substitution scores are quality-based, the
@@ -233,7 +233,7 @@ submat <-
 diag(submat) <- 0
 pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
                   substitutionMatrix = submat,
-                  gapOpening = 0, gapExtension = -1, scoreOnly = TRUE)
+                  gapOpening = 0, gapExtension = 1, scoreOnly = TRUE)
 @
 
 \subsection{Exercise 1}
@@ -276,7 +276,7 @@ class(summary(psa1))
 @
 
 The \Rclass{AlignedXStringSet} and \Rclass{QualityAlignedXStringSet} classes
-hold the ``gapped" ${S'}_i$ substrings with the former class holding the
+hold the ``gapped'' ${S'}_i$ substrings with the former class holding the
 results when the pairwise sequence alignment is performed with a fixed
 substitution scoring scheme and the latter class a quality-based scoring
 scheme.
@@ -289,7 +289,7 @@ diag(submat) <- 0
 psa2 <-
   pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
                     substitutionMatrix = submat,
-                    gapOpening = 0, gapExtension = -1)
+                    gapOpening = 0, gapExtension = 1)
 class(pattern(psa2))
 @
 
@@ -322,7 +322,7 @@ Function                    & Description \\
 \Rfunction{deletion}        & Extracts the locations of the gaps inserted into the pattern for the alignments \\
 \Rfunction{length}          & Extracts the number of patterns aligned \\
 \Rfunction{mismatchTable}   & Creates a table for the mismatching positions \\
-\Rfunction{nchar}           & Computes the length of ``gapped" substrings \\
+\Rfunction{nchar}           & Computes the length of ``gapped'' substrings \\
 \Rfunction{nedit}           & Computes the Levenshtein edit distance of the alignments \\
 \Rfunction{indel}           & Extracts the locations of the insertion \& deletion gaps in the alignments \\
 \Rfunction{insertion}       & Extracts the locations of the gaps inserted into the subject for the alignments \\
@@ -348,7 +348,7 @@ Function                    & Description \\
 \hline
 Function                    & Description \\
 \hline
-\Rfunction{aligned}         & Creates an \Rclass{XStringSet} containing either ``filled-with-gaps" or
+\Rfunction{aligned}         & Creates an \Rclass{XStringSet} containing either ``filled-with-gaps'' or
                               degapped aligned strings \\
 \Rfunction{as.character}    & Creates a character vector version of \Rfunction{aligned} \\
 \Rfunction{as.matrix}       & Creates an ``exploded" character matrix version of \Rfunction{aligned} \\
@@ -378,7 +378,7 @@ diag(submat) <- 0
 psa2 <-
   pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
                     substitutionMatrix = submat,
-                    gapOpening = 0, gapExtension = -1)
+                    gapOpening = 0, gapExtension = 1)
 score(psa2)
 nedit(psa2)
 nmatch(psa2)
@@ -417,7 +417,7 @@ Function                    & Description \\
 \Rfunction{mismatch}        & Extracts the position of the mismatches \\
 \Rfunction{mismatchSummary} & Summarizes the information of the \Rfunction{mismatchTable} \\
 \Rfunction{mismatchTable}   & Creates a table for the mismatching positions \\
-\Rfunction{nchar}           & Computes the length of ``gapped" substrings \\
+\Rfunction{nchar}           & Computes the length of ``gapped'' substrings \\
 \Rfunction{nindel}          & Computes the number of insertions/deletions in the alignments \\
 \Rfunction{nmismatch}       & Computes the number of mismatching characters in the alignments \\
 \Rfunction{rep}             & Replicates the elements of the alignment object \\
@@ -475,7 +475,7 @@ analysis. In 1965 Vladimir Levenshtein considered a metric, now called the
 \textit{Levenshtein edit distance}, that measures the similarity between two
 strings. This distance metric is equivalent to the negative of the score of a
 pairwise sequence alignment with a match cost of 0, a mismatch cost of -1, a
-gap opening penalty of 0, and a gap extension cost of -1.
+gap opening penalty of 0, and a gap extension penalty of 1.
 
 The \Rfunction{stringDist} uses the internals of the
 \Rfunction{pairwiseAlignment} function to calculate the Levenshtein edit
@@ -509,7 +509,7 @@ function(pattern, x, ignore.case = FALSE, value = FALSE, max.distance = 0.1)
     - pairwiseAlignment(pattern = x, subject = pattern,
                         substitutionMatrix = substitutionMatrix,
                         type = "local-global",
-                        gapOpening = 0, gapExtension = -1,
+                        gapOpening = 0, gapExtension = 1,
                         scoreOnly = TRUE)
   whichClose <- which(distance <= max.distance)
   if (value)
@@ -557,7 +557,7 @@ data(BLOSUM50)
 BLOSUM50[1:4,1:4]
 nwdemo <- 
   pairwiseAlignment(AAString("PAWHEAE"), AAString("HEAGAWGHEE"), substitutionMatrix = BLOSUM50,
-                    gapOpening = 0, gapExtension = -8)
+                    gapOpening = 0, gapExtension = 8)
 nwdemo
 compareStrings(nwdemo)
 pid(nwdemo)
@@ -566,7 +566,7 @@ pid(nwdemo)
 \subsection{Exercise 5}
 \begin{enumerate}
 \item Repeat the alignment exercise above using \Robject{BLOSUM62}, a gap
-opening penalty of -12, and a gap extension penalty of -4.
+opening penalty of 12, and a gap extension penalty of 4.
 \item Explore to find out what caused the alignment to change.
 \end{enumerate}
 
@@ -647,11 +647,11 @@ are derived primarily from the adapter.
 submat1 <- nucleotideSubstitutionMatrix(match = 0, mismatch = -1, baseOnly = TRUE)
 randomScores1 <-
   pairwiseAlignment(randomStrings, adapter, substitutionMatrix = submat1,
-                    gapOpening = 0, gapExtension = -1, scoreOnly = TRUE)
+                    gapOpening = 0, gapExtension = 1, scoreOnly = TRUE)
 quantile(randomScores1, seq(0.99, 1, by = 0.001))
 adapterAligns1 <-
   pairwiseAlignment(adapterStrings, adapter, substitutionMatrix = submat1,
-                    gapOpening = 0, gapExtension = -1)
+                    gapOpening = 0, gapExtension = 1)
 table(score(adapterAligns1) > quantile(randomScores1, 0.999), experiment[["width"]])
 @
 
@@ -665,12 +665,12 @@ to issues related to error related substitutions and insertions/deletions.
 submat2 <- nucleotideSubstitutionMatrix(match = 1, mismatch = -Inf, baseOnly = TRUE)
 randomScores2 <-
   pairwiseAlignment(randomStrings, adapter, substitutionMatrix = submat2,
-                    type = "local", gapOpening = 0, gapExtension = -Inf,
+                    type = "local", gapOpening = 0, gapExtension = Inf,
                     scoreOnly = TRUE)
 quantile(randomScores2, seq(0.99, 1, by = 0.001))
 adapterAligns2 <-
   pairwiseAlignment(adapterStrings, adapter, substitutionMatrix = submat2,
-                    type = "local", gapOpening = 0, gapExtension = -Inf)
+                    type = "local", gapOpening = 0, gapExtension = Inf)
 table(score(adapterAligns2) > quantile(randomScores2, 0.999), experiment[["width"]])
 # Determine if the correct end was chosen
 table(start(pattern(adapterAligns2)) > 37 - end(pattern(adapterAligns2)),
@@ -686,12 +686,12 @@ errors.
 submat3 <- nucleotideSubstitutionMatrix(match = 1, mismatch = -Inf, baseOnly = TRUE)
 randomScores3 <-
   pairwiseAlignment(randomStrings, adapter, substitutionMatrix = submat3,
-                    type = "overlap", gapOpening = 0, gapExtension = -Inf,
+                    type = "overlap", gapOpening = 0, gapExtension = Inf,
                     scoreOnly = TRUE)
 quantile(randomScores3, seq(0.99, 1, by = 0.001))
 adapterAligns3 <-
   pairwiseAlignment(adapterStrings, adapter, substitutionMatrix = submat3,
-                    type = "overlap", gapOpening = 0, gapExtension = -Inf)
+                    type = "overlap", gapOpening = 0, gapExtension = Inf)
 table(score(adapterAligns3) > quantile(randomScores3, 0.999), experiment[["width"]])
 # Determine if the correct end was chosen
 table(end(pattern(adapterAligns3)) == 36, experiment[["side"]])
@@ -933,7 +933,7 @@ pairwiseAlignment("zyzzyx", "syzygy", type = "overlap")
 is set to \Robject{-Inf}? \textit{Yes, the overlap pairwise sequence alignment
 changes.}
 <<ans1b>>=
-pairwiseAlignment("zyzzyx", "syzygy", type = "overlap", gapExtension = -Inf)
+pairwiseAlignment("zyzzyx", "syzygy", type = "overlap", gapExtension = Inf)
 @
 \end{enumerate}
 
@@ -998,7 +998,7 @@ Levenshtein edit distance between \Robject{"syzygy"} and \Robject{"zyzzyx"}.
 submat <- matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
 diag(submat) <- 0
 - pairwiseAlignment("zyzzyx", "syzygy", substitutionMatrix = submat,
-                    gapOpening = 0, gapExtension = -1, scoreOnly = TRUE)
+                    gapOpening = 0, gapExtension = 1, scoreOnly = TRUE)
 @
 \item Use the \Rfunction{stringDist} function to find the Levenshtein edit
 distance for the vector
@@ -1012,11 +1012,11 @@ stringDist(c("zyzzyx", "syzygy", "succeed", "precede", "supersede"))
 \label{sec:Answers5}
 \begin{enumerate}
 \item Repeat the alignment exercise above using \Robject{BLOSUM62}, a gap
-opening penalty of -12, and a gap extension penalty of -4.
+opening penalty of 12, and a gap extension penalty of 4.
 <<ans5a>>=
 data(BLOSUM62)
 pairwiseAlignment(AAString("PAWHEAE"), AAString("HEAGAWGHEE"), substitutionMatrix = BLOSUM62,
-                  gapOpening = -12, gapExtension = -4)
+                  gapOpening = 12, gapExtension = 4)
 @
 \item Explore to find out what caused the alignment to change. \textit{The sift
 in gap penalties favored infrequent long gaps to frequent short ones.}
@@ -1047,7 +1047,7 @@ submat1 <- nucleotideSubstitutionMatrix(match = 0, mismatch = -1, baseOnly = TRU
 quantile(randomScores1, seq(0.99, 1, by = 0.001))
 ex6Aligns1 <-
   pairwiseAlignment(ex6Strings, adapter, substitutionMatrix = submat1,
-                    gapOpening = 0, gapExtension = -1)
+                    gapOpening = 0, gapExtension = 1)
 table(score(ex6Aligns1) > quantile(randomScores1, 0.999), experiment[["width"]])
 
 ## Method 2:  Use consecutive matches anywhere in string with an FDR of 1e-03
@@ -1055,7 +1055,7 @@ submat2 <- nucleotideSubstitutionMatrix(match = 1, mismatch = -Inf, baseOnly = T
 quantile(randomScores2, seq(0.99, 1, by = 0.001))
 ex6Aligns2 <-
   pairwiseAlignment(ex6Strings, adapter, substitutionMatrix = submat2,
-                    type = "local", gapOpening = 0, gapExtension = -Inf)
+                    type = "local", gapOpening = 0, gapExtension = Inf)
 table(score(ex6Aligns2) > quantile(randomScores2, 0.999), experiment[["width"]])
 # Determine if the correct end was chosen
 table(start(pattern(ex6Aligns2)) > 37 - end(pattern(ex6Aligns2)),
@@ -1065,7 +1065,7 @@ table(start(pattern(ex6Aligns2)) > 37 - end(pattern(ex6Aligns2)),
 submat3 <- nucleotideSubstitutionMatrix(match = 1, mismatch = -Inf, baseOnly = TRUE)
 ex6Aligns3 <-
   pairwiseAlignment(ex6Strings, adapter, substitutionMatrix = submat3,
-                    type = "overlap", gapOpening = 0, gapExtension = -Inf)
+                    type = "overlap", gapOpening = 0, gapExtension = Inf)
 table(score(ex6Aligns3) > quantile(randomScores3, 0.999), experiment[["width"]])
 # Determine if the correct end was chosen
 table(end(pattern(ex6Aligns3)) == 36, experiment[["side"]])
@@ -1215,7 +1215,7 @@ All of the output in this vignette was produced under the following
 conditions:
 
 <<sessinfo>>=
-toLatex(sessionInfo())
+sessionInfo()
 @
 
 

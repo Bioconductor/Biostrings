@@ -132,7 +132,7 @@ compareStrings(pattern, subject)
   ## Create a consensus matrix
   nw1 <-
     pairwiseAlignment(AAStringSet(c("HLDNLKGTF", "HVDDMPNAL")), AAString("SMDDTEKMSMKL"),
-      substitutionMatrix = "BLOSUM50", gapOpening = -3, gapExtension = -1)
+      substitutionMatrix = "BLOSUM50", gapOpening = 3, gapExtension = 1)
   consensusMatrix(nw1)
 
   ## Examine the consensus between the bacteriophage phi X174 genomes

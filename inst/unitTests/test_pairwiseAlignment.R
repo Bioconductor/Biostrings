@@ -44,7 +44,7 @@ test_pairwiseAlignment_gappedLocalAlign <- function()
     sigma <- nucleotideSubstitutionMatrix(match = 10, mismatch = -10, baseOnly = TRUE)
     alignment <-
       pairwiseAlignment(string1, string2, substitutionMatrix = sigma,
-                        gapOpening = -12,  gapExtension = -3, type="local")
+                        gapOpening = 12,  gapExtension = 3, type="local")
     checkEquals(as.character(aligned(pattern(alignment))), "GTTGCCAAACCCG")
     checkEquals(as.character(aligned(subject(alignment))), "GTTGACAT--CCG")
     checkEquals(score(alignment), 52)
@@ -71,9 +71,9 @@ test_pairwiseAlignment_editDistance <- function()
     string2 <- DNAString("GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")
     mat <- nucleotideSubstitutionMatrix(match = 0, mismatch = -1, baseOnly = TRUE)
     globalAlign <-
-        pairwiseAlignment(string1, string2, substitutionMatrix = mat, gapOpening = 0, gapExtension = -1)
+        pairwiseAlignment(string1, string2, substitutionMatrix = mat, gapOpening = 0, gapExtension = 1)
     globalAlignScore <-
-        pairwiseAlignment(string1, string2, substitutionMatrix = mat, gapOpening = 0, gapExtension = -1, scoreOnly = TRUE)
+        pairwiseAlignment(string1, string2, substitutionMatrix = mat, gapOpening = 0, gapExtension = 1, scoreOnly = TRUE)
     checkEquals(as.character(pattern(globalAlign)), "ACTTCACCAGCTCCCTGGCGG-TAAGTTGATC-A-AAGGA-A-ACGCA-A-AGTTTTCAAG")
     checkEquals(as.character(subject(globalAlign)), "GTTTCACTA-CTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")
     checkEquals(compareStrings(globalAlign), "??TTCAC?A+CT?CCT??CGG-TAAGT??AT?-A-AA??A-A-A???A-A-A?TTTTCA??")
@@ -88,18 +88,18 @@ test_pairwiseAlignment_zeroOpening <- function()
     string2 <- DNAString("GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")
     mat <- nucleotideSubstitutionMatrix(match = 1, mismatch = -3, baseOnly = TRUE)
     globalAlign <-
-        pairwiseAlignment(string1, string2, substitutionMatrix = mat, gapOpening = 0, gapExtension = -5)
+        pairwiseAlignment(string1, string2, substitutionMatrix = mat, gapOpening = 0, gapExtension = 5)
     globalAlignScore <-
-        pairwiseAlignment(string1, string2, substitutionMatrix = mat, gapOpening = 0, gapExtension = -5, scoreOnly = TRUE)
+        pairwiseAlignment(string1, string2, substitutionMatrix = mat, gapOpening = 0, gapExtension = 5, scoreOnly = TRUE)
     overlapAlign <-
-        pairwiseAlignment(string1, string2, type = "overlap", substitutionMatrix = mat, gapOpening = 0, gapExtension = -5)
+        pairwiseAlignment(string1, string2, type = "overlap", substitutionMatrix = mat, gapOpening = 0, gapExtension = 5)
     overlapAlignScore <-
-        pairwiseAlignment(string1, string2, type = "overlap", substitutionMatrix = mat, gapOpening = 0, gapExtension = -5,
+        pairwiseAlignment(string1, string2, type = "overlap", substitutionMatrix = mat, gapOpening = 0, gapExtension = 5,
                           scoreOnly = TRUE)
     localAlign <-
-        pairwiseAlignment(string1, string2, type = "local", substitutionMatrix = mat, gapOpening = 0, gapExtension = -5)
+        pairwiseAlignment(string1, string2, type = "local", substitutionMatrix = mat, gapOpening = 0, gapExtension = 5)
     localAlignScore <-
-        pairwiseAlignment(string1, string2, type = "local", substitutionMatrix = mat, gapOpening = 0, gapExtension = -5,
+        pairwiseAlignment(string1, string2, type = "local", substitutionMatrix = mat, gapOpening = 0, gapExtension = 5,
                           scoreOnly = TRUE)
     checkEquals(as.character(pattern(globalAlign)), "ACTTCACCAGCTCCCTGGCGG-TAAGTTGATC-A-AAGGA-A-ACGCA-A-AGTTTTCAAG")
     checkEquals(as.character(subject(globalAlign)), "GTTTCACTA-CTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")
@@ -123,18 +123,18 @@ test_pairwiseAlignment_fixedSubstitutionMatrix <- function()
     string2 <- DNAString("GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")
     mat <- nucleotideSubstitutionMatrix(match = 1, mismatch = -3, baseOnly = TRUE)
     globalAlign <-
-        pairwiseAlignment(string1, string2, substitutionMatrix = mat, gapOpening = -5, gapExtension = -2)
+        pairwiseAlignment(string1, string2, substitutionMatrix = mat, gapOpening = 5, gapExtension = 2)
     globalAlignScore <-
-        pairwiseAlignment(string1, string2, substitutionMatrix = mat, gapOpening = -5, gapExtension = -2, scoreOnly = TRUE)
+        pairwiseAlignment(string1, string2, substitutionMatrix = mat, gapOpening = 5, gapExtension = 2, scoreOnly = TRUE)
     overlapAlign <-
-        pairwiseAlignment(string1, string2, type = "overlap", substitutionMatrix = mat, gapOpening = -5, gapExtension = -2)
+        pairwiseAlignment(string1, string2, type = "overlap", substitutionMatrix = mat, gapOpening = 5, gapExtension = 2)
     overlapAlignScore <-
-        pairwiseAlignment(string1, string2, type = "overlap", substitutionMatrix = mat, gapOpening = -5, gapExtension = -2,
+        pairwiseAlignment(string1, string2, type = "overlap", substitutionMatrix = mat, gapOpening = 5, gapExtension = 2,
                           scoreOnly = TRUE)
     localAlign <-
-        pairwiseAlignment(string1, string2, type = "local", substitutionMatrix = mat, gapOpening = -5, gapExtension = -2)
+        pairwiseAlignment(string1, string2, type = "local", substitutionMatrix = mat, gapOpening = 5, gapExtension = 2)
     localAlignScore <-
-        pairwiseAlignment(string1, string2, type = "local", substitutionMatrix = mat, gapOpening = -5, gapExtension = -2,
+        pairwiseAlignment(string1, string2, type = "local", substitutionMatrix = mat, gapOpening = 5, gapExtension = 2,
                           scoreOnly = TRUE)
     checkEquals(as.character(pattern(globalAlign)), "ACTTCACCAGCTCCCTGGCGGTAAGTTGATC---AAAGG---AAACGCAAAGTTTTCAAG")
     checkEquals(as.character(subject(globalAlign)), "GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")

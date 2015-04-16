@@ -77,14 +77,14 @@
 ## Constructors:
 ## When subject is missing, pattern must be of length 2
 \S4method{PairwiseAlignments}{XString,XString}(pattern, subject,
-  type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1)
+  type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = 1)
 \S4method{PairwiseAlignments}{XStringSet,missing}(pattern, subject,
-  type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1)
+  type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = 1)
 \S4method{PairwiseAlignments}{character,character}(pattern, subject,
-  type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1,
+  type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = 1,
   baseClass = "BString")
 \S4method{PairwiseAlignments}{character,missing}(pattern, subject,
-  type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = -1,
+  type = "global", substitutionMatrix = NULL, gapOpening = 0, gapExtension = 1,
   baseClass = "BString")
 }
 
@@ -315,7 +315,7 @@
   pattern <- AAStringSet(c("HLDNLKGTF", "HVDDMPNAL"))
   subject <- AAString("SMDDTEKMSMKL")
   nw1 <- pairwiseAlignment(pattern, subject, substitutionMatrix = "BLOSUM50",
-    gapOpening = -3, gapExtension = -1)
+    gapOpening = 3, gapExtension = 1)
   pattern(nw1)
   subject(nw1)
   aligned(nw1)

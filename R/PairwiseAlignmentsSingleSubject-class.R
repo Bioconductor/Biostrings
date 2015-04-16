@@ -29,11 +29,11 @@ setClass("PairwiseAlignmentsSingleSubjectSummary",
 
 setGeneric("PairwiseAlignmentsSingleSubject",
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
-             gapOpening = 0, gapExtension = -1, ...)
+             gapOpening = 0, gapExtension = 1, ...)
     standardGeneric("PairwiseAlignmentsSingleSubject"))
 setMethod("PairwiseAlignmentsSingleSubject", signature(pattern = "XString", subject = "XString"),
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
-             gapOpening = 0, gapExtension = -1) {
+             gapOpening = 0, gapExtension = 1) {
         if (seqtype(pattern) != seqtype(subject))
             stop("'pattern' and 'subject' must contain ",
                  "sequences of the same type")
@@ -46,7 +46,7 @@ setMethod("PairwiseAlignmentsSingleSubject", signature(pattern = "XString", subj
 
 setMethod("PairwiseAlignmentsSingleSubject", signature(pattern = "XStringSet", subject = "missing"),
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
-             gapOpening = 0, gapExtension = -1) {
+             gapOpening = 0, gapExtension = 1) {
         if (length(pattern) != 2)
             stop("'pattern' must be of length 2 when 'subject' is missing")
         if (diff(nchar(pattern)) != 0)
@@ -60,7 +60,7 @@ setMethod("PairwiseAlignmentsSingleSubject", signature(pattern = "XStringSet", s
 
 setMethod("PairwiseAlignmentsSingleSubject", signature(pattern = "character", subject = "missing"),
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
-             gapOpening = 0, gapExtension = -1, baseClass = "BString") {
+             gapOpening = 0, gapExtension = 1, baseClass = "BString") {
         if (length(pattern) != 2)
             stop("'pattern' must be of length 2 when 'subject' is missing")
         if (diff(nchar(pattern)) != 0)
@@ -74,7 +74,7 @@ setMethod("PairwiseAlignmentsSingleSubject", signature(pattern = "character", su
 
 setMethod("PairwiseAlignmentsSingleSubject", signature(pattern = "character", subject = "character"),
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
-             gapOpening = 0, gapExtension = -1, baseClass = "BString") {
+             gapOpening = 0, gapExtension = 1, baseClass = "BString") {
         newPairwiseAlignments(pattern = pattern, subject = subject, type = type,
                               substitutionMatrix = substitutionMatrix,
                               gapOpening = gapOpening, gapExtension = gapExtension,

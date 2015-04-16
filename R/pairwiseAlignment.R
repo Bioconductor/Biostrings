@@ -77,8 +77,8 @@ function(pattern,
          subject,
          type = "global",
          substitutionMatrix = NULL,
-         gapOpening = -10,
-         gapExtension = -4,
+         gapOpening = 10,
+         gapExtension = 4,
          scoreOnly = FALSE)
 {
   ## Check arguments
@@ -102,12 +102,12 @@ function(pattern,
   typeCode <-
     c("global" = 1L, "local" = 2L, "overlap" = 3L, "global-local" = 4L,
       "local-global" = 5L)[[type]]
-  gapOpening <- as.double(- abs(gapOpening))
+  gapOpening <- as.double(abs(gapOpening))
   if (length(gapOpening) != 1 || is.na(gapOpening))
-    stop("'gapOpening' must be a non-positive numeric vector of length 1")
-  gapExtension <- as.double(- abs(gapExtension))
+    stop("'gapOpening' must be a non-negative numeric vector of length 1")
+  gapExtension <- as.double(abs(gapExtension))
   if (length(gapExtension) != 1 || is.na(gapExtension))
-    stop("'gapExtension' must be a non-positive numeric vector of length 1")
+    stop("'gapExtension' must be a non-negative numeric vector of length 1")
   scoreOnly <- as.logical(scoreOnly)
   if (length(scoreOnly) != 1 || any(is.na(scoreOnly)))
     stop("'scoreOnly' must be a non-missing logical value")
@@ -212,8 +212,8 @@ function(pattern,
 QualityScaledXStringSet.pairwiseAlignment <- function(pattern, subject,
                                                       type = "global",
                                                       fuzzyMatrix = NULL,
-                                                      gapOpening = -10,
-                                                      gapExtension = -4,
+                                                      gapOpening = 10,
+                                                      gapExtension = 4,
                                                       scoreOnly = FALSE)
 {
     ## Check arguments
@@ -234,12 +234,12 @@ QualityScaledXStringSet.pairwiseAlignment <- function(pattern, subject,
     }
     typeCode <- c("global" = 1L, "local" = 2L, "overlap" = 3L,
                   "global-local" = 4L, "local-global" = 5L)[[type]]
-    gapOpening <- as.double(- abs(gapOpening))
+    gapOpening <- as.double(abs(gapOpening))
     if (length(gapOpening) != 1L || is.na(gapOpening))
-        stop("'gapOpening' must be a non-positive numeric vector of length 1")
-    gapExtension <- as.double(- abs(gapExtension))
+        stop("'gapOpening' must be a non-negative numeric vector of length 1")
+    gapExtension <- as.double(abs(gapExtension))
     if (length(gapExtension) != 1L || is.na(gapExtension))
-        stop("'gapExtension' must be a non-positive numeric vector of length 1")
+        stop("'gapExtension' must be a non-negative numeric vector of length 1")
     scoreOnly <- as.logical(scoreOnly)
     if (length(scoreOnly) != 1L || any(is.na(scoreOnly)))
         stop("'scoreOnly' must be a non-missing logical value")
@@ -320,8 +320,8 @@ mpi.XStringSet.pairwiseAlignment <-
   function(pattern, subject,
            type = "global",
            substitutionMatrix = NULL,
-           gapOpening = -10,
-           gapExtension = -4,
+           gapOpening = 10,
+           gapExtension = 4,
            scoreOnly = FALSE)
 {
   n <- length(pattern)
@@ -358,8 +358,8 @@ mpi.XStringSet.pairwiseAlignment <-
           function(x,
                    type = "global",
                    substitutionMatrix = NULL,
-                   gapOpening = -10,
-                   gapExtension = -4,
+                   gapOpening = 10,
+                   gapExtension = 4,
                    scoreOnly = FALSE) {
             output <-
               XStringSet.pairwiseAlignment(pattern = x$pattern,
@@ -402,8 +402,8 @@ mpi.QualityScaledXStringSet.pairwiseAlignment <-
   function(pattern, subject,
            type = "global",
            fuzzyMatrix = NULL,
-           gapOpening = -10,
-           gapExtension = -4,
+           gapOpening = 10,
+           gapExtension = 4,
            scoreOnly = FALSE)
 {
   n <- length(pattern)
@@ -452,8 +452,8 @@ mpi.QualityScaledXStringSet.pairwiseAlignment <-
                     function(x,
                              type = "global",
                              fuzzyMatrix = NULL,
-                             gapOpening = -10,
-                             gapExtension = -4,
+                             gapOpening = 10,
+                             gapExtension = 4,
                              scoreOnly = FALSE) {
                       output <-
                         QualityScaledXStringSet.pairwiseAlignment(pattern = x$pattern,
@@ -513,7 +513,7 @@ setMethod("pairwiseAlignment", c("ANY", "ANY"),
              subjectQuality=PhredQuality(22L),
              type="global",
              substitutionMatrix=NULL, fuzzyMatrix=NULL,
-             gapOpening=-10, gapExtension=-4,
+             gapOpening=10, gapExtension=4,
              scoreOnly=FALSE)
     {
         ## Turn each of 'pattern' and 'subject' into an instance of one of
@@ -556,7 +556,7 @@ setMethod("pairwiseAlignment", c("ANY", "QualityScaledXStringSet"),
              patternQuality=PhredQuality(22L),
              type="global",
              substitutionMatrix=NULL, fuzzyMatrix=NULL,
-             gapOpening=-10, gapExtension=-4,
+             gapOpening=10, gapExtension=4,
              scoreOnly=FALSE)
     {
         if (is.character(pattern)) {
@@ -589,7 +589,7 @@ setMethod("pairwiseAlignment", c("QualityScaledXStringSet", "ANY"),
              subjectQuality=PhredQuality(22L),
              type="global",
              substitutionMatrix=NULL, fuzzyMatrix=NULL,
-             gapOpening=-10, gapExtension=-4,
+             gapOpening=10, gapExtension=4,
              scoreOnly=FALSE)
     {
         if (is.character(subject)) {
@@ -622,7 +622,7 @@ setMethod("pairwiseAlignment", c("QualityScaledXStringSet",
     function(pattern, subject,
              type="global",
              substitutionMatrix=NULL, fuzzyMatrix=NULL,
-             gapOpening=-10, gapExtension=-4,
+             gapOpening=10, gapExtension=4,
              scoreOnly=FALSE)
     {
         if (!is.null(substitutionMatrix)) {

@@ -9,6 +9,7 @@
 #define MAX(x, y) (x > y ? x : y)
 #define MIN(x, y) (x < y ? x : y)
 
+#define POSITIVE_INFINITY R_PosInf
 #define NEGATIVE_INFINITY R_NegInf
 #define MAX_BUF_SIZE      1048576
 
@@ -246,9 +247,9 @@ static double pairwiseAlignment(
 	if (nCharString1 < 1 || nCharString2 < 1) {
 		double zeroCharScore;
 		if (nCharString1 >= 1 && align1InfoPtr->endGap)
-			zeroCharScore = gapOpening + nCharString1 * gapExtension;
+			zeroCharScore = - gapOpening - nCharString1 * gapExtension;
 		else if (nCharString2 >= 1 && align2InfoPtr->endGap)
-			zeroCharScore = gapOpening + nCharString2 * gapExtension;
+			zeroCharScore = - gapOpening - nCharString2 * gapExtension;
 		else
 			zeroCharScore = 0.0;
 		align1InfoPtr->lengthMismatch = 0;
@@ -263,14 +264,14 @@ static double pairwiseAlignment(
 	float *currMatrix = alignBufferPtr->currMatrix;
 	float *prevMatrix = alignBufferPtr->prevMatrix;
 	CURR_MATRIX(0, 0) = 0.0;
-	CURR_MATRIX(0, 1) = (align2InfoPtr->endGap ? gapOpening : 0.0);
+	CURR_MATRIX(0, 1) = (align2InfoPtr->endGap ? - gapOpening : 0.0);
 	for (i = 1, iMinus1 = 0; i <= nCharString1; i++, iMinus1++) {
 		CURR_MATRIX(i, 0) = NEGATIVE_INFINITY;
 		CURR_MATRIX(i, 1) = NEGATIVE_INFINITY;
 	}
 	if (align1InfoPtr->endGap) {
 		for (i = 0; i <= nCharString1; i++)
-			CURR_MATRIX(i, 2) = gapOpening + i * gapExtension;
+			CURR_MATRIX(i, 2) = - gapOpening - i * gapExtension;
 	} else {
 		for (i = 0; i <= nCharString1; i++)
 			CURR_MATRIX(i, 2) = 0.0;
@@ -294,7 +295,7 @@ static double pairwiseAlignment(
 	const int noEndGap1 = !align1InfoPtr->endGap;
 	const int noEndGap2 = !align2InfoPtr->endGap;
 	const float gapOpeningPlusExtension = gapOpening + gapExtension;
-	const float endGapAddend = (align2InfoPtr->endGap ? gapExtension : 0.0);
+	const float endGapAddend = (align2InfoPtr->endGap ? - gapExtension : 0.0);
 	float *tempMatrix, substitutionValue;
 	double maxScore = NEGATIVE_INFINITY;
 	if (scoreOnly) {
@@ -326,11 +327,11 @@ static double pairwiseAlignment(
 							MAX(PREV_MATRIX(iMinus1, 0),
 							MAX(PREV_MATRIX(iMinus1, 1), PREV_MATRIX(iMinus1, 2))) + substitutionValue);
 					CURR_MATRIX(i, 1) =
-						MAX(MAX(PREV_MATRIX(i, 0), PREV_MATRIX(i, 2)) + gapOpeningPlusExtension,
-						    PREV_MATRIX(i, 1) + gapExtension);
+						MAX(MAX(PREV_MATRIX(i, 0), PREV_MATRIX(i, 2)) - gapOpeningPlusExtension,
+						    PREV_MATRIX(i, 1) - gapExtension);
 					CURR_MATRIX(i, 2) =
-						MAX(MAX(CURR_MATRIX(iMinus1, 0), CURR_MATRIX(iMinus1, 1)) + gapOpeningPlusExtension,
-						    CURR_MATRIX(iMinus1, 2) + gapExtension);
+						MAX(MAX(CURR_MATRIX(iMinus1, 0), CURR_MATRIX(iMinus1, 1)) - gapOpeningPlusExtension,
+						    CURR_MATRIX(iMinus1, 2) - gapExtension);
 
 					maxScore = MAX(CURR_MATRIX(i, 0), maxScore);
 				}
@@ -347,11 +348,11 @@ static double pairwiseAlignment(
 						MAX(PREV_MATRIX(iMinus1, 0),
 						MAX(PREV_MATRIX(iMinus1, 1), PREV_MATRIX(iMinus1, 2))) + substitutionValue;
 					CURR_MATRIX(i, 1) =
-						MAX(MAX(PREV_MATRIX(i, 0), PREV_MATRIX(i, 2)) + gapOpeningPlusExtension,
-						    PREV_MATRIX(i, 1) + gapExtension);
+						MAX(MAX(PREV_MATRIX(i, 0), PREV_MATRIX(i, 2)) - gapOpeningPlusExtension,
+						    PREV_MATRIX(i, 1) - gapExtension);
 					CURR_MATRIX(i, 2) =
-						MAX(MAX(CURR_MATRIX(iMinus1, 0), CURR_MATRIX(iMinus1, 1)) + gapOpeningPlusExtension,
-						    CURR_MATRIX(iMinus1, 2) + gapExtension);
+						MAX(MAX(CURR_MATRIX(iMinus1, 0), CURR_MATRIX(iMinus1, 1)) - gapOpeningPlusExtension,
+						    CURR_MATRIX(iMinus1, 2) - gapExtension);
 				}
 				if (noEndGap2) {
 					CURR_MATRIX(nCharString1, 1) =
@@ -433,25 +434,25 @@ static double pairwiseAlignment(
 						S_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
 						CURR_MATRIX(i, 0) = PREV_MATRIX(iMinus1, 2) + substitutionValue;
 					}
-					if (PREV_MATRIX(i, 1) > (MAX(PREV_MATRIX(i, 0), PREV_MATRIX(i, 2)) + gapOpening)) {
+					if (PREV_MATRIX(i, 1) > (MAX(PREV_MATRIX(i, 0), PREV_MATRIX(i, 2)) - gapOpening)) {
 						D_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
-						CURR_MATRIX(i, 1) = PREV_MATRIX(i, 1) + gapExtension;
+						CURR_MATRIX(i, 1) = PREV_MATRIX(i, 1) - gapExtension;
 					} else if (PREV_MATRIX(i, 0) >= PREV_MATRIX(i, 2)) {
 						D_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
-						CURR_MATRIX(i, 1) = PREV_MATRIX(i, 0) + gapOpeningPlusExtension;
+						CURR_MATRIX(i, 1) = PREV_MATRIX(i, 0) - gapOpeningPlusExtension;
 					} else {
 						D_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
-						CURR_MATRIX(i, 1) = PREV_MATRIX(i, 2) + gapOpeningPlusExtension;
+						CURR_MATRIX(i, 1) = PREV_MATRIX(i, 2) - gapOpeningPlusExtension;
 					}
-					if (CURR_MATRIX(iMinus1, 2) > (MAX(CURR_MATRIX(iMinus1, 0), CURR_MATRIX(iMinus1, 1)) + gapOpening)) {
+					if (CURR_MATRIX(iMinus1, 2) > (MAX(CURR_MATRIX(iMinus1, 0), CURR_MATRIX(iMinus1, 1)) - gapOpening)) {
 						I_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
-						CURR_MATRIX(i, 2) = CURR_MATRIX(iMinus1, 2) + gapExtension;
+						CURR_MATRIX(i, 2) = CURR_MATRIX(iMinus1, 2) - gapExtension;
 					} else if (CURR_MATRIX(iMinus1, 0) >= CURR_MATRIX(iMinus1, 1)) {
 						I_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
-						CURR_MATRIX(i, 2) = CURR_MATRIX(iMinus1, 0) + gapOpeningPlusExtension;
+						CURR_MATRIX(i, 2) = CURR_MATRIX(iMinus1, 0) - gapOpeningPlusExtension;
 					} else {
 						I_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
-						CURR_MATRIX(i, 2) = CURR_MATRIX(iMinus1, 1) + gapOpeningPlusExtension;
+						CURR_MATRIX(i, 2) = CURR_MATRIX(iMinus1, 1) - gapOpeningPlusExtension;
 					}
 
 					CURR_MATRIX(i, 0) = MAX(0.0, CURR_MATRIX(i, 0));
@@ -493,25 +494,25 @@ static double pairwiseAlignment(
 						S_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
 						CURR_MATRIX(i, 0) = PREV_MATRIX(iMinus1, 2) + substitutionValue;
 					}
-					if (PREV_MATRIX(i, 1) > (MAX(PREV_MATRIX(i, 0), PREV_MATRIX(i, 2)) + gapOpening)) {
+					if (PREV_MATRIX(i, 1) > (MAX(PREV_MATRIX(i, 0), PREV_MATRIX(i, 2)) - gapOpening)) {
 						D_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
-						CURR_MATRIX(i, 1) = PREV_MATRIX(i, 1) + gapExtension;
+						CURR_MATRIX(i, 1) = PREV_MATRIX(i, 1) - gapExtension;
 					} else if (PREV_MATRIX(i, 0) >= PREV_MATRIX(i, 2)) {
 						D_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
-						CURR_MATRIX(i, 1) = PREV_MATRIX(i, 0) + gapOpeningPlusExtension;
+						CURR_MATRIX(i, 1) = PREV_MATRIX(i, 0) - gapOpeningPlusExtension;
 					} else {
 						D_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
-						CURR_MATRIX(i, 1) = PREV_MATRIX(i, 2) + gapOpeningPlusExtension;
+						CURR_MATRIX(i, 1) = PREV_MATRIX(i, 2) - gapOpeningPlusExtension;
 					}
-					if (CURR_MATRIX(iMinus1, 2) > (MAX(CURR_MATRIX(iMinus1, 0), CURR_MATRIX(iMinus1, 1)) + gapOpening)) {
+					if (CURR_MATRIX(iMinus1, 2) > (MAX(CURR_MATRIX(iMinus1, 0), CURR_MATRIX(iMinus1, 1)) - gapOpening)) {
 						I_TRACE_MATRIX(iMinus1, jMinus1) = INSERTION;
-						CURR_MATRIX(i, 2) = CURR_MATRIX(iMinus1, 2) + gapExtension;
+						CURR_MATRIX(i, 2) = CURR_MATRIX(iMinus1, 2) - gapExtension;
 					} else if (CURR_MATRIX(iMinus1, 0) >= CURR_MATRIX(iMinus1, 1)) {
 						I_TRACE_MATRIX(iMinus1, jMinus1) = SUBSTITUTION;
-						CURR_MATRIX(i, 2) = CURR_MATRIX(iMinus1, 0) + gapOpeningPlusExtension;
+						CURR_MATRIX(i, 2) = CURR_MATRIX(iMinus1, 0) - gapOpeningPlusExtension;
 					} else {
 						I_TRACE_MATRIX(iMinus1, jMinus1) = DELETION;
-						CURR_MATRIX(i, 2) = CURR_MATRIX(iMinus1, 1) + gapOpeningPlusExtension;
+						CURR_MATRIX(i, 2) = CURR_MATRIX(iMinus1, 1) - gapOpeningPlusExtension;
 					}
 				}
 			}
@@ -591,9 +592,9 @@ static double pairwiseAlignment(
  *                           of the optimal pairwise alignment
  *                           (logical vector of length 1)
  * 'gapOpening':             gap opening cost or penalty
- *                           (double vector of length 1)
+ *                           (single non-negative double)
  * 'gapExtension':           gap extension cost or penalty
- *                           (double vector of length 1)
+ *                           (single non-negative double)
  * 'useQuality':             denotes whether or not to use quality measures
  *                           in the optimal pairwise alignment
  *                           (logical vector of length 1)
@@ -640,9 +641,9 @@ SEXP XStringSet_align_pairwiseAlignment(
 	const int localAlignment = (INTEGER(typeCode)[0] == LOCAL_ALIGNMENT);
 	float gapOpeningValue = REAL(gapOpening)[0];
 	float gapExtensionValue = REAL(gapExtension)[0];
-	if (gapOpeningValue == NEGATIVE_INFINITY || gapExtensionValue == NEGATIVE_INFINITY) {
+	if (gapOpeningValue == POSITIVE_INFINITY || gapExtensionValue == POSITIVE_INFINITY) {
 		gapOpeningValue = 0.0;
-		gapExtensionValue = NEGATIVE_INFINITY;
+		gapExtensionValue = POSITIVE_INFINITY;
 	}
 
 	XStringSet_holder pattern_holder = _hold_XStringSet(pattern);
@@ -1049,9 +1050,9 @@ SEXP XStringSet_align_pairwiseAlignment(
  *                             (integer vector of length 1;
  *                              1 = 'global', 2 = 'local', 3 = 'overlap')
  * 'gapOpening':               gap opening cost or penalty
- *                             (double vector of length 1)
+ *                             (single non-negative double)
  * 'gapExtension':             gap extension cost or penalty
- *                             (double vector of length 1)
+ *                             (single non-negative double)
  * 'useQuality':               denotes whether or not to use quality measures
  *                             in the optimal pairwise alignment
  *                             (logical vector of length 1)
@@ -1093,9 +1094,9 @@ SEXP XStringSet_align_distance(
 	int useQualityValue = LOGICAL(useQuality)[0];
 	float gapOpeningValue = REAL(gapOpening)[0];
 	float gapExtensionValue = REAL(gapExtension)[0];
-	if (gapOpeningValue == NEGATIVE_INFINITY || gapExtensionValue == NEGATIVE_INFINITY) {
+	if (gapOpeningValue == POSITIVE_INFINITY || gapExtensionValue == POSITIVE_INFINITY) {
 		gapOpeningValue = 0.0;
-		gapExtensionValue = NEGATIVE_INFINITY;
+		gapExtensionValue = POSITIVE_INFINITY;
 	}
 	int localAlignment = (INTEGER(typeCode)[0] == LOCAL_ALIGNMENT);
 

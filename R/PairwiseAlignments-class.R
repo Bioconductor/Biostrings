@@ -23,7 +23,7 @@ setClass("PairwiseAlignments",
 
 newPairwiseAlignments <-
 function(pattern, subject, type = "global", substitutionMatrix = NULL,
-         gapOpening = 0, gapExtension = -1,
+         gapOpening = 0, gapExtension = 1,
          baseClass = "BString", pwaClass = "PairwiseAlignments") {
     seqtype <- substr(baseClass, 1, nchar(baseClass) - 6)  # remove "String" suffix
     getMismatches <- function(x) {
@@ -89,12 +89,12 @@ function(pattern, subject, type = "global", substitutionMatrix = NULL,
       warning("type = 'patternOverlap' has been renamed type = 'local-global'")
       type <- "local-global"
     }
-    gapOpening <- as.double(- abs(gapOpening))
+    gapOpening <- as.double(abs(gapOpening))
     if (length(gapOpening) != 1 || is.na(gapOpening))
-        stop("'gapOpening' must be a non-positive numeric vector of length 1")
-    gapExtension <- as.double(- abs(gapExtension))
+        stop("'gapOpening' must be a non-negative numeric vector of length 1")
+    gapExtension <- as.double(abs(gapExtension))
     if (length(gapExtension) != 1 || is.na(gapExtension))
-        stop("'gapExtension' must be a non-positive numeric vector of length 1")
+        stop("'gapExtension' must be a non-negative numeric vector of length 1")
 
     explodedPattern <- safeExplode(pattern)
     explodedSubject <- safeExplode(subject)
@@ -166,12 +166,12 @@ function(pattern, subject, type = "global", substitutionMatrix = NULL,
 
 setGeneric("PairwiseAlignments",
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
-             gapOpening = 0, gapExtension = -1, ...)
+             gapOpening = 0, gapExtension = 1, ...)
         standardGeneric("PairwiseAlignments"))
 
 setMethod("PairwiseAlignments", signature(pattern = "XString", subject = "XString"),
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
-             gapOpening = 0, gapExtension = -1) {
+             gapOpening = 0, gapExtension = 1) {
         if (seqtype(pattern) != seqtype(subject))
             stop("'pattern' and 'subject' must contain ",
                  "sequences of the same type")
@@ -184,7 +184,7 @@ setMethod("PairwiseAlignments", signature(pattern = "XString", subject = "XStrin
 
 setMethod("PairwiseAlignments", signature(pattern = "XStringSet", subject = "missing"),
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
-             gapOpening = 0, gapExtension = -1) {
+             gapOpening = 0, gapExtension = 1) {
         if (length(pattern) != 2)
             stop("'pattern' must be of length 2 when 'subject' is missing")
         if (diff(nchar(pattern)) != 0)
@@ -198,7 +198,7 @@ setMethod("PairwiseAlignments", signature(pattern = "XStringSet", subject = "mis
 
 setMethod("PairwiseAlignments", signature(pattern = "character", subject = "missing"),
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
-             gapOpening = 0, gapExtension = -1, baseClass = "BString") {
+             gapOpening = 0, gapExtension = 1, baseClass = "BString") {
         if (length(pattern) != 2)
             stop("'pattern' must be of length 2 when 'subject' is missing")
         if (diff(nchar(pattern)) != 0)
@@ -212,7 +212,7 @@ setMethod("PairwiseAlignments", signature(pattern = "character", subject = "miss
 
 setMethod("PairwiseAlignments", signature(pattern = "character", subject = "character"),
     function(pattern, subject, type = "global", substitutionMatrix = NULL,
-             gapOpening = 0, gapExtension = -1, baseClass = "BString") {
+             gapOpening = 0, gapExtension = 1, baseClass = "BString") {
         newPairwiseAlignments(pattern = pattern, subject = subject, type = type,
                                      substitutionMatrix = substitutionMatrix,
                                      gapOpening = gapOpening, gapExtension = gapExtension,
@@ -234,10 +234,10 @@ setMethod("PairwiseAlignments", signature(pattern = "character", subject = "char
         message <- c(message, "'type' must be one of 'global', 'local', 'overlap', 'global-local', or 'local-global'")
     if (length(pattern) != length(subject))
         message <- c(message, "'length(pattern)' must equal 'length(subject)'")
-    if (!isSingleNumber(object@gapOpening) || object@gapOpening > 0)
-        message <- c(message, "'gapOpening' must be a non-positive numeric vector of length 1")
-    if (!isSingleNumber(object@gapExtension) || object@gapExtension > 0)
-        message <- c(message, "'gapExtension' must be a non-positive numeric vector of length 1")
+    if (!isSingleNumber(object@gapOpening) || object@gapOpening < 0)
+        message <- c(message, "'gapOpening' must be a non-negative numeric vector of length 1")
+    if (!isSingleNumber(object@gapExtension) || object@gapExtension < 0)
+        message <- c(message, "'gapExtension' must be a non-negative numeric vector of length 1")
     message
 }
 
