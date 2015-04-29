@@ -300,12 +300,12 @@ static void BitMatrix_tr(BitMatrix *in, BitMatByRow *out)
 
 static void BitMatrix_print(BitMatrix *bitmat)
 {
-	BitMatByRow bitmat_byrow;
+	BitMatByRow *bitmat_byrow;
 	int i, *row, j, cbit, bit;
 
 	bitmat_byrow = new_IntAE(bitmat->nrow, bitmat->nrow, 0);
-	BitMatrix_tr(bitmat, &bitmat_byrow);
-	for (i = 0, row = bitmat_byrow.elts; i < bitmat->nrow; i++, row++) {
+	BitMatrix_tr(bitmat, bitmat_byrow);
+	for (i = 0, row = bitmat_byrow->elts; i < bitmat->nrow; i++, row++) {
 		Rprintf("%4d: ", i);
 		for (j = 0, cbit = 1; j < bitmat->ncol; j++, cbit <<= 1) {
 			bit = (*row & cbit) != 0;

@@ -123,7 +123,7 @@ SEXP _get_ACtree2_nodeextbuf_ptr(SEXP x)
  * Buffer of duplicates.
  */
 
-static IntAE ppdups_buf;
+static IntAE *ppdups_buf;
 
 void _init_ppdups_buf(int length)
 {
@@ -133,12 +133,12 @@ void _init_ppdups_buf(int length)
 
 void _report_ppdup(int poffset, int P_id)
 {
-	ppdups_buf.elts[poffset] = P_id;
+	ppdups_buf->elts[poffset] = P_id;
 	return;
 }
 
 SEXP _get_ppdups_buf_asINTEGER()
 {
-	return new_INTEGER_from_IntAE(&ppdups_buf);
+	return new_INTEGER_from_IntAE(ppdups_buf);
 }
 

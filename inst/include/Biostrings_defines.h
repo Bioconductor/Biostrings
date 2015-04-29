@@ -120,7 +120,7 @@ typedef struct ppheadtail {
 typedef struct headtail {
 	RoSeqs head, tail;
 	int max_Hwidth, max_Twidth, max_HTwidth;
-	IntAE grouped_keys;
+	IntAE *grouped_keys;
 	PPHeadTail ppheadtail;
 } HeadTail;
 
@@ -169,10 +169,10 @@ typedef struct headtail {
    are linked by at least 1 match. */
 typedef struct match_buf {
 	int ms_code;
-	IntAE PSlink_ids;
-	IntAE match_counts;
-	IntAEAE match_starts;
-	IntAEAE match_widths;
+	IntAE *PSlink_ids;
+	IntAE *match_counts;
+	IntAEAE *match_starts;
+	IntAEAE *match_widths;
 } MatchBuf;
 
 
@@ -185,8 +185,8 @@ typedef struct tbmatch_buf {
 	int tb_width;
 	const int *head_widths;
 	const int *tail_widths;
-	IntAE PSlink_ids;
-	IntAEAE match_ends;
+	IntAE *PSlink_ids;
+	IntAEAE *match_ends;
 } TBMatchBuf;
 
 typedef struct matchpdict_buf {

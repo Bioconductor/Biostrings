@@ -190,15 +190,15 @@ SEXP SparseMIndex_endIndex(SEXP x_ends_envir, SEXP x_width0, SEXP x_names, SEXP 
 {
 	SEXP ans, ans_elt, ans_names, symbols, end;
 	int nelt, i, j;
-	IntAE poffsets, poffsets_order;
+	IntAE *poffsets, *poffsets_order;
 
 	PROTECT(symbols = R_lsInternal(x_ends_envir, 1));
 	poffsets = new_IntAE_from_CHARACTER(symbols, -1);
-	nelt = IntAE_get_nelt(&poffsets);
+	nelt = IntAE_get_nelt(poffsets);
 	if (LOGICAL(all_names)[0]) {
 		PROTECT(ans = NEW_LIST(LENGTH(x_names)));
 		for (i = 0; i < nelt; i++) {
-			j = poffsets.elts[i];
+			j = poffsets->elts[i];
 			end = _get_val_from_env(STRING_ELT(symbols, i), x_ends_envir, 1);
 			PROTECT(ans_elt = duplicate(end));
 			if (x_width0 != R_NilValue)
@@ -210,12 +210,12 @@ SEXP SparseMIndex_endIndex(SEXP x_ends_envir, SEXP x_width0, SEXP x_names, SEXP 
 		UNPROTECT(1);
 	} else {
 		//poffsets_order = new_IntAE(nelt, 0, 0);
-		//get_order_of_int_array(poffsets.elts, nelt, 0, poffsets_order.elts, 0);
-		//IntAE_set_nelt(&poffsets_order) = nelt; /* = poffsets_order.buflength */
+		//get_order_of_int_array(poffsets->elts, nelt, 0, poffsets_order->elts, 0);
+		//IntAE_set_nelt(poffsets_order) = nelt; /* = poffsets_order->_buflength */
 		PROTECT(ans = NEW_LIST(nelt));
 		PROTECT(ans_names = NEW_CHARACTER(nelt));
 		for (i = 0; i < nelt; i++) {
-			//j = poffsets_order.elts[i];
+			//j = poffsets_order->elts[i];
 			j = i;
 			end = _get_val_from_env(STRING_ELT(symbols, j), x_ends_envir, 1);
 			PROTECT(ans_elt = duplicate(end));
@@ -223,7 +223,7 @@ SEXP SparseMIndex_endIndex(SEXP x_ends_envir, SEXP x_width0, SEXP x_names, SEXP 
 				add_val_to_INTEGER(ans_elt, 1 - INTEGER(x_width0)[i]);
 			SET_ELEMENT(ans, i, ans_elt);
 			UNPROTECT(1);
-			SET_STRING_ELT(ans_names, i, duplicate(STRING_ELT(x_names, poffsets.elts[j])));
+			SET_STRING_ELT(ans_names, i, duplicate(STRING_ELT(x_names, poffsets->elts[j])));
 		}
 		SET_NAMES(ans, ans_names);
 		UNPROTECT(2);
@@ -239,7 +239,7 @@ SEXP ByPos_MIndex_combine(SEXP ends_listlist)
 {
 	int NTB, ans_length, i, j;
 	SEXP ans, ans_elt, ends;
-	IntAE ends_buf;
+	IntAE *ends_buf;
 
 	NTB = LENGTH(ends_listlist);
 	if (NTB == 0)
@@ -251,18 +251,18 @@ SEXP ByPos_MIndex_combine(SEXP ends_listlist)
 	ends_buf = new_IntAE(0, 0, 0);
 	PROTECT(ans = NEW_LIST(ans_length));
 	for (i = 0; i < ans_length; i++) {
-		IntAE_set_nelt(&ends_buf, 0);
+		IntAE_set_nelt(ends_buf, 0);
 		for (j = 0; j < NTB; j++) {
 			ends = VECTOR_ELT(VECTOR_ELT(ends_listlist, j), i);
 			if (ends == R_NilValue)
 				continue;
-			IntAE_append(&ends_buf, INTEGER(ends), LENGTH(ends));
+			IntAE_append(ends_buf, INTEGER(ends), LENGTH(ends));
 		}
-		if (IntAE_get_nelt(&ends_buf) == 0)
+		if (IntAE_get_nelt(ends_buf) == 0)
 			continue;
-		IntAE_qsort(&ends_buf, 0);
-		IntAE_delete_adjdups(&ends_buf);
-		PROTECT(ans_elt = new_INTEGER_from_IntAE(&ends_buf));
+		IntAE_qsort(ends_buf, 0);
+		IntAE_delete_adjdups(ends_buf);
+		PROTECT(ans_elt = new_INTEGER_from_IntAE(ends_buf));
 		SET_ELEMENT(ans, i, ans_elt);
 		UNPROTECT(1);
 	}

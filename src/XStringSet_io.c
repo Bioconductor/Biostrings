@@ -1,5 +1,6 @@
 /****************************************************************************
  *                       Read/write FASTA/FASTQ files                       *
+ *                                 --------                                 *
  *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "Biostrings.h"
@@ -73,10 +74,10 @@ typedef struct fasta_loader {
  */
 
 typedef struct fastaindex_loader_ext {
-	IntAE recno_buf;
-	LongLongIntAE offset_buf;
-	CharAEAE desc_buf;
-	IntAE seqlength_buf;
+	IntAE *recno_buf;
+	LLongAE *offset_buf;
+	CharAEAE *desc_buf;
+	IntAE *seqlength_buf;
 } FASTAINDEX_loaderExt;
 
 static FASTAINDEX_loaderExt new_FASTAINDEX_loaderExt()
@@ -84,7 +85,7 @@ static FASTAINDEX_loaderExt new_FASTAINDEX_loaderExt()
 	FASTAINDEX_loaderExt loader_ext;
 
 	loader_ext.recno_buf = new_IntAE(0, 0, 0);
-	loader_ext.offset_buf = new_LongLongIntAE(0, 0, 0);
+	loader_ext.offset_buf = new_LLongAE(0, 0, 0);
 	loader_ext.desc_buf = new_CharAEAE(0, 0);
 	loader_ext.seqlength_buf = new_IntAE(0, 0, 0);
 	return loader_ext;
@@ -96,20 +97,18 @@ static void FASTAINDEX_load_desc_line(FASTAloader *loader,
 {
 	FASTAINDEX_loaderExt *loader_ext;
 	IntAE *recno_buf;
-	LongLongIntAE *offset_buf;
+	LLongAE *offset_buf;
 	CharAEAE *desc_buf;
 
 	loader_ext = loader->ext;
 
-	recno_buf = &(loader_ext->recno_buf);
+	recno_buf = loader_ext->recno_buf;
 	IntAE_insert_at(recno_buf, IntAE_get_nelt(recno_buf), recno + 1);
 
-	offset_buf = &(loader_ext->offset_buf);
-	LongLongIntAE_insert_at(offset_buf,
-				LongLongIntAE_get_nelt(offset_buf),
-				offset);
+	offset_buf = loader_ext->offset_buf;
+	LLongAE_insert_at(offset_buf, LLongAE_get_nelt(offset_buf), offset);
 
-	desc_buf = &(loader_ext->desc_buf);
+	desc_buf = loader_ext->desc_buf;
 	// This works only because desc_line->seq is nul-terminated!
 	append_string_to_CharAEAE(desc_buf, desc_line->ptr);
 	return;
@@ -121,7 +120,7 @@ static void FASTAINDEX_load_empty_seq(FASTAloader *loader)
 	IntAE *seqlength_buf;
 
 	loader_ext = loader->ext;
-	seqlength_buf = &(loader_ext->seqlength_buf);
+	seqlength_buf = loader_ext->seqlength_buf;
 	IntAE_insert_at(seqlength_buf, IntAE_get_nelt(seqlength_buf), 0);
 	return;
 }
@@ -133,7 +132,7 @@ static void FASTAINDEX_load_seq_data(FASTAloader *loader,
 	IntAE *seqlength_buf;
 
 	loader_ext = loader->ext;
-	seqlength_buf = &(loader_ext->seqlength_buf);
+	seqlength_buf = loader_ext->seqlength_buf;
 	seqlength_buf->elts[IntAE_get_nelt(seqlength_buf) - 1] +=
 		seq_data->length;
 	return;
@@ -356,7 +355,7 @@ static const char *parse_FASTA_file(SEXP efp,
 
 static SEXP make_fasta_index_data_frame(const IntAE *recno_buf,
 					const IntAE *fileno_buf,
-					const LongLongIntAE *offset_buf,
+					const LLongAE *offset_buf,
 					const CharAEAE *desc_buf,
 					const IntAE *seqlength_buf)
 {
@@ -392,7 +391,7 @@ static SEXP make_fasta_index_data_frame(const IntAE *recno_buf,
 	SET_ELEMENT(df, 1, tmp);
 	UNPROTECT(1);
 
-	PROTECT(tmp = NEW_NUMERIC(LongLongIntAE_get_nelt(offset_buf)));
+	PROTECT(tmp = NEW_NUMERIC(LLongAE_get_nelt(offset_buf)));
 	for (i = 0; i < LENGTH(tmp); i++)
 		REAL(tmp)[i] = (double) offset_buf->elts[i];
 	SET_ELEMENT(df, 2, tmp);
@@ -419,7 +418,7 @@ SEXP fasta_index(SEXP efp_list,
 	int nrec0, skip0, seek_rec0, i, recno, old_nrec, new_nrec, k;
 	FASTAINDEX_loaderExt loader_ext;
 	FASTAloader loader;
-	IntAE *seqlength_buf, fileno_buf;
+	IntAE *seqlength_buf, *fileno_buf;
 	SEXP efp;
 	long long int offset, ninvalid;
 	const char *errmsg;
@@ -429,7 +428,7 @@ SEXP fasta_index(SEXP efp_list,
 	seek_rec0 = LOGICAL(seek_first_rec)[0];
 	loader_ext = new_FASTAINDEX_loaderExt();
 	loader = new_FASTAINDEX_loader(lkup, 1, &loader_ext);
-	seqlength_buf = &(loader_ext.seqlength_buf);
+	seqlength_buf = loader_ext.seqlength_buf;
 	fileno_buf = new_IntAE(0, 0, 0);
 	for (i = recno = 0; i < LENGTH(efp_list); i++) {
 		efp = VECTOR_ELT(efp_list, i);
@@ -445,15 +444,15 @@ SEXP fasta_index(SEXP efp_list,
 				"invalid one-letter sequence codes",
 				CHAR(STRING_ELT(GET_NAMES(efp_list), i)),
 				ninvalid);
-		old_nrec = IntAE_get_nelt(&fileno_buf);
+		old_nrec = IntAE_get_nelt(fileno_buf);
 		new_nrec = IntAE_get_nelt(seqlength_buf);
 		for (k = old_nrec; k < new_nrec; k++)
-			IntAE_insert_at(&fileno_buf, k, i + 1);
+			IntAE_insert_at(fileno_buf, k, i + 1);
 	}
-	return make_fasta_index_data_frame(&(loader_ext.recno_buf),
-					   &fileno_buf,
-					   &(loader_ext.offset_buf),
-					   &(loader_ext.desc_buf),
+	return make_fasta_index_data_frame(loader_ext.recno_buf,
+					   fileno_buf,
+					   loader_ext.offset_buf,
+					   loader_ext.desc_buf,
 					   seqlength_buf);
 }
 
@@ -659,7 +658,7 @@ static FASTQloader new_FASTQGEOM_loader(FASTQGEOM_loaderExt *loader_ext)
  */
 
 typedef struct fastq_loader_ext {
-	CharAEAE ans_names_buf;
+	CharAEAE *ans_names_buf;
 	XVectorList_holder ans_holder;
 	const int *lkup;
 	int lkup_length;
@@ -688,7 +687,7 @@ static void FASTQ_load_seqid(FASTQloader *loader, const Chars_holder *seqid)
 	CharAEAE *ans_names_buf;
 
 	loader_ext = loader->ext;
-	ans_names_buf = &(loader_ext->ans_names_buf);
+	ans_names_buf = loader_ext->ans_names_buf;
 	// This works only because seqid->ptr is nul-terminated!
 	append_string_to_CharAEAE(ans_names_buf, seqid->ptr);
 	return;
@@ -909,7 +908,7 @@ SEXP read_XStringSet_from_fastq(SEXP efp_list, SEXP nrec, SEXP skip,
 	}
 	if (load_seqids) {
 		PROTECT(ans_names =
-		    new_CHARACTER_from_CharAEAE(&(loader_ext.ans_names_buf)));
+		    new_CHARACTER_from_CharAEAE(loader_ext.ans_names_buf));
 		_set_XStringSet_names(ans, ans_names);
 		UNPROTECT(1);
 	}

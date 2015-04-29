@@ -87,18 +87,17 @@ int _get_int_from_SparseList(int symb_as_int, SEXP env)
 
 void _set_env_from_IntAE(SEXP env, const IntAE *int_ae)
 {
-	int nelt, symb_as_int, *elt;
+	int nelt, symb_as_int, elt;
 	SEXP symbol, value;
 
 	nelt = IntAE_get_nelt(int_ae);
-	for (symb_as_int = 1, elt = int_ae->elts;
-	     symb_as_int <= nelt;
-	     symb_as_int++, elt++)
+	for (symb_as_int = 1; symb_as_int <= nelt; symb_as_int++)
 	{
-		if (*elt == NA_INTEGER)
+		elt = int_ae->elts[symb_as_int - 1];
+		if (elt == NA_INTEGER)
 			continue;
 		PROTECT(symbol = _SparseList_int2symb(symb_as_int));
-		PROTECT(value = ScalarInteger(*elt));
+		PROTECT(value = ScalarInteger(elt));
 		defineVar(install(translateChar(symbol)), value, env);
 		UNPROTECT(2);
 	}
@@ -108,18 +107,17 @@ void _set_env_from_IntAE(SEXP env, const IntAE *int_ae)
 void _set_env_from_IntAEAE(SEXP env, const IntAEAE *int_aeae)
 {
 	int nelt, symb_as_int;
-	IntAE *elt;
+	IntAE *ae;
 	SEXP symbol, value;
 
 	nelt = IntAEAE_get_nelt(int_aeae);
-	for (symb_as_int = 1, elt = int_aeae->elts;
-	     symb_as_int <= nelt;
-	     symb_as_int++, elt++)
+	for (symb_as_int = 1; symb_as_int <= nelt; symb_as_int++)
 	{
-		if (IntAE_get_nelt(elt) == 0)
+		ae = int_aeae->elts[symb_as_int - 1];
+		if (IntAE_get_nelt(ae) == 0)
 			continue;
 		PROTECT(symbol = _SparseList_int2symb(symb_as_int));
-		PROTECT(value = new_INTEGER_from_IntAE(elt));
+		PROTECT(value = new_INTEGER_from_IntAE(ae));
 		defineVar(install(translateChar(symbol)), value, env);
 		UNPROTECT(2);
 	}

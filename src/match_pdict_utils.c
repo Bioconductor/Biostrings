@@ -55,30 +55,27 @@ void _TBMatchBuf_report_match(TBMatchBuf *buf, int PSpair_id, int end)
 
 	if (!buf->is_init)
 		return;
-	end_buf = buf->match_ends.elts + PSpair_id;
+	end_buf = buf->match_ends->elts[PSpair_id];
 	nelt = IntAE_get_nelt(end_buf);
 	if (nelt == 0)
-		IntAE_insert_at(&(buf->PSlink_ids),
-				IntAE_get_nelt(&(buf->PSlink_ids)), PSpair_id);
+		IntAE_insert_at(buf->PSlink_ids,
+				IntAE_get_nelt(buf->PSlink_ids), PSpair_id);
 	IntAE_insert_at(end_buf, nelt, end);
 	return;
 }
 
 void _TBMatchBuf_flush(TBMatchBuf *buf)
 {
-	int nelt, i;
-	const int *PSlink_id;
+	int nelt, i, PSlink_id;
 
 	if (!buf->is_init)
 		return;
-	nelt = IntAE_get_nelt(&(buf->PSlink_ids));
-	for (i = 0, PSlink_id = buf->PSlink_ids.elts;
-	     i < nelt;
-	     i++, PSlink_id++)
-	{
-		IntAE_set_nelt(buf->match_ends.elts + *PSlink_id, 0);
+	nelt = IntAE_get_nelt(buf->PSlink_ids);
+	for (i = 0; i < nelt; i++) {
+		PSlink_id = buf->PSlink_ids->elts[i];
+		IntAE_set_nelt(buf->match_ends->elts[PSlink_id], 0);
 	}
-	IntAE_set_nelt(&(buf->PSlink_ids), 0);
+	IntAE_set_nelt(buf->PSlink_ids, 0);
 	return;
 }
 
@@ -108,8 +105,8 @@ void _MatchPDictBuf_report_match(MatchPDictBuf *buf, int PSpair_id, int tb_end)
 
 	if (buf->tb_matches.is_init == 0)
 		return;
-	PSlink_ids = &(buf->matches.PSlink_ids);
-	count_buf = &(buf->matches.match_counts);
+	PSlink_ids = buf->matches.PSlink_ids;
+	count_buf = buf->matches.match_counts;
 	if (count_buf->elts[PSpair_id]++ == 0)
 		IntAE_insert_at(PSlink_ids,
 			IntAE_get_nelt(PSlink_ids), PSpair_id);
@@ -128,12 +125,12 @@ void _MatchPDictBuf_report_match(MatchPDictBuf *buf, int PSpair_id, int tb_end)
 			PSpair_id, tb_end, start, width);
 	}
 #endif
-	if (buf->matches.match_starts.buflength != -1) {
-		start_buf = buf->matches.match_starts.elts + PSpair_id;
+	if (buf->matches.match_starts->_buflength != -1) {
+		start_buf = buf->matches.match_starts->elts[PSpair_id];
 		IntAE_insert_at(start_buf, IntAE_get_nelt(start_buf), start);
 	}
-	if (buf->matches.match_widths.buflength != -1) {
-		width_buf = buf->matches.match_widths.elts + PSpair_id;
+	if (buf->matches.match_widths->_buflength != -1) {
+		width_buf = buf->matches.match_widths->elts[PSpair_id];
 		IntAE_insert_at(width_buf, IntAE_get_nelt(width_buf), width);
 	}
 	return;
@@ -181,18 +178,20 @@ static void collect_grouped_keys(int key0, SEXP low2high, IntAE *grouped_keys)
 
 	nelt = 1;
 	IntAE_set_nelt(grouped_keys, nelt);
-	if (nelt > grouped_keys->buflength)
+	if (nelt > grouped_keys->_buflength)
 		error("Biostrings internal error in collect_grouped_keys(): "
-		      "IntAE_get_nelt(grouped_keys) > grouped_keys->buflength");
+		      "IntAE_get_nelt(grouped_keys) > "
+		      "grouped_keys->_buflength");
 	grouped_keys->elts[0] = key0;
 	dups = VECTOR_ELT(low2high, key0);
 	if (dups == R_NilValue)
 		return;
 	nelt += LENGTH(dups);
 	IntAE_set_nelt(grouped_keys, nelt);
-	if (nelt > grouped_keys->buflength)
+	if (nelt > grouped_keys->_buflength)
 		error("Biostrings internal error in collect_grouped_keys(): "
-		      "IntAE_get_nelt(grouped_keys) > grouped_keys->buflength");
+		      "IntAE_get_nelt(grouped_keys) > "
+		      "grouped_keys->_buflength");
 	memcpy(grouped_keys->elts + 1, INTEGER(dups),
 			LENGTH(dups) * sizeof(int));
 	for (i = 1, key = grouped_keys->elts + 1;
@@ -233,19 +232,16 @@ static void match_headtail_for_loc(const HeadTail *headtail,
 		const Chars_holder *S, int tb_end, int max_nmis, int min_nmis,
 		MatchPDictBuf *matchpdict_buf)
 {
-	int nelt, i;
-	const int *key;
+	int nelt, i, key;
 	const Chars_holder *H, *T;
 
-	nelt = IntAE_get_nelt(&(headtail->grouped_keys));
-	for (i = 0, key = headtail->grouped_keys.elts;
-	     i < nelt;
-	     i++, key++)
-	{
-		H = headtail->head.elts + *key;
-		T = headtail->tail.elts + *key;
+	nelt = IntAE_get_nelt(headtail->grouped_keys);
+	for (i = 0; i < nelt; i++) {
+		key = headtail->grouped_keys->elts[i];
+		H = headtail->head.elts + key;
+		T = headtail->tail.elts + key;
 		match_HT(H, T, S, tb_end, max_nmis, min_nmis,
-				matchpdict_buf, *key);
+			 matchpdict_buf, key);
 	}
 	return;
 }
@@ -297,15 +293,12 @@ static void match_headtail_by_key(HeadTail *headtail,
 		int max_nmis, int min_nmis,
 		MatchPDictBuf *matchpdict_buf)
 {
-	int nelt, i;
-	const int *key;
+	int nelt, i, key;
 
-	nelt = IntAE_get_nelt(&(headtail->grouped_keys));
-	for (i = 0, key = headtail->grouped_keys.elts;
-	     i < nelt;
-	     i++, key++)
-	{
-		match_headtail_for_key(headtail, *key,
+	nelt = IntAE_get_nelt(headtail->grouped_keys);
+	for (i = 0; i < nelt; i++) {
+		key = headtail->grouped_keys->elts[i];
+		match_headtail_for_key(headtail, key,
 				S, tb_end_buf, max_nmis, min_nmis,
 				matchpdict_buf);
 	}
@@ -612,7 +605,7 @@ static void report_matches_for_loc(const BitCol *bitcol, HeadTail *headtail,
 			//_MatchPDictBuf_report_match(matchpdict_buf,
 			//	headtail->grouped_keys.elts[i], tb_end);
 			int key, start, width;
-			key = headtail->grouped_keys.elts[i];
+			key = headtail->grouped_keys->elts[i];
 			width = headtail->head.elts[key].length
 			      + matchpdict_buf->tb_matches.tb_width
 			      + headtail->tail.elts[key].length;
@@ -667,15 +660,15 @@ static void match_ppheadtail0(HeadTail *headtail,
 	BitCol bitcol;
 
 	if (headtail->max_Hwidth > 0)
-		preprocess_head(&(headtail->head), &(headtail->grouped_keys),
+		preprocess_head(&(headtail->head), headtail->grouped_keys,
 			&(headtail->ppheadtail.byte2offset),
 			headtail->ppheadtail.head_bmbuf);
 	if (headtail->max_Twidth > 0)
-		preprocess_tail(&(headtail->tail), &(headtail->grouped_keys),
+		preprocess_tail(&(headtail->tail), headtail->grouped_keys,
 			&(headtail->ppheadtail.byte2offset),
 			headtail->ppheadtail.tail_bmbuf);
 	tmp_match_bmbuf = &(headtail->ppheadtail.tmp_match_bmbuf);
-	tmp_match_bmbuf->nrow = IntAE_get_nelt(&(headtail->grouped_keys));
+	tmp_match_bmbuf->nrow = IntAE_get_nelt(headtail->grouped_keys);
 	tmp_match_bmbuf->ncol = 0;
 
 	min_safe_tb_end = headtail->max_Hwidth
@@ -695,7 +688,7 @@ static void match_ppheadtail0(HeadTail *headtail,
 		// From now 'tb_end' is guaranteed to be "safe" i.e. not too
 		// close to 'S' boundaries.
 		init_nmis_bmbuf(&(headtail->ppheadtail.nmis_bmbuf),
-				IntAE_get_nelt(&(headtail->grouped_keys)));
+				IntAE_get_nelt(headtail->grouped_keys));
 		bitcol = match_ppheadtail_for_loc(headtail,
 				matchpdict_buf->tb_matches.tb_width,
 				S, *tb_end, max_nmis, min_nmis);
@@ -720,10 +713,9 @@ static void match_ppheadtail(HeadTail *headtail,
 		int max_nmis, int min_nmis,
 		MatchPDictBuf *matchpdict_buf)
 {
-	int nelt, nkey0, nkey1, nkey2, i;
-	const int *key;
+	int nelt, nkey0, nkey1, nkey2, i, key;
 
-	nkey0 = IntAE_get_nelt(&(headtail->grouped_keys));
+	nkey0 = IntAE_get_nelt(headtail->grouped_keys);
 	nkey2 = nkey0 % NBIT_PER_BITWORD;
 	if (nkey2 > MAX_REMAINING_KEYS) {
 		match_ppheadtail0(headtail,
@@ -733,20 +725,18 @@ static void match_ppheadtail(HeadTail *headtail,
 	}
 	nkey1 = nkey0 - nkey2;
 	if (nkey1 != 0) {
-		IntAE_set_nelt(&(headtail->grouped_keys), nkey1);
+		IntAE_set_nelt(headtail->grouped_keys, nkey1);
 		match_ppheadtail0(headtail,
 			S, tb_end_buf, max_nmis, min_nmis,
 			matchpdict_buf);
-		IntAE_set_nelt(&(headtail->grouped_keys), nkey0);
+		IntAE_set_nelt(headtail->grouped_keys, nkey0);
 	}
 	/* FIXME: If headtail->grouped_keys is guaranteed to not grow
 	   during the loop below, then extract its nelt before entering
 	   the loop. */
-	for (i = nkey1, key = headtail->grouped_keys.elts + nkey1;
-	     i < IntAE_get_nelt(&(headtail->grouped_keys));
-	     i++, key++)
-	{
-		match_headtail_for_key(headtail, *key,
+	for (i = nkey1; i < IntAE_get_nelt(headtail->grouped_keys); i++) {
+		key = headtail->grouped_keys->elts[i];
+		match_headtail_for_key(headtail, key,
 				S, tb_end_buf, max_nmis, min_nmis,
 				matchpdict_buf);
 	}
@@ -801,7 +791,7 @@ void _match_pdict_flanks_at(int key0, SEXP low2high,
 	Rprintf("_match_pdict_flanks_at(): ncalls=%d key0=%d tb_end=%d\n",
 		ncalls, key0, tb_end);
 */
-	collect_grouped_keys(key0, low2high, &(headtail->grouped_keys));
+	collect_grouped_keys(key0, low2high, headtail->grouped_keys);
 	match_headtail_for_loc(headtail,
 		S, tb_end, max_nmis, min_nmis,
 		matchpdict_buf);
@@ -826,14 +816,14 @@ void _match_pdict_all_flanks(SEXP low2high,
 	if (debug)
 		Rprintf("[DEBUG] ENTERING _match_pdict_all_flanks()\n");
 #endif
-	tb_PSlink_ids = &(matchpdict_buf->tb_matches.PSlink_ids);
+	tb_PSlink_ids = matchpdict_buf->tb_matches.PSlink_ids;
 	nelt = IntAE_get_nelt(tb_PSlink_ids);
 	for (i = 0; i < nelt; i++) {
 		key0 = tb_PSlink_ids->elts[i];
-		collect_grouped_keys(key0, low2high, &(headtail->grouped_keys));
-		tb_end_buf = matchpdict_buf->tb_matches.match_ends.elts + key0;
+		collect_grouped_keys(key0, low2high, headtail->grouped_keys);
+		tb_end_buf = matchpdict_buf->tb_matches.match_ends->elts[key0];
 /*
-		ndup = (unsigned long int) IntAE_get_nelt(&(headtail->grouped_keys));
+		ndup = (unsigned long int) IntAE_get_nelt(headtail->grouped_keys);
 		nloci = (unsigned long int) IntAE_get_nelt(tb_end_buf);
 		NFC = ndup * nloci;
 		total_NFC += NFC;
@@ -844,10 +834,10 @@ void _match_pdict_all_flanks(SEXP low2high,
 /*
 			Rprintf("_match_pdict_all_flanks(): "
 				"key0=%d "
-				"IntAE_get_nelt(&(headtail->grouped_keys))=%d "
+				"IntAE_get_nelt(headtail->grouped_keys)=%d "
 				"tb_end_buf->nelt=%d\n",
 				key0,
-				IntAE_get_nelt(&(headtail->grouped_keys)),
+				IntAE_get_nelt(headtail->grouped_keys),
 				tb_end_buf->nelt);
 			subtotal_NFC += NFC;
 */
@@ -903,9 +893,9 @@ sum(elementLengths(mi6))  # 17896
 			dt2 = (double) (clock() - time0) / CLOCKS_PER_SEC;
 			if (dt1 > dt2) {
 				Rprintf("_match_pdict_all_flanks(): "
-					"IntAE_get_nelt(&(headtail->grouped_keys))=%d "
+					"IntAE_get_nelt(headtail->grouped_keys)=%d "
 					"tb_end_buf->nelt=%d\n",
-					IntAE_get_nelt(&(headtail->grouped_keys)),
+					IntAE_get_nelt(headtail->grouped_keys),
 					IntAE_get_nelt(tb_end_buf));
 				Rprintf("  --> dt1=%.3f dt2=%.3f\n", dt1, dt2);
 			}

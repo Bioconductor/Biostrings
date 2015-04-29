@@ -69,8 +69,8 @@ MatchBuf _new_MatchBuf(int ms_code, int nPSpair)
 	if (count_only) {
 		/* By setting 'buflength' to -1 we indicate that these
 		   buffers must not be used */
-		match_buf.match_starts.buflength = -1;
-		match_buf.match_widths.buflength = -1;
+		match_buf.match_starts->_buflength = -1;
+		match_buf.match_widths->_buflength = -1;
 	} else {
 		match_buf.match_starts = new_IntAEAE(nPSpair, nPSpair);
 		match_buf.match_widths = new_IntAEAE(nPSpair, nPSpair);
@@ -83,17 +83,17 @@ void _MatchBuf_report_match(MatchBuf *match_buf,
 {
 	IntAE *PSlink_ids, *count_buf, *start_buf, *width_buf;
 
-	PSlink_ids = &(match_buf->PSlink_ids);
-	count_buf = &(match_buf->match_counts);
+	PSlink_ids = match_buf->PSlink_ids;
+	count_buf = match_buf->match_counts;
 	if (count_buf->elts[PSpair_id]++ == 0)
 		IntAE_insert_at(PSlink_ids,
 			IntAE_get_nelt(PSlink_ids), PSpair_id);
-	if (match_buf->match_starts.buflength != -1) {
-		start_buf = match_buf->match_starts.elts + PSpair_id;
+	if (match_buf->match_starts->_buflength != -1) {
+		start_buf = match_buf->match_starts->elts[PSpair_id];
 		IntAE_insert_at(start_buf, IntAE_get_nelt(start_buf), start);
 	}
-	if (match_buf->match_widths.buflength != -1) {
-		width_buf = match_buf->match_widths.elts + PSpair_id;
+	if (match_buf->match_widths->_buflength != -1) {
+		width_buf = match_buf->match_widths->elts[PSpair_id];
 		IntAE_insert_at(width_buf, IntAE_get_nelt(width_buf), width);
 	}
 	return;
@@ -101,61 +101,55 @@ void _MatchBuf_report_match(MatchBuf *match_buf,
 
 void _MatchBuf_flush(MatchBuf *match_buf)
 {
-	int nelt, i;
-	const int *PSlink_id;
+	int nelt, i, PSlink_id;
 
-	nelt = IntAE_get_nelt(&(match_buf->PSlink_ids));
-	for (i = 0, PSlink_id = match_buf->PSlink_ids.elts;
-	     i < nelt;
-	     i++, PSlink_id++)
-	{
-		match_buf->match_counts.elts[*PSlink_id] = 0;
-		if (match_buf->match_starts.buflength != -1)
-			IntAE_set_nelt(match_buf->match_starts.elts + *PSlink_id, 0);
-		if (match_buf->match_widths.buflength != -1)
-			IntAE_set_nelt(match_buf->match_widths.elts + *PSlink_id, 0);
+	nelt = IntAE_get_nelt(match_buf->PSlink_ids);
+	for (i = 0; i < nelt; i++) {
+		PSlink_id = match_buf->PSlink_ids->elts[i];
+		match_buf->match_counts->elts[PSlink_id] = 0;
+		if (match_buf->match_starts->_buflength != -1)
+			IntAE_set_nelt(match_buf->match_starts->elts[PSlink_id], 0);
+		if (match_buf->match_widths->_buflength != -1)
+			IntAE_set_nelt(match_buf->match_widths->elts[PSlink_id], 0);
 	}
-	IntAE_set_nelt(&(match_buf->PSlink_ids), 0);
+	IntAE_set_nelt(match_buf->PSlink_ids, 0);
 	return;
 }
 
 void _MatchBuf_append_and_flush(MatchBuf *match_buf1,
 		MatchBuf *match_buf2, int view_offset)
 {
-	int nelt, i;
-	const int *PSlink_id;
+	int nelt, i, PSlink_id;
 	IntAE *start_buf1, *start_buf2, *width_buf1, *width_buf2;
 
 	if (match_buf1->ms_code == MATCHES_AS_NULL
 	 || match_buf2->ms_code == MATCHES_AS_NULL)
 		return;
-	if (IntAE_get_nelt(&(match_buf1->match_counts)) !=
-	    IntAE_get_nelt(&(match_buf2->match_counts))
+	if (IntAE_get_nelt(match_buf1->match_counts) !=
+	    IntAE_get_nelt(match_buf2->match_counts)
 	 || match_buf1->ms_code != match_buf2->ms_code)
 		error("Biostrings internal error in "
 		      "_MatchBuf_append_and_flush(): "
 		      "buffers are incompatible");
-	nelt = IntAE_get_nelt(&(match_buf2->PSlink_ids));
-	for (i = 0, PSlink_id = match_buf2->PSlink_ids.elts;
-	     i < nelt;
-	     i++, PSlink_id++)
-	{
-		if (match_buf1->match_counts.elts[*PSlink_id] == 0)
-			IntAE_insert_at(&(match_buf1->PSlink_ids),
-				IntAE_get_nelt(&(match_buf1->PSlink_ids)),
-				*PSlink_id);
-		match_buf1->match_counts.elts[*PSlink_id] +=
-			match_buf2->match_counts.elts[*PSlink_id];
-		if (match_buf1->match_starts.buflength != -1) {
-			start_buf1 = match_buf1->match_starts.elts + *PSlink_id;
-			start_buf2 = match_buf2->match_starts.elts + *PSlink_id;
+	nelt = IntAE_get_nelt(match_buf2->PSlink_ids);
+	for (i = 0; i < nelt; i++) {
+		PSlink_id = match_buf2->PSlink_ids->elts[i];
+		if (match_buf1->match_counts->elts[PSlink_id] == 0)
+			IntAE_insert_at(match_buf1->PSlink_ids,
+				IntAE_get_nelt(match_buf1->PSlink_ids),
+				PSlink_id);
+		match_buf1->match_counts->elts[PSlink_id] +=
+			match_buf2->match_counts->elts[PSlink_id];
+		if (match_buf1->match_starts->_buflength != -1) {
+			start_buf1 = match_buf1->match_starts->elts[PSlink_id];
+			start_buf2 = match_buf2->match_starts->elts[PSlink_id];
 			IntAE_append_shifted_vals(start_buf1,
 				start_buf2->elts, IntAE_get_nelt(start_buf2),
 				view_offset);
 		}
-		if (match_buf1->match_widths.buflength != -1) {
-			width_buf1 = match_buf1->match_widths.elts + *PSlink_id;
-			width_buf2 = match_buf2->match_widths.elts + *PSlink_id;
+		if (match_buf1->match_widths->_buflength != -1) {
+			width_buf1 = match_buf1->match_widths->elts[PSlink_id];
+			width_buf2 = match_buf2->match_widths->elts[PSlink_id];
 			IntAE_append(width_buf1,
 				width_buf2->elts, IntAE_get_nelt(width_buf2));
 		}
@@ -169,7 +163,7 @@ SEXP _MatchBuf_which_asINTEGER(const MatchBuf *match_buf)
 	SEXP ans;
 	int i;
 
-	PROTECT(ans = new_INTEGER_from_IntAE(&(match_buf->PSlink_ids)));
+	PROTECT(ans = new_INTEGER_from_IntAE(match_buf->PSlink_ids));
 	sort_int_array(INTEGER(ans), LENGTH(ans), 0);
 	for (i = 0; i < LENGTH(ans); i++)
 		INTEGER(ans)[i]++;
@@ -179,53 +173,53 @@ SEXP _MatchBuf_which_asINTEGER(const MatchBuf *match_buf)
 
 SEXP _MatchBuf_counts_asINTEGER(const MatchBuf *match_buf)
 {
-	return new_INTEGER_from_IntAE(&(match_buf->match_counts));
+	return new_INTEGER_from_IntAE(match_buf->match_counts);
 }
 
 SEXP _MatchBuf_starts_asLIST(const MatchBuf *match_buf)
 {
-	if (match_buf->match_starts.buflength == -1)
+	if (match_buf->match_starts->_buflength == -1)
 		error("Biostrings internal error: _MatchBuf_starts_asLIST() "
 		      "was called in the wrong context");
-	return new_LIST_from_IntAEAE(&(match_buf->match_starts), 1);
+	return new_LIST_from_IntAEAE(match_buf->match_starts, 1);
 }
 
 static SEXP _MatchBuf_starts_toEnvir(const MatchBuf *match_buf, SEXP env)
 {
-	if (match_buf->match_starts.buflength == -1)
+	if (match_buf->match_starts->_buflength == -1)
 		error("Biostrings internal error: _MatchBuf_starts_toEnvir() "
 		      "was called in the wrong context");
-	return IntAEAE_toEnvir(&(match_buf->match_starts), env, 1);
+	return IntAEAE_toEnvir(match_buf->match_starts, env, 1);
 }
 
 static SEXP _MatchBuf_widths_asLIST(const MatchBuf *match_buf)
 {
-	if (match_buf->match_widths.buflength == -1)
+	if (match_buf->match_widths->_buflength == -1)
 		error("Biostrings internal error: _MatchBuf_widths_asLIST() "
 		      "was called in the wrong context");
-	return new_LIST_from_IntAEAE(&(match_buf->match_widths), 1);
+	return new_LIST_from_IntAEAE(match_buf->match_widths, 1);
 }
 
 SEXP _MatchBuf_ends_asLIST(const MatchBuf *match_buf)
 {
-	if (match_buf->match_starts.buflength == -1
-	 || match_buf->match_widths.buflength == -1)
+	if (match_buf->match_starts->_buflength == -1
+	 || match_buf->match_widths->_buflength == -1)
 		error("Biostrings internal error: _MatchBuf_ends_asLIST() "
 		      "was called in the wrong context");
-	IntAEAE_sum_and_shift(&(match_buf->match_starts),
-			      &(match_buf->match_widths), -1);
-	return new_LIST_from_IntAEAE(&(match_buf->match_starts), 1);
+	IntAEAE_sum_and_shift(match_buf->match_starts,
+			      match_buf->match_widths, -1);
+	return new_LIST_from_IntAEAE(match_buf->match_starts, 1);
 }
 
 static SEXP _MatchBuf_ends_toEnvir(const MatchBuf *match_buf, SEXP env)
 {
-	if (match_buf->match_starts.buflength == -1
-	 || match_buf->match_widths.buflength == -1)
+	if (match_buf->match_starts->_buflength == -1
+	 || match_buf->match_widths->_buflength == -1)
 		error("Biostrings internal error: _MatchBuf_ends_toEnvir() "
 		      "was called in the wrong context");
-	IntAEAE_sum_and_shift(&(match_buf->match_starts),
-			      &(match_buf->match_widths), -1);
-	return IntAEAE_toEnvir(&(match_buf->match_starts), env, 1);
+	IntAEAE_sum_and_shift(match_buf->match_starts,
+			      match_buf->match_widths, -1);
+	return IntAEAE_toEnvir(match_buf->match_starts, env, 1);
 }
 
 /*
@@ -319,7 +313,7 @@ void _drop_reported_matches()
 
 int _get_match_count()
 {
-	return internal_match_buf.match_counts.elts[active_PSpair_id];
+	return internal_match_buf.match_counts->elts[active_PSpair_id];
 }
 
 SEXP _reported_matches_asSEXP()
@@ -334,9 +328,9 @@ SEXP _reported_matches_asSEXP()
 		return ScalarInteger(_get_match_count());
 	    case MATCHES_AS_RANGES:
 		PROTECT(start = new_INTEGER_from_IntAE(
-		  internal_match_buf.match_starts.elts + active_PSpair_id));
+		  internal_match_buf.match_starts->elts[active_PSpair_id]));
 		PROTECT(width = new_INTEGER_from_IntAE(
-		  internal_match_buf.match_widths.elts + active_PSpair_id));
+		  internal_match_buf.match_widths->elts[active_PSpair_id]));
 		PROTECT(ans = new_IRanges("IRanges", start, width, R_NilValue));
 		UNPROTECT(3);
 		return ans;
