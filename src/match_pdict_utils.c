@@ -125,11 +125,11 @@ void _MatchPDictBuf_report_match(MatchPDictBuf *buf, int PSpair_id, int tb_end)
 			PSpair_id, tb_end, start, width);
 	}
 #endif
-	if (buf->matches.match_starts->_buflength != -1) {
+	if (buf->matches.match_starts != NULL) {
 		start_buf = buf->matches.match_starts->elts[PSpair_id];
 		IntAE_insert_at(start_buf, IntAE_get_nelt(start_buf), start);
 	}
-	if (buf->matches.match_widths->_buflength != -1) {
+	if (buf->matches.match_widths != NULL) {
 		width_buf = buf->matches.match_widths->elts[PSpair_id];
 		IntAE_insert_at(width_buf, IntAE_get_nelt(width_buf), width);
 	}

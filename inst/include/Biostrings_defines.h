@@ -171,8 +171,8 @@ typedef struct match_buf {
 	int ms_code;
 	IntAE *PSlink_ids;
 	IntAE *match_counts;
-	IntAEAE *match_starts;
-	IntAEAE *match_widths;
+	IntAEAE *match_starts;  /* can be missing! (i.e. set to NULL) */
+	IntAEAE *match_widths;  /* can be missing! (i.e. set to NULL) */
 } MatchBuf;
 
 
