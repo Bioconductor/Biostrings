@@ -92,11 +92,12 @@ int _nmismatch_at_Pshift(const Chars_holder *P,
 	     i < P->length;
 	     i++, j++, p++, s++)
 	{
-		x = (unsigned char) *p;
-		y = (unsigned char) *s;
-		if (j >= 0 && j < S->length
-		 && bytewise_match_table->xy2val[x][y])
-			continue;
+		if (j >= 0 && j < S->length) {
+			x = (unsigned char) *p;
+			y = (unsigned char) *s;
+			if (bytewise_match_table->xy2val[x][y])
+				continue;
+		}
 		if (nmis++ >= max_nmis)
 			break;
 	}
