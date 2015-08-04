@@ -19,7 +19,7 @@
     ##   writePairwiseAlignments(pa)
     stopifnot(all(pos >= start(axset@range)),
               all(pos <= end(axset@range) + 1L))
-    lkup <- integer(width(axset@range))
+    lkup <- integer(width(axset@range) + 1L)
     gap_ranges <- indel(axset)[[1L]]
     lkup[start(gap_ranges)] <- width(gap_ranges)
     lkup <- cumsum(lkup + 1L)
