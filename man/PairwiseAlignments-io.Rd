@@ -114,26 +114,32 @@ writePairwiseAlignments(x, file="", Matrix=NA, block.width=50)
 ## ---------------------------------------------------------------------
 pattern <- DNAString("CGTACGTAACGTTCGT")
 subject <- DNAString("CGTCGTCGTCCGTAA")
-x1 <- pairwiseAlignment(pattern, subject)
-x1
-writePairwiseAlignments(x1)
-writePairwiseAlignments(x1, block.width=10)
+pa1 <- pairwiseAlignment(pattern, subject)
+pa1
+writePairwiseAlignments(pa1)
+writePairwiseAlignments(pa1, block.width=10)
 ## The 2 bottom-right numbers (16 and 15) are the lengths of
 ## the original pattern and subject, respectively.
 
-x2 <- pairwiseAlignment(pattern, subject, type="global-local")
-x2  # score is different!
-writePairwiseAlignments(x2)
+pa2 <- pairwiseAlignment(pattern, subject, type="global-local")
+pa2  # score is different!
+writePairwiseAlignments(pa2)
 ## By just looking at the file, we can't tell the length of the
 ## original subject! Could be 13, could be more...
+
+pattern <- DNAString("TCAACTTAACTT")
+subject <- DNAString("GGGCAACAACGGG")
+pa3 <- pairwiseAlignment(pattern, subject, type="global-local",
+                         gapOpening=-2, gapExtension=-1)
+writePairwiseAlignments(pa3)
 
 ## ---------------------------------------------------------------------
 ## B. WITH MORE THAN ONE PAIR (AND NAMED PATTERNS)
 ## ---------------------------------------------------------------------
 pattern <- DNAStringSet(c(myp1="ACCA", myp2="ACGCA", myp3="ACGGCA"))
-x3 <- pairwiseAlignment(pattern, subject)
-x3
-writePairwiseAlignments(x3)
+pa4 <- pairwiseAlignment(pattern, subject)
+pa4
+writePairwiseAlignments(pa4)
 
 ## ---------------------------------------------------------------------
 ## C. REPRODUCING THE ALIGNMENT SHOWN AT
@@ -150,11 +156,11 @@ subject <- unlist(AAStringSet(subject))
 pattern  # original pattern
 subject  # original subject
 data(BLOSUM62)
-x4 <- pairwiseAlignment(pattern, subject,
-                        substitutionMatrix=BLOSUM62,
-                        gapOpening=9.5, gapExtension=0.5)
-x4
-writePairwiseAlignments(x4, Matrix="BLOSUM62")
+pa5 <- pairwiseAlignment(pattern, subject,
+                         substitutionMatrix=BLOSUM62,
+                         gapOpening=9.5, gapExtension=0.5)
+pa5
+writePairwiseAlignments(pa5, Matrix="BLOSUM62")
 }
 
 \keyword{utilities}
