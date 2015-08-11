@@ -1029,6 +1029,7 @@ void _match_pdict_flanks_at(
 	int max_nmis,
 	int min_nmis,
 	int fixedP,
+	int fixedS,
 	MatchPDictBuf *matchpdict_buf
 );
 
@@ -1038,6 +1039,8 @@ void _match_pdict_all_flanks(
 	const Chars_holder *S,
 	int max_nmis,
 	int min_nmis,
+	int fixedP,
+	int fixedS,
 	MatchPDictBuf *matchpdict_buf
 );
 

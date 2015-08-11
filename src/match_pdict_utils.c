@@ -202,34 +202,42 @@ static void collect_grouped_keys(int key0, SEXP low2high, IntAE *grouped_keys)
 }
 
 static int nmismatch_in_HT(const Chars_holder *H, const Chars_holder *T,
-		const Chars_holder *S, int Hshift, int Tshift, int max_nmis)
+		const Chars_holder *S, int Hshift, int Tshift,
+		int max_nmis, const BytewiseOpTable *bytewise_match_table)
 {
 	int nmis;
 
-	nmis = _nmismatch_at_Pshift(H, S, Hshift, max_nmis, NULL);
+	nmis = _nmismatch_at_Pshift(H, S, Hshift,
+			max_nmis, bytewise_match_table);
 	if (nmis > max_nmis)
 		return nmis;
 	max_nmis -= nmis;
-	nmis += _nmismatch_at_Pshift(T, S, Tshift, max_nmis, NULL);
+	nmis += _nmismatch_at_Pshift(T, S, Tshift,
+			max_nmis, bytewise_match_table);
 	return nmis;
 }
 
 static void match_HT(const Chars_holder *H, const Chars_holder *T,
-		const Chars_holder *S, int tb_end, int max_nmis, int min_nmis,
+		const Chars_holder *S, int tb_end,
+		int max_nmis, int min_nmis,
+		const BytewiseOpTable *bytewise_match_table,
 		MatchPDictBuf *matchpdict_buf, int key)
 {
 	int HTdeltashift, nmis;
 
 	HTdeltashift = H->length + matchpdict_buf->tb_matches.tb_width;
 	nmis = nmismatch_in_HT(H, T,
-			S, tb_end - HTdeltashift, tb_end, max_nmis);
+			S, tb_end - HTdeltashift, tb_end,
+			max_nmis, bytewise_match_table);
 	if (nmis <= max_nmis && nmis >= min_nmis)
 		_MatchPDictBuf_report_match(matchpdict_buf, key, tb_end);
 	return;
 }
 
 static void match_headtail_for_loc(const HeadTail *headtail,
-		const Chars_holder *S, int tb_end, int max_nmis, int min_nmis,
+		const Chars_holder *S, int tb_end,
+		int max_nmis, int min_nmis,
+		const BytewiseOpTable *bytewise_match_table,
 		MatchPDictBuf *matchpdict_buf)
 {
 	int nelt, i, key;
@@ -240,7 +248,8 @@ static void match_headtail_for_loc(const HeadTail *headtail,
 		key = headtail->grouped_keys->elts[i];
 		H = headtail->head.elts + key;
 		T = headtail->tail.elts + key;
-		match_HT(H, T, S, tb_end, max_nmis, min_nmis,
+		match_HT(H, T, S, tb_end,
+			 max_nmis, min_nmis, bytewise_match_table,
 			 matchpdict_buf, key);
 	}
 	return;
@@ -249,6 +258,7 @@ static void match_headtail_for_loc(const HeadTail *headtail,
 static void match_headtail_for_key(const HeadTail *headtail, int key,
 		const Chars_holder *S, const IntAE *tb_end_buf,
 		int max_nmis, int min_nmis,
+		const BytewiseOpTable *bytewise_match_table,
 		MatchPDictBuf *matchpdict_buf)
 {
 	const Chars_holder *H, *T;
@@ -262,8 +272,9 @@ static void match_headtail_for_key(const HeadTail *headtail, int key,
 	     j < nelt;
 	     j++, tb_end++)
 	{
-		match_HT(H, T, S, *tb_end, max_nmis, min_nmis,
-				matchpdict_buf, key);
+		match_HT(H, T, S, *tb_end,
+			 max_nmis, min_nmis, bytewise_match_table,
+			 matchpdict_buf, key);
 	}
 	return;
 }
@@ -271,6 +282,7 @@ static void match_headtail_for_key(const HeadTail *headtail, int key,
 static void match_headtail_by_loc(const HeadTail *headtail,
 		const Chars_holder *S, const IntAE *tb_end_buf,
 		int max_nmis, int min_nmis,
+		const BytewiseOpTable *bytewise_match_table,
 		MatchPDictBuf *matchpdict_buf)
 {
 	int nelt, j;
@@ -282,8 +294,9 @@ static void match_headtail_by_loc(const HeadTail *headtail,
 	     j++, tb_end++)
 	{
 		match_headtail_for_loc(headtail,
-				S, *tb_end, max_nmis, min_nmis,
-				matchpdict_buf);
+			S, *tb_end,
+			max_nmis, min_nmis, bytewise_match_table,
+			matchpdict_buf);
 	}
 	return;
 }
@@ -291,6 +304,7 @@ static void match_headtail_by_loc(const HeadTail *headtail,
 static void match_headtail_by_key(HeadTail *headtail,
 		const Chars_holder *S, const IntAE *tb_end_buf,
 		int max_nmis, int min_nmis,
+		const BytewiseOpTable *bytewise_match_table,
 		MatchPDictBuf *matchpdict_buf)
 {
 	int nelt, i, key;
@@ -299,8 +313,9 @@ static void match_headtail_by_key(HeadTail *headtail,
 	for (i = 0; i < nelt; i++) {
 		key = headtail->grouped_keys->elts[i];
 		match_headtail_for_key(headtail, key,
-				S, tb_end_buf, max_nmis, min_nmis,
-				matchpdict_buf);
+			S, tb_end_buf,
+			max_nmis, min_nmis, bytewise_match_table,
+			matchpdict_buf);
 	}
 	return;
 }
@@ -652,6 +667,7 @@ static void flush_tmp_match_bmbuf(HeadTail *headtail, MatchPDictBuf *matchpdict_
 static void match_ppheadtail0(HeadTail *headtail,
 		const Chars_holder *S, const IntAE *tb_end_buf,
 		int max_nmis, int min_nmis,
+		const BytewiseOpTable *bytewise_match_table,
 		MatchPDictBuf *matchpdict_buf)
 {
 	BitMatrix *tmp_match_bmbuf;
@@ -681,8 +697,9 @@ static void match_ppheadtail0(HeadTail *headtail,
 	{
 		if (*tb_end < min_safe_tb_end || max_safe_tb_end < *tb_end) {
 			match_headtail_for_loc(headtail,
-					S, *tb_end, max_nmis, min_nmis,
-					matchpdict_buf);
+				S, *tb_end,
+				max_nmis, min_nmis, bytewise_match_table,
+				matchpdict_buf);
 			continue;
 		}
 		// From now 'tb_end' is guaranteed to be "safe" i.e. not too
@@ -711,6 +728,7 @@ static void match_ppheadtail0(HeadTail *headtail,
 static void match_ppheadtail(HeadTail *headtail,
 		const Chars_holder *S, const IntAE *tb_end_buf,
 		int max_nmis, int min_nmis,
+		const BytewiseOpTable *bytewise_match_table,
 		MatchPDictBuf *matchpdict_buf)
 {
 	int nelt, nkey0, nkey1, nkey2, i, key;
@@ -719,7 +737,8 @@ static void match_ppheadtail(HeadTail *headtail,
 	nkey2 = nkey0 % NBIT_PER_BITWORD;
 	if (nkey2 > MAX_REMAINING_KEYS) {
 		match_ppheadtail0(headtail,
-			S, tb_end_buf, max_nmis, min_nmis,
+			S, tb_end_buf,
+			max_nmis, min_nmis, bytewise_match_table,
 			matchpdict_buf);
 		return;
 	}
@@ -727,7 +746,8 @@ static void match_ppheadtail(HeadTail *headtail,
 	if (nkey1 != 0) {
 		IntAE_set_nelt(headtail->grouped_keys, nkey1);
 		match_ppheadtail0(headtail,
-			S, tb_end_buf, max_nmis, min_nmis,
+			S, tb_end_buf,
+			max_nmis, min_nmis, bytewise_match_table,
 			matchpdict_buf);
 		IntAE_set_nelt(headtail->grouped_keys, nkey0);
 	}
@@ -737,8 +757,9 @@ static void match_ppheadtail(HeadTail *headtail,
 	for (i = nkey1; i < IntAE_get_nelt(headtail->grouped_keys); i++) {
 		key = headtail->grouped_keys->elts[i];
 		match_headtail_for_key(headtail, key,
-				S, tb_end_buf, max_nmis, min_nmis,
-				matchpdict_buf);
+			S, tb_end_buf,
+			max_nmis, min_nmis, bytewise_match_table,
+			matchpdict_buf);
 	}
 	return;
 }
@@ -747,6 +768,7 @@ static void match_ppheadtail(HeadTail *headtail,
 static void BENCHMARK_match_ppheadtail(HeadTail *headtail,
 		const Chars_holder *S, const IntAE *tb_end_buf,
 		int max_nmis, int min_nmis,
+		const BytewiseOpTable *bytewise_match_table,
 		MatchPDictBuf *matchpdict_buf)
 {
 	clock_t time0;
@@ -757,13 +779,15 @@ static void BENCHMARK_match_ppheadtail(HeadTail *headtail,
 	for (i = 0; i < 100; i++) {
 		match_ppheadtail0(headtail,
 			S, tb_end_buf, max_nmis, min_nmis,
+			bytewise_match_table,
 			matchpdict_buf);
 	}
 	dt1 = (double) (clock() - time0) / CLOCKS_PER_SEC;
 	time0 = clock();
 	for (i = 0; i < 100; i++) {
 		match_headtail_by_key(headtail,
-			S, tb_end_buf, max_nmis, min_nmis,
+			S, tb_end_buf,
+			max_nmis, min_nmis, bytewise_match_table,
 			matchpdict_buf);
 	}
 	dt2 = (double) (clock() - time0) / CLOCKS_PER_SEC;
@@ -781,9 +805,10 @@ static void BENCHMARK_match_ppheadtail(HeadTail *headtail,
 void _match_pdict_flanks_at(int key0, SEXP low2high,
 		HeadTail *headtail,
 		const Chars_holder *S, int tb_end,
-		int max_nmis, int min_nmis, int fixedP,
+		int max_nmis, int min_nmis, int fixedP, int fixedS,
 		MatchPDictBuf *matchpdict_buf)
 {
+	const BytewiseOpTable *bytewise_match_table;
 /*
 	static ncalls = 0;
 
@@ -792,8 +817,10 @@ void _match_pdict_flanks_at(int key0, SEXP low2high,
 		ncalls, key0, tb_end);
 */
 	collect_grouped_keys(key0, low2high, headtail->grouped_keys);
+	bytewise_match_table = _select_bytewise_match_table(fixedP, fixedS);
 	match_headtail_for_loc(headtail,
-		S, tb_end, max_nmis, min_nmis,
+		S, tb_end,
+		max_nmis, min_nmis, bytewise_match_table,
 		matchpdict_buf);
 	return;
 }
@@ -803,11 +830,12 @@ void _match_pdict_flanks_at(int key0, SEXP low2high,
 void _match_pdict_all_flanks(SEXP low2high,
 		HeadTail *headtail,
 		const Chars_holder *S,
-		int max_nmis, int min_nmis,
+		int max_nmis, int min_nmis, int fixedP, int fixedS,
 		MatchPDictBuf *matchpdict_buf)
 {
 	const IntAE *tb_PSlink_ids, *tb_end_buf;
 	int nelt, i, key0;
+	const BytewiseOpTable *bytewise_match_table;
 
 	unsigned long int ndup, nloci, NFC; // NFC = Number of Flank Comparisons
 	static unsigned long int total_NFC = 0UL, subtotal_NFC = 0UL;
@@ -818,6 +846,7 @@ void _match_pdict_all_flanks(SEXP low2high,
 #endif
 	tb_PSlink_ids = matchpdict_buf->tb_matches.PSlink_ids;
 	nelt = IntAE_get_nelt(tb_PSlink_ids);
+	bytewise_match_table = _select_bytewise_match_table(fixedP, fixedS);
 	for (i = 0; i < nelt; i++) {
 		key0 = tb_PSlink_ids->elts[i];
 		collect_grouped_keys(key0, low2high, headtail->grouped_keys);
@@ -842,18 +871,18 @@ void _match_pdict_all_flanks(SEXP low2high,
 			subtotal_NFC += NFC;
 */
 			match_ppheadtail(headtail, S, tb_end_buf,
-					max_nmis, min_nmis,
-					matchpdict_buf);
+				max_nmis, min_nmis, bytewise_match_table,
+				matchpdict_buf);
 /*
 			BENCHMARK_match_ppheadtail(headtail, S, tb_end_buf,
-					max_nmis, min_nmis,
-					matchpdict_buf);
+				max_nmis, min_nmis, bytewise_match_table,
+				matchpdict_buf);
 */
 		} else {
 			// Use brute force
 			match_headtail_by_key(headtail, S, tb_end_buf,
-					max_nmis, min_nmis,
-					matchpdict_buf);
+				max_nmis, min_nmis, bytewise_match_table,
+				matchpdict_buf);
 		}
 
 /*
@@ -883,12 +912,14 @@ sum(elementLengths(mi6))  # 17896
 			for (j = 0; j < 5000; j++)
 				match_ppheadtail(headtail, S, tb_end_buf,
 					max_nmis, min_nmis,
+					bytewise_match_table,
 					matchpdict_buf);
 			dt1 = (double) (clock() - time0) / CLOCKS_PER_SEC;
 			time0 = clock();
 			for (j = 0; j < 5000; j++)
 				match_headtail_by_key(headtail, S, tb_end_buf,
 					max_nmis, min_nmis,
+					bytewise_match_table,
 					matchpdict_buf);
 			dt2 = (double) (clock() - time0) / CLOCKS_PER_SEC;
 			if (dt1 > dt2) {

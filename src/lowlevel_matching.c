@@ -78,15 +78,13 @@ const BytewiseOpTable *_select_bytewise_match_table(int fixedP, int fixedS)
  */
 
 int _nmismatch_at_Pshift(const Chars_holder *P,
-		const Chars_holder *S, int Pshift, int max_nmis,
-		const BytewiseOpTable *bytewise_match_table)
+		const Chars_holder *S, int Pshift,
+		int max_nmis, const BytewiseOpTable *bytewise_match_table)
 {
 	int nmis, i, j;
 	const char *p, *s;
 	unsigned char x, y;
 
-	if (bytewise_match_table == NULL)
-		bytewise_match_table = &fixedPfixedS_match_table;
 	nmis = 0;
 	for (i = 0, j = Pshift, p = P->ptr, s = S->ptr + Pshift;
 	     i < P->length;

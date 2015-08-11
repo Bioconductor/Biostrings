@@ -1228,7 +1228,7 @@ void _match_tbACtree2(SEXP pptb, const Chars_holder *S, int fixedS,
 static void walk_pdict_subject(ACtree *tree,
 		SEXP low2high, HeadTail *headtail,
 		const Chars_holder *S,
-		int max_nmis, int min_nmis, int fixedP,
+		int max_nmis, int min_nmis, int fixedP, int fixedS,
 		MatchPDictBuf *matchpdict_buf)
 {
 	ACnode *node;
@@ -1246,7 +1246,7 @@ static void walk_pdict_subject(ACtree *tree,
 		if (IS_LEAFNODE(node))
 			_match_pdict_flanks_at(NODE_P_ID(node) - 1,
 				low2high, headtail, S, n,
-				max_nmis, min_nmis, fixedP,
+				max_nmis, min_nmis, fixedP, fixedS,
 				matchpdict_buf);
 	}
 	return;
@@ -1256,7 +1256,7 @@ static void walk_pdict_subject(ACtree *tree,
 static void walk_pdict_nonfixed_subject(ACtree *tree,
 		SEXP low2high, HeadTail *headtail,
 		const Chars_holder *S,
-		int max_nmis, int min_nmis, int fixedP,
+		int max_nmis, int min_nmis, int fixedP, int fixedS,
 		MatchPDictBuf *matchpdict_buf)
 {
 	error("walk_pdict_nonfixed_subject(): implement me");
@@ -1276,12 +1276,12 @@ void _match_pdictACtree2(SEXP pptb, HeadTail *headtail,
 	if (fixedS)
 		walk_pdict_subject(&tree,
 			low2high, headtail, S,
-			max_nmis, min_nmis, fixedP,
+			max_nmis, min_nmis, fixedP, fixedS,
 			matchpdict_buf);
 	else
 		walk_pdict_nonfixed_subject(&tree,
 			low2high, headtail, S,
-			max_nmis, min_nmis, fixedP,
+			max_nmis, min_nmis, fixedP, fixedS,
 			matchpdict_buf);
 	return;
 }

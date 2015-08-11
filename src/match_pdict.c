@@ -91,7 +91,7 @@ static void match_pdict(SEXP pptb, HeadTail *headtail, const Chars_holder *S,
 	 * (i.e. headtail->max_HTwidth == 0) because we need to propagate
 	 * the matches to the duplicates anyway */
 	_match_pdict_all_flanks(low2high, headtail,
-		S, max_nmis, min_nmis, matchpdict_buf);
+		S, max_nmis, min_nmis, fixedP, fixedS, matchpdict_buf);
 #ifdef DEBUG_BIOSTRINGS
 	if (debug)
 		Rprintf("[DEBUG] LEAVING match_pdict()\n");

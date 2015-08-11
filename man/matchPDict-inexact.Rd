@@ -78,112 +78,146 @@
 }
 
 \examples{
-  ## ---------------------------------------------------------------------
-  ## A. USING AN EXPLICIT TRUSTED BAND
-  ## ---------------------------------------------------------------------
+## ---------------------------------------------------------------------
+## A. USING AN EXPLICIT TRUSTED BAND
+## ---------------------------------------------------------------------
 
-  library(drosophila2probe)
-  dict0 <- DNAStringSet(drosophila2probe)
-  dict0  # the original dictionary
+library(drosophila2probe)
+dict0 <- DNAStringSet(drosophila2probe)
+dict0  # the original dictionary
 
-  ## Preprocess the original dictionary by defining a Trusted Band that
-  ## spans nucleotides 1 to 9 of each pattern.
-  pdict9 <- PDict(dict0, tb.end=9)
-  pdict9
-  tail(pdict9)
-  sum(duplicated(pdict9))
-  table(patternFrequency(pdict9))
+## Preprocess the original dictionary by defining a Trusted Band that
+## spans nucleotides 1 to 9 of each pattern.
+pdict9 <- PDict(dict0, tb.end=9)
+pdict9
+tail(pdict9)
+sum(duplicated(pdict9))
+table(patternFrequency(pdict9))
 
-  library(BSgenome.Dmelanogaster.UCSC.dm3)
-  chr3R <- Dmelanogaster$chr3R
-  chr3R
-  table(countPDict(pdict9, chr3R, max.mismatch=1))
-  table(countPDict(pdict9, chr3R, max.mismatch=3))
-  table(countPDict(pdict9, chr3R, max.mismatch=5))
+library(BSgenome.Dmelanogaster.UCSC.dm3)
+chr3R <- Dmelanogaster$chr3R
+chr3R
+table(countPDict(pdict9, chr3R, max.mismatch=1))
+table(countPDict(pdict9, chr3R, max.mismatch=3))
+table(countPDict(pdict9, chr3R, max.mismatch=5))
 
-  ## ---------------------------------------------------------------------
-  ## B. COMPARISON WITH EXACT MATCHING
-  ## ---------------------------------------------------------------------
+## ---------------------------------------------------------------------
+## B. COMPARISON WITH EXACT MATCHING
+## ---------------------------------------------------------------------
 
-  ## When the original dictionary is of constant width, exact matching
-  ## (i.e. 'max.mismatch=0' and 'fixed=TRUE) will be more efficient with
-  ## a full-width Trusted Band (i.e. a Trusted Band that covers the entire
-  ## dictionary) than with a Trusted Band of width < width(dict0).
-  pdict0 <- PDict(dict0)
-  count0 <- countPDict(pdict0, chr3R)
-  count0b <- countPDict(pdict9, chr3R, max.mismatch=0)
-  identical(count0b, count0)  # TRUE
+## When the original dictionary is of constant width, exact matching
+## (i.e. 'max.mismatch=0' and 'fixed=TRUE) will be more efficient with
+## a full-width Trusted Band (i.e. a Trusted Band that covers the entire
+## dictionary) than with a Trusted Band of width < width(dict0).
+pdict0 <- PDict(dict0)
+count0 <- countPDict(pdict0, chr3R)
+count0b <- countPDict(pdict9, chr3R, max.mismatch=0)
+identical(count0b, count0)  # TRUE
   
-  ## ---------------------------------------------------------------------
-  ## C. USING AN EXPLICIT TRUSTED BAND ON A VARIABLE WIDTH DICTIONARY
-  ## ---------------------------------------------------------------------
+## ---------------------------------------------------------------------
+## C. USING AN EXPLICIT TRUSTED BAND ON A VARIABLE WIDTH DICTIONARY
+## ---------------------------------------------------------------------
 
-  ## Here is a small variable width dictionary that contains IUPAC
-  ## ambiguities (pattern 1 and 3 contain an N):
-  dict0 <- DNAStringSet(c("TACCNG", "TAGT", "CGGNT", "AGTAG", "TAGT"))
-  ## (Note that pattern 2 and 5 are identical.)
+## Here is a small variable width dictionary that contains IUPAC
+## ambiguities (pattern 1 and 3 contain an N):
+dict0 <- DNAStringSet(c("TACCNG", "TAGT", "CGGNT", "AGTAG", "TAGT"))
+## (Note that pattern 2 and 5 are identical.)
 
-  ## If we only want to do exact matching, then it is recommended to use
-  ## the widest possible Trusted Band i.e. to set its width to
-  ## 'min(width(dict0))' because this is what will give the best
-  ## performance. However, when 'dict0' contains IUPAC ambiguities (like
-  ## in our case), it could be that one of them is falling into the
-  ## Trusted Band so we get an error (only base letters can go in the
-  ## Trusted Band for now):
-  \dontrun{
-    PDict(dict0, tb.end=min(width(dict0)))  # Error!
-  }
+## If we only want to do exact matching, then it is recommended to use
+## the widest possible Trusted Band i.e. to set its width to
+## 'min(width(dict0))' because this is what will give the best
+## performance. However, when 'dict0' contains IUPAC ambiguities (like
+## in our case), it could be that one of them is falling into the
+## Trusted Band so we get an error (only base letters can go in the
+## Trusted Band for now):
+\dontrun{
+  PDict(dict0, tb.end=min(width(dict0)))  # Error!
+}
 
-  ## In our case, the Trusted Band cannot be wider than 3:
-  pdict <- PDict(dict0, tb.end=3)
-  tail(pdict)
+## In our case, the Trusted Band cannot be wider than 3:
+pdict <- PDict(dict0, tb.end=3)
+tail(pdict)
 
-  subject <- DNAString("TAGTACCAGTTTCGGG")
+subject <- DNAString("TAGTACCAGTTTCGGG")
 
-  m <- matchPDict(pdict, subject)
-  elementLengths(m)  # pattern 2 and 5 have 1 exact match
-  m[[2]]
+m <- matchPDict(pdict, subject)
+elementLengths(m)  # pattern 2 and 5 have 1 exact match
+m[[2]]
 
-  ## We can take advantage of the fact that our Trusted Band doesn't cover
-  ## the entire dictionary to allow inexact matching on the uncovered parts
-  ## (the tail in our case):
+## We can take advantage of the fact that our Trusted Band doesn't cover
+## the entire dictionary to allow inexact matching on the uncovered parts
+## (the tail in our case):
 
-  m <- matchPDict(pdict, subject, fixed=FALSE)
-  elementLengths(m)  # now pattern 1 has 1 match too
-  m[[1]]
+m <- matchPDict(pdict, subject, fixed=FALSE)
+elementLengths(m)  # now pattern 1 has 1 match too
+m[[1]]
 
-  m <- matchPDict(pdict, subject, max.mismatch=1)
-  elementLengths(m)  # now pattern 4 has 1 match too
-  m[[4]]
+m <- matchPDict(pdict, subject, max.mismatch=1)
+elementLengths(m)  # now pattern 4 has 1 match too
+m[[4]]
 
-  m <- matchPDict(pdict, subject, max.mismatch=1, fixed=FALSE)
-  elementLengths(m)  # now pattern 3 has 1 match too
-  m[[3]]  # note that this match is "out of limit"
-  Views(subject, m[[3]])
+m <- matchPDict(pdict, subject, max.mismatch=1, fixed=FALSE)
+elementLengths(m)  # now pattern 3 has 1 match too
+m[[3]]  # note that this match is "out of limit"
+Views(subject, m[[3]])
 
-  m <- matchPDict(pdict, subject, max.mismatch=2)
-  elementLengths(m)  # pattern 4 gets 1 additional match
-  m[[4]]
+m <- matchPDict(pdict, subject, max.mismatch=2)
+elementLengths(m)  # pattern 4 gets 1 additional match
+m[[4]]
 
-  ## Unlist all matches:
-  unlist(m)
+## Unlist all matches:
+unlist(m)
 
-  ## ---------------------------------------------------------------------
-  ## D. WITH IUPAC AMBIGUITY CODES IN THE SUBJECT
-  ## ---------------------------------------------------------------------
-  pdict <- PDict(c("ACAC", "TCCG"))
-  as.list(matchPDict(pdict, DNAString("ACNCCGT")))
-  as.list(matchPDict(pdict, DNAString("ACNCCGT"), fixed="pattern"))
-  as.list(matchPDict(pdict, DNAString("ACWCCGT"), fixed="pattern"))
-  as.list(matchPDict(pdict, DNAString("ACRCCGT"), fixed="pattern"))
-  as.list(matchPDict(pdict, DNAString("ACKCCGT"), fixed="pattern"))
+## ---------------------------------------------------------------------
+## D. WITH IUPAC AMBIGUITY CODES IN THE PATTERNS
+## ---------------------------------------------------------------------
+## The Trusted Band cannot contain IUPAC ambiguity codes so patterns
+## with ambiguity codes can only be preprocessed if we can define a
+## Trusted Band with no ambiguity codes in it.
 
-  dict <- DNAStringSet(c("TTC", "CTT"))
-  pdict <- PDict(dict)
-  subject <- DNAString("CYTCACTTC")
-  mi1 <- matchPDict(pdict, subject, fixed="pattern")
-  mi2 <- matchPDict(dict, subject, fixed="pattern")
-  stopifnot(identical(as.list(mi1), as.list(mi2)))
+dict <- DNAStringSet(c("AAACAAKS", "GGGAAA", "TNCCGGG"))
+pdict <- PDict(dict, tb.start=3, tb.width=4)
+subject <- DNAString("AAACAATCCCGGGAAACAAGG")
+
+matchPDict(pdict, subject)
+matchPDict(pdict, subject, fixed="subject")
+
+## Sanity checks:
+res1 <- as.list(matchPDict(pdict, subject))
+res2 <- as.list(matchPDict(dict, subject))
+res3 <- lapply(dict,
+  function(pattern)
+    as(matchPattern(pattern, subject), "IRanges"))
+stopifnot(identical(res1, res2))
+stopifnot(identical(res1, res3))
+
+res1 <- as.list(matchPDict(pdict, subject, fixed="subject"))
+res2 <- as.list(matchPDict(dict, subject, fixed="subject"))
+res3 <- lapply(dict,
+  function(pattern)
+    as(matchPattern(pattern, subject, fixed="subject"), "IRanges"))
+stopifnot(identical(res1, res2))
+stopifnot(identical(res1, res3))
+
+## ---------------------------------------------------------------------
+## E. WITH IUPAC AMBIGUITY CODES IN THE SUBJECT
+## ---------------------------------------------------------------------
+## 'fixed="pattern"' (or 'fixed=FALSE') can be used to indicate that
+## IUPAC ambiguity codes in the subject should be treated as ambiguities.
+
+pdict <- PDict(c("ACAC", "TCCG"))
+matchPDict(pdict, DNAString("ACNCCGT"))
+matchPDict(pdict, DNAString("ACNCCGT"), fixed="pattern")
+matchPDict(pdict, DNAString("ACWCCGT"), fixed="pattern")
+matchPDict(pdict, DNAString("ACRCCGT"), fixed="pattern")
+matchPDict(pdict, DNAString("ACKCCGT"), fixed="pattern")
+
+dict <- DNAStringSet(c("TTC", "CTT"))
+pdict <- PDict(dict)
+subject <- DNAString("CYTCACTTC")
+mi1 <- matchPDict(pdict, subject, fixed="pattern")
+mi2 <- matchPDict(dict, subject, fixed="pattern")
+stopifnot(identical(as.list(mi1), as.list(mi2)))
 }
 
 \keyword{methods}
