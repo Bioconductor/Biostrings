@@ -3,8 +3,6 @@
 
 #define DEBUG_BIOSTRINGS 1
 
-#define INTERNAL_ERR_IN "Biostrings internal error in "
-
 #define INIT_STATIC_SYMBOL(NAME) \
 { \
 	if (NAME ## _symbol == NULL) \
@@ -58,50 +56,6 @@ int _get_twobit_signature_at(
 	const Chars_holder *seq,
 	const int *at,
 	int at_length
-);
-
-
-/* io_utils.c */
-
-int ExternalFilePtr_gets(
-	SEXP efp,
-	char *buf,
-	int buf_size,
-	int *EOL_in_buf
-);
-
-void ExternalFilePtr_seek(
-	SEXP efp,
-	long long int offset,
-	int whence
-);
-
-void ExternalFilePtr_rewind(SEXP efp);
-
-int ExternalFilePtr_puts(
-	SEXP efp,
-	const char *s
-);
-
-void ExternalFilePtr_putc(
-	SEXP efp,
-	int c
-);
-
-SEXP new_input_ExternalFilePtr(SEXP filepath);
-
-SEXP new_output_ExternalFilePtr(
-	SEXP filepath,
-	SEXP append,
-	SEXP compress,
-	SEXP compression_level
-);
-
-SEXP finalize_ExternalFilePtr(SEXP efp);
-
-int delete_trailing_LF_or_CRLF(
-	const char *buf,
-	int buf_len
 );
 
 
@@ -237,7 +191,7 @@ SEXP XStringSet_xscat(SEXP args);
 SEXP debug_XStringSet_io();
 
 SEXP fasta_index(
-	SEXP efp_list,
+	SEXP filexp_list,
 	SEXP nrec,
 	SEXP skip,
 	SEXP seek_first_rec,
@@ -246,7 +200,7 @@ SEXP fasta_index(
 
 SEXP read_XStringSet_from_fasta_blocks(
 	SEXP seqlength,
-	SEXP efp_list,
+	SEXP filexp_list,
 	SEXP nrec_list,
 	SEXP offset_list,
 	SEXP elementType,
@@ -255,20 +209,20 @@ SEXP read_XStringSet_from_fasta_blocks(
 
 SEXP write_XStringSet_to_fasta(
 	SEXP x,
-	SEXP efp_list,
+	SEXP filexp_list,
 	SEXP width,
 	SEXP lkup
 );
 
 SEXP fastq_geometry(
-	SEXP efp_list,
+	SEXP filexp_list,
 	SEXP nrec,
 	SEXP skip,
 	SEXP seek_first_rec
 );
 
 SEXP read_XStringSet_from_fastq(
-	SEXP efp_list,
+	SEXP filexp_list,
 	SEXP nrec,
 	SEXP skip,
 	SEXP seek_first_rec,
@@ -279,7 +233,7 @@ SEXP read_XStringSet_from_fastq(
 
 SEXP write_XStringSet_to_fastq(
 	SEXP x,
-	SEXP efp_list,
+	SEXP filexp_list,
 	SEXP qualities,
 	SEXP lkup
 );
