@@ -403,7 +403,7 @@ exportMethods(
     quality, encoding,
     insertion, deletion,
     unaligned, aligned, indel, nindel,
-    type, score, pid,
+    subject, type, score, pid,
     PairwiseAlignments, PairwiseAlignmentsSingleSubject,
     mismatch, nmatch, nmismatch, nedit,
     mismatchTable, mismatchSummary, coverage,
