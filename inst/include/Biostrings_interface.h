@@ -73,7 +73,7 @@
             const char *x_char;
 
             x = hold_XRaw(xstring);
-            for (i = 0, x_char = x.elts; i < x.nelt; i++, x_char++)
+            for (i = 0, x_char = x.ptr; i < x.length; i++, x_char++)
                 Rprintf("%x ", *x_char);
             Rprintf("\n");
             return R_NilValue;
