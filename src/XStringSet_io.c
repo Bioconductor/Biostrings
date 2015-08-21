@@ -263,8 +263,7 @@ static const char *parse_FASTA_file(SEXP filexp,
 	FASTA_desc_markup_length = strlen(FASTA_desc_markup);
 	load_rec = -1;
 	for (lineno = EOL_in_prev_buf = 1;
-	     (ret_code = filexp_gets(filexp, buf, IOBUF_SIZE,
-					     &EOL_in_buf));
+	     (ret_code = filexp_gets(filexp, buf, IOBUF_SIZE, &EOL_in_buf));
 	     lineno += EOL_in_prev_buf = EOL_in_buf)
 	{
 		if (ret_code == -1) {
@@ -741,8 +740,7 @@ static const char *parse_FASTQ_file(SEXP filexp,
 	FASTQ_line3_markup_length = strlen(FASTQ_line3_markup);
 	lineinrecno = 0;
 	for (lineno = EOL_in_prev_buf = 1;
-	     (ret_code = filexp_gets(filexp, buf, IOBUF_SIZE,
-					     &EOL_in_buf));
+	     (ret_code = filexp_gets(filexp, buf, IOBUF_SIZE, &EOL_in_buf));
 	     lineno += EOL_in_prev_buf = EOL_in_buf)
 	{
 		if (ret_code == -1) {
