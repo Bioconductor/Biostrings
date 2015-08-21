@@ -3,109 +3,8 @@
 ### -------------------------------------------------------------------------
 
 
-.normarg_input_filepath <- function(filepath)
-{
-    if (!is.character(filepath) || any(is.na(filepath)))
-        stop(wmsg("'filepath' must be a character vector with no NAs"))
-    ## First pass: expand local paths and download any remote file.
-    filepath2 <- character(length(filepath))
-    for (i in seq_len(length(filepath))) {
-        fp <- filepath[i]
-        con <- file(fp)
-        con_class <- class(con)[1L]
-        close(con)
-        if (con_class == "url") {
-            filepath2[i] <- tempfile()
-            download.file(fp, filepath2[i])
-        } else {
-            filepath2[i] <- path.expand(fp)
-        }
-    }
-    ## Second pass: check the type of the local files (all files are
-    ## now local).
-    filetype <- character(length(filepath2))
-    for (i in seq_len(length(filepath2))) {
-        fp <- filepath2[i]
-        con <- file(fp)
-        ## Ugly trick to get the type of 'con'. Is there a better way?
-        filetype[i] <- showConnections(TRUE)[as.character(con), "class"]
-        close(con)
-        if (!(filetype[i] %in% c("file", "gzfile")))
-            stop(wmsg("file \"", filepath[i], "\" ",
-                      "has unsupported type: ", filetype[i]))
-    }
-    names(filepath2) <- filetype
-    filepath2
-}
-
-### Returns a list of "external file pointers".
-.open_input_files <- function(filepath)
-{
-    filepath2 <- .normarg_input_filepath(filepath)
-    ans <- lapply(filepath2,
-           function(fp)
-           {
-               filexp <- XVector:::new_input_filexp(fp)
-               reg.finalizer(filexp, XVector:::finalize_filexp, onexit=TRUE)
-               filexp
-           })
-    names(ans) <- filepath
-    ans
-}
-
-.normarg_compress <- function(compress)
-{
-    if (isTRUEorFALSE(compress)) {
-        if (compress)
-            return("gzip")
-        return("no")
-    }
-    if (isSingleString(compress)) {
-        # Types of compression supported by save():
-        #VALID_COMPRESS <- c("no", "gzip", "bzip2", "xz")
-        VALID_COMPRESS <- c("no", "gzip")
-        if (!(compress %in% VALID_COMPRESS))
-            stop(wmsg("when 'compress' is a single string, it must be one of ",
-                      paste(paste0("\"", VALID_COMPRESS, "\""),
-                            collapse=", ")))
-        return(compress)
-    }
-    stop(wmsg("'compress' must be TRUE or FALSE or a single string"))
-}
-
-.normarg_compression_level <- function(compression_level, compress)
-{
-    if (!isSingleNumberOrNA(compression_level))
-        stop(wmsg("'compression_level' must be a single number or NA"))
-    if (is.na(compression_level))
-        return(switch(compress, no=0L, gzip=6L, bzip2=9L, xz=9L))
-    if (!is.integer(compression_level))
-        compression_level <- as.integer(compression_level)
-    if (compression_level < 0L)
-        stop(wmsg("'compression_level' cannot be negative"))
-    compression_level
-}
-
-### Returns a length-1 list of "external file pointers".
-.open_output_file <- function(filepath, append, compress, compression_level)
-{
-    if (!isSingleString(filepath))
-        stop(wmsg("'filepath' must be a single string"))
-    if (!isTRUEorFALSE(append))
-        stop(wmsg("'append' must be TRUE or FALSE"))
-    compress <- .normarg_compress(compress)
-    compression_level <- .normarg_compression_level(compression_level, compress)
-    filepath2 <- path.expand(filepath)
-    filexp <- XVector:::new_output_filexp(filepath2, append,
-                                          compress, compression_level)
-    reg.finalizer(filexp, XVector:::finalize_filexp, onexit=TRUE)
-    ans <- list(filexp)
-    names(ans) <- filepath
-    ans
-}
-
-### 'filexp_list' must be a list of "external file pointers" returned by
-### .open_input_files() or .open_output_files().
+### 'filexp_list' must be a list of "file external pointers" returned by
+### XVector:::open_input_files() or XVector:::open_output_files().
 .finalize_filexp_list <- function(filexp_list)
 {
     for (filexp in filexp_list) XVector:::finalize_filexp(filexp)
@@ -139,7 +38,7 @@
 fasta.index <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
                         seqtype="B")
 {
-    filexp_list <- .open_input_files(filepath)
+    filexp_list <- XVector:::open_input_files(filepath)
     on.exit(.finalize_filexp_list(filexp_list))
     nrec <- .normarg_nrec(nrec)
     skip <- .normarg_skip(skip)
@@ -245,7 +144,7 @@ fasta.seqlengths <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
     fileno <- ssorted_fai[ , "fileno"]
     used_fileno <- as.integer(names(nrec_list))
     used_filepath <- filepath[match(used_fileno, fileno)]
-    filexp_list <- .open_input_files(used_filepath)
+    filexp_list <- XVector:::open_input_files(used_filepath)
     on.exit(.finalize_filexp_list(filexp_list))
 
     ## Prepare 'seqlength'.
@@ -286,7 +185,7 @@ fasta.seqlengths <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
 
 fastq.geometry <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
 {
-    filexp_list <- .open_input_files(filepath)
+    filexp_list <- XVector:::open_input_files(filepath)
     on.exit(.finalize_filexp_list(filexp_list))
     nrec <- .normarg_nrec(nrec)
     skip <- .normarg_skip(skip)
@@ -300,7 +199,7 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
 .read_XStringSet_from_fastq <- function(filepath, nrec, skip, seek.first.rec,
                                         use.names, elementType, lkup)
 {
-    filexp_list <- .open_input_files(filepath)
+    filexp_list <- XVector:::open_input_files(filepath)
     on.exit(.finalize_filexp_list(filexp_list))
     nrec <- .normarg_nrec(nrec)
     skip <- .normarg_skip(skip)
@@ -420,8 +319,8 @@ writeXStringSet <- function(x, filepath, append=FALSE,
     if (!isSingleString(format))
         stop(wmsg("'format' must be a single string"))
     format <- match.arg(tolower(format), c("fasta", "fastq"))
-    filexp_list <- .open_output_file(filepath, append,
-                                     compress, compression_level)
+    filexp_list <- XVector:::open_output_file(filepath, append,
+                                              compress, compression_level)
     res <- try(switch(format,
                    "fasta"=.write_XStringSet_to_fasta(x, filexp_list, ...),
                    "fastq"=.write_XStringSet_to_fastq(x, filexp_list, ...)
