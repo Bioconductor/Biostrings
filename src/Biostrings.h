@@ -366,6 +366,13 @@ SEXP DNAStringSet_translate(
 	SEXP if_ambig
 );
 
+/* replaceAt.c */
+
+SEXP XStringSet_replaceAt(
+	SEXP x,
+	SEXP at,
+	SEXP value
+);
 
 /* replace_letter_at.c */
 

@@ -168,35 +168,35 @@ setGeneric("replaceAt", signature="x",
 
 ### The integers in 'at' are interpreted as the start positions of zero-width
 ### ranges.
-.make_Ranges_from_numeric <- function(at) IRanges(at, width=0L)
+.make_IRanges_from_numeric <- function(at) IRanges(at, width=0L)
 
-.make_RangesList_from_IntegerList <- function(at)
+.make_CompressedIRangesList_from_IntegerList <- function(at)
 {
-    relist(.make_Ranges_from_numeric(unlist(at, use.names=FALSE)), at)
+    relist(.make_IRanges_from_numeric(unlist(at, use.names=FALSE)), at)
 }
 
-.make_Ranges_from_at <- function(at)
+.make_IRanges_from_at <- function(at)
 {
     if (is.numeric(at))
-        at <- .make_Ranges_from_numeric(at)
+        at <- .make_IRanges_from_numeric(at)
     if (!is(at, "Ranges"))
         stop(.wrap_msg(
             "'at' must be a Ranges object (or a numeric vector containing ",
             "the start positions of zero-width ranges)"
         ))
-    at
+    as(at, "IRanges", strict=FALSE)
 }
 
-.make_RangesList_from_at <- function(at)
+.make_CompressedIRangesList_from_at <- function(at)
 {
     if (is.numeric(at))
-        at <- .make_Ranges_from_numeric(at)
+        at <- .make_IRanges_from_numeric(at)
     if (is(at, "Ranges"))
         at <- IRangesList(at)
     if (is.list(at))
         at <- IntegerList(at)
     if (is(at, "IntegerList"))
-        at <- .make_RangesList_from_IntegerList(at)
+        at <- .make_CompressedIRangesList_from_IntegerList(at)
     if (!is(at, "RangesList"))
         stop(.wrap_msg(
             "'at' must be a RangesList object (or an IntegerList object ",
@@ -206,12 +206,12 @@ setGeneric("replaceAt", signature="x",
             "the start positions of zero-width ranges) and in that case ",
             "is interpreted as a RangesList object of length 1."
         ))
-    at
+    as(at, "CompressedIRangesList", strict=FALSE)
 }
 
 .normarg_at1 <- function(at, x)
 {
-    at <- .make_Ranges_from_at(at)
+    at <- .make_IRanges_from_at(at)
     if (!.is_within_limits1(at, 1L, length(x)))
         stop("some ranges in 'at' are off-limits with respect to sequence 'x'")
     at
@@ -220,7 +220,7 @@ setGeneric("replaceAt", signature="x",
 ### Returns a RangesList object of the same length as 'x'.
 .normarg_at2 <- function(at, x)
 {
-    at <- .make_RangesList_from_at(at)
+    at <- .make_CompressedIRangesList_from_at(at)
     if (!is.null(names(at))) {
         names(at) <- NULL
         warning("'at' names were ignored")
@@ -291,29 +291,13 @@ setGeneric("replaceAt", signature="x",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### One more helper function.
-###
-
-.unlist_and_shift_at <- function(at, x)
-{
-    unlisted_at <- unlist(at, use.names=FALSE)
-    x_len <- length(x)
-    x_width <- width(x)
-    at_eltlens <- elementLengths(at)
-    offsets <- cumsum(c(0L, x_width[-x_len]))
-    offsets <- rep.int(offsets, at_eltlens)
-    shift(unlisted_at, shift=offsets)
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### extractAt()
 ###
 
 setMethod("extractAt", "XString",
     function(x, at)
     {
-        at <- .make_Ranges_from_at(at)
+        at <- .make_IRanges_from_at(at)
         ## extractList() will check that all the ranges in 'at' are within
         ## the limits of sequence 'x'.
         extractList(x, at)
@@ -442,15 +426,8 @@ setMethod("replaceAt", "XStringSet",
             return(x)
         at <- .normarg_at2(at, x)
         value <- .normarg_value2(value, at, seqtype(x))
-        unlisted_x <- unlist(x, use.names=FALSE)
-        unlisted_at <- .unlist_and_shift_at(at, x)
-        unlisted_value <- unlist(value, use.names=FALSE)
-        unlisted_ans <- replaceAt(unlisted_x, unlisted_at,
-                                  value=unlisted_value)
-        delta_width <- width(unlisted_value) - width(unlisted_at)
-        ans_width <- width(x) + sum(relist(delta_width,
-                                           PartitioningByEnd(at)))
-        ans <- as(successiveViews(unlisted_ans, ans_width), "XStringSet")
+        ans <- .Call2("XStringSet_replaceAt", x, at, value,
+                      PACKAGE="Biostrings")
         names(ans) <- names(x)
         mcols(ans) <- mcols(x)
         ans
