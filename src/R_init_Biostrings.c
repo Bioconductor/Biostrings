@@ -75,6 +75,7 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(DNAStringSet_translate, 6),
 
 /* replaceAt.c */
+	CALLMETHOD_DEF(XString_replaceAt, 3),
 	CALLMETHOD_DEF(XStringSet_replaceAt, 3),
 
 /* replace_letter_at.c */

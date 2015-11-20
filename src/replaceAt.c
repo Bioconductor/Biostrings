@@ -44,10 +44,38 @@ static int compute_length_after_replacements(
 	return 0;
 }
 
+typedef struct ranges_order_bufs_t {
+	int *start;
+	int *width;
+	int *order;
+} RangesOrderBufs;
+
+static void free_RangesOrderBufs(RangesOrderBufs *bufs)
+{
+	if (bufs->start != NULL)
+		free(bufs->start);
+	if (bufs->width != NULL)
+		free(bufs->width);
+	if (bufs->order != NULL)
+		free(bufs->order);
+	return;
+}
+
+static int alloc_RangesOrderBufs(RangesOrderBufs *bufs, int buflength)
+{
+	bufs->start = (int *) malloc(sizeof(int) * buflength);
+	bufs->width = (int *) malloc(sizeof(int) * buflength);
+	bufs->order = (int *) malloc(sizeof(int) * buflength);
+	if (bufs->start != NULL && bufs->width != NULL && bufs->order != NULL)
+		return 0;
+	free_RangesOrderBufs(bufs);
+	return -1;
+}
+
 static int replace_at(const Chars_holder *x_holder,
 		      const IRanges_holder *at_holder,
 		      const XStringSet_holder *value_holder,
-		      int *start_buf, int *width_buf, int *order_buf,
+		      RangesOrderBufs *bufs,
 		      char *dest)
 {
 	int at_len, i, dest_offset, x_offset, k, x_chunk_len;
@@ -55,14 +83,17 @@ static int replace_at(const Chars_holder *x_holder,
 
 	at_len = get_length_from_IRanges_holder(at_holder);
 	for (i = 0; i < at_len; i++) {
-		start_buf[i] = get_start_elt_from_IRanges_holder(at_holder, i);
-		width_buf[i] = get_width_elt_from_IRanges_holder(at_holder, i);
+		bufs->start[i] =
+			get_start_elt_from_IRanges_holder(at_holder, i);
+		bufs->width[i] =
+			get_width_elt_from_IRanges_holder(at_holder, i);
 	}
-	get_order_of_int_pairs(start_buf, width_buf, at_len, 0, order_buf, 0);
+	get_order_of_int_pairs(bufs->start, bufs->width, at_len, 0,
+			       bufs->order, 0);
 	dest_offset = x_offset = 0;
 	for (k = 0; k < at_len; k++) {
-		i = order_buf[k];
-		x_chunk_len = start_buf[i] - x_offset - 1;
+		i = bufs->order[k];
+		x_chunk_len = bufs->start[i] - x_offset - 1;
 		if (x_chunk_len < 0)
 			return -1;
 		if (x_chunk_len != 0) {
@@ -78,13 +109,78 @@ static int replace_at(const Chars_holder *x_holder,
 			       sizeof(char) * value_elt_holder.length);
 			dest_offset += value_elt_holder.length;
 		}
-		x_offset += width_buf[i];
+		x_offset += bufs->width[i];
 	}
 	x_chunk_len = x_holder->length - x_offset;
 	if (x_chunk_len != 0)
 		memcpy(dest + dest_offset, x_holder->ptr + x_offset,
 		       sizeof(char) * x_chunk_len);
 	return 0;
+}
+
+/* --- .Call ENTRY POINT ---
+ * Args:
+ *   x:     An XString object.
+ *   at:    An IRanges object.
+ *   value: An XStringSet object of the same seqtype as 'x'.
+ */
+SEXP XString_replaceAt(SEXP x, SEXP at, SEXP value)
+{
+	Chars_holder x_holder;
+	IRanges_holder at_holder;
+	XStringSet_holder value_holder;
+	int ret_code, nb_replacements, ans_len;
+
+	const char *ans_classname;
+	SEXP ans;
+	RangesOrderBufs bufs;
+	Chars_holder ans_holder;
+
+	/* Compute 'ans_len' and 'nb_replacements' */
+	x_holder = hold_XRaw(x);
+	at_holder = hold_IRanges(at);
+	value_holder = _hold_XStringSet(value);
+	ret_code = compute_length_after_replacements(
+				&x_holder,
+				&at_holder,
+				&value_holder,
+				&nb_replacements,
+				&ans_len);
+	if (ret_code == -1)
+		error("'at' and 'value' must have the same length");
+	if (ret_code == -2)
+		error("some ranges in 'at' are off-limits "
+		      "with respect to sequence 'x'");
+	if (ans_len == NA_INTEGER)
+		error("replacements in 'x' will produce a "
+		      "sequence that is too long\n  (i.e. with more "
+		      "than '.Machine$integer.max' letters)");
+	if (ans_len < 0)
+		error("'at' must contain disjoint ranges (see '?isDisjoint')");
+
+	/* Allocate 'ans' and 'bufs' */
+	ans_classname = get_classname(x);
+	PROTECT(ans = alloc_XRaw(ans_classname, ans_len));
+	ret_code = alloc_RangesOrderBufs(&bufs, nb_replacements);
+	if (ret_code == -1) {
+		UNPROTECT(1);
+		error("Biostrings internal error in "
+		      "XString_replaceAt():\n\n  "
+		      "    memory allocation failed");
+	}
+
+	/* Fill 'ans' */
+	ans_holder = hold_XRaw(ans);
+	ret_code = replace_at(&x_holder,
+			      &at_holder,
+			      &value_holder,
+			      &bufs,
+			      (char *) ans_holder.ptr);
+	free_RangesOrderBufs(&bufs);
+	UNPROTECT(1);
+	if (ret_code == -1)
+		error("'at' must contain disjoint ranges (see '?isDisjoint')");
+	return ans;
 }
 
 /* --- .Call ENTRY POINT ---
@@ -99,15 +195,15 @@ SEXP XStringSet_replaceAt(SEXP x, SEXP at, SEXP value)
 	CompressedIRangesList_holder at_holder;
 	XStringSetList_holder value_holder;
 	int x_len, at_len, value_len, max_replacements,
-	    i, ans_width_elt, ret_code = 0, nb_replacements;
+	    i, ret_code = 0, nb_replacements, ans_width_elt;
 	SEXP ans_width;
 	Chars_holder x_elt_holder;
 	IRanges_holder at_elt_holder;
 	XStringSet_holder value_elt_holder;
 
-	int *start_buf, *width_buf, *order_buf;
 	const char *ans_classname, *ans_elt_type;
 	SEXP ans;
+	RangesOrderBufs bufs;
 	XStringSet_holder ans_holder;
 	Chars_holder ans_elt_holder;
 
@@ -167,25 +263,17 @@ SEXP XStringSet_replaceAt(SEXP x, SEXP at, SEXP value)
 			max_replacements = nb_replacements;
 	}
 
-	/* Allocate 'start_buf', 'width_buf', 'order_buf', and 'ans' */
-	start_buf = (int *) malloc(sizeof(int) * max_replacements);
-	width_buf = (int *) malloc(sizeof(int) * max_replacements);
-	order_buf = (int *) malloc(sizeof(int) * max_replacements);
-	if (start_buf == NULL || width_buf == NULL || order_buf == NULL) {
-		if (start_buf != NULL)
-			free(start_buf);
-		if (width_buf != NULL)
-			free(width_buf);
-		if (order_buf != NULL)
-			free(order_buf);
-		UNPROTECT(1);
+	/* Allocate 'ans' and 'bufs' */
+	ans_classname = get_classname(x);
+	ans_elt_type = _get_XStringSet_xsbaseclassname(x);
+	PROTECT(ans = alloc_XRawList(ans_classname, ans_elt_type, ans_width));
+	ret_code = alloc_RangesOrderBufs(&bufs, max_replacements);
+	if (ret_code == -1) {
+		UNPROTECT(2);
 		error("Biostrings internal error in "
 		      "XStringSet_replaceAt():\n\n  "
 		      "    memory allocation failed");
 	}
-	ans_classname = get_classname(x);
-	ans_elt_type = _get_XStringSet_xsbaseclassname(x);
-	PROTECT(ans = alloc_XRawList(ans_classname, ans_elt_type, ans_width));
 
 	/* 2nd pass: fill 'ans' */
 	ans_holder = _hold_XStringSet(ans);
@@ -201,17 +289,15 @@ SEXP XStringSet_replaceAt(SEXP x, SEXP at, SEXP value)
 		ret_code = replace_at(&x_elt_holder,
 				      &at_elt_holder,
 				      &value_elt_holder,
-				      start_buf, width_buf, order_buf,
+				      &bufs,
 				      (char *) ans_elt_holder.ptr);
 		if (ret_code == -1)
 			break;
 	}
 
-	free(start_buf);
-	free(width_buf);
-	free(order_buf);
+	free_RangesOrderBufs(&bufs);
 	UNPROTECT(2);
-	if (ret_code != 0)
+	if (ret_code == -1)
 		error("'at[[%d]]' must contain disjoint ranges "
 		      "(see '?isDisjoint')", i + 1);
 	return ans;

@@ -403,19 +403,8 @@ setMethod("replaceAt", "XString",
         NR <- length(at)  # same as length(value) -- nb of replacements
         if (NR == 0L)
             return(x)
-
-        oo <- order(at)
-        start2 <- start(at)[oo]
-        end2 <- end(at)[oo]
-        if (any(start2[-1L] <= end2[-NR]))
-            stop("'at' must contain disjoint ranges (see '?isDisjoint')")
-        value2 <- value[oo]
-        ## The regions of 'x' that are preserved are the regions between the
-        ## ranges in 'at'.
-        preserved <- IRanges(c(1L, end2 + 1L), c(start2 - 1L, length(x)))
-        x_preserved <- as(Views(x, preserved), "XStringSet")
-        last_value2 <- as("", class(value2))
-        unlist(xscat(x_preserved, c(value2, last_value2)))
+        .Call2("XString_replaceAt", x, at, value,
+               PACKAGE="Biostrings")
     }
 )
 

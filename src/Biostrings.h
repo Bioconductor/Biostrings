@@ -368,6 +368,12 @@ SEXP DNAStringSet_translate(
 
 /* replaceAt.c */
 
+SEXP XString_replaceAt(
+	SEXP x,
+	SEXP at,
+	SEXP value
+);
+
 SEXP XStringSet_replaceAt(
 	SEXP x,
 	SEXP at,
