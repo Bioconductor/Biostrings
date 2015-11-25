@@ -134,6 +134,11 @@ setAs("XStringViews", "AAStringSet", function(from) AAStringSet(from))
 setAs("XStringSet", "Views", .XStringSetAsViews)
 setAs("XStringSet", "XStringViews", .XStringSetAsViews)
 
+setMethod("as.data.frame", "XStringViews",
+          function (x, row.names = NULL, optional = FALSE, ...)
+          {
+              as.data.frame(as(x, "XStringSet"), row.names, optional, ...)
+          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.
