@@ -39,6 +39,7 @@
 
 \alias{as.character,XStringViews-method}
 \alias{as.matrix,XStringViews-method}
+\alias{as.data.frame,XStringViews-method}
 \alias{toString,XStringViews-method}
 
 
@@ -127,6 +128,10 @@
       should be raised if \code{x} has "out of limit" views.
       If \code{check.limits} is \code{FALSE} then "out of limit" views are
       trimmed with a warning.
+    }
+    \item{\code{as.data.frame(x, row.names = NULL, optional = FALSE,
+	...)}}{
+      Equivalent of \code{as.data.frame(as.character(x))}.
     }
     \item{}{
       \code{as.matrix(x, use.names=TRUE)}:
