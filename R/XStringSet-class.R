@@ -346,7 +346,7 @@ setAs("ANY", "XStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "show" method.
+### The "show" and "showAsCell" methods.
 ###
 
 .namesW <- 20
@@ -426,6 +426,10 @@ setMethod("show", "XStringSet",
         if (length(object) != 0)
             .XStringSet.show_frame(object)
     }
+)
+
+setMethod("showAsCell", "XStringSet",
+    function(object) sapply(object, toSeqSnippet, width=23L)
 )
 
 

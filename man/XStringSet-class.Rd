@@ -38,6 +38,7 @@
 \alias{coerce,ANY,XStringSet-method}
 
 \alias{show,XStringSet-method}
+\alias{showAsCell,XStringSet-method}
 
 \alias{union,XStringSet,XStringSet-method}
 \alias{intersect,XStringSet,XStringSet-method}

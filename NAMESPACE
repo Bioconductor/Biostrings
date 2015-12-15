@@ -81,7 +81,7 @@ exportMethods(
     seqtype, "seqtype<-",
     updateObject,
     names, "names<-", "[", "[[", rep, append,
-    show,
+    show, showAsCell,
     relistToClass,
     union, intersect, setdiff, setequal,
     "%in%", match,
