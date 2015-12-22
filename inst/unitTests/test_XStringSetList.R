@@ -126,3 +126,12 @@ test_AAStringSetList_unlist <- function()
 
 test_AAStringSetList_append <- function()
     .XStringSetList_append(AAStringSet, AAStringSetList, AA_ALPHABET)
+
+
+test_DNAStringSetList_showAsCell <- function()
+{
+    dna <- showAsCell(DNAStringSetList())
+    checkTrue(is(dna, "character"))
+    dna <- showAsCell(DNAStringSetList(DNA_ALPHABET))
+    checkTrue(is(dna, "character"))
+}

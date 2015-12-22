@@ -104,3 +104,10 @@ test_DNAStringSet_compaction <- function()
                    compact_dna300@ranges)
 }
 
+test_DNAStringSet_showAsCell <- function()
+{
+    dna <- showAsCell(DNAStringSet())
+    checkTrue(is(dna, "character"))
+    dna <- showAsCell(DNAStringSet(DNA_ALPHABET))
+    checkTrue(is(dna, "character"))
+}

@@ -429,7 +429,8 @@ setMethod("show", "XStringSet",
 )
 
 setMethod("showAsCell", "XStringSet",
-    function(object) sapply(object, toSeqSnippet, width=23L)
+    function(object) 
+        vapply(object, toSeqSnippet, character(1), width=23L)
 )
 
 
