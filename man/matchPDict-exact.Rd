@@ -113,7 +113,9 @@ vwhichPDict(pdict, subject,
     An \link{XStringSet} object containing the subject sequences
     for \code{vcountPDict} and \code{vwhichPDict}.
 
-    For now, only subjects of base class \link{DNAString} are supported.
+    If \code{pdict} is a \link{PDict} object (i.e. a preprocessed
+    dictionary), then \code{subject} must be of base class \link{DNAString}.
+    Otherwise, \code{subject} must be of the same base class as \code{pdict}.
   }
   \item{max.mismatch, min.mismatch}{
     The maximum and minimum number of mismatching letters allowed (see
@@ -373,14 +375,14 @@ stopifnot(identical(res3a, res3c))
 
 ## One reason for using a non-preprocessed dictionary is to get rid of
 ## all the constraints associated with preprocessing, e.g., when
-## preprocessing with \code{\link{PDict}}, the input dictionary must
-## be DNA and a Trusted Band must be defined (explicitly or implicitly).
-## See \code{?\link{PDict}} for more information about these constraints.
+## preprocessing with PDict(), the input dictionary must be DNA and a
+## Trusted Band must be defined (explicitly or implicitly).
+## See '?PDict' for more information about these constraints.
 ## In particular, using a non-preprocessed dictionary can be
 ## useful for the kind of inexact matching that can't be achieved
-## with a \link{PDict} object (if performance is not an issue).
-## See \code{?`\link{matchPDict-inexact}`} for more information about
-## inexact matching.
+## with a PDict object (if performance is not an issue).
+## See '?`matchPDict-inexact`' for more information about inexact
+## matching.
 
 dictD <- xscat(dict3, "N", reverseComplement(dict3))
 
@@ -392,6 +394,10 @@ resDb <- sapply(dictD,
 stopifnot(all(sapply(seq_len(length(dictD)),
                      function(i)
                        identical(resDa[[i]], as(resDb[[i]], "IRanges")))))
+
+## A non-preprocessed dictionary can be of any base class i.e. BString,
+## RNAString, and AAString, in addition to DNAString:
+matchPDict(AAStringSet(c("DARC", "EGH")), AAString("KMFPRNDEGHSTTWTEE"))
 
 ## ---------------------------------------------------------------------
 ## E. vcountPDict()
