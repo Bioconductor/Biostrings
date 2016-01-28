@@ -900,7 +900,7 @@ dict0 <- DNAStringSet(drosophila2probe$sequence, end=12)
 pdict6 <- PDict(dict0, tb.start=4, tb.end=9)
 
 mi6 <- matchPDict(pdict6, chr3R_50000, max.mismatch=1)
-sum(elementLengths(mi6))  # 17896
+sum(elementNROWS(mi6))  # 17896
 
 		if (headtail->ppheadtail.is_init
 		 && IntAE_get_nelt(tb_end_buf) >= 40) {

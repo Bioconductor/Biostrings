@@ -91,7 +91,7 @@
 ###   > system.time(mindex <- matchPDict(pdict, chr3R))
 ###      user  system elapsed
 ###     1.332   0.008   1.338
-###   > identical(elementLengths(mindex0), elementLengths(mindex))
+###   > identical(elementNROWS(mindex0), elementNROWS(mindex))
 ###   [1] TRUE
 ###
 ### Allowing mismatches is fast:
@@ -357,7 +357,7 @@
                   }, gcFirst=TRUE)
             if (verbose) {
                 print(st)
-                cat(sum(elementLengths(ans_compon)), " match(es) found\n",
+                cat(sum(elementNROWS(ans_compon)), " match(es) found\n",
                     sep="")
             }
             ans_compon
@@ -372,7 +372,7 @@
     if (verbose)
         print(st)
     if (matches.as == "MATCHES_AS_COUNTS")
-        return(elementLengths(ans))
+        return(elementNROWS(ans))
     return(ans)
 }
 

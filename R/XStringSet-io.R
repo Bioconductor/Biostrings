@@ -409,7 +409,7 @@ saveXStringSet <- function(x, objname, dirpath=".",
 
 fasta.info <- function(...)
 {
-    .Deprecated("fasta.seqlengths")
+    .Defunct("fasta.seqlengths")
     fasta.seqlengths(...)
 }
 

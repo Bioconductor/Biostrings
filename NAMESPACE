@@ -166,7 +166,7 @@ export(
     N50,
 
     ## Old stuff (Deprecated or Defunct):
-    fasta.info, transcribe, cDNA, dna2rna, rna2dna
+    fasta.info
 )
 
 exportMethods(
@@ -265,8 +265,7 @@ export(
 
     ## old stuff (deprecated or defunct):
     findComplementedPalindromes, complementedPalindromeArmLength,
-    complementedPalindromeLeftArm, complementedPalindromeRightArm,
-    countIndex
+    complementedPalindromeLeftArm, complementedPalindromeRightArm
 )
 
 exportMethods(

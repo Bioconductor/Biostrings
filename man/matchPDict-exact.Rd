@@ -258,7 +258,7 @@ length(start_index)                  # Same as the original dictionary.
 start_index[[8220]]                  # Starts of the 8220th pattern.
 end_index <- endIndex(mi0)           # Get the end index.
 end_index[[8220]]                    # Ends of the 8220th pattern.
-nmatch_per_pat <- elementLengths(mi0) # Get the number of matches per pattern.
+nmatch_per_pat <- elementNROWS(mi0)  # Get the number of matches per pattern.
 nmatch_per_pat[[8220]]
 mi0[[8220]]                          # Get the matches for the 8220th pattern.
 start(mi0[[8220]])                   # Equivalent to startIndex(mi0)[[8220]].
@@ -340,7 +340,7 @@ if (interactive()) {
     ans_matchtime <- system.time(
                        mi0 <- matchPDict(pdict, subject)
                      )[["elapsed"]]
-    ans_totalcount <- sum(elementLengths(mi0))
+    ans_totalcount <- sum(elementNROWS(mi0))
     list(
       width=ans_width,
       pptime=ans_pptime,

@@ -74,7 +74,7 @@ AAStringSetList(..., use.names=TRUE)
   on an ordinary list (e.g. \code{length}, \code{names}, \code{[}, \code{[[},
   \code{c}, \code{unlist}, etc...) should work on an XStringSetList object.
   In addition, Bioconductor specific list operations like
-  \code{\link[S4Vectors]{elementLengths}} and
+  \code{\link[S4Vectors]{elementNROWS}} and
   \code{\link[IRanges]{PartitioningByEnd}} (defined in the \pkg{IRanges}
   package) are supported too.
 }
@@ -121,7 +121,7 @@ DNAStringSetList(character(0))
 ## B. UNLISTING AN XStringSetList OBJECT
 ## ---------------------------------------------------------------------
 length(x)
-elementLengths(x)
+elementNROWS(x)
 unlist(x)
 x[[1]]
 x[[2]]

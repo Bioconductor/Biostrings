@@ -255,7 +255,7 @@ unique(unlist(matches))
 probes2 <- replaceAt(probes, midx, value="-++-")
 
 ## See strings with 2 or more susbtitutions:
-probes2[elementLengths(midx) >= 2]
+probes2[elementNROWS(midx) >= 2]
 
 ## 2 sanity checks:
 stopifnot(all(replaceAt(probes, midx, value=matches) == probes))

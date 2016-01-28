@@ -14,12 +14,6 @@
 \alias{codons,MaskedDNAString-method}
 \alias{codons,MaskedRNAString-method}
 
-% Old stuff (Deprecated or Defunct):
-\alias{transcribe}
-\alias{cDNA}
-\alias{dna2rna}
-\alias{rna2dna}
-
 
 \title{Translating DNA/RNA sequences}
 

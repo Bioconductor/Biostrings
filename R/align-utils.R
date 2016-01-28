@@ -21,7 +21,7 @@ setMethod("nmatch", c(pattern = "PairwiseAlignmentsSingleSubjectSummary", x = "m
 
 setMethod("nmismatch", c(pattern = "AlignedXStringSet0", x = "missing"),
     function(pattern, x, fixed)
-        elementLengths(mismatch(pattern))
+        elementNROWS(mismatch(pattern))
 )
 
 setMethod("nmismatch", c(pattern = "PairwiseAlignments", x = "missing"),

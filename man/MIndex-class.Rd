@@ -16,7 +16,7 @@
 \alias{names<-,MIndex-method}
 \alias{startIndex}
 \alias{endIndex}
-\alias{elementLengths,MIndex-method}
+\alias{elementNROWS,MIndex-method}
 \alias{unlist,MIndex-method}
 \alias{coerce,MIndex,CompressedIRangesList-method}
 
@@ -24,9 +24,6 @@
 \alias{[[,ByPos_MIndex-method}
 \alias{startIndex,ByPos_MIndex-method}
 \alias{endIndex,ByPos_MIndex-method}
-
-% Old stuff (Deprecated or Defunct):
-\alias{countIndex}
 
 
 \title{MIndex objects}
@@ -68,7 +65,7 @@
       for each pattern.
     }
     \item{}{
-      \code{elementLengths(x)}:
+      \code{elementNROWS(x)}:
       An integer vector containing the number of matches
       for each pattern.
     }

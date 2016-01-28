@@ -217,8 +217,8 @@ dm3_upstream
 Ebox <- DNAString("CANNTG")
 subject <- dm3_upstream
 mindex <- vmatchPattern(Ebox, subject, fixed="subject")
-nmatch_per_seq <- elementLengths(mindex)  # Get the number of matches per
-                                          # subject element.
+nmatch_per_seq <- elementNROWS(mindex)  # Get the number of matches per
+                                        # subject element.
 sum(nmatch_per_seq)  # Total number of matches.
 table(nmatch_per_seq)
 

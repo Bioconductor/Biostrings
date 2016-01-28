@@ -48,7 +48,7 @@ setGeneric("replaceAt", signature="x",
     stopifnot(length(at) == length(limits))
 
     unlisted_at <- unlist(at, use.names=FALSE)
-    tmp <- rep.int(limits, elementLengths(at))
+    tmp <- rep.int(limits, elementNROWS(at))
     min_starts <- start(tmp)
     max_ends <- end(tmp)
     all(start(unlisted_at) >= min_starts) && all(end(unlisted_at) <= max_ends)
@@ -112,25 +112,25 @@ setGeneric("replaceAt", signature="x",
     if (!is.na(more_blahblah))
         x_what2 <- paste0(x_what2, " (", more_blahblah, ")")
 
-    x_eltlens <- unname(elementLengths(x))
-    skeleton_eltlens <- unname(elementLengths(skeleton))
-    idx <- which(x_eltlens != skeleton_eltlens)
+    x_eltNROWS <- unname(elementNROWS(x))
+    skeleton_eltNROWS <- unname(elementNROWS(skeleton))
+    idx <- which(x_eltNROWS != skeleton_eltNROWS)
     if (length(idx) == 0L)
         return(x)
 
-    longer_idx <- which(x_eltlens > skeleton_eltlens)
-    shorter_idx <- which(x_eltlens < skeleton_eltlens)
+    longer_idx <- which(x_eltNROWS > skeleton_eltNROWS)
+    shorter_idx <- which(x_eltNROWS < skeleton_eltNROWS)
     if (length(longer_idx) == 0L && length(shorter_idx) == 0L)
         return(x)
     if (length(longer_idx) != 0L) {
-        if (max(x_eltlens[longer_idx]) >= 2L)
+        if (max(x_eltNROWS[longer_idx]) >= 2L)
             stop(.wrap_msg(
                 x_what2, " are longer than their corresponding ",
                 "list element in '", skeleton_what, "'"
             ))
     }
     if (length(shorter_idx) != 0L) {
-        tmp <- x_eltlens[shorter_idx]
+        tmp <- x_eltNROWS[shorter_idx]
         if (min(tmp) == 0L)
             stop(.wrap_msg(
                 x_what2, " are of length 0, but their corresponding ",
@@ -153,8 +153,8 @@ setGeneric("replaceAt", signature="x",
     ## list of integers and 'skeleton' a List object).
     unlisted_x <- unlist(x, use.names=FALSE)
     times <- rep.int(1L, length(unlisted_x))
-    idx2 <- cumsum(x_eltlens)[idx]
-    times[idx2] <- skeleton_eltlens[idx]
+    idx2 <- cumsum(x_eltNROWS)[idx]
+    times[idx2] <- skeleton_eltNROWS[idx]
     unlisted_ans <- rep.int(unlisted_x, times)
     ans <- relist(unlisted_ans, skeleton)
     names(ans) <- names(x)
@@ -308,8 +308,8 @@ setMethod("extractAt", "XStringSet",
     function(x, at)
     {
         at <- .normarg_at2(at, x)
-        at_eltlens <- elementLengths(at)
-        x2 <- rep.int(unname(x), at_eltlens)
+        at_eltNROWS <- elementNROWS(at)
+        x2 <- rep.int(unname(x), at_eltNROWS)
         unlisted_at <- unlist(at, use.names=FALSE)
         unlisted_ans <- subseq(x2, start=start(unlisted_at),
                                    width=width(unlisted_at))
@@ -328,13 +328,13 @@ library(Biostrings)
 ### From an XStringSet object
 ### =========================
 
-### Only compare the classes, the shapes (i.e. lengths + elementLengths +
+### Only compare the classes, the shapes (i.e. lengths + elementNROWS +
 ### names), the inner names, and the sequence contents. Doesn't look at
 ### the metadata or the metadata columns (outer or inner).
 identical_XStringSetList <- function(target, current)
 {
     ok1 <- identical(class(target), class(current))
-    ok2 <- identical(elementLengths(target), elementLengths(current))
+    ok2 <- identical(elementNROWS(target), elementNROWS(current))
     unlisted_target <- unlist(target, use.names=FALSE)
     unlisted_current <- unlist(current, use.names=FALSE)
     ok3 <- identical(names(unlisted_target), names(unlisted_current))
