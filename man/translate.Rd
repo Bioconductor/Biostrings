@@ -132,7 +132,7 @@ codons(x)
           its known variants.
 
     \item The examples for
-          \code{\link[GenomicFeatures]{extractTranscriptsFromGenome}}
+          \code{\link[GenomicFeatures]{extractTranscriptSeqs}}
           in the \pkg{GenomicFeatures} package for computing the
           full proteome of a given organism.
 
