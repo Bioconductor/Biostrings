@@ -30,6 +30,7 @@ setClass("BOC_SubjectString",
 setMethod("initialize", "BOC_SubjectString",
     function(.Object, subject, pattern_length, base_letters)
     {
+        .Deprecated(msg="BOC_SubjectString objects are deprecated")
         .Object@subject <- subject
         if (!isSingleNumber(pattern_length))
             stop("'pattern_length' must be a single integer")
@@ -148,6 +149,7 @@ setMethod("matchPattern", "BOC_SubjectString",
              max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto")
     {
+        .Deprecated(msg="BOC_SubjectString objects are deprecated")
         pattern <- normargPattern(pattern, subject@subject)
         pattern_length <- nchar(pattern)
         if (pattern_length != subject@pattern_length)

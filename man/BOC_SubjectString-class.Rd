@@ -22,10 +22,7 @@
 \title{BOC\_SubjectString and BOC2\_SubjectString objects}
 
 \description{
-  The BOC\_SubjectString and BOC2\_SubjectString classes are
-  experimental and might not work properly.
-
-  Please DO NOT TRY TO USE them for now. Thanks for your comprehension!
+  WARNING: BOC\_SubjectString and BOC2\_SubjectString objects are deprecated!
 }
 
 \author{H. Pages}

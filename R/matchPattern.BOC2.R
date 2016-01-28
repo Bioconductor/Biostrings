@@ -27,6 +27,7 @@ setClass("BOC2_SubjectString",
 setMethod("initialize", "BOC2_SubjectString",
     function(.Object, subject, pattern_length, base_letters)
     {
+        .Deprecated(msg="BOC2_SubjectString objects are deprecated")
         .Object@subject <- subject
         if (!isSingleNumber(pattern_length))
             stop("'pattern_length' must be a single integer")
@@ -155,6 +156,7 @@ setMethod("matchPattern", "BOC2_SubjectString",
              max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto")
     {
+        .Deprecated(msg="BOC2_SubjectString objects are deprecated")
         .matchPattern.BOC2(pattern, subject, max.mismatch, fixed)
     }
 )
@@ -165,6 +167,7 @@ setMethod("countPattern", "BOC2_SubjectString",
              max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto")
     {
+        .Deprecated(msg="BOC2_SubjectString objects are deprecated")
         .matchPattern.BOC2(pattern, subject, max.mismatch, fixed, count.only=TRUE)
     }
 )
