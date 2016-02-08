@@ -71,19 +71,14 @@ setMethod("unlist", "MIndex",
     }
 )
 
-.fromMIndexToCompressedIRangesList <- function(from)
+.from_MIndex_to_CompressedIRangesList <- function(from)
 {
     ans <- relist(unlist(from, use.names=FALSE), from)
     names(ans) <- names(from)
     ans
 }
 
-setAs("MIndex", "CompressedIRangesList", .fromMIndexToCompressedIRangesList)
-setAs("MIndex", "CompressedNormalIRangesList",
-    function(from)
-        as(.fromMIndexToCompressedIRangesList(from),
-           "CompressedNormalIRangesList")
-)
+setAs("MIndex", "CompressedIRangesList", .from_MIndex_to_CompressedIRangesList)
 
 extractAllMatches <- function(subject, mindex)
 {

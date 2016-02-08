@@ -19,7 +19,6 @@
 \alias{elementNROWS,MIndex-method}
 \alias{unlist,MIndex-method}
 \alias{coerce,MIndex,CompressedIRangesList-method}
-\alias{coerce,MIndex,CompressedNormalIRangesList-method}
 
 \alias{show,MIndex-method}
 \alias{[[,ByPos_MIndex-method}
