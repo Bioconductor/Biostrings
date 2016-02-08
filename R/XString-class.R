@@ -264,6 +264,10 @@ setMethod("show", "XString",
     }
 )
 
+setMethod("showAsCell", "XString",
+    function(object) safeExplode(as.character(object))
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Equality.

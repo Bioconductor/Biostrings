@@ -37,6 +37,7 @@
 
 % "show" method:
 \alias{show,XString-method}
+\alias{showAsCell,XString-method}
 
 % Equality:
 \alias{==,XString,XString-method}
