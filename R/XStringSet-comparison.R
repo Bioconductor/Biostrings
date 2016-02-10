@@ -48,7 +48,7 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### compare().
+### pcompare().
 ###
 
 ### Method signatures for binary comparison operators.
@@ -60,10 +60,10 @@
     c("vector", "XStringSet")
 )
 
-.XStringSet.compare <- function(x, y)
-    .coerce_and_call_next_method("compare", x, y)
+.pcompare_XStringSet <- function(x, y)
+    .coerce_and_call_next_method("pcompare", x, y)
 
-setMethods("compare", .OP2_SIGNATURES, .XStringSet.compare)
+setMethods("pcompare", .OP2_SIGNATURES, .pcompare_XStringSet)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

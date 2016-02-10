@@ -2,9 +2,9 @@
 
 \alias{XStringSet-comparison}
 
-\alias{compare,XStringSet,XStringSet-method}
-\alias{compare,XStringSet,ANY-method}
-\alias{compare,ANY,XStringSet-method}
+\alias{pcompare,XStringSet,XStringSet-method}
+\alias{pcompare,XStringSet,ANY-method}
+\alias{pcompare,ANY,XStringSet-method}
 
 \alias{match,XStringSet,XStringSet-method}
 \alias{match,XStringSet,ANY-method}
@@ -45,13 +45,13 @@
   in \link{AA_ALPHABET}. This might change at some point.
 }
 
-\section{\code{compare()} and related methods}{
+\section{\code{pcompare()} and related methods}{
   In the code snippets below,
   \code{x} and \code{y} are \link{XStringSet} objects.
 
   \describe{
     \item{}{
-      \code{compare(x, y)}:
+      \code{pcompare(x, y)}:
       Performs element-wise (aka "parallel") comparison of \code{x} and
       \code{y}, that is, returns an integer vector where the i-th element
       is less than, equal to, or greater than zero if the i-th element in
@@ -64,9 +64,9 @@
     \item{}{
       \code{x == y}, \code{x != y}, \code{x <= y}, \code{x >= y},
       \code{x < y}, \code{x > y}:
-      Equivalent to \code{compare(x, y) == 0}, \code{compare(x, y) != 0},
-      \code{compare(x, y) <= 0}, \code{compare(x, y) >= 0},
-      \code{compare(x, y) < 0}, and \code{compare(x, y) > 0}, respectively.
+      Equivalent to \code{pcompare(x, y) == 0}, \code{pcompare(x, y) != 0},
+      \code{pcompare(x, y) <= 0}, \code{pcompare(x, y) >= 0},
+      \code{pcompare(x, y) < 0}, and \code{pcompare(x, y) > 0}, respectively.
     }
   }
 }
