@@ -32,9 +32,11 @@ unsafe.newXStringViews <- function(subject, start, width)
 
 setMethod("Views", "XString",
     function(subject, start=NULL, end=NULL, width=NULL, names=NULL)
-        newViews(subject,
-                 start=start, end=end, width=width, names=names,
-                 Class="XStringViews")
+        IRanges:::new_Views(subject, start=start,
+                                     end=end,
+                                     width=width,
+                                     names=names,
+                                     Class="XStringViews")
 )
 
 setMethod("Views", "character",
