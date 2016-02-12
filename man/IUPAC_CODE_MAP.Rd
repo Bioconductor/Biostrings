@@ -42,7 +42,7 @@ mergeIUPACLetters(x)
   is an IUPAC nucleotide ambiguity code.
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \references{
   \url{http://www.chick.manchester.ac.uk/SiteSeer/IUPAC\_codes.html}

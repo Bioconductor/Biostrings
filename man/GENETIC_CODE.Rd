@@ -97,7 +97,7 @@ getGeneticCode(id_or_name2, full.search=FALSE)
   identical to \code{names(GENETIC_CODE)}.
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \references{
   All the known genetic codes are described here:

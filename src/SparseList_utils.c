@@ -1,23 +1,10 @@
 /****************************************************************************
  *                        Fast SparseList utilities                         *
- *                           Author: Herve Pages                            *
+ *                            Author: H. Pag\`es                            *
  ****************************************************************************/
 #include "Biostrings.h"
 #include "S4Vectors_interface.h"
 
-static int debug = 0;
-
-SEXP debug_SparseList_utils()
-{
-#ifdef DEBUG_BIOSTRINGS
-	debug = !debug;
-	Rprintf("Debug mode turned %s in 'SparseList_utils.c'\n",
-		debug ? "on" : "off");
-#else
-	Rprintf("Debug mode not available in 'SparseList_utils.c'\n");
-#endif
-	return R_NilValue;
-}
 
 SEXP _SparseList_int2symb(int symb_as_int)
 {

@@ -92,9 +92,7 @@ writePairwiseAlignments(x, file="", Matrix=NA, block.width=50)
   }
 }
 
-\author{
-  H. Pages
-}
+\author{H. Pagès}
 
 \references{
   \url{http://emboss.sourceforge.net/docs/themes/AlignFormats.html}

@@ -1,9 +1,9 @@
 /****************************************************************************
-                           THE SHIFT-OR ALGORITHM
-                                   aka
-                            THE BITAP ALGORITHM
+                            THE SHIFT-OR ALGORITHM
+                                    aka
+                             THE BITAP ALGORITHM
 
-                             Author: H. Pages
+                              Author: H. Pag\`es                             
 
  This is a complete rewrite from Biostrings 1.
 
@@ -85,37 +85,6 @@ typedef unsigned long ShiftOrWord_t;
 int shiftor_maxbits = sizeof(ShiftOrWord_t) * CHAR_BIT;
 
 /****************************************************************************/
-static int debug = 0;
-
-SEXP debug_match_pattern_shiftor()
-{
-#ifdef DEBUG_BIOSTRINGS
-	debug = !debug;
-	Rprintf("Debug mode turned %s in 'match_pattern_shiftor.c'\n",
-		debug ? "on" : "off");
-#else
-	Rprintf("Debug mode not available in 'match_pattern_shiftor.c'\n");
-#endif
-	return R_NilValue;
-}
-
-#ifdef DEBUG_BIOSTRINGS
-static void debug_printULBits(unsigned long bits)
-{
-	unsigned long current_bit = 1UL << (BITS_PER_LONG-1);
-	int i;
-
-	for (i = 0; i < BITS_PER_LONG; i++) {
-		Rprintf("%d", (bits & current_bit) != 0UL);
-		if ((i % 8) == 7) {
-			Rprintf(" ");
-		}
-		current_bit >>= 1;
-	}
-	Rprintf("-> %lu\n", bits);
-	return;
-}
-#endif
 
 SEXP bits_per_long()
 {
@@ -171,22 +140,10 @@ static void update_PMmasks(
 
 	PMmaskA = PMmask[0] >> 1;
 	PMmask[0] = PMmaskA | pmask;
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] update_PMmasks(): PMmask[%d]=", 0);
-		debug_printULBits(PMmask[0]);
-	}
-#endif
 	for (e = 1; e < PMmask_length; e++) {
 		PMmaskB = PMmaskA;
 		PMmaskA = PMmask[e] >> 1;
 		PMmask[e] = (PMmaskA | pmask) & PMmaskB & PMmask[e-1];
-#ifdef DEBUG_BIOSTRINGS
-		if (debug) {
-			Rprintf("[DEBUG] update_PMmasks(): PMmask[%d]=", e);
-			debug_printULBits(PMmask[e]);
-		}
-#endif
 	}
 	return;
 }
@@ -211,13 +168,6 @@ static int next_match(
 		if (*Rpos < S->length) {
 			nncode = (unsigned char) S->ptr[*Rpos];
 			pmask = pmaskmap[nncode];
-#ifdef DEBUG_BIOSTRINGS
-			if (debug) {
-				Rprintf("[DEBUG] next_match(): ");
-				Rprintf("pmaskmap[%d]=", nncode);
-				debug_printULBits(pmask);
-			}
-#endif
 		} else {
 			pmask = ~0UL;
 		}
@@ -239,11 +189,6 @@ static void shiftor(const Chars_holder *P, const Chars_holder *S,
 	ShiftOrWord_t *PMmask, pmaskmap[256];
 	int i, e, Lpos, Rpos, ret;
 
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] shiftor(): BEGIN\n");
-	}
-#endif
 	if (P->length <= 0)
 		error("empty pattern");
 	set_pmaskmap(is_fixed, 256, pmaskmap, P);
@@ -273,11 +218,6 @@ static void shiftor(const Chars_holder *P, const Chars_holder *S,
 		_report_match(Lpos, P->length);
 	}
 	/* No need to free PMmask, R does that for us */
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] shiftor(): END\n");
-	}
-#endif
 	return;
 }
 

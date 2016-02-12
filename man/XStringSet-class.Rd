@@ -311,7 +311,7 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
   }
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \seealso{
   \link{XStringSet-comparison},

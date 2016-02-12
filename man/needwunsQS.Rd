@@ -27,7 +27,7 @@ An instance of class \code{"PairwiseAlignments"}.
 }
 \references{R. Durbin, S. Eddy, A. Krogh, G. Mitchison,
 Biological Sequence Analysis, Cambridge UP 1998, sec 2.3.}
-\author{Vince Carey (\email{stvjc@channing.harvard.edu}) (original author) and H. Pages (current maintainer).}
+\author{Vince Carey (\email{stvjc@channing.harvard.edu}) (original author) and H. Pagès (current maintainer).}
 \seealso{
   \link{pairwiseAlignment},
   \link{PairwiseAlignments-class},

@@ -26,21 +26,13 @@ static const R_CMethodDef cMethods[] = {
 
 static const R_CallMethodDef callMethods[] = {
 
-/* utils.c */
-	CALLMETHOD_DEF(debug_utils, 0),
-
-/* RoSeqs_utils.c */
-	CALLMETHOD_DEF(debug_RoSeqs_utils, 0),
-
 /* XString_class.c */
-	CALLMETHOD_DEF(debug_XString_class, 0),
 	CALLMETHOD_DEF(init_DNAlkups, 2),
 	CALLMETHOD_DEF(init_RNAlkups, 2),
 	CALLMETHOD_DEF(new_XString_from_CHARACTER, 5),
 	CALLMETHOD_DEF(new_CHARACTER_from_XString, 2),
 
 /* XStringSet_class.c */
-	CALLMETHOD_DEF(debug_XStringSet_class, 0),
 	CALLMETHOD_DEF(new_XStringSet_from_CHARACTER, 6),
 	CALLMETHOD_DEF(new_CHARACTER_from_XStringSet, 2),
 	CALLMETHOD_DEF(XStringSet_unlist, 1),
@@ -50,7 +42,6 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(XStringSet_xscat, 1),
 
 /* XStringSet_io.c */
-	CALLMETHOD_DEF(debug_XStringSet_io, 0),
 	CALLMETHOD_DEF(fasta_index, 5),
 	CALLMETHOD_DEF(read_XStringSet_from_fasta_blocks, 6),
 	CALLMETHOD_DEF(write_XStringSet_to_fasta, 4),
@@ -88,47 +79,29 @@ static const R_CallMethodDef callMethods[] = {
 /* unstrsplit_methods.c */
 	CALLMETHOD_DEF(XStringSetList_unstrsplit, 3),
 
-/* SparseList_utils.c */
-	CALLMETHOD_DEF(debug_SparseList_utils, 0),
-
-/* match_reporting.c */
-	CALLMETHOD_DEF(debug_match_reporting, 0),
-
 /* MIndex_class.c */
-	CALLMETHOD_DEF(debug_MIndex_class, 0),
 	CALLMETHOD_DEF(ByPos_MIndex_endIndex, 3),
 	CALLMETHOD_DEF(SparseMIndex_endIndex, 4),
 	CALLMETHOD_DEF(ByPos_MIndex_combine, 1),
 
 /* lowlevel_matching.c */
-	CALLMETHOD_DEF(debug_lowlevel_matching, 0),
 	CALLMETHOD_DEF(XString_match_pattern_at, 10),
 	CALLMETHOD_DEF(XStringSet_vmatch_pattern_at, 10),
 	CALLMETHOD_DEF(XStringSet_dist_hamming, 1),
 
-/* match_pattern_boyermoore.c */
-	CALLMETHOD_DEF(debug_match_pattern_boyermoore, 0),
-
 /* match_pattern_shiftor.c */
-	CALLMETHOD_DEF(debug_match_pattern_shiftor, 0),
 	CALLMETHOD_DEF(bits_per_long, 0),
 
-/* match_pattern_indels.c */
-	CALLMETHOD_DEF(debug_match_pattern_indels, 0),
-
 /* match_pattern.c */
-	CALLMETHOD_DEF(debug_match_pattern, 0),
 	CALLMETHOD_DEF(XString_match_pattern, 8),
 	CALLMETHOD_DEF(XStringViews_match_pattern, 10),
 	CALLMETHOD_DEF(XStringSet_vmatch_pattern, 8),
 
 /* match_BOC.c */
-	CALLMETHOD_DEF(debug_match_BOC, 0),
 	CALLMETHOD_DEF(match_BOC_preprocess, 12),
 	CALLMETHOD_DEF(match_BOC_exact, 16),
 
 /* match_BOC2.c */
-	CALLMETHOD_DEF(debug_match_BOC2, 0),
 	CALLMETHOD_DEF(match_BOC2_preprocess, 9),
 	CALLMETHOD_DEF(match_BOC2_exact, 13),
 
@@ -138,29 +111,16 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(XStringViews_match_PWM, 7),
 
 /* find_palindromes.c */
-	CALLMETHOD_DEF(debug_find_palindromes, 0),
 	CALLMETHOD_DEF(find_palindromes, 5),
 	CALLMETHOD_DEF(palindrome_arm_length, 3),
 
-/* BitMatrix.c */
-	CALLMETHOD_DEF(debug_BitMatrix, 0),
-
-/* PreprocessedTB_class.c */
-	CALLMETHOD_DEF(debug_PreprocessedTB_class, 0),
-
-/* match_pdict_utils.c */
-	CALLMETHOD_DEF(debug_match_pdict_utils, 0),
-
 /* match_pdict_Twobit.c */
-	CALLMETHOD_DEF(debug_match_pdict_Twobit, 0),
 	CALLMETHOD_DEF(build_Twobit, 3),
 
 /* BAB_class.c */
-	CALLMETHOD_DEF(debug_BAB_class, 0),
 	CALLMETHOD_DEF(IntegerBAB_new, 1),
 
 /* match_pdict_ACtree2.c */
-	CALLMETHOD_DEF(debug_match_pdict_ACtree2, 0),
 	CALLMETHOD_DEF(ACtree2_nodebuf_max_nblock, 0),
 	CALLMETHOD_DEF(ACtree2_nodeextbuf_max_nblock, 0),
 	CALLMETHOD_DEF(ACtree2_nnodes, 1),
@@ -171,7 +131,6 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(ACtree2_compute_all_flinks, 1),
 
 /* match_pdict.c */
-	CALLMETHOD_DEF(debug_match_pdict, 0),
 	CALLMETHOD_DEF(match_PDict3Parts_XString, 9),
 	CALLMETHOD_DEF(match_XStringSet_XString, 9),
 	CALLMETHOD_DEF(match_PDict3Parts_XStringViews, 11),

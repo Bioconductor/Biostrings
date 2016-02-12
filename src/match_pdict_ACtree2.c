@@ -2,15 +2,13 @@
  *     A fast and compact implementation of the Aho-Corasick algorithm      *
  *                     for rectangular DNA dictionaries                     *
  *                                                                          *
- *                           Author: Herve Pages                            *
+ *                            Author: H. Pag\`es                            *
  ****************************************************************************/
 #include "Biostrings.h"
 #include "IRanges_interface.h"
 
 #include <stdlib.h> /* for div() */
 #include <limits.h> /* for UINT_MAX */
-
-static int debug = 0;
 
 
 /*
@@ -136,7 +134,6 @@ static unsigned int count_max_needed_nnodeexts_at_pp_time(int nleaves, int depth
 	return res;
 }
 
-#ifdef DEBUG_BIOSTRINGS
 /* I've checked by hand the output of this function up to depth=3 nleaves=17
  * and it looked correct... pffff!!! :-b */
 static void debug_node_counting_functions(int maxdepth)
@@ -161,7 +158,6 @@ static void debug_node_counting_functions(int maxdepth)
 	}
 	return;
 }
-#endif
 
 
 
@@ -398,33 +394,6 @@ static unsigned int new_eid(ACnodeextBuf *buf)
 /* result of NODE_P_ID() is undefined on a non-leaf node */
 #define NODE_P_ID(node) ((node)->attribs & MAX_P_ID)
 
-/* --- .Call ENTRY POINT --- */
-SEXP debug_match_pdict_ACtree2()
-{
-#ifdef DEBUG_BIOSTRINGS
-	debug = !debug;
-	Rprintf("Debug mode turned %s in file %s\n",
-		debug ? "on" : "off", __FILE__);
-	if (debug) {
-		Rprintf("[DEBUG] debug_match_pdict_ACtree2():\n");
-		Rprintf("  INTS_PER_NODE=%d INTS_PER_NODEEXT=%d\n",
-			INTS_PER_NODE, INTS_PER_NODEEXT);
-		Rprintf("  LINKTAG_BITSHIFT=%d\n"
-			"  MAX_DEPTH=%d\n"
-			"  ISLEAF_BIT=%d ISEXTENDED_BIT=%d\n"
-			"  MAX_P_ID=%d\n",
-			LINKTAG_BITSHIFT,
-			MAX_DEPTH,
-			ISLEAF_BIT, ISEXTENDED_BIT,
-			MAX_P_ID);
-		debug_node_counting_functions(3);
-	}
-#else
-	Rprintf("Debug mode not available in file %s\n", __FILE__);
-#endif
-	return R_NilValue;
-}
-
 /*
  * Always set 'max_nodeextbuf_nelt' to 0U (no max) and 'dont_extend_nodes' to
  * 0 during preprocessing.
@@ -612,13 +581,6 @@ static ACtree new_ACtree(int tb_length, int tb_width, SEXP base_codes,
 {
 	ACtree tree;
 
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] new_ACtree():\n"
-			"  tb_length=%d tb_width=%d\n",
-			tb_length, tb_width);
-	}
-#endif
 	if (tb_length > MAX_P_ID)
 		error("new_ACtree(): tb_length > MAX_P_ID");
 	if (tb_width > MAX_DEPTH)

@@ -1,6 +1,6 @@
 /****************************************************************************
-                A SIMPLE POSITION WEIGHT MATRIX MATCHING ALGO
-                             Author: Herve Pages
+ *              A SIMPLE POSITION WEIGHT MATRIX MATCHING ALGO               *
+ *                            Author: H. Pag\`es                            *
  ****************************************************************************/
 #include "Biostrings.h"
 #include "XVector_interface.h"

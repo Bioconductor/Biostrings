@@ -37,7 +37,7 @@ gregexpr2(pattern, text)
   the \code{pattern} argument must be a single (non-NA, non-empty) string.
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \seealso{\code{\link{gregexpr}}, \code{\link{matchPattern}}}
 

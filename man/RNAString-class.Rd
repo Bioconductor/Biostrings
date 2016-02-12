@@ -74,7 +74,7 @@
   }
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \seealso{
   \code{\link{IUPAC_CODE_MAP}},
@@ -86,17 +86,17 @@
 }
 
 \examples{
-  RNA_BASES
-  RNA_ALPHABET
-  d <- DNAString("TTGAAAA-CTC-N")
-  r <- RNAString(d)
-  r
-  alphabet(r)                 # RNA_ALPHABET
-  alphabet(r, baseOnly=TRUE)  # RNA_BASES
+RNA_BASES
+RNA_ALPHABET
+d <- DNAString("TTGAAAA-CTC-N")
+r <- RNAString(d)
+r
+alphabet(r)                 # RNA_ALPHABET
+alphabet(r, baseOnly=TRUE)  # RNA_BASES
 
-  ## When comparing an RNAString object with a DNAString object,
-  ## U and T are considered equals:
-  r == d  # TRUE
+## When comparing an RNAString object with a DNAString object,
+## U and T are considered equals:
+r == d  # TRUE
 }
 
 \keyword{methods}

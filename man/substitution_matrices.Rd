@@ -112,7 +112,7 @@ errorSubstitutionMatrices(errorProbability, fuzzyMatch = c(0, 1), alphabetLength
 K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics, Feb 23, 2008.
 }
 
-\author{H. Pages and P. Aboyoun}
+\author{H. Pagès and P. Aboyoun}
 
 \seealso{
   \code{\link{pairwiseAlignment}},

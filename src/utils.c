@@ -1,40 +1,5 @@
 #include "Biostrings.h"
 
-static int debug = 0;
-
-SEXP debug_utils()
-{
-#ifdef DEBUG_BIOSTRINGS
-	debug = !debug;
-	Rprintf("Debug mode turned %s in 'utils.c'\n", debug ? "on" : "off");
-#else
-	Rprintf("Debug mode not available in 'utils.c'\n");
-#endif
-	return R_NilValue;
-}
-
-#ifdef DEBUG_BIOSTRINGS
-static void print_ByteTrTable(const ByteTrTable *byte_tr_table)
-{
-	int byte, code;
-
-	Rprintf("[DEBUG]   Byte Translation Table:\n");
-	for (byte = 0; byte < BYTETRTABLE_LENGTH; byte++) {
-		Rprintf("[DEBUG]     byte=%d ", byte);
-		if (32 <= byte && byte < 128)
-			Rprintf("['%c']", byte);
-		else
-			Rprintf("     ");
-		Rprintf(" -> code=");
-		code = byte_tr_table->byte2code[byte];
-		if (code == NA_INTEGER)
-			Rprintf("NA\n");
-		else
-			Rprintf("%d\n", code);
-	}
-	return;
-}
-#endif
 
 void _init_ByteTrTable_with_lkup(ByteTrTable *byte_tr_table, SEXP lkup)
 {
@@ -47,12 +12,6 @@ void _init_ByteTrTable_with_lkup(ByteTrTable *byte_tr_table, SEXP lkup)
 		byte_tr_table->byte2code[byte] = INTEGER(lkup)[byte];
 	for ( ; byte < BYTETRTABLE_LENGTH; byte++)
 		byte_tr_table->byte2code[byte] = NA_INTEGER;
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] _init_ByteTrTable_with_lkup():\n");
-		print_ByteTrTable(byte_tr_table);
-	}
-#endif
 	return;
 }
 
@@ -107,12 +66,6 @@ void _init_byte2offset_with_INTEGER(ByteTrTable *byte2offset, SEXP bytes, int er
 		byte = INTEGER(bytes)[offset];
 		set_byte2offset_elt(byte2offset, byte, offset, error_on_dup);
 	}
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] _init_byte2offset_with_INTEGER():\n");
-		print_ByteTrTable(byte2offset);
-	}
-#endif
 	return;
 }
 
@@ -136,12 +89,6 @@ void _init_byte2offset_with_Chars_holder(ByteTrTable *byte2offset,
 		}
 		byte2offset->byte2code[y] = offset;
 	}
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] _init_byte2offset_with_Chars_holder():\n");
-		print_ByteTrTable(byte2offset);
-	}
-#endif
 	return;
 }
 

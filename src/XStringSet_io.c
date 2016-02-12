@@ -1,7 +1,7 @@
 /****************************************************************************
  *                       Read/write FASTA/FASTQ files                       *
  *                                 --------                                 *
- *                           Author: Herve Pages                            *
+ *                            Author: H. Pag\`es                            *
  ****************************************************************************/
 #include "Biostrings.h"
 #include "XVector_interface.h"
@@ -9,19 +9,6 @@
 
 #include <math.h>  /* for llround */
 
-static int debug = 0;
-
-SEXP debug_XStringSet_io()
-{
-#ifdef DEBUG_BIOSTRINGS
-	debug = !debug;
-	Rprintf("Debug mode turned %s in file %s\n",
-		debug ? "on" : "off", __FILE__);
-#else
-	Rprintf("Debug mode not available in file %s\n", __FILE__);
-#endif
-	return R_NilValue;
-}
 
 #define IOBUF_SIZE 20002
 static char errmsg_buf[200];

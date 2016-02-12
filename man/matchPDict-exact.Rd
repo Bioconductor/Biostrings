@@ -212,7 +212,7 @@ vwhichPDict(pdict, subject,
   \code{vwhichPDict} returns a list of \code{N} integer vectors.
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \references{
   Aho, Alfred V.; Margaret J. Corasick (June 1975). "Efficient string

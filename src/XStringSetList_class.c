@@ -1,6 +1,6 @@
 /****************************************************************************
  *             Low-level manipulation of XStringSetList objects             *
- *                           Author: Herve Pages                            *
+ *                            Author: H. Pag\`es                            *
  ****************************************************************************/
 #include "Biostrings.h"
 #include "IRanges_interface.h"

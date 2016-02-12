@@ -61,7 +61,7 @@ matchProbePair(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=
   An \link{XStringViews} object containing the set of "theoretical amplicons".
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \seealso{
   \code{\link{matchPattern}},
@@ -72,22 +72,22 @@ matchProbePair(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=
 }
 
 \examples{
-  library(BSgenome.Dmelanogaster.UCSC.dm3)
-  subject <- Dmelanogaster$chr3R
+library(BSgenome.Dmelanogaster.UCSC.dm3)
+subject <- Dmelanogaster$chr3R
 
-  ## With 20-nucleotide forward and reverse probes:
-  Fprobe <- "AGCTCCGAGTTCCTGCAATA"
-  Rprobe <- "CGTTGTTCACAAATATGCGG"
-  matchProbePair(Fprobe, Rprobe, subject) # 1 "theoretical amplicon"
+## With 20-nucleotide forward and reverse probes:
+Fprobe <- "AGCTCCGAGTTCCTGCAATA"
+Rprobe <- "CGTTGTTCACAAATATGCGG"
+matchProbePair(Fprobe, Rprobe, subject) # 1 "theoretical amplicon"
 
-  ## With shorter forward and reverse probes, the risk of having multiple
-  ## "theoretical amplicons" increases:
-  Fprobe <- "AGCTCCGAGTTCC"
-  Rprobe <- "CGTTGTTCACAA"
-  matchProbePair(Fprobe, Rprobe, subject) # 2 "theoretical amplicons"
-  Fprobe <- "AGCTCCGAGTT"
-  Rprobe <- "CGTTGTTCACA"
-  matchProbePair(Fprobe, Rprobe, subject) # 9 "theoretical amplicons"
+## With shorter forward and reverse probes, the risk of having multiple
+## "theoretical amplicons" increases:
+Fprobe <- "AGCTCCGAGTTCC"
+Rprobe <- "CGTTGTTCACAA"
+matchProbePair(Fprobe, Rprobe, subject) # 2 "theoretical amplicons"
+Fprobe <- "AGCTCCGAGTT"
+Rprobe <- "CGTTGTTCACA"
+matchProbePair(Fprobe, Rprobe, subject) # 9 "theoretical amplicons"
 }
 
 \keyword{methods}

@@ -1,24 +1,10 @@
 /****************************************************************************
  *                    EXACT AND INEXACT PATTERN MATCHING                    *
- *		             Author: Herve Pages                            *
+ *                            Author: H. Pag\`es                            *
  ****************************************************************************/
 #include "Biostrings.h"
 #include "XVector_interface.h"
 #include "IRanges_interface.h"
-
-static int debug = 0;
-
-SEXP debug_match_pattern()
-{
-#ifdef DEBUG_BIOSTRINGS
-	debug = !debug;
-	Rprintf("Debug mode turned %s in 'match_pattern.c'\n",
-                 debug ? "on" : "off");
-#else
-	Rprintf("Debug mode not available in 'match_pattern.c'\n");
-#endif
-	return R_NilValue;
-}
 
 
 /****************************************************************************

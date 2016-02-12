@@ -81,7 +81,7 @@ injectHardMask(x, letter="+")
   as \code{subject(x)} if it's an \link{XStringViews} object.
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \seealso{
   \code{\link{maskMotif}},
@@ -93,26 +93,26 @@ injectHardMask(x, letter="+")
 }
 
 \examples{
-  ## ---------------------------------------------------------------------
-  ## A. WITH AN XStringViews OBJECT
-  ## ---------------------------------------------------------------------
-  v2 <- Views("abCDefgHIJK", start=c(8, 3), end=c(14, 4))
-  injectHardMask(v2)
-  injectHardMask(v2, letter="=")
+## ---------------------------------------------------------------------
+## A. WITH AN XStringViews OBJECT
+## ---------------------------------------------------------------------
+v2 <- Views("abCDefgHIJK", start=c(8, 3), end=c(14, 4))
+injectHardMask(v2)
+injectHardMask(v2, letter="=")
 
-  ## ---------------------------------------------------------------------
-  ## B. WITH A MaskedXString OBJECT
-  ## ---------------------------------------------------------------------
-  mask0 <- Mask(mask.width=29, start=c(3, 10, 25), width=c(6, 8, 5))
-  x <- DNAString("ACACAACTAGATAGNACTNNGAGAGACGC")
-  masks(x) <- mask0
-  x
-  subject <- injectHardMask(x)
+## ---------------------------------------------------------------------
+## B. WITH A MaskedXString OBJECT
+## ---------------------------------------------------------------------
+mask0 <- Mask(mask.width=29, start=c(3, 10, 25), width=c(6, 8, 5))
+x <- DNAString("ACACAACTAGATAGNACTNNGAGAGACGC")
+masks(x) <- mask0
+x
+subject <- injectHardMask(x)
 
-  ## Matches can span over masked regions with "hard masking":
-  matchPattern("ACggggggA", subject, max.mismatch=6)
-  ## but not with "soft masking":
-  matchPattern("ACggggggA", x, max.mismatch=6)
+## Matches can span over masked regions with "hard masking":
+matchPattern("ACggggggA", subject, max.mismatch=6)
+## but not with "soft masking":
+matchPattern("ACggggggA", x, max.mismatch=6)
 }
 
 \keyword{utilities}

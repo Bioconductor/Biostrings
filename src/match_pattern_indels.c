@@ -1,6 +1,6 @@
 /****************************************************************************
-               A SIMPLE MATCHING ALGO WITH SUPPORT FOR INDELS
-	                     Author: Herve Pages
+ *             A SIMPLE MATCHING ALGO WITH SUPPORT FOR INDELS               *
+ *                            Author: H. Pag\`es                            *
  ****************************************************************************/
 #include "Biostrings.h"
 
@@ -18,47 +18,6 @@ static void test_match_pattern_indels(const char *p, const char *s,
 	_match_pattern_indels(&P, &S, max_nmis, 1, 1);
 	return;
 }
-
-static int debug = 0;
-
-SEXP debug_match_pattern_indels()
-{
-#ifdef DEBUG_BIOSTRINGS
-	const char *p = "ABCDE", *s = "BCDExAxBCDDxDABCxExxABDCExExAABCDEE";
-	debug = !debug;
-	Rprintf("Debug mode turned %s in file %s\n",
-		debug ? "on" : "off", __FILE__);
-	if (debug == 1) {
-		_init_match_reporting("MATCHES_AS_NULL", 1);
-		test_match_pattern_indels(p, s, 0, "30:34");
-		test_match_pattern_indels(p, s, 1, "1:4, 14:18, 30:34");
-		test_match_pattern_indels(p, s, 2, "1:4, 8:10, 14:18, 21:23, 30:34");
-	}
-#else
-	Rprintf("Debug mode not available in file %s\n", __FILE__);
-#endif
-	return R_NilValue;
-}
-
-#ifdef DEBUG_BIOSTRINGS
-static void print_match(int start, int width,
-		const Chars_holder *P, const Chars_holder *S,
-		const BytewiseOpTable *bytewise_match_table)
-{
-	int end, j0, nedit0, width0;
-	char mbuf[1001];
-
-	if (width >= sizeof(mbuf))
-		error("sizeof(mbuf) too small");
-	j0 = start - 1;
-	end = j0 + width;
-	snprintf(mbuf, width + 1, "%s", S->ptr + j0);
-	nedit0 = _nedit_for_Ploffset(P, S, j0, P->length, 1, &width0,
-				     bytewise_match_table);
-	Rprintf("start=%d end=%d (%s) nedit0=%d\n", start, end, mbuf, nedit0);
-	return;
-}
-#endif
 
 /*
  * In order to avoid pollution by redundant matches, we report only the "best
@@ -123,14 +82,6 @@ void _match_pattern_indels(const Chars_holder *P, const Chars_holder *S,
 		P1.ptr = P->ptr + i0 + 1;
 		P1.length = P->length - i0 - 1;
 		max_nmis1 = max_nmis - i0;
-/*
-#ifdef DEBUG_BIOSTRINGS
-		if (debug) {
-			Rprintf("[DEBUG] _match_pattern_indels(): "
-				"j0=%d c0=%c i0=%d max_nmis1=%d\n", j0, c0, i0, max_nmis1);
-		}
-#endif
-*/
 		if (max_nmis1 >= 0) {
 			if (max_nmis1 == 0) {
 				nedit1 = _nmismatch_at_Pshift(&P1, S, j0 + 1,
@@ -143,14 +94,6 @@ void _match_pattern_indels(const Chars_holder *P, const Chars_holder *S,
 							bytewise_match_table);
 			}
 			if (nedit1 <= max_nmis1) {
-#ifdef DEBUG_BIOSTRINGS
-				if (debug) {
-					Rprintf("[DEBUG] _match_pattern_indels(): "
-						"provisory match found at ");
-					print_match(j0 + 1, width1 + 1, P, S,
-						    bytewise_match_table);
-				}
-#endif
 				report_provisory_match(j0 + 1, width1 + 1, nedit1 + i0);
 			}
 		}

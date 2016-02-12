@@ -10,7 +10,7 @@
 
 ### NOT USED ANYMORE!
 ### R-implementation of the Needleman-Wunsch algo originally written by VJC
-### for Biostrings 1 and adapted for Biostrings 2 by H. Pages.
+### for Biostrings 1 and adapted for Biostrings 2 by H. Pag\`es.
 ### 's1' and 's2' must be character vectors of length 1.
 .needwunsQS <- function(s1, s2, substmat, gappen)
 {

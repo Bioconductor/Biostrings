@@ -130,7 +130,7 @@
   }
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \seealso{
   \link{XStringSet-class},

@@ -76,7 +76,7 @@
   }
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \seealso{
   \code{\link{IUPAC_CODE_MAP}},
@@ -88,12 +88,12 @@
 }
 
 \examples{
-  DNA_BASES
-  DNA_ALPHABET
-  d <- DNAString("TTGAAAA-CTC-N")
-  length(d)
-  alphabet(d)                 # DNA_ALPHABET
-  alphabet(d, baseOnly=TRUE)  # DNA_BASES
+DNA_BASES
+DNA_ALPHABET
+d <- DNAString("TTGAAAA-CTC-N")
+length(d)
+alphabet(d)                 # DNA_ALPHABET
+alphabet(d, baseOnly=TRUE)  # DNA_BASES
 }
 
 \keyword{methods}

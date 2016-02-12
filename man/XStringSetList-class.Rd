@@ -79,7 +79,7 @@ AAStringSetList(..., use.names=TRUE)
   package) are supported too.
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \seealso{
   \link{XStringSet-class},

@@ -50,7 +50,7 @@ mask(x, start=NA, end=NA, pattern)
   and an \link{XStringViews} object for \code{mask}.
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \seealso{
   \code{\link[IRanges]{read.Mask}},

@@ -29,7 +29,7 @@ xscat(...)
   An \link{XStringSet} object otherwise.
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \seealso{
   \link{XString-class},

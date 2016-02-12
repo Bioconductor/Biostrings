@@ -1,23 +1,10 @@
 /****************************************************************************
  *                    Basic manipulation of BAB objects                     *
- *                           Author: Herve Pages                            *
+ *                            Author: H. Pag\`es                            *
  ****************************************************************************/
 #include "Biostrings.h"
 #include "IRanges_interface.h"
 
-static int debug = 0;
-
-SEXP debug_BAB_class()
-{
-#ifdef DEBUG_BIOSTRINGS
-	debug = !debug;
-	Rprintf("Debug mode turned %s in file %s\n",
-		debug ? "on" : "off", __FILE__);
-#else
-	Rprintf("Debug mode not available in file %s\n", __FILE__);
-#endif
-	return R_NilValue;
-}
 
 SEXP IntegerBAB_new(SEXP max_nblock)
 {

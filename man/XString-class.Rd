@@ -174,7 +174,7 @@
   }
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \seealso{
   \code{\link[XVector]{subseq}},

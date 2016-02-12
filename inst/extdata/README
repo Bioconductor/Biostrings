@@ -3,7 +3,7 @@
   on 1 Nov 2005. -- VJC
 
 - Only the someORF.fa and fastaEx.fa files have been kept from Biostrings 1
-  (original names were someORF.fsa and fastaEx). -- H. Pages
+  (original names were someORF.fsa and fastaEx). -- H. Pag\`es
 
 - dm3_upstream2000.fa.gz was obtained by downloading upstream2000.fa.gz from
   http://hgdownload.soe.ucsc.edu/goldenPath/dm3/bigZips/ on 27 May 2014, and

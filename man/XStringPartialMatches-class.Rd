@@ -55,7 +55,7 @@
   }
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \seealso{
   \link{XStringViews-class},

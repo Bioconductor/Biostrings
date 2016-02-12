@@ -1,24 +1,11 @@
 /****************************************************************************
  *           MatchBuf manipulation and match reporting facilities           *
- *                           Author: Herve Pages                            *
+ *                            Author: H. Pag\`es                            *
  ****************************************************************************/
 #include "Biostrings.h"
 #include "IRanges_interface.h"
 #include "S4Vectors_interface.h"
 
-static int debug = 0;
-
-SEXP debug_match_reporting()
-{
-#ifdef DEBUG_BIOSTRINGS
-	debug = !debug;
-	Rprintf("Debug mode turned %s in file %s\n",
-		debug ? "on" : "off", __FILE__);
-#else
-	Rprintf("Debug mode not available in file %s\n", __FILE__);
-#endif
-	return R_NilValue;
-}
 
 int _get_match_storing_code(const char *ms_mode)
 {

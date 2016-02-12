@@ -5,19 +5,6 @@
 #include <stdio.h>
 
 
-static int debug = 0;
-
-SEXP debug_find_palindromes()
-{
-#ifdef DEBUG_BIOSTRINGS
-	debug = !debug;
-	Rprintf("Debug mode turned %s in 'find_palindromes.c'\n", debug ? "on" : "off");
-#else
-	Rprintf("Debug mode not available in 'find_palindromes.c'\n");
-#endif
-	return R_NilValue;
-}
-
 static int is_match(char c1, char c2, const int *lkup, int lkup_len)
 {
 	int key, val;

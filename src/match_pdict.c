@@ -1,28 +1,13 @@
 /****************************************************************************
  *                                                                          *
  *        Inexact matching of a DNA dictionary using a Trusted Band         *
- *                           Author: Herve Pages                            *
+ *                            Author: H. Pag\`es                            *
  *                                                                          *
  ****************************************************************************/
 #include "Biostrings.h"
 #include "XVector_interface.h"
 #include "IRanges_interface.h"
 #include "S4Vectors_interface.h"
-
-static int debug = 0;
-
-SEXP debug_match_pdict()
-{
-#ifdef DEBUG_BIOSTRINGS
-	debug = !debug;
-	Rprintf("Debug mode turned %s in 'match_pdict.c'\n",
-		debug ? "on" : "off");
-#else
-	Rprintf("Debug mode not available in 'match_pdict.c'\n");
-#endif
-	return R_NilValue;
-}
-
 
 
 /****************************************************************************
@@ -74,10 +59,6 @@ static void match_pdict(SEXP pptb, HeadTail *headtail, const Chars_holder *S,
 		return;
 	}
 */
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] ENTERING match_pdict()\n");
-#endif
 	low2high = _get_PreprocessedTB_low2high(pptb);
 	tb_matches = &(matchpdict_buf->tb_matches);
 
@@ -92,10 +73,6 @@ static void match_pdict(SEXP pptb, HeadTail *headtail, const Chars_holder *S,
 	 * the matches to the duplicates anyway */
 	_match_pdict_all_flanks(low2high, headtail,
 		S, max_nmis, min_nmis, fixedP, fixedS, matchpdict_buf);
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] LEAVING match_pdict()\n");
-#endif
 	return;
 }
 

@@ -15,3 +15,5 @@
     library.dynam.unload("Biostrings", libpath)
 }
 
+.test <- function() BiocGenerics:::testPackage("Biostrings")
+

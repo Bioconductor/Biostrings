@@ -302,7 +302,7 @@ PDict(x, max.mismatch=NA, tb.start=NA, tb.end=NA, tb.width=NA,
   }
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \references{
   Aho, Alfred V.; Margaret J. Corasick (June 1975). "Efficient string

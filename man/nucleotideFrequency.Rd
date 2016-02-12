@@ -160,7 +160,7 @@ mkAllStrings(alphabet, width, fast.moving.side="right")
   argument.
 }
 
-\author{H. Pages and P. Aboyoun; K. Vlahovicek for the \code{step} argument}
+\author{H. Pagès and P. Aboyoun; K. Vlahovicek for the \code{step} argument}
 
 \seealso{
   \code{\link{alphabetFrequency}},

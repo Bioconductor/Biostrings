@@ -1,24 +1,10 @@
 /****************************************************************************
  *                      Low-level matching functions                        *
- *                           Author: Herve Pages                            *
+ *                            Author: H. Pag\`es                            *
  ****************************************************************************/
 #include "Biostrings.h"
 #include "XVector_interface.h"
 #include "IRanges_interface.h"
-
-static int debug = 0;
-
-SEXP debug_lowlevel_matching()
-{
-#ifdef DEBUG_BIOSTRINGS
-	debug = !debug;
-	Rprintf("Debug mode turned %s in file %s\n",
-		debug ? "on" : "off", __FILE__);
-#else
-	Rprintf("Debug mode not available in file %s\n", __FILE__);
-#endif
-	return R_NilValue;
-}
 
 
 /****************************************************************************
@@ -134,23 +120,6 @@ static int row1_buf[MAX_ROW_LENGTH], row2_buf[MAX_ROW_LENGTH];
 	(curr_row)[(B)] = nedit; \
 }
 
-#ifdef DEBUG_BIOSTRINGS
-static void print_curr_row(const char* margin, const int *curr_row, int Bmin, int row_length)
-{
-	int B;
-
-	Rprintf("[DEBUG]   %s: ", margin);
-	for (B = 0; B < row_length; B++) {
-		if (B < Bmin)
-			Rprintf("%3s", "");
-		else
-			Rprintf("%3d", curr_row[B]);
-	}
-	Rprintf("\n");
-	return;
-}
-#endif
-
 /*
  * P left-offset (Ploffset) is the offset of P's first letter in S.
  * P right-offset (Proffset) is the offset of P's last letter in S.
@@ -170,9 +139,6 @@ int _nedit_for_Ploffset(const Chars_holder *P, const Chars_holder *S,
 	char Pc;
 	const unsigned char *y2val;
 
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) Rprintf("[DEBUG] _nedit_for_Ploffset():\n");
-#endif
 	if (P->length == 0)
 		return 0;
 	if (max_nedit == 0)
@@ -194,9 +160,6 @@ int _nedit_for_Ploffset(const Chars_holder *P, const Chars_holder *S,
 	// STAGE 0:
 	for (B = max_nedit, b = 0; B < row_length; B++, b++)
 		curr_row[B] = b;
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) print_curr_row("STAGE0", curr_row, max_nedit, row_length);
-#endif
 
 	// STAGE 1 (1st for() loop): no attempt is made to bailout during
 	// this stage because the smallest value in curr_row is guaranteed
@@ -209,9 +172,6 @@ int _nedit_for_Ploffset(const Chars_holder *P, const Chars_holder *S,
 		curr_row[B++] = a;
 		for (Si = min_Si; B < row_length; B++, Si++)
 			PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, y2val, row_length);
-#ifdef DEBUG_BIOSTRINGS
-		if (debug) print_curr_row("STAGE1", curr_row, max_nedit - a, row_length);
-#endif
 	}
 
 	// STAGE 2: no attempt is made to bailout during this stage either.
@@ -228,9 +188,6 @@ int _nedit_for_Ploffset(const Chars_holder *P, const Chars_holder *S,
 			*min_width = Si - Ploffset + 1;
 		}
 	}
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) print_curr_row("STAGE2", curr_row, 0, row_length);
-#endif
 	a++;
 	Pi++;
 
@@ -248,9 +205,6 @@ int _nedit_for_Ploffset(const Chars_holder *P, const Chars_holder *S,
 				*min_width = Si - Ploffset + 1;
 			}
 		}
-#ifdef DEBUG_BIOSTRINGS
-		if (debug) print_curr_row("STAGE3", curr_row, 0, row_length);
-#endif
 		// 'min_nedit > max_nedit_plus1' should actually never happen.
 		if (min_nedit >= max_nedit_plus1)
 			break; // bailout
@@ -268,9 +222,6 @@ int _nedit_for_Proffset(const Chars_holder *P, const Chars_holder *S,
 	char Pc;
 	const unsigned char *y2val;
 
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) Rprintf("[DEBUG] _nedit_for_Proffset():\n");
-#endif
 	if (P->length == 0)
 		return 0;
 	if (max_nedit == 0)
@@ -293,9 +244,6 @@ int _nedit_for_Proffset(const Chars_holder *P, const Chars_holder *S,
 	// STAGE 0:
 	for (B = max_nedit, b = 0; B < row_length; B++, b++)
 		curr_row[B] = b;
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) print_curr_row("STAGE0", curr_row, max_nedit, row_length);
-#endif
 
 	// STAGE 1 (1st for() loop): no attempt is made to bailout during
 	// this stage because the smallest value in curr_row is guaranteed
@@ -308,9 +256,6 @@ int _nedit_for_Proffset(const Chars_holder *P, const Chars_holder *S,
 		curr_row[B++] = a;
 		for (Si = max_Si; B < row_length; B++, Si--)
 			PROPAGATE_NEDIT(curr_row, B, prev_row, S, Si, y2val, row_length);
-#ifdef DEBUG_BIOSTRINGS
-		if (debug) print_curr_row("STAGE1", curr_row, max_nedit - a, row_length);
-#endif
 	}
 
 	// STAGE 2: no attempt is made to bailout during this stage either.
@@ -327,9 +272,6 @@ int _nedit_for_Proffset(const Chars_holder *P, const Chars_holder *S,
 			*min_width = Proffset - Si + 1;
 		}
 	}
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) print_curr_row("STAGE2", curr_row, 0, row_length);
-#endif
 	a++;
 	Pi--;
 
@@ -347,9 +289,6 @@ int _nedit_for_Proffset(const Chars_holder *P, const Chars_holder *S,
 				*min_width = Proffset - Si + 1;
 			}
 		}
-#ifdef DEBUG_BIOSTRINGS
-		if (debug) print_curr_row("STAGE3", curr_row, 0, row_length);
-#endif
 		// 'min_nedit > max_nedit_plus1' should actually never happen.
 		if (min_nedit >= max_nedit_plus1)
 			break; // bailout

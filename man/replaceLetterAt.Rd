@@ -112,7 +112,7 @@ replaceLetterAt(x, at, letter, if.not.extending="replace", verbose=FALSE)
   for \code{replaceLetterAt}.
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \seealso{
   \itemize{

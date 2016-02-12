@@ -1,7 +1,7 @@
 /****************************************************************************
  *                                                                          *
  *       Low-level utility functions used by the matchPDict() C code        *
- *                           Author: Herve Pages                            *
+ *                            Author: H. Pag\`es                            *
  *                                                                          *
  ****************************************************************************/
 #include "Biostrings.h"
@@ -10,21 +10,6 @@
 
 #include <limits.h> /* for ULONG_MAX */
 #include <time.h> /* for clock() and CLOCKS_PER_SEC */
-
-
-static int debug = 0;
-
-SEXP debug_match_pdict_utils()
-{
-#ifdef DEBUG_BIOSTRINGS
-	debug = !debug;
-	Rprintf("Debug mode turned %s in file %s\n",
-		debug ? "on" : "off", __FILE__);
-#else
-	Rprintf("Debug mode not available in file %s\n", __FILE__);
-#endif
-	return R_NilValue;
-}
 
 
 /****************************************************************************
@@ -118,13 +103,6 @@ void _MatchPDictBuf_report_match(MatchPDictBuf *buf, int PSpair_id, int tb_end)
 	}
 	if (buf->tb_matches.tail_widths != NULL)
 		width += buf->tb_matches.tail_widths[PSpair_id];
-#ifdef DEBUG_BIOSTRINGS
-	if (debug) {
-		Rprintf("[DEBUG] _MatchPDictBuf_report_match():\n");
-		Rprintf("  PSpair_id=%d  tb_end=%d  start=%d  width=%d\n",
-			PSpair_id, tb_end, start, width);
-	}
-#endif
 	if (buf->matches.match_starts != NULL) {
 		start_buf = buf->matches.match_starts->elts[PSpair_id];
 		IntAE_insert_at(start_buf, IntAE_get_nelt(start_buf), start);
@@ -840,10 +818,6 @@ void _match_pdict_all_flanks(SEXP low2high,
 	unsigned long int ndup, nloci, NFC; // NFC = Number of Flank Comparisons
 	static unsigned long int total_NFC = 0UL, subtotal_NFC = 0UL;
 
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] ENTERING _match_pdict_all_flanks()\n");
-#endif
 	tb_PSlink_ids = matchpdict_buf->tb_matches.PSlink_ids;
 	nelt = IntAE_get_nelt(tb_PSlink_ids);
 	bytewise_match_table = _select_bytewise_match_table(fixedP, fixedS);
@@ -936,10 +910,6 @@ sum(elementNROWS(mi6))  # 17896
 	//Rprintf("_match_pdict_all_flanks(): "
 	//	"total_NFC=%lu subtotal_NFC=%lu ratio=%.2f\n",
 	//	total_NFC, subtotal_NFC, (double) subtotal_NFC / total_NFC);
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] LEAVING _match_pdict_all_flanks()\n");
-#endif
 	return;
 }
 

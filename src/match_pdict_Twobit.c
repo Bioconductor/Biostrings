@@ -2,7 +2,7 @@
  *                           The Twobit algorithm                           *
  *                   for constant width DNA dictionaries                    *
  *                                                                          *
- *                           Author: Herve Pages                            *
+ *                            Author: H. Pag\`es                            *
  *                                                                          *
  * Note: a constant width dictionary is a non-empty set of non-empty        *
  * words of the same length.                                                *
@@ -10,22 +10,6 @@
 #include "Biostrings.h"
 #include "XVector_interface.h"
 #include "IRanges_interface.h"
-
-static int debug = 0;
-
-
-SEXP debug_match_pdict_Twobit()
-{
-#ifdef DEBUG_BIOSTRINGS
-	debug = !debug;
-	Rprintf("Debug mode turned %s in 'match_pdict_Twobit.c'\n",
-		debug ? "on" : "off");
-#else
-	Rprintf("Debug mode not available in 'match_pdict_Twobit.c'\n");
-#endif
-	return R_NilValue;
-}
-
 
 
 /****************************************************************************
@@ -198,10 +182,6 @@ void _match_Twobit(SEXP pptb, const Chars_holder *S, int fixedS,
 	SEXP base_codes;
 	TwobitEncodingBuffer teb;
 
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] ENTERING _match_Twobit()\n");
-#endif
 	tb_width = _get_PreprocessedTB_width(pptb);
 	twobit_sign2pos = INTEGER(_get_Twobit_sign2pos_tag(pptb));
 	base_codes = _get_PreprocessedTB_base_codes(pptb);
@@ -211,10 +191,6 @@ void _match_Twobit(SEXP pptb, const Chars_holder *S, int fixedS,
 		      "as ambiguities when 'pdict' is a PDict object of "
 		      "the \"Twobit\" type");
 	walk_subject(twobit_sign2pos, &teb, S, tb_matches);
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] LEAVING _match_Twobit()\n");
-#endif
 	return;
 }
 

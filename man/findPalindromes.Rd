@@ -128,7 +128,7 @@ palindromeRightArm(x, max.mismatch=0, ...)
   same length as \code{x}.
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \seealso{
   \code{\link{maskMotif}},

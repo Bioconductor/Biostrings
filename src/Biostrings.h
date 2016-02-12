@@ -1,8 +1,6 @@
 #include "../inst/include/Biostrings_defines.h"
 #include <string.h>
 
-#define DEBUG_BIOSTRINGS 1
-
 #define INIT_STATIC_SYMBOL(NAME) \
 { \
 	if (NAME ## _symbol == NULL) \
@@ -11,8 +9,6 @@
 
 
 /* utils.c */
-
-SEXP debug_utils();
 
 void _init_ByteTrTable_with_lkup(
 	ByteTrTable *byte_tr_table,
@@ -61,14 +57,10 @@ int _get_twobit_signature_at(
 
 /* RoSeqs_utils.c */
 
-SEXP debug_RoSeqs_utils();
-
 RoSeqs _alloc_RoSeqs(int nelt);
 
 
 /* XString_class.c */
-
-SEXP debug_XString_class();
 
 const ByteTrTable *get_enc_byte2code(const char *classname);
 
@@ -114,8 +106,6 @@ SEXP new_CHARACTER_from_XString(
 
 
 /* XStringSet_class.c */
-
-SEXP debug_XStringSet_class();
 
 int _get_XStringSet_length(SEXP x);
 
@@ -187,8 +177,6 @@ SEXP XStringSet_xscat(SEXP args);
 
 
 /* XStringSet_io.c */
-
-SEXP debug_XStringSet_io();
 
 SEXP fasta_index(
 	SEXP filexp_list,
@@ -420,8 +408,6 @@ SEXP XStringSetList_unstrsplit(
 
 /* SparseList_utils.c */
 
-SEXP debug_SparseList_utils();
-
 SEXP _SparseList_int2symb(int symb_as_int);
 
 int _SparseList_symb2int(SEXP symbol);
@@ -455,8 +441,6 @@ void _set_env_from_IntAEAE(
 
 
 /* match_reporting.c */
-
-SEXP debug_match_reporting();
 
 int _get_match_storing_code(const char *ms_mode);
 
@@ -514,8 +498,6 @@ MatchBuf *_get_internal_match_buf();
 
 /* MIndex_class.c */
 
-SEXP debug_MIndex_class();
-
 MIndex_holder _hold_MIndex(SEXP x);
 
 int _get_length_from_MIndex_holder(const MIndex_holder *x_holder);
@@ -547,8 +529,6 @@ SEXP ByPos_MIndex_combine(SEXP ends_listlist);
 
 
 /* lowlevel_matching.c */
-
-SEXP debug_lowlevel_matching();
 
 void _init_bytewise_match_tables();
 
@@ -613,8 +593,6 @@ SEXP XStringSet_dist_hamming(SEXP x);
 
 /* match_pattern_boyermoore.c */
 
-SEXP debug_match_pattern_boyermoore();
-
 int _match_pattern_boyermoore(
 	const Chars_holder *P,
 	const Chars_holder *S,
@@ -624,8 +602,6 @@ int _match_pattern_boyermoore(
 
 
 /* match_pattern_shiftor.c */
-
-SEXP debug_match_pattern_shiftor();
 
 SEXP bits_per_long();
 
@@ -640,8 +616,6 @@ void _match_pattern_shiftor(
 
 /* match_pattern_indels.c */
 
-SEXP debug_match_pattern_indels();
-
 void _match_pattern_indels(
 	const Chars_holder *P,
 	const Chars_holder *S,
@@ -652,8 +626,6 @@ void _match_pattern_indels(
 
 
 /* match_pattern.c */
-
-SEXP debug_match_pattern();
 
 void _match_pattern_XString(
 	const Chars_holder *P,
@@ -715,8 +687,6 @@ SEXP XStringSet_vmatch_pattern(
 
 /* match_BOC.c */
 
-SEXP debug_match_BOC();
-
 SEXP match_BOC_preprocess(
 	SEXP s_xp,
 	SEXP s_offset,
@@ -753,8 +723,6 @@ SEXP match_BOC_exact(
 
 
 /* match_BOC2.c */
-
-SEXP debug_match_BOC2();
 
 SEXP match_BOC2_preprocess(
 	SEXP s_xp,
@@ -814,8 +782,6 @@ SEXP XStringViews_match_PWM(
 
 
 /* find_palindromes.c */
-
-SEXP debug_find_palindromes();
 
 SEXP find_palindromes(
 	SEXP x,
@@ -902,12 +868,8 @@ void _BitMatrix_grow1rows(
 	const BitCol *bitcol
 );
 
-SEXP debug_BitMatrix();
-
 
 /* PreprocessedTB_class.c */
-
-SEXP debug_PreprocessedTB_class();
 
 SEXP _get_PreprocessedTB_tb(SEXP x);
 
@@ -938,8 +900,6 @@ SEXP _get_ppdups_buf_asINTEGER();
 
 
 /* match_pdict_utils.c */
-
-SEXP debug_match_pdict_utils();
 
 TBMatchBuf _new_TBMatchBuf(
 	int tb_length,
@@ -1014,8 +974,6 @@ void _match_pdict_all_flanks(
 
 /* match_pdict_Twobit.c */
 
-SEXP debug_match_pdict_Twobit();
-
 SEXP build_Twobit(
 	SEXP tb,
 	SEXP pp_exclude,
@@ -1032,8 +990,6 @@ void _match_Twobit(
 
 /* BAB_class.c */
 
-SEXP debug_BAB_class();
-
 SEXP IntegerBAB_new(SEXP max_nblock);
 
 int *_get_BAB_nblock_ptr(SEXP x);
@@ -1049,8 +1005,6 @@ SEXP _IntegerBAB_addblock(
 
 
 /* match_pdict_ACtree2.c */
-
-SEXP debug_match_pdict_ACtree2();
 
 SEXP ACtree2_nodebuf_max_nblock();
 
@@ -1094,8 +1048,6 @@ void _match_pdictACtree2(
 
 
 /* match_pdict.c */
-
-SEXP debug_match_pdict();
 
 SEXP match_PDict3Parts_XString(
 	SEXP pptb,

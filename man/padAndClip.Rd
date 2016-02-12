@@ -87,7 +87,7 @@ stackStrings(x, from, to, shift=0L,
   \link{XStringSet} object.
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \seealso{
   \itemize{

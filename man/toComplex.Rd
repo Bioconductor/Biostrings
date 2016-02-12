@@ -30,7 +30,7 @@ toComplex(x, baseValues)
   A complex vector of the same length as \code{x}.
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \seealso{
   \link{DNAString}

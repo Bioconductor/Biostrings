@@ -1,6 +1,6 @@
 /****************************************************************************
-                      A BOYER-MOORE-LIKE MATCHING ALGO
-		            Author: Herve Pages
+ *                     A BOYER-MOORE-LIKE MATCHING ALGO                     *
+ *                            Author: H. Pag\`es                            *
  ****************************************************************************/
 #include "Biostrings.h"
 
@@ -14,22 +14,6 @@
  * function when the pattern is small.
  */
 #define MWSHIFT_NPMAX	0
-
-
-/****************************************************************************/
-static int debug = 0;
-
-SEXP debug_match_pattern_boyermoore()
-{
-#ifdef DEBUG_BIOSTRINGS
-	debug = !debug;
-	Rprintf("Debug mode turned %s in 'match_pattern_boyermoore.c'\n",
-		debug ? "on" : "off");
-#else
-	Rprintf("Debug mode not available in 'match_pattern_boyermoore.c'\n");
-#endif
-	return R_NilValue;
-}
 
 
 /****************************************************************************

@@ -282,7 +282,7 @@ consensusMatrix(x, as.prob=FALSE, shift=0L, width=NULL, ...)
   A standard character string for \code{consensusString}.
 }
 
-\author{H. Pages and P. Aboyoun; H. Jaffee for letterFrequency and
+\author{H. Pagès and P. Aboyoun; H. Jaffee for letterFrequency and
  letterFrequencyInSlidingView}
 
 \seealso{
@@ -298,113 +298,113 @@ consensusMatrix(x, as.prob=FALSE, shift=0L, width=NULL, ...)
 }
 
 \examples{
-  ## ---------------------------------------------------------------------
-  ## alphabetFrequency()
-  ## ---------------------------------------------------------------------
-  data(yeastSEQCHR1)
-  yeast1 <- DNAString(yeastSEQCHR1)
+## ---------------------------------------------------------------------
+## alphabetFrequency()
+## ---------------------------------------------------------------------
+data(yeastSEQCHR1)
+yeast1 <- DNAString(yeastSEQCHR1)
 
-  alphabetFrequency(yeast1)
-  alphabetFrequency(yeast1, baseOnly=TRUE)
+alphabetFrequency(yeast1)
+alphabetFrequency(yeast1, baseOnly=TRUE)
 
-  hasOnlyBaseLetters(yeast1)
-  uniqueLetters(yeast1)
+hasOnlyBaseLetters(yeast1)
+uniqueLetters(yeast1)
 
-  ## With input made of multiple sequences:
-  library(drosophila2probe)
-  probes <- DNAStringSet(drosophila2probe)
-  alphabetFrequency(probes[1:50], baseOnly=TRUE)
-  alphabetFrequency(probes, baseOnly=TRUE, collapse=TRUE)
+## With input made of multiple sequences:
+library(drosophila2probe)
+probes <- DNAStringSet(drosophila2probe)
+alphabetFrequency(probes[1:50], baseOnly=TRUE)
+alphabetFrequency(probes, baseOnly=TRUE, collapse=TRUE)
 
-  ## ---------------------------------------------------------------------
-  ## letterFrequency()
-  ## ---------------------------------------------------------------------
-  letterFrequency(probes[[1]], letters="ACGT", OR=0)
-  base_letters <- alphabet(probes, baseOnly=TRUE)
-  base_letters
-  letterFrequency(probes[[1]], letters=base_letters, OR=0)
-  base_letter_freqs <- letterFrequency(probes, letters=base_letters, OR=0)
-  head(base_letter_freqs)
-  GC_content <- letterFrequency(probes, letters="CG")
-  head(GC_content)
-  letterFrequency(probes, letters="CG", collapse=TRUE)
+## ---------------------------------------------------------------------
+## letterFrequency()
+## ---------------------------------------------------------------------
+letterFrequency(probes[[1]], letters="ACGT", OR=0)
+base_letters <- alphabet(probes, baseOnly=TRUE)
+base_letters
+letterFrequency(probes[[1]], letters=base_letters, OR=0)
+base_letter_freqs <- letterFrequency(probes, letters=base_letters, OR=0)
+head(base_letter_freqs)
+GC_content <- letterFrequency(probes, letters="CG")
+head(GC_content)
+letterFrequency(probes, letters="CG", collapse=TRUE)
 
-  ## ---------------------------------------------------------------------
-  ## letterFrequencyInSlidingView()
-  ## ---------------------------------------------------------------------
-  data(yeastSEQCHR1)
-  x <- DNAString(yeastSEQCHR1)
-  view.width <- 48
-  letters <- c("A", "CG")
-  two_columns <- letterFrequencyInSlidingView(x, view.width, letters)
-  head(two_columns)
-  tail(two_columns)
-  three_columns <- letterFrequencyInSlidingView(x, view.width, letters, OR=0)
-  head(three_columns)
-  tail(three_columns)
-  stopifnot(identical(two_columns[ , "C|G"],
-                      three_columns[ , "C"] + three_columns[ , "G"]))
+## ---------------------------------------------------------------------
+## letterFrequencyInSlidingView()
+## ---------------------------------------------------------------------
+data(yeastSEQCHR1)
+x <- DNAString(yeastSEQCHR1)
+view.width <- 48
+letters <- c("A", "CG")
+two_columns <- letterFrequencyInSlidingView(x, view.width, letters)
+head(two_columns)
+tail(two_columns)
+three_columns <- letterFrequencyInSlidingView(x, view.width, letters, OR=0)
+head(three_columns)
+tail(three_columns)
+stopifnot(identical(two_columns[ , "C|G"],
+                    three_columns[ , "C"] + three_columns[ , "G"]))
 
-  ## Note that, alternatively, 'three_columns' can also be obtained by
-  ## creating the views on 'x' (as a Views object) and by calling
-  ## alphabetFrequency() on it. But, of course, that is be *much* less
-  ## efficient (both, in terms of memory and speed) than using
-  ## letterFrequencyInSlidingView():
-  v <- Views(x, start=seq_len(length(x) - view.width + 1), width=view.width)
-  v
-  three_columns2 <- alphabetFrequency(v, baseOnly=TRUE)[ , c("A", "C", "G")]
-  stopifnot(identical(three_columns2, three_columns))
+## Note that, alternatively, 'three_columns' can also be obtained by
+## creating the views on 'x' (as a Views object) and by calling
+## alphabetFrequency() on it. But, of course, that is be *much* less
+## efficient (both, in terms of memory and speed) than using
+## letterFrequencyInSlidingView():
+v <- Views(x, start=seq_len(length(x) - view.width + 1), width=view.width)
+v
+three_columns2 <- alphabetFrequency(v, baseOnly=TRUE)[ , c("A", "C", "G")]
+stopifnot(identical(three_columns2, three_columns))
 
-  ## Set the width of the view to length(x) to get the global frequencies:
-  letterFrequencyInSlidingView(x, letters="ACGTN", view.width=length(x), OR=0)
+## Set the width of the view to length(x) to get the global frequencies:
+letterFrequencyInSlidingView(x, letters="ACGTN", view.width=length(x), OR=0)
 
-  ## ---------------------------------------------------------------------
-  ## consensus*()
-  ## ---------------------------------------------------------------------
-  ## Read in ORF data:
-  file <- system.file("extdata", "someORF.fa", package="Biostrings")
-  orf <- readDNAStringSet(file)
+## ---------------------------------------------------------------------
+## consensus*()
+## ---------------------------------------------------------------------
+## Read in ORF data:
+file <- system.file("extdata", "someORF.fa", package="Biostrings")
+orf <- readDNAStringSet(file)
 
-  ## To illustrate, the following example assumes the ORF data
-  ## to be aligned for the first 10 positions (patently false):
-  orf10 <- DNAStringSet(orf, end=10)
-  consensusMatrix(orf10, baseOnly=TRUE)
+## To illustrate, the following example assumes the ORF data
+## to be aligned for the first 10 positions (patently false):
+orf10 <- DNAStringSet(orf, end=10)
+consensusMatrix(orf10, baseOnly=TRUE)
 
-  ## The following example assumes the first 10 positions to be aligned
-  ## after some incremental shifting to the right (patently false):
-  consensusMatrix(orf10, baseOnly=TRUE, shift=0:6)
-  consensusMatrix(orf10, baseOnly=TRUE, shift=0:6, width=10)
+## The following example assumes the first 10 positions to be aligned
+## after some incremental shifting to the right (patently false):
+consensusMatrix(orf10, baseOnly=TRUE, shift=0:6)
+consensusMatrix(orf10, baseOnly=TRUE, shift=0:6, width=10)
 
-  ## For the character matrix containing the "exploded" representation
-  ## of the strings, do:
-  as.matrix(orf10, use.names=FALSE)
+## For the character matrix containing the "exploded" representation
+## of the strings, do:
+as.matrix(orf10, use.names=FALSE)
 
-  ## consensusMatrix() can be used to just compute the alphabet frequency
-  ## for each position in the input sequences:
-  consensusMatrix(probes, baseOnly=TRUE)
+## consensusMatrix() can be used to just compute the alphabet frequency
+## for each position in the input sequences:
+consensusMatrix(probes, baseOnly=TRUE)
 
-  ## After sorting, the first 5 probes might look similar (at least on
-  ## their first bases):
-  consensusString(sort(probes)[1:5])
-  consensusString(sort(probes)[1:5], ambiguityMap = "N", threshold = 0.5)
+## After sorting, the first 5 probes might look similar (at least on
+## their first bases):
+consensusString(sort(probes)[1:5])
+consensusString(sort(probes)[1:5], ambiguityMap = "N", threshold = 0.5)
 
-  ## Consensus involving ambiguity letters in the input strings
-  consensusString(DNAStringSet(c("NNNN","ACTG")))
-  consensusString(DNAStringSet(c("AANN","ACTG")))
-  consensusString(DNAStringSet(c("ACAG","ACAR"))) 
-  consensusString(DNAStringSet(c("ACAG","ACAR", "ACAG"))) 
+## Consensus involving ambiguity letters in the input strings
+consensusString(DNAStringSet(c("NNNN","ACTG")))
+consensusString(DNAStringSet(c("AANN","ACTG")))
+consensusString(DNAStringSet(c("ACAG","ACAR"))) 
+consensusString(DNAStringSet(c("ACAG","ACAR", "ACAG"))) 
 
-  ## ---------------------------------------------------------------------
-  ## C. RELATIONSHIP BETWEEN consensusMatrix() AND coverage()
-  ## ---------------------------------------------------------------------
-  ## Applying colSums() on a consensus matrix gives the coverage that
-  ## would be obtained by piling up (after shifting) the input sequences
-  ## on top of an (imaginary) reference sequence:
-  cm <- consensusMatrix(orf10, shift=0:6, width=10)
-  colSums(cm)
+## ---------------------------------------------------------------------
+## C. RELATIONSHIP BETWEEN consensusMatrix() AND coverage()
+## ---------------------------------------------------------------------
+## Applying colSums() on a consensus matrix gives the coverage that
+## would be obtained by piling up (after shifting) the input sequences
+## on top of an (imaginary) reference sequence:
+cm <- consensusMatrix(orf10, shift=0:6, width=10)
+colSums(cm)
 
-  ## Note that this coverage can also be obtained with:
-  as.integer(coverage(IRanges(rep(1, length(orf)), width(orf)), shift=0:6, width=10))
+## Note that this coverage can also be obtained with:
+as.integer(coverage(IRanges(rep(1, length(orf)), width(orf)), shift=0:6, width=10))
 }
 
 \keyword{methods}

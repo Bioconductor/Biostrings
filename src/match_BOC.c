@@ -1,6 +1,6 @@
 /****************************************************************************
  *      Base Occurrence Count algorithm for exact and inexact matching      *
- *                           Author: Herve Pages                            *
+ *                            Author: H. Pag\`es                            *
  ****************************************************************************/
 #include "Biostrings.h"
 #include <S.h> /* for Salloc() */
@@ -8,20 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
-/****************************************************************************/
-static int debug = 0;
-
-SEXP debug_match_BOC()
-{
-#ifdef DEBUG_BIOSTRINGS
-	debug = !debug;
-	Rprintf("Debug mode turned %s in 'match_BOC.c'\n", debug ? "on" : "off");
-#else
-	Rprintf("Debug mode not available in 'match_BOC.c'\n");
-#endif
-	return R_NilValue;
-}
 
 static char get_pre4(const char *s, char c1, char c2, char c3, char c4)
 {
@@ -193,11 +179,6 @@ static void order_bases(char *p_ocX, char *p_ocY, char *p_ocZ,
 	order[1] = 1;
 	order[2] = 2;
 	*/
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] order_bases: order[0]=%d order[1]=%d order[2]=%d\n",
-			order[0], order[1], order[2]);
-#endif
 	*p_ocX = (char) switch_oc(order[0], c1_oc, c2_oc, c3_oc, -1);
 	*p_ocY = (char) switch_oc(order[1], c1_oc, c2_oc, c3_oc, -1);
 	*p_ocZ = (char) switch_oc(order[2], c1_oc, c2_oc, c3_oc, -1);
@@ -244,16 +225,6 @@ static int split4_offsets(char codes[4], int *offsets[4], int noffsets[4], const
 		codes[i] = tmp_codes[ii];
 		offsets[i] = tmp_offsets[ii];
 		noffsets[i] = tmp_noffsets[ii];
-#ifdef DEBUG_BIOSTRINGS
-		if (debug) {
-			Rprintf("[DEBUG] split4_offsets: codes[%d]=%d\n", i, codes[i]);
-			Rprintf("[DEBUG] split4_offsets: noffsets[%d]=%d\n", i, noffsets[i]);
-			Rprintf("[DEBUG] split4_offsets: offsets[%d]=", i);
-			for (j = 0; j < noffsets[i]; j++)
-				Rprintf(" %d", offsets[i][j]);
-			Rprintf("\n");
-		}
-#endif
 	}
 	return 0;
 }
@@ -268,9 +239,6 @@ static void BOC_exact_search(const char *P, int nP, const char *S, int nS,
 	    nPsuf4, *Psuf4_offsets[4], Psuf4_noffsets[4], i, j, *offsets, noffsets;
 	char c, ocX, ocY, ocZ, Ppre4, codes[4];
 	const char *bufX, *bufY, *bufZ, *Psuf4, *Ssuf4;
-#ifdef DEBUG_BIOSTRINGS
-	int count_preapprovals = 0;
-#endif
 
 	c1_oc = c2_oc = c3_oc = 0;
 	for (n2 = 0; n2 < nP; n2++) {
@@ -281,10 +249,6 @@ static void BOC_exact_search(const char *P, int nP, const char *S, int nS,
 		else if (c != c4)
 			error("'pattern' contains non-base DNA letters");
 	}
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] pattern: c1_oc=%d c2_oc=%d c3_oc=%d\n", c1_oc, c2_oc, c3_oc);
-#endif
 	nmers[0] = table1[c1_oc];
 	nmers[1] = table2[c2_oc];
 	nmers[2] = table3[c3_oc];
@@ -310,9 +274,6 @@ static void BOC_exact_search(const char *P, int nP, const char *S, int nS,
 			continue;
 		if (ocZ != *bufZ)
 			continue;
-#ifdef DEBUG_BIOSTRINGS
-		count_preapprovals++;
-#endif
 		if (memcmp(Psuf4, Ssuf4, nPsuf4) != 0)
 			continue; // same as goto continue0;
 /*
@@ -330,10 +291,6 @@ static void BOC_exact_search(const char *P, int nP, const char *S, int nS,
 		_report_match(n1 + 1, nP);
 		continue0: ;
 	}
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] count_preapprovals=%d\n", count_preapprovals);
-#endif
 	return;
 }
 

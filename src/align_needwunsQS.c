@@ -60,24 +60,6 @@ static int needwunsQS(const Chars_holder *S1, const Chars_holder *S2,
 			TRA(i1, i2) = tr;
 		}
 	}
-/*
-#ifdef DEBUG_BIOSTRINGS
-	Rprintf("sco:\n");
-	for (i1 = 0; i1 <= S1->length; i1++) {
-		for (i2 = 0; i2 <= S2->length; i2++) {
-			Rprintf("%4d", SCO(i1, i2));
-		}
-		Rprintf("\n");
-	}
-	Rprintf("tra:\n");
-	for (i1 = 1; i1 <= S1->length; i1++) {
-		for (i2 = 1; i2 <= S2->length; i2++) {
-			Rprintf(" %c", TRA(i1, i2));
-		}
-		Rprintf("\n");
-	}
-#endif
-*/
 	al_buf_size = S1->length + S2->length;
 	al1_buf = (char *) R_alloc((long) al_buf_size, sizeof(char));
 	al2_buf = (char *) R_alloc((long) al_buf_size, sizeof(char));

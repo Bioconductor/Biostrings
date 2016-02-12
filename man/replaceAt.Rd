@@ -103,7 +103,7 @@ replaceAt(x, at, value="")
   \link{XString} object and \code{at} a \link[IRanges]{Ranges} object.
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \seealso{
   \itemize{

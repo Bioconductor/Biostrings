@@ -25,7 +25,7 @@
   WARNING: BOC\_SubjectString and BOC2\_SubjectString objects are deprecated!
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \keyword{methods}
 \keyword{classes}

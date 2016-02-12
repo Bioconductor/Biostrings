@@ -2,7 +2,7 @@
  *                                Version 2                                 *
  *                                 of the                                   *
  *      Base Occurrence Count algorithm for exact and inexact matching      *
- *                           Author: Herve Pages                            *
+ *                            Author: H. Pag\`es                            *
  ****************************************************************************/
 #include "Biostrings.h"
 #include <S.h> /* for Salloc() */
@@ -12,18 +12,6 @@
 
 
 /****************************************************************************/
-static int debug = 0;
-
-SEXP debug_match_BOC2()
-{
-#ifdef DEBUG_BIOSTRINGS
-	debug = !debug;
-	Rprintf("Debug mode turned %s in 'match_BOC2.c'\n", debug ? "on" : "off");
-#else
-	Rprintf("Debug mode not available in 'match_BOC2.c'\n");
-#endif
-	return R_NilValue;
-}
 
 static int make_32bit_signature(int c1_oc, int c2_oc, int c3_oc, char pre4)
 {
@@ -211,16 +199,6 @@ static int split4_offsets(char codes[4], int *offsets[4], int noffsets[4], const
 		codes[i] = tmp_codes[ii];
 		offsets[i] = tmp_offsets[ii];
 		noffsets[i] = tmp_noffsets[ii];
-#ifdef DEBUG_BIOSTRINGS
-		if (debug) {
-			Rprintf("[DEBUG] split4_offsets: codes[%d]=%d\n", i, codes[i]);
-			Rprintf("[DEBUG] split4_offsets: noffsets[%d]=%d\n", i, noffsets[i]);
-			Rprintf("[DEBUG] split4_offsets: offsets[%d]=", i);
-			for (j = 0; j < noffsets[i]; j++)
-				Rprintf(" %d", offsets[i][j]);
-			Rprintf("\n");
-		}
-#endif
 	}
 	return 0;
 }
@@ -234,9 +212,6 @@ static void BOC2_exact_search(const char *P, int nP, const char *S, int nS,
 	    nPsuf4, *Psuf4_offsets[4], Psuf4_noffsets[4], i, j, *offsets, noffsets;
 	char c, Ppre4, codes[4];
 	const char *Psuf4, *Ssuf4;
-#ifdef DEBUG_BIOSTRINGS
-	int count_preapprovals = 0;
-#endif
 
 	c1_oc = c2_oc = c3_oc = 0;
 	for (n2 = 0; n2 < nP; n2++) {
@@ -249,11 +224,6 @@ static void BOC2_exact_search(const char *P, int nP, const char *S, int nS,
 	}
 	Ppre4 = make_pre4(P, c1, c2, c3, c4);
 	Psignature = make_32bit_signature(c1_oc, c2_oc, c3_oc, Ppre4);
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] pattern: c1_oc=%d c2_oc=%d c3_oc=%d Ppre4=%d\n",
-			c1_oc, c2_oc, c3_oc, Ppre4);
-#endif
 	Psuf4 = P + 4;
 	nPsuf4 = nP - 4;
 	codes[0] = c1;
@@ -267,9 +237,6 @@ static void BOC2_exact_search(const char *P, int nP, const char *S, int nS,
 	for (n1 = 0, Ssuf4 = S + 4; n1 <= n1max; n1++, Ssuf4++, buf++) {
 		if (Psignature != *buf)
 			continue;
-#ifdef DEBUG_BIOSTRINGS
-		count_preapprovals++;
-#endif
 		if (memcmp(Psuf4, Ssuf4, nPsuf4) != 0)
 			continue; // same as goto continue0;
 /*
@@ -287,10 +254,6 @@ static void BOC2_exact_search(const char *P, int nP, const char *S, int nS,
 		_report_match(n1 + 1, nP);
 		continue0: ;
 	}
-#ifdef DEBUG_BIOSTRINGS
-	if (debug)
-		Rprintf("[DEBUG] count_preapprovals=%d\n", count_preapprovals);
-#endif
 	return;
 }
 

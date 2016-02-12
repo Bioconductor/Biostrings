@@ -63,7 +63,7 @@
   It works whether or not a Trusted Band has been defined on \code{pdict}.
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \references{
   Aho, Alfred V.; Margaret J. Corasick (June 1975). "Efficient string

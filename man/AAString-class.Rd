@@ -93,7 +93,7 @@ AA_PROTEINOGENIC  # first 22 letters only
   }
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \seealso{
   \code{\link{AMINO_ACID_CODE}},

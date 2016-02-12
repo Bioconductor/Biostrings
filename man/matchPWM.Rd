@@ -159,7 +159,7 @@ unitScale(x)
   identification of regulatory elements, Nat Rev Genet., 5(4):276-87.
 }
 
-\author{H. Pages and P. Aboyoun}
+\author{H. Pagès and P. Aboyoun}
 
 \seealso{
   \code{\link{consensusMatrix}},

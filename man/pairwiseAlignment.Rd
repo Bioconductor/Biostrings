@@ -119,7 +119,7 @@ reference sequence or set of sequences.
 Use \code{\link{matchPDict}} if you need to match a (big) set of patterns
 against a reference sequence.
 }
-\author{P. Aboyoun and H. Pages}
+\author{P. Aboyoun and H. Pagès}
 \seealso{
   \code{\link{writePairwiseAlignments}},
   \code{\link{stringDist}},

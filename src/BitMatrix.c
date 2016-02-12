@@ -1,7 +1,7 @@
 /****************************************************************************
  *                                                                          *
  *                   Routines for BitMatrix manipulation                    *
- *                           Author: Herve Pages                            *
+ *                            Author: H. Pag\`es                            *
  *                                                                          *
  ****************************************************************************/
 #include "Biostrings.h"
@@ -12,8 +12,6 @@
 #include <limits.h> /* for CHAR_BIT and ULONG_MAX */
 #include <stdlib.h> /* for div() */
 
-
-static int debug = 0;
 
 #define BITMATBYROW_NCOL (sizeof(int) * CHAR_BIT)
 
@@ -366,71 +364,4 @@ static void testing2(BitMatByRow *bitmat_byrow)
 	return;
 }
 */
-
-SEXP debug_BitMatrix()
-{
-#ifdef DEBUG_BIOSTRINGS
-	debug = !debug;
-	Rprintf("Debug mode turned %s in file %s\n",
-		debug ? "on" : "off", __FILE__);
-	if (debug) {
-		BitMatrix bitmat0;
-		BitCol bitcol0;
-		//BitMatByRow bitmat_byrow0;
-
-		bitmat0 = _new_BitMatrix(40, 5, 0UL);
-		bitcol0 = _new_BitCol(40, 33UL + (1UL << 39));
-		
-		BitMatrix_print(&bitmat0);
-		_BitMatrix_set_bit(&bitmat0, 0, 0, 1);
-		BitMatrix_print(&bitmat0);
-		_BitMatrix_set_bit(&bitmat0, 39, 4, 1);
-		BitMatrix_print(&bitmat0);
-		_BitMatrix_set_bit(&bitmat0, 39, 4, 0);
-		BitMatrix_print(&bitmat0);
-		_BitMatrix_grow1rows(&bitmat0, &bitcol0);
-		BitMatrix_print(&bitmat0);
-		_BitMatrix_grow1rows(&bitmat0, &bitcol0);
-		BitMatrix_print(&bitmat0);
-		_BitMatrix_grow1rows(&bitmat0, &bitcol0);
-		BitMatrix_print(&bitmat0);
-		_BitMatrix_grow1rows(&bitmat0, &bitcol0);
-		BitMatrix_print(&bitmat0);
-		_BitMatrix_Rrot1(&bitmat0);
-		BitMatrix_print(&bitmat0);
-		_BitMatrix_Rrot1(&bitmat0);
-		BitMatrix_print(&bitmat0);
-		_BitMatrix_Rrot1(&bitmat0);
-		BitMatrix_print(&bitmat0);
-		_BitMatrix_Rrot1(&bitmat0);
-		BitMatrix_print(&bitmat0);
-		_BitMatrix_Rrot1(&bitmat0);
-		BitMatrix_print(&bitmat0);
-/*
-		BitMatrix_print(&bitmat0);
-		BitMatrix_addcol(&bitmat0, &bitcol0);
-		BitMatrix_print(&bitmat0);
-		BitMatrix_addcol(&bitmat0, &bitcol0);
-		BitMatrix_print(&bitmat0);
-		BitMatrix_addcol(&bitmat0, &bitcol0);
-		BitMatrix_print(&bitmat0);
-		BitMatrix_addcol(&bitmat0, &bitcol0);
-		BitMatrix_print(&bitmat0);
-*/
-
-/*
-		bitmat0 = _new_BitMatrix(3000, 5, 0UL);
-		bitcol0 = _new_BitCol(3000, 0UL);
-		bitcol0.bitword0[0] = 33UL;
-		bitcol0.bitword0[4] = 1UL << 43;
-		bitmat_byrow0 = new_IntAE(3000, 3000, 0);
-		testing1(&bitmat0, &bitcol0);
-		//testing2(&bitmat_byrow0);
-*/
-	}
-#else
-	Rprintf("Debug mode not available in file %s\n", __FILE__);
-#endif
-	return R_NilValue;
-}
 

@@ -31,7 +31,7 @@
   be used directly.
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \keyword{internal}
 \keyword{methods}
