@@ -131,21 +131,6 @@ names(x) <- LETTERS[1:length(x)]
 x[["A"]]
 x[["B"]]
 as.list(x)  # named list
-
-## ---------------------------------------------------------------------
-## B. USING THE GROUPING CORE API ON 'PartitioningByEnd(x)'
-## ---------------------------------------------------------------------
-PartitioningByEnd(x)
-length(PartitioningByEnd(x))
-nobj(PartitioningByEnd(x))
-grouplength(PartitioningByEnd(x))  # same as 'unname(sapply(x, length))'
-
-## ---------------------------------------------------------------------
-## C. USING THE RANGES CORE API ON 'PartitioningByEnd(x)'
-## ---------------------------------------------------------------------
-start(PartitioningByEnd(x))
-end(PartitioningByEnd(x))
-width(PartitioningByEnd(x))  # same as 'grouplength(PartitioningByEnd(x))'
 }
 
 \keyword{methods}
