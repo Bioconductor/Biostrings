@@ -163,6 +163,7 @@ SEXP new_XString_from_CHARACTER(SEXP classname,
 	ans_holder = hold_XRaw(ans);
 	if (lkup == R_NilValue) {
 		lkup0 = NULL;
+                lkup_length = 0;
 	} else {
 		lkup0 = INTEGER(lkup);
 		lkup_length = LENGTH(lkup);
