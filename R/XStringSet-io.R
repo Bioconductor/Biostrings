@@ -119,7 +119,7 @@ fasta.seqlengths <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
     offset <- ssorted_fai[ , "offset"]
     blockid <- recno - seq_along(recno)  # this block id is unique only within
                                          # a given file
-    is_first_in_block <- !S4Vectors:::duplicatedIntegerPairs(blockid, fileno)
+    is_first_in_block <- !duplicatedIntegerPairs(blockid, fileno)
     first_in_block_idx <- which(is_first_in_block)
     data.frame(fileno=fileno[first_in_block_idx],
                nrec=diff(c(first_in_block_idx, nrow(ssorted_fai) + 1L)),
