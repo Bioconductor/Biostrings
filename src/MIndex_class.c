@@ -196,7 +196,8 @@ SEXP SparseMIndex_endIndex(SEXP x_ends_envir, SEXP x_width0, SEXP x_names, SEXP 
 		UNPROTECT(1);
 	} else {
 		//poffsets_order = new_IntAE(nelt, 0, 0);
-		//get_order_of_int_array(poffsets->elts, nelt, 0, poffsets_order->elts, 0);
+		//get_order_of_int_array(poffsets->elts, nelt, 0, 0,
+		//		       poffsets_order->elts, 0);
 		//IntAE_set_nelt(poffsets_order) = nelt; /* = poffsets_order->_buflength */
 		PROTECT(ans = NEW_LIST(nelt));
 		PROTECT(ans_names = NEW_CHARACTER(nelt));

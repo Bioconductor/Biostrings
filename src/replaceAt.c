@@ -88,7 +88,7 @@ static int replace_at(const Chars_holder *x_holder,
 		bufs->width[i] =
 			get_width_elt_from_IRanges_holder(at_holder, i);
 	}
-	get_order_of_int_pairs(bufs->start, bufs->width, at_len, 0,
+	get_order_of_int_pairs(bufs->start, bufs->width, at_len, 0, 0,
 			       bufs->order, 0);
 	dest_offset = x_offset = 0;
 	for (k = 0; k < at_len; k++) {
