@@ -49,7 +49,10 @@ fasta.index <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
     ans <- .Call2("fasta_index",
                   filexp_list, nrec, skip, seek.first.rec, lkup,
                   PACKAGE="Biostrings")
-    ans$filepath <- filepath[ans[ , "fileno"]]
+    ## 'expath' will usually be the same as 'filepath', except when 'filepath'
+    ## contains URLs which will be replaced by the path to the downloaded file.
+    expath <- vapply(filexp_list, attr, character(1), "expath", USE.NAMES=FALSE)
+    ans$filepath <- expath[ans[ , "fileno"]]
     ans
 }
 

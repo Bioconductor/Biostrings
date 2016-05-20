@@ -203,8 +203,9 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
     \item \code{desc}: The description line (a.k.a. header) of the record.
     \item \code{seqlength}: The length of the sequence in the record (not
           counting invalid letters).
-    \item \code{filepath}: The user-specified path to the file where the
-          record is located.
+    \item \code{filepath}: The path to the file where the record is located.
+          Always a local file, so if the user specified a remote file, this
+          column will contain the path to the downloaded file.
   }
   A subset of this data frame can be passed to \code{readDNAStringSet}
   and family for direct access to an arbitrary subset of sequences. More
