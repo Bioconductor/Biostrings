@@ -435,40 +435,6 @@ setMethod("showAsCell", "XStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Set Operations
-###
-
-.XStringSet.SetOperation <- function(x, y, FUN)
-{
-    x_seqtype <- seqtype(x)
-    if (seqtype(y) != x_seqtype)
-        stop("'x' and 'y' must be XStringSet objects containing ",
-             "sequences of the same type")
-    XStringSet(x_seqtype, FUN(as.character(unique(x)), as.character(unique(y))))
-}
-
-setMethod("union", c("XStringSet", "XStringSet"),
-    function(x, y, ...) .XStringSet.SetOperation(x, y, FUN = union)
-)
-setMethod("intersect", c("XStringSet", "XStringSet"),
-    function(x, y, ...) .XStringSet.SetOperation(x, y, FUN = intersect)
-)
-setMethod("setdiff", c("XStringSet", "XStringSet"),
-    function(x, y, ...) .XStringSet.SetOperation(x, y, FUN = setdiff)
-)
-setMethod("setequal", c("XStringSet", "XStringSet"),
-    function(x, y)
-    {
-        x_seqtype <- seqtype(x)
-        if (seqtype(y) != x_seqtype)
-            stop("'x' and 'y' must be XStringSet objects containing ",
-                 "sequences of the same type")
-        setequal(as.character(unique(x)), as.character(unique(y)))
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Other coercion methods.
 ###
 

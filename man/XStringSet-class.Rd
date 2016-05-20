@@ -40,11 +40,6 @@
 \alias{show,XStringSet-method}
 \alias{showAsCell,XStringSet-method}
 
-\alias{union,XStringSet,XStringSet-method}
-\alias{intersect,XStringSet,XStringSet-method}
-\alias{setdiff,XStringSet,XStringSet-method}
-\alias{setequal,XStringSet,XStringSet-method}
-
 \alias{unlist,XStringSet-method}
 \alias{as.character,XStringSet-method}
 \alias{as.data.frame,XStringSet-method}
@@ -248,19 +243,19 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
 
 \section{Set operations}{
   In the code snippets below,
-  \code{x} and \code{y} are XStringSet objects
+  \code{x} and \code{y} are XStringSet objects.
 
   \describe{
     \item{}{
-      \code{union(x, y, ...)}:
+      \code{union(x, y)}:
       Union of \code{x} and \code{y}.
     }
     \item{}{
-      \code{intersect(x, y, ...)}:
+      \code{intersect(x, y)}:
       Intersection of \code{x} and \code{y}.
     }
     \item{}{
-      \code{setdiff(x, y, ...)}:
+      \code{setdiff(x, y)}:
       Asymmetric set difference of \code{x} and \code{y}.
     }
     \item{}{
