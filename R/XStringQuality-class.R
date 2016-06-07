@@ -113,6 +113,11 @@ function(from, qualityClass)
     as(qualityConverter(from, qualityClass, "BStringSet"), qualityClass)
 .numericToXStringQuality <- function(from, qualityClass)
     as(qualityConverter(from, qualityClass, "BStringSet"), qualityClass)
+
+.IntegerOrNumericListToXStringQuality <- function(from, qualityClass)
+    as(relist(as(unlist(from, use.names=FALSE), qualityClass)[[1L]], from),
+       qualityClass)
+
 .XStringQualityToInteger <- function(from, qualityClass)
 	qualityConverter(BStringSet(from), qualityClass, "integer")
 .XStringQualityToNumeric <- function(from, qualityClass)
@@ -128,28 +133,6 @@ function(from, qualityClass)
     ans
 }
 
-setMethod("as.vector", "XStringQuality",
-    function(x, mode="any")
-    {
-        if (!isSingleString(mode)) 
-            stop("'mode' must be a single string")
-        if (mode %in% c("integer", "numeric"))
-            return(.XStringQualityToInteger(x, class(x)))
-        if (mode %in% c("any", "character"))
-            return(as.character(x))
-        stop("'mode' can be \"integer\", \"numeric\", \"character\" ",
-             "or \"any\" when 'x' is an XStringQuality object")
-    }
-)
-
-setAs("XStringQuality", "IntegerList",
-    function(from)
-        relist(as.integer(as(unlist(from, use.names=FALSE), class(from))),
-               from)
-)
-
-setAs("XStringQuality", "NumericList", function(from) as(from, "IntegerList"))
-
 setAs("character", "PhredQuality",
       function(from) .characterToXStringQuality(from, "PhredQuality"))
 setAs("BString", "PhredQuality",
@@ -160,6 +143,10 @@ setAs("integer", "PhredQuality",
       function(from) .integerToXStringQuality(from, "PhredQuality"))
 setAs("numeric", "PhredQuality",
       function(from) .numericToXStringQuality(from, "PhredQuality"))
+setAs("IntegerList", "PhredQuality",
+    function(from) .IntegerOrNumericListToXStringQuality(from, "PhredQuality"))
+setAs("NumericList", "PhredQuality",
+    function(from) .IntegerOrNumericListToXStringQuality(from, "PhredQuality"))
 
 setAs("character", "SolexaQuality",
       function(from) .characterToXStringQuality(from, "SolexaQuality"))
@@ -171,6 +158,10 @@ setAs("integer", "SolexaQuality",
       function(from) .integerToXStringQuality(from, "SolexaQuality"))
 setAs("numeric", "SolexaQuality",
       function(from) .numericToXStringQuality(from, "SolexaQuality"))
+setAs("IntegerList", "SolexaQuality",
+    function(from) .IntegerOrNumericListToXStringQuality(from, "SolexaQuality"))
+setAs("NumericList", "SolexaQuality",
+    function(from) .IntegerOrNumericListToXStringQuality(from, "SolexaQuality"))
 
 setAs("character", "IlluminaQuality",
       function(from) .characterToXStringQuality(from, "IlluminaQuality"))
@@ -182,7 +173,40 @@ setAs("integer", "IlluminaQuality",
       function(from) .integerToXStringQuality(from, "IlluminaQuality"))
 setAs("numeric", "IlluminaQuality",
       function(from) .numericToXStringQuality(from, "IlluminaQuality"))
+setAs("IntegerList", "IlluminaQuality",
+    function(from) .IntegerOrNumericListToXStringQuality(from, "IlluminaQuality"))
+setAs("NumericList", "IlluminaQuality",
+    function(from) .IntegerOrNumericListToXStringQuality(from, "IlluminaQuality"))
 
+setMethod("as.vector", "XStringQuality",
+    function(x, mode="any")
+    {
+        if (!isSingleString(mode)) 
+            stop("'mode' must be a single string")
+        if (mode %in% "integer")  # return the quality scores
+            return(.XStringQualityToInteger(x, class(x)))
+        if (mode %in% "numeric")  # return the probabilities
+            return(.XStringQualityToNumeric(x, class(x)))
+        if (mode %in% c("any", "character"))
+            return(as.character(x))
+        stop("'mode' can be \"integer\", \"numeric\", \"character\" ",
+             "or \"any\" when 'x' is an XStringQuality object")
+    }
+)
+### Return the quality scores.
+setAs("XStringQuality", "IntegerList",
+    function(from)
+        relist(as.integer(as(unlist(from, use.names=FALSE), class(from))),
+               from)
+)
+### Return the probabilities.
+setAs("XStringQuality", "NumericList",
+    function(from)
+        relist(as.numeric(as(unlist(from, use.names=FALSE), class(from))),
+               from)
+)
+
+### Return the quality scores.
 setMethod("as.matrix", "XStringQuality",
     function(x, ...) .XStringQualityToIntegerMatrix(x)
 )

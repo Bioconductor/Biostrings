@@ -17,27 +17,33 @@
 \alias{IlluminaQuality}
 
 % Coercion:
-\alias{as.vector,XStringQuality-method}
-\alias{coerce,XStringQuality,IntegerList-method}
-\alias{coerce,XStringQuality,NumericList-method}
-
 \alias{coerce,character,PhredQuality-method}
 \alias{coerce,BString,PhredQuality-method}
 \alias{coerce,BStringSet,PhredQuality-method}
 \alias{coerce,integer,PhredQuality-method}
 \alias{coerce,numeric,PhredQuality-method}
+\alias{coerce,IntegerList,PhredQuality-method}
+\alias{coerce,NumericList,PhredQuality-method}
 
 \alias{coerce,character,SolexaQuality-method}
 \alias{coerce,BString,SolexaQuality-method}
 \alias{coerce,BStringSet,SolexaQuality-method}
 \alias{coerce,integer,SolexaQuality-method}
 \alias{coerce,numeric,SolexaQuality-method}
+\alias{coerce,IntegerList,SolexaQuality-method}
+\alias{coerce,NumericList,SolexaQuality-method}
 
 \alias{coerce,character,IlluminaQuality-method}
 \alias{coerce,BString,IlluminaQuality-method}
 \alias{coerce,BStringSet,IlluminaQuality-method}
 \alias{coerce,integer,IlluminaQuality-method}
 \alias{coerce,numeric,IlluminaQuality-method}
+\alias{coerce,IntegerList,IlluminaQuality-method}
+\alias{coerce,NumericList,IlluminaQuality-method}
+
+\alias{as.vector,XStringQuality-method}
+\alias{coerce,XStringQuality,IntegerList-method}
+\alias{coerce,XStringQuality,NumericList-method}
 
 \alias{as.matrix,XStringQuality-method}
 \alias{coerce,XStringQuality,matrix-method}
@@ -124,15 +130,20 @@ SolexaQuality(0:40)
 IlluminaQuality(0:40)
 
 pq <- PhredQuality(c("*+,-./", "0123456789:;"))
-as(pq, "IntegerList")
+qs <- as(pq, "IntegerList")  # quality scores
+qs
+as(qs, "PhredQuality")
+p <- as(pq, "NumericList")  # probabilities
+as(p, "PhredQuality")
 
 PhredQuality(seq(1e-4,0.5,length=10))
 SolexaQuality(seq(1e-4,0.5,length=10))
 IlluminaQuality(seq(1e-4,0.5,length=10))
 
 x <- SolexaQuality(BStringSet(c(a="@ABC", b="abcd")))
-as(x, "IntegerList")
-as.matrix(x)
+as(x, "IntegerList")  # quality scores
+as(x, "NumericList")  # probabilities
+as.matrix(x)          # quality scores
 }
 
 \keyword{methods}
