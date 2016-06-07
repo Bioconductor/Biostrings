@@ -17,35 +17,27 @@
 \alias{IlluminaQuality}
 
 % Coercion:
+\alias{as.vector,XStringQuality-method}
+\alias{coerce,XStringQuality,IntegerList-method}
+\alias{coerce,XStringQuality,NumericList-method}
+
 \alias{coerce,character,PhredQuality-method}
 \alias{coerce,BString,PhredQuality-method}
 \alias{coerce,BStringSet,PhredQuality-method}
 \alias{coerce,integer,PhredQuality-method}
 \alias{coerce,numeric,PhredQuality-method}
-\alias{coerce,PhredQuality,integer-method}
-\alias{as.integer,PhredQuality-method}
-\alias{coerce,PhredQuality,numeric-method}
-\alias{as.numeric,PhredQuality-method}
 
 \alias{coerce,character,SolexaQuality-method}
 \alias{coerce,BString,SolexaQuality-method}
 \alias{coerce,BStringSet,SolexaQuality-method}
 \alias{coerce,integer,SolexaQuality-method}
 \alias{coerce,numeric,SolexaQuality-method}
-\alias{coerce,SolexaQuality,integer-method}
-\alias{as.integer,SolexaQuality-method}
-\alias{coerce,SolexaQuality,numeric-method}
-\alias{as.numeric,SolexaQuality-method}
 
 \alias{coerce,character,IlluminaQuality-method}
 \alias{coerce,BString,IlluminaQuality-method}
 \alias{coerce,BStringSet,IlluminaQuality-method}
 \alias{coerce,integer,IlluminaQuality-method}
 \alias{coerce,numeric,IlluminaQuality-method}
-\alias{coerce,IlluminaQuality,integer-method}
-\alias{as.integer,IlluminaQuality-method}
-\alias{coerce,IlluminaQuality,numeric-method}
-\alias{as.numeric,IlluminaQuality-method}
 
 \alias{as.matrix,XStringQuality-method}
 \alias{coerce,XStringQuality,matrix-method}
@@ -127,16 +119,20 @@ IlluminaQuality(x)
 }
 
 \examples{
-  PhredQuality(0:40)
-  SolexaQuality(0:40)
-  IlluminaQuality(0:40)
+PhredQuality(0:40)
+SolexaQuality(0:40)
+IlluminaQuality(0:40)
 
-  PhredQuality(seq(1e-4,0.5,length=10))
-  SolexaQuality(seq(1e-4,0.5,length=10))
-  IlluminaQuality(seq(1e-4,0.5,length=10))
+pq <- PhredQuality(c("*+,-./", "0123456789:;"))
+as(pq, "IntegerList")
 
-  x <- SolexaQuality(BStringSet(c(a="@ABC", b="abcd")))
-  as.matrix(x)
+PhredQuality(seq(1e-4,0.5,length=10))
+SolexaQuality(seq(1e-4,0.5,length=10))
+IlluminaQuality(seq(1e-4,0.5,length=10))
+
+x <- SolexaQuality(BStringSet(c(a="@ABC", b="abcd")))
+as(x, "IntegerList")
+as.matrix(x)
 }
 
 \keyword{methods}

@@ -128,6 +128,28 @@ function(from, qualityClass)
     ans
 }
 
+setMethod("as.vector", "XStringQuality",
+    function(x, mode="any")
+    {
+        if (!isSingleString(mode)) 
+            stop("'mode' must be a single string")
+        if (mode %in% c("integer", "numeric"))
+            return(.XStringQualityToInteger(x, class(x)))
+        if (mode %in% c("any", "character"))
+            return(as.character(x))
+        stop("'mode' can be \"integer\", \"numeric\", \"character\" ",
+             "or \"any\" when 'x' is an XStringQuality object")
+    }
+)
+
+setAs("XStringQuality", "IntegerList",
+    function(from)
+        relist(as.integer(as(unlist(from, use.names=FALSE), class(from))),
+               from)
+)
+
+setAs("XStringQuality", "NumericList", function(from) as(from, "IntegerList"))
+
 setAs("character", "PhredQuality",
       function(from) .characterToXStringQuality(from, "PhredQuality"))
 setAs("BString", "PhredQuality",
@@ -138,12 +160,6 @@ setAs("integer", "PhredQuality",
       function(from) .integerToXStringQuality(from, "PhredQuality"))
 setAs("numeric", "PhredQuality",
       function(from) .numericToXStringQuality(from, "PhredQuality"))
-setAs("PhredQuality", "integer",
-      function(from) .XStringQualityToInteger(from, "PhredQuality"))
-setMethod("as.integer", "PhredQuality", function(x) as(x, "integer"))
-setAs("PhredQuality", "numeric",
-      function(from) .XStringQualityToNumeric(from, "PhredQuality"))
-setMethod("as.numeric", "PhredQuality", function(x) as(x, "numeric"))
 
 setAs("character", "SolexaQuality",
       function(from) .characterToXStringQuality(from, "SolexaQuality"))
@@ -155,12 +171,6 @@ setAs("integer", "SolexaQuality",
       function(from) .integerToXStringQuality(from, "SolexaQuality"))
 setAs("numeric", "SolexaQuality",
       function(from) .numericToXStringQuality(from, "SolexaQuality"))
-setAs("SolexaQuality", "integer",
-      function(from) .XStringQualityToInteger(from, "SolexaQuality"))
-setMethod("as.integer", "SolexaQuality", function(x) as(x, "integer"))
-setAs("SolexaQuality", "numeric",
-      function(from) .XStringQualityToNumeric(from, "SolexaQuality"))
-setMethod("as.numeric", "SolexaQuality", function(x) as(x, "numeric"))
 
 setAs("character", "IlluminaQuality",
       function(from) .characterToXStringQuality(from, "IlluminaQuality"))
@@ -172,12 +182,6 @@ setAs("integer", "IlluminaQuality",
       function(from) .integerToXStringQuality(from, "IlluminaQuality"))
 setAs("numeric", "IlluminaQuality",
       function(from) .numericToXStringQuality(from, "IlluminaQuality"))
-setAs("IlluminaQuality", "integer",
-      function(from) .XStringQualityToInteger(from, "IlluminaQuality"))
-setMethod("as.integer", "IlluminaQuality", function(x) as(x, "integer"))
-setAs("IlluminaQuality", "numeric",
-      function(from) .XStringQualityToNumeric(from, "IlluminaQuality"))
-setMethod("as.numeric", "IlluminaQuality", function(x) as(x, "numeric"))
 
 setMethod("as.matrix", "XStringQuality",
     function(x, ...) .XStringQualityToIntegerMatrix(x)

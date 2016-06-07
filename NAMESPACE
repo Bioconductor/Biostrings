@@ -396,7 +396,7 @@ export(
 
 exportMethods(
     length, "[", rep,
-    coerce, as.integer, as.numeric, as.character, as.matrix, toString,
+    coerce, as.vector, as.character, as.matrix, toString,
     show, summary,
     start, end, width,
     Views,
