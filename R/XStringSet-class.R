@@ -457,6 +457,12 @@ setMethod("as.character", "XStringSet",
     }
 )
 
+setMethod("as.factor", "XStringSet",
+    function(x)
+    {
+        as.factor(as.character(x))
+    })
+
 ### TODO: Turn this into an S3/S4 combo for as.data.frame.XStringSet
 setMethod("as.data.frame", "XStringSet",
     function(x, row.names=NULL, optional=FALSE)

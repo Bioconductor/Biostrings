@@ -10,6 +10,8 @@
 \alias{match,XStringSet,ANY-method}
 \alias{match,ANY,XStringSet-method}
 
+\alias{is.na,XStringSet-method}
+\alias{anyNA,XStringSet-method}
 
 \title{Comparing and ordering the elements in one or more XStringSet objects}
 
@@ -126,6 +128,21 @@
       \code{x \%in\% table}:
       Returns a logical vector indicating which elements in \code{x} match
       identically with an element in \code{table}.
+    }
+  }
+}
+
+\section{\code{is.na()} and related methods}{
+  In the code snippets below, \code{x} is an \link{XStringSet}
+  object. An \code{XStringSet} object never contains missing values
+  (these methods exist for compatibility).
+
+  \describe{
+    \item{}{
+      \code{is.na(x)}: Returns \code{FALSE} for every element.
+    }
+    \item{}{
+      \code{anyNA(x)}: Returns \code{FALSE}.
     }
   }
 }

@@ -42,6 +42,7 @@
 
 \alias{unlist,XStringSet-method}
 \alias{as.character,XStringSet-method}
+\alias{as.factor,XStringSet-method}
 \alias{as.data.frame,XStringSet-method}
 \alias{as.vector,XStringSet-method}
 \alias{toString,XStringSet-method}
@@ -281,6 +282,10 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
       Converts \code{x} to a character vector of the same length as \code{x}.
       The \code{use.names} argument controls whether or not \code{names(x)}
       should be propagated to the names of the returned vector.
+    }
+    \item{}{
+      \code{as.factor(x)}:
+      Converts \code{x} to a factor, via \code{as.character(x)}.
     }
     \item{}{
       \code{as.matrix(x, use.names=TRUE)}:

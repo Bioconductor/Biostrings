@@ -79,3 +79,10 @@ setMethods("pcompare", .OP2_SIGNATURES, .pcompare_XStringSet)
 
 setMethods("match", .OP2_SIGNATURES, .XStringSet.match)
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### is.na() and related methods
+###
+
+setMethod("is.na", "XStringSet", function(x) rep(FALSE, length(x)))
+
+setMethod("anyNA", "XStringSet", function(x, recursive=FALSE) FALSE)
