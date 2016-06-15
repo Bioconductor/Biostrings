@@ -97,14 +97,6 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(XStringViews_match_pattern, 10),
 	CALLMETHOD_DEF(XStringSet_vmatch_pattern, 8),
 
-/* match_BOC.c */
-	CALLMETHOD_DEF(match_BOC_preprocess, 12),
-	CALLMETHOD_DEF(match_BOC_exact, 16),
-
-/* match_BOC2.c */
-	CALLMETHOD_DEF(match_BOC2_preprocess, 9),
-	CALLMETHOD_DEF(match_BOC2_exact, 13),
-
 /* match_PWM.c */
 	CALLMETHOD_DEF(PWM_score_starting_at, 4),
 	CALLMETHOD_DEF(XString_match_PWM, 5),

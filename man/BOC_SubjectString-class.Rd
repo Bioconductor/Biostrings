@@ -19,13 +19,11 @@
 \alias{countPattern,BOC2_SubjectString-method}
 
 
-\title{BOC\_SubjectString and BOC2\_SubjectString objects}
+\title{BOC\_SubjectString and BOC2\_SubjectString objects (DEFUNCT!)}
 
 \description{
-  WARNING: BOC\_SubjectString and BOC2\_SubjectString objects are deprecated!
+  BOC\_SubjectString and BOC2\_SubjectString objects are defunct!
 }
-
-\author{H. Pagès}
 
 \keyword{methods}
 \keyword{classes}

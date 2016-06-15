@@ -405,14 +405,3 @@ saveXStringSet <- function(x, objname, dirpath=".",
         cat("OK\n")
 }
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Old stuff (deprecated & defunct)
-###
-
-fasta.info <- function(...)
-{
-    .Defunct("fasta.seqlengths")
-    fasta.seqlengths(...)
-}
-

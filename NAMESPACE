@@ -163,10 +163,7 @@ export(
     padAndClip, stackStrings,
 
     ## misc.R:
-    N50,
-
-    ## Old stuff (Deprecated or Defunct):
-    fasta.info
+    N50
 )
 
 exportMethods(
@@ -201,8 +198,8 @@ exportMethods(
 ###   lowlevel-matching.R
 ###   match-utils.R
 ###   matchPattern.R
-###   matchPattern.BOC.R    deprecated
-###   matchPattern.BOC2.R   deprecated
+###   matchPattern.BOC.R    -- defunct!
+###   matchPattern.BOC2.R   -- defunct!
 ###   matchLRPatterns.R
 ###   trimLRPatterns.R
 ###   matchProbePair.R
@@ -263,11 +260,7 @@ export(
     tb, tb.width, nnodes, hasAllFlinks, computeAllFlinks,
     patternFrequency, PDict,
     matchPDict, countPDict, whichPDict,
-    vmatchPDict, vcountPDict, vwhichPDict,
-
-    ## old stuff (deprecated or defunct):
-    findComplementedPalindromes, complementedPalindromeArmLength,
-    complementedPalindromeLeftArm, complementedPalindromeRightArm
+    vmatchPDict, vcountPDict, vwhichPDict
 )
 
 exportMethods(
@@ -284,10 +277,8 @@ exportMethods(
     matchProbePair,
     maxWeights, minWeights, maxScore, minScore,
     PWM, matchPWM, countPWM,
-    findPalindromes, findComplementedPalindromes,
-    palindromeArmLength, complementedPalindromeArmLength,
-    palindromeLeftArm, complementedPalindromeLeftArm,
-    palindromeRightArm, complementedPalindromeRightArm,
+    findPalindromes,
+    palindromeArmLength, palindromeLeftArm, palindromeRightArm,
 
     tb, tb.width, nnodes, hasAllFlinks, computeAllFlinks,
     head, tail,

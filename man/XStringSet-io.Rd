@@ -15,10 +15,6 @@
 
 \alias{saveXStringSet}
 
-% Old stuff (Deprecated or Defunct):
-\alias{fasta.info}
-
-
 \title{Read/write an XStringSet object from/to a file}
 
 \description{

@@ -20,24 +20,6 @@
 \alias{palindromeLeftArm,XStringViews-method}
 \alias{palindromeRightArm,XStringViews-method}
 
-% Old stuff (Deprecated or Defunct):
-\alias{findComplementedPalindromes}
-\alias{findComplementedPalindromes,DNAString-method}
-\alias{findComplementedPalindromes,RNAString-method}
-\alias{findComplementedPalindromes,XStringViews-method}
-\alias{findComplementedPalindromes,MaskedXString-method}
-\alias{complementedPalindromeArmLength}
-\alias{complementedPalindromeArmLength,DNAString-method}
-\alias{complementedPalindromeArmLength,RNAString-method}
-\alias{complementedPalindromeArmLength,XStringViews-method}
-\alias{complementedPalindromeLeftArm}
-\alias{complementedPalindromeLeftArm,XString-method}
-\alias{complementedPalindromeLeftArm,XStringViews-method}
-\alias{complementedPalindromeRightArm}
-\alias{complementedPalindromeRightArm,XString-method}
-\alias{complementedPalindromeRightArm,XStringViews-method}
-
-
 \title{Searching a sequence for palindromes}
 
 \description{
