@@ -198,8 +198,6 @@ exportMethods(
 ###   lowlevel-matching.R
 ###   match-utils.R
 ###   matchPattern.R
-###   matchPattern.BOC.R    -- defunct!
-###   matchPattern.BOC2.R   -- defunct!
 ###   matchLRPatterns.R
 ###   trimLRPatterns.R
 ###   matchProbePair.R
@@ -213,10 +211,7 @@ exportClasses(
     MIndex, ByPos_MIndex,
     PreprocessedTB, Twobit, ACtree2,
     PDict3Parts,
-    PDict, TB_PDict, MTB_PDict, Expanded_TB_PDict,
-
-    ## old stuff (deprecated or defunct):
-    BOC_SubjectString, BOC2_SubjectString
+    PDict, TB_PDict, MTB_PDict, Expanded_TB_PDict
 )
 
 export(
