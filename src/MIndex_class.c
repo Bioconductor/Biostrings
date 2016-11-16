@@ -60,8 +60,13 @@ MIndex_holder _hold_MIndex(SEXP x)
 	x_holder.length = LENGTH(x_holder.width0);
 	x_holder.ends = get_MIndex_ends(x);
 	dups0 = get_MIndex_dups0(x);
-	x_holder.dups0_high2low = get_H2LGrouping_high2low(dups0);
-	x_holder.dups0_low2high = get_H2LGrouping_low2high(dups0);
+	if (dups0 == R_NilValue) {
+		x_holder.dups0_high2low = R_NilValue;
+		x_holder.dups0_low2high = R_NilValue;
+	} else {
+		x_holder.dups0_high2low = get_H2LGrouping_high2low(dups0);
+		x_holder.dups0_low2high = get_H2LGrouping_low2high(dups0);
+	}
 	return x_holder;
 }
 

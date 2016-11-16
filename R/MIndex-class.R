@@ -24,6 +24,12 @@ setClass("MIndex",
     )
 )
 
+### Combine the new parallel slots with those of the parent class. Make sure
+### to put the new parallel slots *first*.
+setMethod("parallelSlotNames", "MIndex",
+    function(x) c("width0", "NAMES", callNextMethod())
+)
+
 setMethod("length", "MIndex", function(x) length(x@width0))
 
 setGeneric("width0", function(x) standardGeneric("width0"))
@@ -108,19 +114,39 @@ setMethod("show", "MIndex",
 ### The "ByPos_MIndex" class.
 ### 
 
+setClassUnion("DupsORNULL", c("Dups", "NULL"))
+
 setClass("ByPos_MIndex",
     contains="MIndex",
     representation(
-        dups0="Dups",
-        ends="list"  # same length as the "width0" slot
+        dups0="DupsORNULL",  # NULL or same length as the "width0" slot
+        ends="list"          # same length as the "width0" slot
     )
+)
+
+### Combine the new parallel slots with those of the parent class. Make sure
+### to put the new parallel slots *first*.
+setMethod("parallelSlotNames", "ByPos_MIndex",
+    function(x) c("dups0", "ends", callNextMethod())
+)
+
+### Only reason for defining this method is to catch the situation where
+### x@dups0 is not NULL.
+setMethod("extractROWS", "ByPos_MIndex",
+    function(x, i)
+    {
+        if (!is.null(x@dups0))
+            stop(wmsg("subsetting a ByPos_MIndex object that has a non-null ",
+                      "'dups0' slot is not ready yet, sorry"))
+        callNextMethod()
+    }
 )
 
 setMethod("[[", "ByPos_MIndex",
     function(x, i, j, ...)
     {
         i <- normalizeDoubleBracketSubscript(i, x)
-        if (length(x@dups0) != 0 && !is.na(i2 <- high2low(x@dups0)[i]))
+        if (!is.null(x@dups0) && !is.na(i2 <- high2low(x@dups0)[i]))
             i <- i2
         ans_end <- x@ends[[i]]
         if (is.null(ans_end))

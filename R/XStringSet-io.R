@@ -379,7 +379,7 @@ saveXStringSet <- function(x, objname, dirpath=".",
         ## works only if 'x' is a rectangular DNAStringSet instance with no
         ## IUPAC ambiguity codes.
         pdict <- try(PDict(x), silent=TRUE)  
-        if (!is(pdict, "try-error")) {
+        if (!is(pdict, "try-error") && !is.null(pdict@dups0)) {
             x_dups <- pdict@dups0
             x_names <- names(x)
             x_dup2unq <- togroup(x_dups)
