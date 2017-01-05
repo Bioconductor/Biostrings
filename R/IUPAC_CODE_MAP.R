@@ -24,19 +24,12 @@ mergeIUPACLetters <- function(x)
 {
     if (!is.character(x) || any(is.na(x)) || any(nchar(x) == 0))
         stop("'x' must be a vector of non-empty character strings")
-    if (length(x) == 0)
-        return(character(0))
-    IUPAC_code_revmap <- names(IUPAC_CODE_MAP)
-    names(IUPAC_code_revmap) <- IUPAC_CODE_MAP
-    toAmbiguity <- function(xx)
-    {
-        all_bases <- unique(unlist(strsplit(IUPAC_CODE_MAP[xx], "", fixed=TRUE)))
-        if (any(is.na(all_bases)))
-            stop("some strings in 'x' contain non IUPAC letters")
-        ans <- IUPAC_code_revmap[paste(sort(all_bases), collapse="")]
-        names(ans) <- NULL
-        ans
-    }
-    sapply(strsplit(toupper(x), "", fixed=TRUE), toAmbiguity)
+    x <- CharacterList(strsplit(toupper(x), "", fixed=TRUE))
+    yy <- unname(IUPAC_CODE_MAP[unlist(x, use.names=FALSE)])
+    if (any(is.na(yy)))
+        stop("some strings in 'x' contain non IUPAC letters")
+    yy <- CharacterList(strsplit(yy, "", fixed=TRUE))
+    y <- unstrsplit(sort(unique(IRanges:::regroupBySupergroup(yy, x))))
+    names(IUPAC_CODE_MAP)[match(y, IUPAC_CODE_MAP)]
 }
 
