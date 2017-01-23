@@ -252,8 +252,8 @@ SEXP ByPos_MIndex_combine(SEXP ends_listlist)
 		}
 		if (IntAE_get_nelt(ends_buf) == 0)
 			continue;
-		IntAE_qsort(ends_buf, 0);
-		IntAE_delete_adjdups(ends_buf);
+		IntAE_qsort(ends_buf, 0, 0);
+		IntAE_uniq(ends_buf, 0);
 		PROTECT(ans_elt = new_INTEGER_from_IntAE(ends_buf));
 		SET_ELEMENT(ans, i, ans_elt);
 		UNPROTECT(1);

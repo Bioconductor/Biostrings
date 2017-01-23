@@ -129,8 +129,11 @@ void _MatchBuf_append_and_flush(MatchBuf *match_buf1,
 		if (match_buf1->match_starts != NULL) {
 			start_buf1 = match_buf1->match_starts->elts[PSlink_id];
 			start_buf2 = match_buf2->match_starts->elts[PSlink_id];
-			IntAE_append_shifted_vals(start_buf1,
-				start_buf2->elts, IntAE_get_nelt(start_buf2),
+			IntAE_append(start_buf1,
+				start_buf2->elts, IntAE_get_nelt(start_buf2));
+			IntAE_shift(start_buf1,
+				IntAE_get_nelt(start_buf1) -
+					IntAE_get_nelt(start_buf2),
 				view_offset);
 		}
 		if (match_buf1->match_widths != NULL) {

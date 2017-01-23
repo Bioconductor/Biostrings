@@ -97,7 +97,7 @@ static void FASTAINDEX_load_desc_line(FASTAloader *loader,
 
 	desc_buf = loader_ext->desc_buf;
 	// This works only because desc_line->seq is nul-terminated!
-	append_string_to_CharAEAE(desc_buf, desc_line->ptr);
+	CharAEAE_append_string(desc_buf, desc_line->ptr);
 	return;
 }
 
@@ -675,7 +675,7 @@ static void FASTQ_load_seqid(FASTQloader *loader, const Chars_holder *seqid)
 	loader_ext = loader->ext;
 	ans_names_buf = loader_ext->ans_names_buf;
 	// This works only because seqid->ptr is nul-terminated!
-	append_string_to_CharAEAE(ans_names_buf, seqid->ptr);
+	CharAEAE_append_string(ans_names_buf, seqid->ptr);
 	return;
 }
 
