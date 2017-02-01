@@ -241,7 +241,7 @@ setMethod("tail", "PDict3Parts",
 ### matching.
 ###
 
-### TODO: Use dups0="DupsORNULL" below like for the ByPos_MIndex class (see
+### TODO: Use dups0="Dups_OR_NULL" below like for the ByPos_MIndex class (see
 ### MIndex-class.R).
 setClass("PDict",
     contains="List",
@@ -249,7 +249,7 @@ setClass("PDict",
         "VIRTUAL",
         dict0="DNAStringSet",
         constant_width="logical",
-        dups0="Dups"  # TODO: use DupsORNULL instead!
+        dups0="Dups"  # TODO: use Dups_OR_NULL instead!
     ),
     prototype(
         elementType="DNAString"

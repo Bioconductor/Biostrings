@@ -20,7 +20,7 @@ setClass("MIndex",
     representation(
         "VIRTUAL",
         width0="integer",
-        NAMES="characterORNULL"
+        NAMES="character_OR_NULL"
     )
 )
 
@@ -114,13 +114,13 @@ setMethod("show", "MIndex",
 ### The "ByPos_MIndex" class.
 ### 
 
-setClassUnion("DupsORNULL", c("Dups", "NULL"))
+setClassUnion("Dups_OR_NULL", c("Dups", "NULL"))
 
 setClass("ByPos_MIndex",
     contains="MIndex",
     representation(
-        dups0="DupsORNULL",  # NULL or same length as the "width0" slot
-        ends="list"          # same length as the "width0" slot
+        dups0="Dups_OR_NULL",  # NULL or same length as the "width0" slot
+        ends="list"            # same length as the "width0" slot
     )
 )
 
