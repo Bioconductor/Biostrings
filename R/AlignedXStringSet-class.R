@@ -14,8 +14,10 @@ setClass("AlignedXStringSet0",
         unaligned="XStringSet",
         range="IRanges",
         mismatch="CompressedIntegerList",
-        indel="CompressedIRangesList"
-    )
+        indel="CompressedIRangesList",
+        inverted="logical"
+        ),
+    contains="Vector"
 )
 
 setClass("AlignedXStringSet", contains="AlignedXStringSet0")
@@ -27,10 +29,21 @@ setClass("QualityAlignedXStringSet",
     )
 )
 
+setClass("AlignedXStringSetList",
+         representation(unlistData="AlignedXStringSet"),
+         prototype = prototype(elementType = "AlignedXStringSet"),
+         contains="CompressedList")
+
+setMethod("relistToClass", "AlignedXStringSet",
+          function(x) "AlignedXStringSetList")
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity.
 ###
+
+invertible <- function(x) {
+    hasMethod(reverseComplement, class(x))
+}
 
 .valid.AlignedXStringSet0 <- function(object)
 {
@@ -41,6 +54,8 @@ setClass("QualityAlignedXStringSet",
         message <- c(message, "length(mismatch) != length(indel)")
     if (!(length(object@unaligned) %in% c(1, length(object@range))))
         message <- c(message, "length(unaligned) != 1 or length(range)")
+    if (any(object@inverted) && !invertible(object@unaligned))
+        message <- c(message, "any(inverted) but !invertible(unaligned)")
     message
 }
 
@@ -86,6 +101,25 @@ setValidity("QualityAlignedXStringSet",
     }
 )
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Constructor.
+###
+
+AlignedXStringSet <- function(unaligned, range, mismatch, indel, inverted) {
+    new("AlignedXStringSet",
+        unaligned=unaligned,
+        range=range,
+        mismatch=mismatch,
+        indel=indel,
+        inverted=inverted)
+}
+
+AlignedXStringSetList <- function(...) {
+    args <- list(...)
+    if (length(args) == 1L && is.list(args[[1L]])) 
+        args <- args[[1L]]
+    IRanges:::new_CompressedList_from_list("AlignedXStringSetList", args)
+}
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor methods.
@@ -117,12 +151,16 @@ setMethod("aligned", "AlignedXStringSet0",
                   value <- 
                     .Call2("AlignedXStringSet_align_aligned", x, gapCode, PACKAGE="Biostrings")
               }
+              if (invertible(value)) {
+                  value[inverted(x)] <- reverseComplement(value[inverted(x)])
+              }
               value
           })
 
 setMethod("start", "AlignedXStringSet0", function(x) start(x@range))
 setMethod("end", "AlignedXStringSet0", function(x) end(x@range))
 setMethod("width", "AlignedXStringSet0", function(x) width(x@range))
+setMethod("ranges", "AlignedXStringSet0", function(x) x@range)
 setGeneric("indel", function(x) standardGeneric("indel"))
 setMethod("indel", "AlignedXStringSet0", function(x) x@indel)
 setGeneric("nindel", function(x) standardGeneric("nindel"))
@@ -131,7 +169,18 @@ setMethod("length", "AlignedXStringSet0", function(x) length(x@range))
 setMethod("nchar", "AlignedXStringSet0",
           function(x, type="chars", allowNA=FALSE) .Call2("AlignedXStringSet_nchar", x, PACKAGE="Biostrings"))
 setMethod("seqtype", "AlignedXStringSet0", function(x) seqtype(unaligned(x)))
+setGeneric("inverted", function(x) standardGeneric("inverted"))
+setMethod("inverted", "AlignedXStringSet0", function(x) x@inverted)
 
+setMethod("parallelSlotNames", "AlignedXStringSet0",
+### FIXME: strange implicit repetition of @unaligned seems bad
+          function(x) c(if (length(x@unaligned) > 1L) "unaligned",
+                        "range", "mismatch", "indel", "inverted",
+                        "elementMetadata"))
+
+setMethod("parallelVectorNames", "AlignedXStringSet0",
+          function(x) c("unaligned", "range", "mismatch", "indel", "inverted",
+                        "start", "end", "width", "nindel"))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.
@@ -159,7 +208,7 @@ setMethod("show", "AlignedXStringSet0",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "as.character" method.
+### Coercion.
 ###
 
 setMethod("as.character", "AlignedXStringSet0",
@@ -169,41 +218,8 @@ setMethod("as.character", "AlignedXStringSet0",
     }
 )
 
+setAs("AlignedXStringSetList", "Pairs", function(from) {
+          zipdown(from[lengths(from) == 2L])
+      })
+
 setMethod("toString", "AlignedXStringSet0", function(x, ...) toString(as.character(x), ...))
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting.
-###
-
-setMethod("[", "AlignedXStringSet0",
-    function(x, i, j, ..., drop)
-    {
-        if (!missing(j) || length(list(...)) > 0)
-            stop("invalid subsetting")
-        if (missing(i) || (is.logical(i) && all(i)))
-            return(x)
-        if (is.logical(i))
-            i <- which(i)
-        if (!is.numeric(i) || any(is.na(i)))
-            stop("invalid subsetting")
-        if (any(i < 1) || any(i > length(x)))
-            stop("subscript out of bounds")
-        new(class(x),
-            unaligned = .safe.subset.XStringSet(x@unaligned, i),
-            range = x@range[i,,drop = FALSE],
-            mismatch = x@mismatch[i], indel = x@indel[i])
-    }
-)
-
-setReplaceMethod("[", "AlignedXStringSet0",
-    function(x, i, j,..., value)
-    {
-        stop("attempt to modify the value of a ", class(x), " instance")
-    }
-)
-
-setMethod("rep", "AlignedXStringSet0",
-    function(x, times)
-		x[rep.int(seq_len(length(x)), times)]
-)

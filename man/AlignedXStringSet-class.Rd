@@ -11,6 +11,8 @@
 \alias{class:QualityAlignedXStringSet}
 \alias{QualityAlignedXStringSet-class}
 \alias{QualityAlignedXStringSet}
+\alias{AlignedXStringSetList-class}
+\alias{class:AlignedXStringSetList}
 
 % Accessor methods:
 \alias{unaligned}
@@ -27,6 +29,9 @@
 \alias{length,AlignedXStringSet0-method}
 \alias{nchar,AlignedXStringSet0-method}
 \alias{seqtype,AlignedXStringSet0-method}
+\alias{ranges,AlignedXStringSet0-method}
+\alias{inverted}
+\alias{inverted,AlignedXStringSet0-method}
 
 % Standard generic methods:
 \alias{show,AlignedXStringSet0-method}
@@ -36,6 +41,17 @@
 \alias{[<-,AlignedXStringSet0-method}
 \alias{rep,AlignedXStringSet0-method}
 
+% Constructors:
+\alias{AlignedXStringSet}
+\alias{AlignedXStringSetList}
+
+% Coercion:
+\alias{coerce,AlignedXStringSetList,Pairs-method}
+\alias{relistToClass,AlignedXStringSet-method}
+
+% Internal:
+\alias{parallelSlotNames,AlignedXStringSet0-method}
+\alias{parallelVectorNames,AlignedXStringSet0-method}
 
 \title{AlignedXStringSet and QualityAlignedXStringSet objects}
 
@@ -95,6 +111,9 @@
       representing the aligned substring.
     }
     \item{}{
+      \code{ranges(x)}: The bounds of the aligned substring.
+    }
+    \item{}{
       \code{start(x)}:
       The start of the aligned substring.
     }
@@ -124,6 +143,10 @@
       \code{nchar(x)}:
       The nchar of the \code{aligned(x)}.
     }
+    \item{inverted(x)}{
+      Returns a logical vector, which is \code{TRUE} where the alignment
+      is to the reverse complement.
+    }
     \item{}{
       \code{alphabet(x)}:
       Equivalent to \code{alphabet(unaligned(x))}.
@@ -139,6 +162,20 @@
   }
 }
 
+\section{Constructors}{
+  \describe{
+    \item{}{
+      \code{AlignedXStringSet(unaligned, range, mismatch, indel,
+      inverted)}: Low-level constructor of AlignedXStringSet, not
+      normally called by user code.
+    }
+    \item{}{
+      \code{AlignedXStringSetList(...)}: Constructs an AlignedXStringSet
+      object consisting of the elements in \code{\dots}.
+    }
+  }
+}
+
 \section{Subsetting methods}{
   \describe{
     \item{}{
@@ -150,6 +187,17 @@
       \code{rep(x, times)}:
       Returns a new \code{AlignedXStringSet} or \code{QualityAlignedXStringSet}
       object made of the repeated elements.
+    }
+  }
+}
+
+\section{Coercion}{
+  \describe{
+    \item{}{
+      \code{as(x, "Pairs")}: When \code{x} is an
+      \code{AlignedXStringSetList}, returns a \code{Pairs} where the
+      first and second members are taken as the first and second
+      alignment, respectively, of all length-two elements of \code{x}.
     }
   }
 }

@@ -9,11 +9,11 @@ importFrom(graphics,
 
 importFrom(stats,
     chisq.test, complete.cases, diffinv,
-    pchisq
+    pchisq, setNames
 )
 
 importFrom(utils,
-    data
+    data, packageVersion
 )
 
 import(BiocGenerics)
@@ -309,6 +309,7 @@ exportClasses(
     QualityScaledRNAStringSet, QualityScaledAAStringSet,
     InDel,
     AlignedXStringSet0, AlignedXStringSet, QualityAlignedXStringSet,
+    AlignedXStringSetList,
     PairwiseAlignments,
     PairwiseAlignmentsSingleSubject,
     PairwiseAlignmentsSingleSubjectSummary,
@@ -333,7 +334,8 @@ export(
     insertion, deletion,
 
     ## AlignedXStringSet-class.R:
-    unaligned, aligned, indel, nindel,
+    AlignedXStringSet, AlignedXStringSetList,
+    unaligned, aligned, indel, nindel, inverted,
 
     ## PairwiseAlignments-class.R:
     PairwiseAlignments, type, pid,

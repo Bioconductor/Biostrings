@@ -801,6 +801,8 @@ SEXP XStringSet_align_pairwiseAlignment(
 
 		SEXP alignedScore;
 
+		SEXP alignedInverted;
+		
 		PROTECT(alignedPatternRangeStart = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedPatternRangeWidth = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedPatternMismatchEnds = NEW_INTEGER(numberOfStrings));
@@ -813,6 +815,10 @@ SEXP XStringSet_align_pairwiseAlignment(
 
 		PROTECT(alignedScore = NEW_NUMERIC(numberOfStrings));
 
+		PROTECT(alignedInverted = NEW_LOGICAL(numberOfStrings));
+		for (i = 0; i < numberOfStrings; i++)
+		    LOGICAL(alignedInverted)[i] = FALSE;
+		
 		int align1MismatchPrevEnd = 0, align1IndelPrevEnd = 0;
 		int align2MismatchPrevEnd = 0, align2IndelPrevEnd = 0;
 		int *tempIntPtr;
@@ -980,6 +986,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 		SET_SLOT(alignedPatternIndel, mkChar("partitioning"), alignedPatternIndelPartitioning);
 	    SET_SLOT(alignedPatternIndel, mkChar("unlistData"), alignedPatternIndelRange);
 		SET_SLOT(alignedPattern, mkChar("indel"), alignedPatternIndel);
+		SET_SLOT(alignedPattern, mkChar("inverted"), alignedInverted);
 		SET_SLOT(output, mkChar("pattern"), alignedPattern);
 
 		/* Set the "subject" slot */
@@ -1018,6 +1025,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 		SET_SLOT(alignedSubjectIndel, mkChar("partitioning"), alignedSubjectIndelPartitioning);
 		SET_SLOT(alignedSubjectIndel, mkChar("unlistData"), alignedSubjectIndelRange);
 		SET_SLOT(alignedSubject, mkChar("indel"), alignedSubjectIndel);
+		SET_SLOT(alignedSubject, mkChar("inverted"), alignedInverted);
 		SET_SLOT(output, mkChar("subject"), alignedSubject);
 
 		/* Set the "score" slot */
@@ -1032,7 +1040,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 		SET_SLOT(output, mkChar("gapExtension"), gapExtension);
 
 		/* Output is ready */
-		UNPROTECT(30);
+		UNPROTECT(31);
 	}
 
 	return output;
