@@ -145,7 +145,11 @@
     }
     \item{inverted(x)}{
       Returns a logical vector, which is \code{TRUE} where the alignment
-      is to the reverse complement.
+      is to the reverse complement. This will always be \code{FALSE}
+      unless the aligner supports inversion.
+      \code{pairwiseAlignment} does not. See
+      the \link[rtracklayer:XMFAFile]{rtracklayer documentation} for an
+      example of using this. 
     }
     \item{}{
       \code{alphabet(x)}:
