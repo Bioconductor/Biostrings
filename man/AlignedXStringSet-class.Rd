@@ -40,6 +40,7 @@
 \alias{[,AlignedXStringSet0-method}
 \alias{[<-,AlignedXStringSet0-method}
 \alias{rep,AlignedXStringSet0-method}
+\alias{names,AlignedXStringSet0-method}
 
 % Constructors:
 \alias{AlignedXStringSet}

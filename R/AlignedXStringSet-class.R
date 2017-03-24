@@ -172,6 +172,8 @@ setMethod("seqtype", "AlignedXStringSet0", function(x) seqtype(unaligned(x)))
 setGeneric("inverted", function(x) standardGeneric("inverted"))
 setMethod("inverted", "AlignedXStringSet0", function(x) x@inverted)
 
+setMethod("names", "AlignedXStringSet0", function(x) names(x@unaligned))
+
 setMethod("parallelSlotNames", "AlignedXStringSet0",
 ### FIXME: strange implicit repetition of @unaligned seems bad
           function(x) c(if (length(x@unaligned) > 1L) "unaligned",
