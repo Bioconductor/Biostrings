@@ -147,14 +147,12 @@ function(pattern, subject, type = "global", substitutionMatrix = NULL,
           new("AlignedXStringSet",
               unaligned = XStringSet(seqtype, paste(degappedPattern, collapse = "")),
               range = getRange(patternRle), mismatch = getMismatches(patternRle),
-              indel = getIndels(comparison, "-"),
-              inverted = FALSE),
+              indel = getIndels(comparison, "-")),
         subject =
           new("AlignedXStringSet",
               unaligned = XStringSet(seqtype, paste(degappedSubject, collapse = "")),
               range = getRange(subjectRle), mismatch = getMismatches(subjectRle),
-              indel = getIndels(comparison, "+"),
-              inverted = FALSE),
+              indel = getIndels(comparison, "+")),
         type = type,
         score =
           sum(substitutionMatrix[

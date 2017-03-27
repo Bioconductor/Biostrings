@@ -335,7 +335,7 @@ export(
 
     ## AlignedXStringSet-class.R:
     AlignedXStringSet, AlignedXStringSetList,
-    unaligned, aligned, indel, nindel, inverted,
+    unaligned, aligned, indel, nindel,
 
     ## PairwiseAlignments-class.R:
     PairwiseAlignments, type, pid,

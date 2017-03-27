@@ -14,8 +14,7 @@ setClass("AlignedXStringSet0",
         unaligned="XStringSet",
         range="IRanges",
         mismatch="CompressedIntegerList",
-        indel="CompressedIRangesList",
-        inverted="logical"
+        indel="CompressedIRangesList"
         ),
     contains="Vector"
 )
@@ -41,10 +40,6 @@ setMethod("relistToClass", "AlignedXStringSet",
 ### Validity.
 ###
 
-invertible <- function(x) {
-    hasMethod(reverseComplement, class(x))
-}
-
 .valid.AlignedXStringSet0 <- function(object)
 {
     message <- NULL
@@ -54,8 +49,6 @@ invertible <- function(x) {
         message <- c(message, "length(mismatch) != length(indel)")
     if (!(length(object@unaligned) %in% c(1, length(object@range))))
         message <- c(message, "length(unaligned) != 1 or length(range)")
-    if (any(object@inverted) && !invertible(object@unaligned))
-        message <- c(message, "any(inverted) but !invertible(unaligned)")
     message
 }
 
@@ -105,13 +98,12 @@ setValidity("QualityAlignedXStringSet",
 ### Constructor.
 ###
 
-AlignedXStringSet <- function(unaligned, range, mismatch, indel, inverted) {
+AlignedXStringSet <- function(unaligned, range, mismatch, indel) {
     new("AlignedXStringSet",
         unaligned=unaligned,
         range=range,
         mismatch=mismatch,
-        indel=indel,
-        inverted=inverted)
+        indel=indel)
 }
 
 AlignedXStringSetList <- function(...) {
@@ -151,9 +143,6 @@ setMethod("aligned", "AlignedXStringSet0",
                   value <- 
                     .Call2("AlignedXStringSet_align_aligned", x, gapCode, PACKAGE="Biostrings")
               }
-              if (invertible(value)) {
-                  value[inverted(x)] <- reverseComplement(value[inverted(x)])
-              }
               value
           })
 
@@ -169,19 +158,17 @@ setMethod("length", "AlignedXStringSet0", function(x) length(x@range))
 setMethod("nchar", "AlignedXStringSet0",
           function(x, type="chars", allowNA=FALSE) .Call2("AlignedXStringSet_nchar", x, PACKAGE="Biostrings"))
 setMethod("seqtype", "AlignedXStringSet0", function(x) seqtype(unaligned(x)))
-setGeneric("inverted", function(x) standardGeneric("inverted"))
-setMethod("inverted", "AlignedXStringSet0", function(x) x@inverted)
 
 setMethod("names", "AlignedXStringSet0", function(x) names(x@unaligned))
 
 setMethod("parallelSlotNames", "AlignedXStringSet0",
 ### FIXME: strange implicit repetition of @unaligned seems bad
           function(x) c(if (length(x@unaligned) > 1L) "unaligned",
-                        "range", "mismatch", "indel", "inverted",
+                        "range", "mismatch", "indel",
                         "elementMetadata"))
 
 setMethod("parallelVectorNames", "AlignedXStringSet0",
-          function(x) c("unaligned", "range", "mismatch", "indel", "inverted",
+          function(x) c("unaligned", "range", "mismatch", "indel",
                         "start", "end", "width", "nindel"))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

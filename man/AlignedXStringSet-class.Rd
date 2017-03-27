@@ -30,8 +30,6 @@
 \alias{nchar,AlignedXStringSet0-method}
 \alias{seqtype,AlignedXStringSet0-method}
 \alias{ranges,AlignedXStringSet0-method}
-\alias{inverted}
-\alias{inverted,AlignedXStringSet0-method}
 
 % Standard generic methods:
 \alias{show,AlignedXStringSet0-method}
@@ -144,14 +142,6 @@
       \code{nchar(x)}:
       The nchar of the \code{aligned(x)}.
     }
-    \item{inverted(x)}{
-      Returns a logical vector, which is \code{TRUE} where the alignment
-      is to the reverse complement. This will always be \code{FALSE}
-      unless the aligner supports inversion.
-      \code{pairwiseAlignment} does not. See
-      the \link[rtracklayer:XMFAFile]{rtracklayer documentation} for an
-      example of using this. 
-    }
     \item{}{
       \code{alphabet(x)}:
       Equivalent to \code{alphabet(unaligned(x))}.
@@ -170,8 +160,8 @@
 \section{Constructors}{
   \describe{
     \item{}{
-      \code{AlignedXStringSet(unaligned, range, mismatch, indel,
-      inverted)}: Low-level constructor of AlignedXStringSet, not
+      \code{AlignedXStringSet(unaligned, range, mismatch, indel)}:
+      Low-level constructor of AlignedXStringSet, not
       normally called by user code.
     }
     \item{}{
