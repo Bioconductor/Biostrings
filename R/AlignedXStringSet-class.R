@@ -9,14 +9,14 @@
 ### class. Otherwise, any QualityAlignedXStringSet object would be invalid!
 
 setClass("AlignedXStringSet0",
+    contains="Vector",
     representation(
         "VIRTUAL",
         unaligned="XStringSet",
         range="IRanges",
         mismatch="CompressedIntegerList",
         indel="CompressedIRangesList"
-        ),
-    contains="Vector"
+    )
 )
 
 setClass("AlignedXStringSet", contains="AlignedXStringSet0")
@@ -133,8 +133,6 @@ setMethod("length", "AlignedXStringSet0", function(x) length(x@range))
 setMethod("nchar", "AlignedXStringSet0",
           function(x, type="chars", allowNA=FALSE) .Call2("AlignedXStringSet_nchar", x, PACKAGE="Biostrings"))
 setMethod("seqtype", "AlignedXStringSet0", function(x) seqtype(unaligned(x)))
-
-setMethod("names", "AlignedXStringSet0", function(x) names(x@unaligned))
 
 setMethod("parallelSlotNames", "AlignedXStringSet0",
 ### FIXME: strange implicit repetition of @unaligned seems bad

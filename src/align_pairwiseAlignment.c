@@ -800,7 +800,7 @@ SEXP XStringSet_align_pairwiseAlignment(
 		SEXP alignedSubjectIndelEnds;
 
 		SEXP alignedScore;
-		
+
 		PROTECT(alignedPatternRangeStart = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedPatternRangeWidth = NEW_INTEGER(numberOfStrings));
 		PROTECT(alignedPatternMismatchEnds = NEW_INTEGER(numberOfStrings));

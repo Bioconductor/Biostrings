@@ -33,10 +33,6 @@
 \alias{show,AlignedXStringSet0-method}
 \alias{as.character,AlignedXStringSet0-method}
 \alias{toString,AlignedXStringSet0-method}
-\alias{[,AlignedXStringSet0-method}
-\alias{[<-,AlignedXStringSet0-method}
-\alias{rep,AlignedXStringSet0-method}
-\alias{names,AlignedXStringSet0-method}
 
 % Internal:
 \alias{parallelSlotNames,AlignedXStringSet0-method}
