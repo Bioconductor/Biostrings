@@ -19,6 +19,12 @@ setClass("AlignedXStringSet0",
     )
 )
 
+### Combine the new parallel slots with those of the parent class. Make sure
+### to put the new parallel slots *first*.
+setMethod("parallelSlotNames", "AlignedXStringSet0",
+    function(x) c("unaligned", "range", "mismatch", "indel", callNextMethod())
+)
+
 setClass("AlignedXStringSet", contains="AlignedXStringSet0")
 
 setClass("QualityAlignedXStringSet",
@@ -134,15 +140,10 @@ setMethod("nchar", "AlignedXStringSet0",
           function(x, type="chars", allowNA=FALSE) .Call2("AlignedXStringSet_nchar", x, PACKAGE="Biostrings"))
 setMethod("seqtype", "AlignedXStringSet0", function(x) seqtype(unaligned(x)))
 
-setMethod("parallelSlotNames", "AlignedXStringSet0",
-### FIXME: strange implicit repetition of @unaligned seems bad
-          function(x) c(if (length(x@unaligned) > 1L) "unaligned",
-                        "range", "mismatch", "indel",
-                        "elementMetadata"))
-
 setMethod("parallelVectorNames", "AlignedXStringSet0",
           function(x) c("unaligned", "range", "mismatch", "indel",
                         "start", "end", "width", "nindel"))
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.
