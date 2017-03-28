@@ -11,8 +11,6 @@
 \alias{class:QualityAlignedXStringSet}
 \alias{QualityAlignedXStringSet-class}
 \alias{QualityAlignedXStringSet}
-\alias{AlignedXStringSetList-class}
-\alias{class:AlignedXStringSetList}
 
 % Accessor methods:
 \alias{unaligned}
@@ -39,14 +37,6 @@
 \alias{[<-,AlignedXStringSet0-method}
 \alias{rep,AlignedXStringSet0-method}
 \alias{names,AlignedXStringSet0-method}
-
-% Constructors:
-\alias{AlignedXStringSet}
-\alias{AlignedXStringSetList}
-
-% Coercion:
-\alias{coerce,AlignedXStringSetList,Pairs-method}
-\alias{relistToClass,AlignedXStringSet-method}
 
 % Internal:
 \alias{parallelSlotNames,AlignedXStringSet0-method}
@@ -157,20 +147,6 @@
   }
 }
 
-\section{Constructors}{
-  \describe{
-    \item{}{
-      \code{AlignedXStringSet(unaligned, range, mismatch, indel)}:
-      Low-level constructor of AlignedXStringSet, not
-      normally called by user code.
-    }
-    \item{}{
-      \code{AlignedXStringSetList(...)}: Constructs an AlignedXStringSet
-      object consisting of the elements in \code{\dots}.
-    }
-  }
-}
-
 \section{Subsetting methods}{
   \describe{
     \item{}{
@@ -182,17 +158,6 @@
       \code{rep(x, times)}:
       Returns a new \code{AlignedXStringSet} or \code{QualityAlignedXStringSet}
       object made of the repeated elements.
-    }
-  }
-}
-
-\section{Coercion}{
-  \describe{
-    \item{}{
-      \code{as(x, "Pairs")}: When \code{x} is an
-      \code{AlignedXStringSetList}, returns a \code{Pairs} where the
-      first and second members are taken as the first and second
-      alignment, respectively, of all length-two elements of \code{x}.
     }
   }
 }

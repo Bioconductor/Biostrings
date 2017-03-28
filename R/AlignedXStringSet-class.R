@@ -28,13 +28,6 @@ setClass("QualityAlignedXStringSet",
     )
 )
 
-setClass("AlignedXStringSetList",
-         representation(unlistData="AlignedXStringSet"),
-         prototype = prototype(elementType = "AlignedXStringSet"),
-         contains="CompressedList")
-
-setMethod("relistToClass", "AlignedXStringSet",
-          function(x) "AlignedXStringSetList")
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity.
@@ -94,24 +87,6 @@ setValidity("QualityAlignedXStringSet",
     }
 )
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Constructor.
-###
-
-AlignedXStringSet <- function(unaligned, range, mismatch, indel) {
-    new("AlignedXStringSet",
-        unaligned=unaligned,
-        range=range,
-        mismatch=mismatch,
-        indel=indel)
-}
-
-AlignedXStringSetList <- function(...) {
-    args <- list(...)
-    if (length(args) == 1L && is.list(args[[1L]])) 
-        args <- args[[1L]]
-    IRanges:::new_CompressedList_from_list("AlignedXStringSetList", args)
-}
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor methods.
@@ -207,8 +182,7 @@ setMethod("as.character", "AlignedXStringSet0",
     }
 )
 
-setAs("AlignedXStringSetList", "Pairs", function(from) {
-          zipdown(from[lengths(from) == 2L])
-      })
+setMethod("toString", "AlignedXStringSet0",
+    function(x, ...) toString(as.character(x), ...)
+)
 
-setMethod("toString", "AlignedXStringSet0", function(x, ...) toString(as.character(x), ...))

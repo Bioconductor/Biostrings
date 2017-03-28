@@ -309,7 +309,6 @@ exportClasses(
     QualityScaledRNAStringSet, QualityScaledAAStringSet,
     InDel,
     AlignedXStringSet0, AlignedXStringSet, QualityAlignedXStringSet,
-    AlignedXStringSetList,
     PairwiseAlignments,
     PairwiseAlignmentsSingleSubject,
     PairwiseAlignmentsSingleSubjectSummary,
@@ -334,7 +333,6 @@ export(
     insertion, deletion,
 
     ## AlignedXStringSet-class.R:
-    AlignedXStringSet, AlignedXStringSetList,
     unaligned, aligned, indel, nindel,
 
     ## PairwiseAlignments-class.R:
