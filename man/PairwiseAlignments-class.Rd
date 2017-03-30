@@ -32,15 +32,11 @@
 \alias{deletion,PairwiseAlignments-method}
 \alias{indel,PairwiseAlignments-method}
 \alias{nindel,PairwiseAlignments-method}
-\alias{length,PairwiseAlignments-method}
 \alias{nchar,PairwiseAlignments-method}
 \alias{seqtype,PairwiseAlignments-method}
 
 % Standard generic methods:
 \alias{show,PairwiseAlignments-method}
-\alias{[,PairwiseAlignments-method}
-\alias{[<-,PairwiseAlignments-method}
-\alias{rep,PairwiseAlignments-method}
 
 % Methods for PairwiseAlignmentsSingleSubject:
 \alias{summary,PairwiseAlignmentsSingleSubject-method}

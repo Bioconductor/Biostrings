@@ -80,7 +80,7 @@ exportMethods(
     nchar, width,
     seqtype, "seqtype<-",
     updateObject,
-    names, "names<-", "[", "[[", rep, append,
+    names, "names<-", "[", "[[", append,
     show, showAsCell,
     relistToClass,
     union, intersect, setdiff, setequal,

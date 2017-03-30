@@ -1,28 +1,37 @@
 ### =========================================================================
 ### AlignedXStringSet objects
 ### -------------------------------------------------------------------------
-### An AlignedXStringSet object contains an alignment.
+###
+### An AlignedXStringSet object contains aligned sequences.
 ###
 ### NOTE: Because the 'unaligned' slot of an AlignedXStringSet object
 ### must not be a QualityScaledXStringSet object (see Validity below), then
 ### the QualityAlignedXStringSet class cannot contain the AlignedXStringSet
 ### class. Otherwise, any QualityAlignedXStringSet object would be invalid!
+###
+
 
 setClass("AlignedXStringSet0",
     contains="Vector",
     representation(
         "VIRTUAL",
-        unaligned="XStringSet",
-        range="IRanges",
-        mismatch="CompressedIntegerList",
-        indel="CompressedIRangesList"
+        range="IRanges",                   # of length N
+        mismatch="CompressedIntegerList",  # of length N
+        indel="CompressedIRangesList",     # of length N
+        unaligned="XStringSet"             # of length 1 or N
     )
 )
 
 ### Combine the new parallel slots with those of the parent class. Make sure
 ### to put the new parallel slots *first*.
 setMethod("parallelSlotNames", "AlignedXStringSet0",
-    function(x) c("unaligned", "range", "mismatch", "indel", callNextMethod())
+    function(x)
+    {
+        ans <- callNextMethod()
+        if (length(x@unaligned) != 1L)
+            ans <- c("unaligned", ans)
+        c("range", "mismatch", "indel", ans)
+    }
 )
 
 setClass("AlignedXStringSet", contains="AlignedXStringSet0")
@@ -38,26 +47,6 @@ setClass("QualityAlignedXStringSet",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity.
 ###
-
-.valid.AlignedXStringSet0 <- function(object)
-{
-    message <- NULL
-    if (length(object@range) != length(mismatch(object)))
-        message <- c(message, "length(range) != length(mismatch)")
-    if (length(mismatch(object)) != length(indel(object)))
-        message <- c(message, "length(mismatch) != length(indel)")
-    if (!(length(object@unaligned) %in% c(1, length(object@range))))
-        message <- c(message, "length(unaligned) != 1 or length(range)")
-    message
-}
-
-setValidity("AlignedXStringSet0",
-    function(object)
-    {
-        problems <- .valid.AlignedXStringSet0(object)
-        if (is.null(problems)) TRUE else problems
-    }
-)
 
 .valid.AlignedXStringSet <- function(object)
 {
@@ -135,7 +124,6 @@ setGeneric("indel", function(x) standardGeneric("indel"))
 setMethod("indel", "AlignedXStringSet0", function(x) x@indel)
 setGeneric("nindel", function(x) standardGeneric("nindel"))
 setMethod("nindel", "AlignedXStringSet0", function(x) summary(indel(x)))
-setMethod("length", "AlignedXStringSet0", function(x) length(x@range))
 setMethod("nchar", "AlignedXStringSet0",
           function(x, type="chars", allowNA=FALSE) .Call2("AlignedXStringSet_nchar", x, PACKAGE="Biostrings"))
 setMethod("seqtype", "AlignedXStringSet0", function(x) seqtype(unaligned(x)))

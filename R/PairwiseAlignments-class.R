@@ -6,14 +6,21 @@
 ###
 
 setClass("PairwiseAlignments",
+    contains="Vector",
     representation(
-        pattern="AlignedXStringSet0",
-        subject="AlignedXStringSet0",
+        pattern="AlignedXStringSet0",  # of length N
+        subject="AlignedXStringSet0",  # of length N
+        score="numeric",               # of length N
         type="character",
-        score="numeric",
         gapOpening="numeric",
         gapExtension="numeric"
     )
+)
+
+### Combine the new parallel slots with those of the parent class. Make sure
+### to put the new parallel slots *first*.
+setMethod("parallelSlotNames", "PairwiseAlignments",
+    function(x) c("pattern", "subject", "score", callNextMethod())
 )
 
 
@@ -232,8 +239,6 @@ setMethod("PairwiseAlignments", signature(pattern = "character", subject = "char
         message <- c(message, "'unaligned(pattern)' and 'unaligned(subject)' must be XString objects of the same base type")
     if (length(object@type) != 1 || !(object@type %in% c("global", "local", "overlap", "global-local", "local-global")))
         message <- c(message, "'type' must be one of 'global', 'local', 'overlap', 'global-local', or 'local-global'")
-    if (length(pattern) != length(subject))
-        message <- c(message, "'length(pattern)' must equal 'length(subject)'")
     if (!isSingleNumber(object@gapOpening) || object@gapOpening < 0)
         message <- c(message, "'gapOpening' must be a non-negative numeric vector of length 1")
     if (!isSingleNumber(object@gapExtension) || object@gapExtension < 0)
@@ -265,7 +270,6 @@ setMethod("indel", "PairwiseAlignments",
           function(x) new("InDel", insertion = insertion(x), deletion = deletion(x)))
 setMethod("nindel", "PairwiseAlignments",
           function(x) new("InDel", insertion = nindel(subject(x)), deletion = nindel(pattern(x))))
-setMethod("length", "PairwiseAlignments", function(x) length(score(x)))
 setMethod("nchar", "PairwiseAlignments", function(x, type="chars", allowNA=FALSE) nchar(subject(x)))
 setMethod("seqtype", "PairwiseAlignments", function(x) seqtype(subject(x)))
 setGeneric("pid", signature="x", function(x, type="PID1") standardGeneric("pid"))
@@ -314,45 +318,5 @@ setMethod("show", "PairwiseAlignments",
             cat("score:", score(object)[1], "\n")
         }
     }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting.
-###
-
-setMethod("[", "PairwiseAlignments",
-    function(x, i, j, ..., drop)
-    {
-        if (!missing(j) || length(list(...)) > 0)
-            stop("invalid subsetting")
-        if (missing(i) || (is.logical(i) && all(i)))
-            return(x)
-        if (is.logical(i))
-            i <- which(i)
-        if (!is.numeric(i) || any(is.na(i)))
-            stop("invalid subsetting")
-        if (any(i < 1) || any(i > length(x)))
-            stop("subscript out of bounds")
-        new(class(x),
-            pattern = x@pattern[i],
-            subject = x@subject[i],
-            type = x@type,
-            score = x@score[i],
-            gapOpening = x@gapOpening,
-            gapExtension = x@gapExtension)
-    }
-)
-
-setReplaceMethod("[", "PairwiseAlignments",
-    function(x, i, j,..., value)
-    {
-        stop("attempt to modify the value of a ", class(x), " instance")
-    }
-)
-
-setMethod("rep", "PairwiseAlignments",
-    function(x, times)
-		x[rep.int(seq_len(length(x)), times)]
 )
 

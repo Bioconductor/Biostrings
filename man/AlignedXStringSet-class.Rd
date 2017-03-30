@@ -24,7 +24,6 @@
 \alias{indel,AlignedXStringSet0-method}
 \alias{nindel}
 \alias{nindel,AlignedXStringSet0-method}
-\alias{length,AlignedXStringSet0-method}
 \alias{nchar,AlignedXStringSet0-method}
 \alias{seqtype,AlignedXStringSet0-method}
 \alias{ranges,AlignedXStringSet0-method}
