@@ -160,8 +160,10 @@ document.
 \hline
 \Rfunction{padAndClip}, \Rfunction{stackStrings} & Pad and clip strings. \\
 \hline
-\Rfunction{unstrsplit} & A fast implementation of
-    \code{sapply(x, paste0, collapse=sep)} for collapsing the list elements
+\Rfunction{strsplit}, \Rfunction{unstrsplit} & \Rfunction{strsplit} splits the
+    sequences in a set of sequences according to a pattern.
+    \Rfunction{unstrsplit} is the reverse operation i.e. a fast implementation
+    of \code{sapply(x, paste0, collapse=sep)} for collapsing the list elements
     of a \Rclass{DNAStringSetList} or \Rclass{AAStringSetList} object. \\
 \hline
 \end{tabular}

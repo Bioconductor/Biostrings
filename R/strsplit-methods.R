@@ -1,7 +1,23 @@
 ### =========================================================================
-### "unstrsplit" methods
+### strsplit() / unstrsplit()
 ### -------------------------------------------------------------------------
 
+
+.strsplit.useAsDefault <- function(x, ...) base::strsplit(x, ...)
+setGeneric("strsplit", signature="x",
+    function(x, ...) standardGeneric("strsplit"),
+    useAsDefault=.strsplit.useAsDefault
+)
+
+setMethod("strsplit", "XStringSet",
+    function(x, split)
+    {
+        mi <- vmatchPattern(split, x)
+        at <- gaps(as(mi, "CompressedIRangesList"),
+                   start=1L, end=width(x))
+        extractAt(x, at)
+    }
+)
 
 setMethod("unstrsplit", "XStringSetList",
     function(x, sep="")
@@ -19,3 +35,4 @@ setMethod("unstrsplit", "XStringSet",
         x
     }
 )
+

@@ -110,7 +110,7 @@ exportMethods(
 ###   replaceLetterAt.R
 ###   injectHardMask.R
 ###   padAndClip.R
-###   unstrsplit-methods.R
+###   strsplit-methods.R
 ###   misc.R
 
 export(
@@ -162,6 +162,9 @@ export(
     ## padAndClip.R:
     padAndClip, stackStrings,
 
+    ## strsplit-methods.R:
+    strsplit,
+
     ## misc.R:
     N50
 )
@@ -186,7 +189,7 @@ exportMethods(
     extractAt, replaceAt,
     replaceLetterAt,
     injectHardMask,
-    unstrsplit
+    strsplit, unstrsplit
 )
 
 
