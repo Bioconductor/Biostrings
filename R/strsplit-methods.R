@@ -10,9 +10,9 @@ setGeneric("strsplit", signature="x",
 )
 
 setMethod("strsplit", "XStringSet",
-    function(x, split)
+    function(x, split, ...)
     {
-        mi <- vmatchPattern(split, x)
+        mi <- vmatchPattern(split, x, ...)
         at <- gaps(as(mi, "CompressedIRangesList"),
                    start=1L, end=width(x))
         extractAt(x, at)
