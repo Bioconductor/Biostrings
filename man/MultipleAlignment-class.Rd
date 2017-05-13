@@ -23,13 +23,11 @@
 \alias{rowmask,MultipleAlignment-method}
 \alias{rowmask<-}
 \alias{rowmask<-,MultipleAlignment,NULL-method}
-\alias{rowmask<-,MultipleAlignment,NormalIRanges-method}
 \alias{rowmask<-,MultipleAlignment,ANY-method}
 \alias{colmask}
 \alias{colmask,MultipleAlignment-method}
 \alias{colmask<-}
 \alias{colmask<-,MultipleAlignment,NULL-method}
-\alias{colmask<-,MultipleAlignment,NormalIRanges-method}
 \alias{colmask<-,MultipleAlignment,ANY-method}
 \alias{maskMotif,MultipleAlignment,ANY-method}
 \alias{maskGaps}

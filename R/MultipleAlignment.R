@@ -88,25 +88,17 @@ setReplaceMethod("rownames", "MultipleAlignment",
 setGeneric("rowmask", signature="x", function(x) standardGeneric("rowmask"))
 setMethod("rowmask", "MultipleAlignment", function(x) x@rowmask)
 
-.appendMask <- function(mask, append, value){
-  append <- match.arg(append, choices=c("union", "replace", "intersect"))
-  switch(append,
-         "union" = return(union(mask, value)),
-         "replace"  = return(value),
-         "intersect"  = return(intersect(mask, value)))
-}
 .setMask <- function(mask, append, invert, length, value){
   if (!isTRUEorFALSE(invert))
     stop("'invert' must be TRUE or FALSE")
-  if(invert==TRUE){
-    ## 1st invert value using gaps()
-    value <- gaps(value, start=1, end=length)     
-    value <- .appendMask(mask=mask, append=append, value=value)
-  }
-  if(invert==FALSE){
-    value <- .appendMask(mask=mask, append=append, value=value)
-  } 
-  value
+  if (invert)
+    value <- gaps(value, start=1L, end=length)     
+  append <- match.arg(append, choices=c("union", "replace", "intersect"))
+  value <- switch(append,
+                  "union"=union(mask, value),
+                  "replace"=value,
+                  "intersect"=intersect(mask, value))
+  as(value, "NormalIRanges")
 }
 setGeneric("rowmask<-", signature=c("x", "value"),
     function(x, append="union", invert=FALSE, value)
@@ -119,19 +111,15 @@ setReplaceMethod("rowmask", signature(x="MultipleAlignment", value="NULL"),
                     value=new("NormalIRanges"))
 )
 setReplaceMethod("rowmask",
-    signature(x="MultipleAlignment", value="NormalIRanges"),
+    signature(x="MultipleAlignment", value="ANY"),
     function(x, append="union", invert=FALSE, value)
     {
+      if (!is(value, "IRanges"))
+        value <- as(value, "IRanges")
       value <- .setMask(mask=rowmask(x), append=append, invert=invert,
                         length=dim(x)[1], value=value)
       initialize(x, rowmask = value)
     }
-)
-setReplaceMethod("rowmask",
-    signature(x="MultipleAlignment", value="ANY"),
-    function(x, append="union", invert=FALSE, value)
-        callGeneric(x, append=append, invert=invert,
-                    value=as(value, "NormalIRanges"))
 )
 
 setGeneric("colmask", signature="x", function(x) standardGeneric("colmask"))
@@ -147,19 +135,15 @@ setReplaceMethod("colmask", signature(x="MultipleAlignment", value="NULL"),
                     value=new("NormalIRanges"))
 )
 setReplaceMethod("colmask",
-    signature(x="MultipleAlignment", value="NormalIRanges"),
+    signature(x="MultipleAlignment", value="ANY"),
     function(x, append="union", invert=FALSE, value)
     {
+      if (!is(value, "IRanges"))
+        value <- as(value, "IRanges")
       value <- .setMask(mask=colmask(x), append=append, invert=invert,
                         length=dim(x)[2], value=value)
       initialize(x, colmask = value)
     }
-)
-setReplaceMethod("colmask",
-    signature(x="MultipleAlignment", value="ANY"),
-    function(x, append="union",invert=FALSE, value)
-        callGeneric(x, append=append, invert=invert,
-                    value=as(value, "NormalIRanges"))
 )
 
 setMethod("maskMotif", signature(x="MultipleAlignment", motif="ANY"),
