@@ -58,7 +58,7 @@ getGeneticCode(id_or_name2="1", full.search=FALSE, as.data.frame=FALSE)
   character vectors that represent this mapping.
 
   All the known genetic codes are summarized in \code{GENETIC_CODE_TABLE},
-  which is a predefined data frame with 1 row per known genetic code.
+  which is a predefined data frame with one row per known genetic code.
   Use \code{getGeneticCode} to extract one genetic code at a time from
   this object.
 }
@@ -91,15 +91,16 @@ getGeneticCode(id_or_name2="1", full.search=FALSE, as.data.frame=FALSE)
 
   \code{GENETIC_CODE_TABLE} is a data frame that contains all the known
   genetic codes listed at \url{ftp://ftp.ncbi.nih.gov/entrez/misc/data/gc.prt}.
-  The data frame has 1 row per known genetic code and the 5 following columns:
+  The data frame has one row per known genetic code and the 5 following
+  columns:
   \itemize{
     \item \code{name}: The long and very descriptive name of the genetic code.
     \item \code{name2}: The short name of the genetic code (not all genetic
           codes have one).
     \item \code{id}: The id of the genetic code.
     \item \code{AAs}: A 64-character string representing the genetic code
-          itself in a compact form (i.e. 1 letter per codon, the codons are
-          assumed to be ordered like in \code{GENETIC_CODE}).
+          itself in a compact form (i.e. one letter per codon, the codons
+          are assumed to be ordered like in \code{GENETIC_CODE}).
     \item \code{Starts}: A 64-character string indicating the Initiation
           Codons.
   }
