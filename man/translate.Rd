@@ -41,14 +41,19 @@ codons(x)
   \item{genetic.code}{
     The genetic code to use for the translation of codons into Amino Acid
     letters. It must be represented as a named character vector of length
-    64 similar to predefined constant \code{GENETIC_CODE} i.e. it must
-    contain 1-letter strings in the Amino Acid alphabet and its names must
-    be identical to \code{names(GENETIC_CODE)}.
-    The default value for \code{genetic.code} is \code{GENETIC_CODE}
+    64 similar to predefined constant \code{\link{GENETIC_CODE}}.
+    More precisely:
+    \itemize{
+        \item it must contain 1-letter strings in the Amino Acid alphabet;
+        \item its names must be identical to \code{names(GENETIC_CODE)};
+        \item it must have an \code{alt_init_codons} attribute on it,
+              that lists the \emph{alternative initiation codons}.
+    }
+    The default value for \code{genetic.code} is \code{GENETIC_CODE},
     which represents The Standard Genetic Code.
-    See \code{?AA_ALPHABET}) for the Amino Acid alphabet and
-    \code{?GENETIC_CODE} for The Standard Genetic Code and its known
-    variants.
+    See \code{?\link{AA_ALPHABET}} for the Amino Acid alphabet, and
+    \code{?\link{GENETIC_CODE}} for The Standard Genetic Code and its
+    known variants.
   }
   \item{if.fuzzy.codon}{
     How fuzzy codons (i.e codon with IUPAC ambiguities) should be handled.
@@ -67,9 +72,9 @@ codons(x)
             be translated to X.
     }
     Alternatively \code{if.fuzzy.codon} can be specified as a character
-    vector of length 2. The 1st string and 2nd strings specify how to handle
-    non-ambiguous and ambiguous fuzzy codons, respectively.
-    The accepted values for the 1st string are:
+    vector of length 2 for more fine-grained control. The 1st string and 2nd
+    strings specify how to handle non-ambiguous and ambiguous fuzzy codons,
+    respectively. The accepted values for the 1st string are:
     \itemize{
       \item \code{"error"}: Any occurence of a non-ambiguous fuzzy codon
             will cause an error.
@@ -148,29 +153,35 @@ codons(x)
 ## ---------------------------------------------------------------------
 ## 1. BASIC EXAMPLES
 ## ---------------------------------------------------------------------
+
 dna1 <- DNAString("TATAAATGGAGTAGATAA")
 translate(dna1)
 
 SGC1 <- getGeneticCode("SGC1")  # Vertebrate Mitochondrial code
 translate(dna1, genetic.code=SGC1)
 
-## All codons except 1st are fuzzy:
-dna2 <- DNAString("TATANATGRAGYMGRTRA")
+## All 6 codons except 4th (CCC) are fuzzy:
+dna2 <- DNAString("HTGATHTGRCCCYTRTRA")
 
 \dontrun{
   translate(dna2)  # error because of fuzzy codons
 }
-## Codons 4 to 6 are non-ambiguous and can be solved. 2nd and 3rd codons
-## are ambiguous and are translated to X:
+
+## Translate all fuzzy codons to X:
+translate(dna2, if.fuzzy.codon="X")
+
+## Or solve the non-ambiguous ones (3rd codon is ambiguous so cannot be
+## solved):
 translate(dna2, if.fuzzy.codon="solve")
 
 ## Fuzzy codons that are non-ambiguous with a given genetic code can
-## become ambiguous with another genetic code and vice versa:
+## become ambiguous with another genetic code, and vice versa:
 translate(dna2, genetic.code=SGC1, if.fuzzy.codon="solve")
 
 ## ---------------------------------------------------------------------
 ## 2. TRANSLATING AN OPEN READING FRAME
 ## ---------------------------------------------------------------------
+
 file <- system.file("extdata", "someORF.fa", package="Biostrings")
 x <- readDNAStringSet(file)
 x
@@ -197,6 +208,7 @@ codons(y1)[20:28]
 ## ---------------------------------------------------------------------
 ## 3. AN ADVANCED EXAMPLE
 ## ---------------------------------------------------------------------
+
 ## Translation on the '-' strand:
 dna3 <- DNAStringSet(c("ATC", "GCTG", "CGACT"))
 translate(reverseComplement(dna3))

@@ -16,6 +16,14 @@
     if (!all(genetic.code %in% AA_ALPHABET))
         warning("some codons in 'genetic.code' are mapped to letters ",
                 "not in the Amino Acid\n  alphabet (AA_ALPHABET)")
+    alt_init_codons <- attr(genetic.code, "alt_init_codons", exact=TRUE)
+    if (is.null(alt_init_codons)
+     || !is.character(alt_init_codons)
+     || any(is.na(alt_init_codons))
+     || anyDuplicated(alt_init_codons)
+     || !all(alt_init_codons %in% names(genetic.code)))
+        stop(wmsg("'genetic.code' must have an \"alt_init_codons\" attribute ",
+                  "that lists alternative initiation codons"))
     genetic.code
 }
 
@@ -47,7 +55,7 @@
     c(if.non.ambig, if.ambig)
 }
 
-.makeFuzzyGeneticCode <- function(genetic.code, keep.ambig.codons=FALSE)
+.make_fuzzy_genetic_code <- function(genetic.code, keep.ambig.codons=FALSE)
 {
     if (!isTRUEorFALSE(keep.ambig.codons))
         stop("'keep.ambig.codons' must be TRUE or FALSE")
@@ -74,33 +82,42 @@
 
 .aa2byte <- function(aa) as.integer(charToRaw(paste0(aa, collapse="")))
 
-.makeTranslationLkup <- function(codon_alphabet, genetic.code)
+.make_translation_lkup <- function(codon_alphabet, genetic.code)
 {
     codons <- mkAllStrings(codon_alphabet, 3)
-    i <- match(codons, names(genetic.code))
-    if (any(is.na(i)))
+    m <- match(codons, names(genetic.code))
+    if (any(is.na(m)))
         stop("some codons are not in 'genetic.code'")
-    .aa2byte(genetic.code[i])
+    .aa2byte(genetic.code[m])
 }
 
 .translate <- function(x, genetic.code=GENETIC_CODE, if.fuzzy.codon="error")
 {
-    genetic.code <- .normarg_genetic.code(genetic.code)
+    init_genetic_code <- genetic_code <- .normarg_genetic.code(genetic.code)
+    alt_init_codons <- attr(genetic_code, "alt_init_codons")
+    init_genetic_code[alt_init_codons] <- "M"
+
     if.fuzzy.codon <- .normarg_if.fuzzy.codon(if.fuzzy.codon)
     if.non.ambig <- if.fuzzy.codon[[1L]]
     if.ambig <- if.fuzzy.codon[[2L]]
+
     if (if.non.ambig == "error" && if.ambig == "error") {
         codon_alphabet <- DNA_BASES
     } else {
         codon_alphabet <- names(IUPAC_CODE_MAP)
-        genetic.code <- .makeFuzzyGeneticCode(genetic.code,
-                                              keep.ambig.codons=TRUE)
+        genetic_code <- .make_fuzzy_genetic_code(genetic_code,
+                                                 keep.ambig.codons=TRUE)
+        init_genetic_code <- .make_fuzzy_genetic_code(init_genetic_code,
+                                                      keep.ambig.codons=TRUE)
     }
-    lkup <- .makeTranslationLkup(codon_alphabet, genetic.code)
+
+    lkup <- .make_translation_lkup(codon_alphabet, genetic_code)
+    init_lkup <- .make_translation_lkup(codon_alphabet, init_genetic_code)
     dna_codes <- DNAcodes(baseOnly=FALSE)
     skip_code <- dna_codes[["+"]]
     ans <- .Call2("DNAStringSet_translate",
-                  x, skip_code, dna_codes[codon_alphabet], lkup,
+                  x, skip_code, dna_codes[codon_alphabet],
+                  lkup, init_lkup,
                   if.non.ambig, if.ambig,
                   PACKAGE="Biostrings")
     names(ans) <- names(x)
