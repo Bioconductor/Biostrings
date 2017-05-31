@@ -154,7 +154,7 @@ codons(x)
 ## 1. BASIC EXAMPLES
 ## ---------------------------------------------------------------------
 
-dna1 <- DNAString("TATAAATGGAGTAGATAA")
+dna1 <- DNAString("TTGATATGGCCCTTATAA")
 translate(dna1)
 
 SGC1 <- getGeneticCode("SGC1")  # Vertebrate Mitochondrial code
