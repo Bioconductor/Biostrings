@@ -22,7 +22,7 @@ RNA_GENETIC_CODE
 
 ## All the known genetic codes:
 GENETIC_CODE_TABLE
-getGeneticCode(id_or_name2, full.search=FALSE)
+getGeneticCode(id_or_name2="1", full.search=FALSE, as.data.frame=FALSE)
 }
 
 \arguments{
@@ -33,25 +33,34 @@ getGeneticCode(id_or_name2, full.search=FALSE)
   }
   \item{full.search}{
     By default, only the \code{id} and \code{name2} columns of
-    \code{GENETIC_CODE_TABLE} are searched for an exact match
-    with \code{id_or_name2}.
+    \code{GENETIC_CODE_TABLE} are searched for an exact match with
+    \code{id_or_name2}.
     If \code{full.search} is TRUE, then the search is extended to
     the \code{name} column of \code{GENETIC_CODE_TABLE} and
-    \code{id_or_name2} only needs to be a substring of one of the names
-    in that column (also case is ignored).
+    \code{id_or_name2} only needs to be a substring of one of the
+    names in that column (also case is ignored).
+  }
+  \item{as.data.frame}{
+    Should the genetic code be returned as a data frame instead of a named
+    character vector?
   }
 }
 
 \details{
-  Formally, a genetic code is a mapping between tri-nucleotide sequences
-  called codons, and amino acids.
+  Formally, a \emph{genetic code} is a mapping between the 64 tri-nucleotide
+  sequences (called codons) and amino acids.
 
-  The Standard Genetic Code (aka The Canonical Genetic Code, or simply The
-  Genetic Code) is the particular mapping that encodes the vast majority of
-  genes in nature.
+  The Standard Genetic Code (a.k.a. The Canonical Genetic Code, or simply
+  The Genetic Code) is the particular mapping that encodes the vast majority
+  of genes in nature.
 
   \code{GENETIC_CODE} and \code{RNA_GENETIC_CODE} are predefined named
-  character vectors that represent this mapping.
+  character vectors that represent this mapping. Both have an attribute
+  on it, the \code{alt_init_codons} attribute, that lists the
+  \emph{alternative initiation codons}. Note that codons that always
+  translate to \code{M} (Methionine) (e.g. ATG in \code{GENETIC_CODE} or
+  AUG in \code{RNA_GENETIC_CODE}) are omitted from the \code{alt_init_codons}
+  attribute.
 
   All the known genetic codes are summarized in \code{GENETIC_CODE_TABLE},
   which is a predefined data frame with 1 row per known genetic code.
@@ -79,22 +88,43 @@ getGeneticCode(id_or_name2, full.search=FALSE)
   latter are those of the former where all occurrences of T (thymine) have
   been replaced by U (uracil).
 
-  \code{GENETIC_CODE_TABLE} is a data frame with 1 row per known genetic code
-  and the 4 following columns:
+  \code{GENETIC_CODE_TABLE} is a data frame that contains all the known
+  genetic codes listed at \url{ftp://ftp.ncbi.nih.gov/entrez/misc/data/gc.prt}.
+  The data frame has 1 row per known genetic code and the 5 following columns:
   \itemize{
     \item \code{name}: The long and very descriptive name of the genetic code.
     \item \code{name2}: The short name of the genetic code (not all genetic
           codes have one).
     \item \code{id}: The id of the genetic code.
-    \item \code{AAs}: The genetic code itself represented in a compact form
-          (i.e. 64 amino acid letters, 1 letter per codon, the codons are
+    \item \code{AAs}: A 64-character string representing the genetic code
+          itself in a compact form (i.e. 1 letter per codon, the codons are
           assumed to be ordered like in \code{GENETIC_CODE}).
+    \item \code{Starts}: A 64-character string indicating the Initiation
+          Codons.
   }
 
+  By default (i.e. when \code{as.data.frame} is set to FALSE),
   \code{getGeneticCode} returns a named character vector of length 64
-  similar to \code{GENETIC_CODE} i.e. it contains 1-letter strings
-  in the Amino Acid alphabet (see \code{?AA_ALPHABET}) and its names are
-  identical to \code{names(GENETIC_CODE)}.
+  similar to \code{GENETIC_CODE} i.e. it contains 1-letter strings from
+  the Amino Acid alphabet (see \code{?\link{AA_ALPHABET}}) and its names
+  are identical to \code{names(GENETIC_CODE)}. In addition it has an attribute
+  on it, the \code{alt_init_codons} attribute, that lists the \emph{alternative
+  initiation codons}. Note that codons that always translate to \code{M}
+  (Methionine) (e.g. ATG) are omitted from the \code{alt_init_codons}
+  attribute.
+
+  When \code{as.data.frame} is set to TRUE, \code{getGeneticCode} returns a
+  data frame with 64 rows (one per codon), rownames (3-letter strings
+  representing the codons), and the 2 following columns:
+  \itemize{
+    \item \code{AA}: A 1-letter string from the Amino Acid alphabet (see
+          \code{?\link{AA_ALPHABET}}) representing the amino acid mapped to
+          the codon (\code{"*"} is used to mark the stop codon).
+    \item \code{Start}: A 1-letter string indicating an alternative mapping
+          for the codon i.e. what amino acid the codon is mapped to when it's
+          the first tranlated codon.
+  }
+  The rownames of the data frame are identical to \code{names(GENETIC_CODE)}.
 }
 
 \author{H. Pagès}
@@ -107,7 +137,7 @@ getGeneticCode(id_or_name2, full.search=FALSE)
   The "official names" of the various codes ("Standard", "SGC0",
   "Vertebrate Mitochondrial", "SGC1", etc..) and their ids (1, 2, etc...)
   were taken from the print-form ASN.1 version of the above document
-  (version 3.9 at the time of this writting):
+  (version 4.0 at the time of this writting):
 
     \url{ftp://ftp.ncbi.nih.gov/entrez/misc/data/gc.prt}
 }
@@ -124,11 +154,21 @@ getGeneticCode(id_or_name2, full.search=FALSE)
 }
 
 \examples{
-## The Standard Genetic Code:
+## ---------------------------------------------------------------------
+## THE STANDARD GENETIC CODE
+## ---------------------------------------------------------------------
 
 GENETIC_CODE
 
-GENETIC_CODE[["ATG"]]  # codon ATG is translated into M (Methionine)
+## Codon ATG is *always* translated to M (Methionine)
+GENETIC_CODE[["ATG"]]
+
+## Codons TTG and CTG are "normally" translated to L except when they are
+## the first translated codon (a.k.a. start codon or initiation codon),
+## in which case they are translated to M:
+attr(GENETIC_CODE, "alt_init_codons")
+GENETIC_CODE[["TTG"]]
+GENETIC_CODE[["CTG"]]
 
 sort(table(GENETIC_CODE))  # the same amino acid can be encoded by 1
                            # to 6 different codons
@@ -136,7 +176,9 @@ sort(table(GENETIC_CODE))  # the same amino acid can be encoded by 1
 RNA_GENETIC_CODE
 all(GENETIC_CODE == RNA_GENETIC_CODE)  # TRUE
 
-## All the known genetic codes:
+## ---------------------------------------------------------------------
+## ALL THE KNOWN GENETIC CODES
+## ---------------------------------------------------------------------
 
 GENETIC_CODE_TABLE[1:3 , ]
 
@@ -147,9 +189,13 @@ getGeneticCode("SGC1")  # Vertebrate Mitochondrial
 
 getGeneticCode("ascidian", full.search=TRUE)  # Ascidian Mitochondrial
 
-## Differences between a non-standard code and the Standard Code:
-idx <- which(getGeneticCode("SGC1") != GENETIC_CODE)
-rbind(SGC1=getGeneticCode("SGC1")[idx], Standard=GENETIC_CODE[idx])
+## ---------------------------------------------------------------------
+## EXAMINE THE DIFFERENCES BETWEEN THE STANDARD CODE AND A NON-STANDARD
+## ONE
+## ---------------------------------------------------------------------
+
+idx <- which(GENETIC_CODE != getGeneticCode("SGC1"))
+rbind(Standard=GENETIC_CODE[idx], SGC1=getGeneticCode("SGC1")[idx])
 }
 
 \keyword{utilities}
