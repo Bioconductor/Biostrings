@@ -55,12 +55,7 @@ getGeneticCode(id_or_name2="1", full.search=FALSE, as.data.frame=FALSE)
   of genes in nature.
 
   \code{GENETIC_CODE} and \code{RNA_GENETIC_CODE} are predefined named
-  character vectors that represent this mapping. Both have an attribute
-  on it, the \code{alt_init_codons} attribute, that lists the
-  \emph{alternative initiation codons}. Note that codons that always
-  translate to \code{M} (Methionine) (e.g. ATG in \code{GENETIC_CODE} or
-  AUG in \code{RNA_GENETIC_CODE}) are omitted from the \code{alt_init_codons}
-  attribute.
+  character vectors that represent this mapping.
 
   All the known genetic codes are summarized in \code{GENETIC_CODE_TABLE},
   which is a predefined data frame with 1 row per known genetic code.
@@ -87,6 +82,12 @@ getGeneticCode(id_or_name2="1", full.search=FALSE, as.data.frame=FALSE)
   vectors are the same, only their names are different. The names of the
   latter are those of the former where all occurrences of T (thymine) have
   been replaced by U (uracil).
+
+  Finally, both vectors have an \code{alt_init_codons} attribute on them,
+  that lists the \emph{alternative initiation codons}. Note that codons that
+  always translate to \code{M} (Methionine) (e.g. ATG in \code{GENETIC_CODE}
+  or AUG in \code{RNA_GENETIC_CODE}) are omitted from the
+  \code{alt_init_codons} attribute.
 
   \code{GENETIC_CODE_TABLE} is a data frame that contains all the known
   genetic codes listed at \url{ftp://ftp.ncbi.nih.gov/entrez/misc/data/gc.prt}.
