@@ -15,7 +15,8 @@ static char errmsg_buf[200];
  */
 static int fast_translate(const Chars_holder *dna, Chars_holder *aa,
 			  char skip_code,
-			  TwobitEncodingBuffer *teb, SEXP lkup)
+			  TwobitEncodingBuffer *teb,
+			  SEXP lkup, SEXP init_lkup)
 {
 	int phase, i, lkup_key;
 	const char *c;
@@ -36,7 +37,11 @@ static int fast_translate(const Chars_holder *dna, Chars_holder *aa,
 			phase++;
 			continue;
 		}
-		aa_letter = (char) INTEGER(lkup)[lkup_key];
+		if (aa->length == 0) {
+			aa_letter = (char) INTEGER(init_lkup)[lkup_key];
+		} else {
+			aa_letter = (char) INTEGER(lkup)[lkup_key];
+		}
 		/* aa->ptr is a const char * so we need to cast it to
 		   char * before we can write to it */
 		((char *) aa->ptr)[aa->length++] = aa_letter;
@@ -51,14 +56,15 @@ static int fast_translate(const Chars_holder *dna, Chars_holder *aa,
  */
 static int translate(const Chars_holder *dna, Chars_holder *aa,
 		     char skip_code,
-		     int ncodes, ByteTrTable *byte2offset, SEXP lkup,
+		     int ncodes, ByteTrTable *byte2offset,
+		     SEXP lkup, SEXP init_lkup,
 		     int if_non_ambig, int if_ambig)
 {
-	int phase, i, lkup_key, offset, is_fuzzy;
+	int phase, is_fuzzy, i, lkup_key, offset;
 	const char *c;
 	char aa_letter;
 
-	aa->length = phase = 0;
+	aa->length = phase = is_fuzzy = 0;
 	for (i = 0, c = dna->ptr; i < dna->length; i++, c++) {
 		if (*c == skip_code)
 			continue;
@@ -68,21 +74,24 @@ static int translate(const Chars_holder *dna, Chars_holder *aa,
 				 "not a base at pos %d", i + 1);
 			return -1;
 		}
+		if (offset >= 4)
+			is_fuzzy = 1;  /* codon is fuzzy */
 		if (phase == 0) {
 			lkup_key = offset;
-			is_fuzzy = 0;
 			phase++;
 			continue;
 		}
 		lkup_key *= ncodes;
 		lkup_key += offset;
-		if (offset >= 4)
-			is_fuzzy = 1;
 		if (phase < 2) {
 			phase++;
 			continue;
 		}
-		aa_letter = (char) INTEGER(lkup)[lkup_key];
+		if (aa->length == 0) {
+			aa_letter = (char) INTEGER(init_lkup)[lkup_key];
+		} else {
+			aa_letter = (char) INTEGER(lkup)[lkup_key];
+		}
 		if (is_fuzzy) {
 			/* codon is fuzzy */
 			if (aa_letter != 'X') {
@@ -110,7 +119,7 @@ static int translate(const Chars_holder *dna, Chars_holder *aa,
 		/* aa->ptr is a const char * so we need to cast it to
 		   char * before we can write to it */
 		((char *) aa->ptr)[aa->length++] = aa_letter;
-		phase = 0;
+		phase = is_fuzzy = 0;
 	}
 	return phase;
 }
@@ -119,7 +128,8 @@ static int translate(const Chars_holder *dna, Chars_holder *aa,
  * --- .Call ENTRY POINT ---
  * Return an AAStringSet object.
  */
-SEXP DNAStringSet_translate(SEXP x, SEXP skip_code, SEXP dna_codes, SEXP lkup,
+SEXP DNAStringSet_translate(SEXP x, SEXP skip_code, SEXP dna_codes,
+		SEXP lkup, SEXP init_lkup,
 		SEXP if_non_ambig, SEXP if_ambig)
 {
 	char skip_code0;
@@ -133,10 +143,14 @@ SEXP DNAStringSet_translate(SEXP x, SEXP skip_code, SEXP dna_codes, SEXP lkup,
 
 	skip_code0 = (unsigned char) INTEGER(skip_code)[0];
 	ncodes = LENGTH(dna_codes);
-	if (ncodes * ncodes * ncodes != LENGTH(lkup))
+	if (LENGTH(lkup) != ncodes * ncodes * ncodes)
 		error("Biostrings internal error in "
 		      "DNAStringSet_translate(): length of 'lkup' "
 		      "must equal length of 'dna_codes' power 3");
+	if (LENGTH(lkup) != LENGTH(init_lkup))
+		error("Biostrings internal error in "
+		      "DNAStringSet_translate(): 'lkup' and 'init_lkup' "
+		      "must have the same length");
 	if (ncodes == 4) {
 		teb = _new_TwobitEncodingBuffer(dna_codes, 3, 0);
 	} else {
@@ -177,9 +191,10 @@ SEXP DNAStringSet_translate(SEXP x, SEXP skip_code, SEXP dna_codes, SEXP lkup,
 		Y_elt = _get_elt_from_XStringSet_holder(&Y, i);
 		errcode = ncodes == 4 ?
 			fast_translate(&X_elt, &Y_elt,
-				       skip_code0, &teb, lkup) :
+				       skip_code0, &teb, lkup, init_lkup) :
 			translate(&X_elt, &Y_elt,
-				  skip_code0, ncodes, &byte2offset, lkup,
+				  skip_code0, ncodes, &byte2offset,
+				  lkup, init_lkup,
 				  if_non_ambig0, if_ambig0);
 		if (errcode == -1) {
 			UNPROTECT(2);

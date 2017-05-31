@@ -350,6 +350,7 @@ SEXP DNAStringSet_translate(
 	SEXP skip_code,
 	SEXP dna_codes,
 	SEXP lkup,
+	SEXP init_lkup,
 	SEXP if_non_ambig,
 	SEXP if_ambig
 );
