@@ -7,6 +7,8 @@
 #include "IRanges_interface.h"
 #include "S4Vectors_interface.h"
 
+#include <limits.h>  /* for INT_MAX */
+
 
 /****************************************************************************
  * C-level slot getters.
@@ -85,21 +87,21 @@ SEXP new_XStringSet_from_CHARACTER(SEXP classname, SEXP element_type,
 	SEXP ans, x_elt;
 	XVectorList_holder ans_holder;
 	const int *lkup0;
-	int ans_length, lkup_length, i;
+	int ans_len, lkup_len, i;
 	Chars_holder ans_elt_holder;
 
 	PROTECT(ans = alloc_XRawList(CHAR(STRING_ELT(classname, 0)),
 				     CHAR(STRING_ELT(element_type, 0)),
 				     width));
 	ans_holder = hold_XVectorList(ans);
-	ans_length = get_length_from_XVectorList_holder(&ans_holder);
+	ans_len = get_length_from_XVectorList_holder(&ans_holder);
 	if (lkup == R_NilValue) {
 		lkup0 = NULL;
 	} else {
 		lkup0 = INTEGER(lkup);
-		lkup_length = LENGTH(lkup);
+		lkup_len = LENGTH(lkup);
 	}
-	for (i = 0; i < ans_length; i++) {
+	for (i = 0; i < ans_len; i++) {
 		ans_elt_holder = get_elt_from_XRawList_holder(&ans_holder, i);
 		x_elt = STRING_ELT(x, i);
 		if (x_elt == NA_STRING) {
@@ -107,7 +109,7 @@ SEXP new_XStringSet_from_CHARACTER(SEXP classname, SEXP element_type,
 			error("input sequence %d is NA", i + 1);
 		}
 		_copy_CHARSXP_to_Chars_holder(&ans_elt_holder, x_elt,
-				INTEGER(start)[i], lkup0, lkup_length);
+				INTEGER(start)[i], lkup0, lkup_len);
 	}
 	UNPROTECT(1);
 	return ans;
@@ -117,14 +119,14 @@ SEXP new_XStringSet_from_CHARACTER(SEXP classname, SEXP element_type,
 SEXP new_CHARACTER_from_XStringSet(SEXP x, SEXP lkup)
 {
 	XStringSet_holder x_holder;
-	int x_length, i;
+	int x_len, i;
 	SEXP ans, ans_elt;
 	Chars_holder x_elt_holder;
 
 	x_holder = hold_XVectorList(x);
-	x_length = get_length_from_XVectorList_holder(&x_holder);
-	PROTECT(ans = NEW_CHARACTER(x_length));
-	for (i = 0; i < x_length; i++) {
+	x_len = get_length_from_XVectorList_holder(&x_holder);
+	PROTECT(ans = NEW_CHARACTER(x_len));
+	for (i = 0; i < x_len; i++) {
 		x_elt_holder = get_elt_from_XRawList_holder(&x_holder, i);
 		PROTECT(ans_elt = _new_CHARSXP_from_Chars_holder(
 					&x_elt_holder, lkup));
@@ -167,24 +169,29 @@ RoSeqs _new_RoSeqs_from_XStringSet(int nelt, SEXP x)
 SEXP XStringSet_unlist(SEXP x)
 {
 	SEXP ans_tag, ans;
-	int x_length, ans_length, tag_offset, i;
+	unsigned int ans_len;
+	int x_len, tag_offset, i;
 	XStringSet_holder x_holder;
 	Chars_holder xx;
 
 	x_holder = _hold_XStringSet(x);
-	x_length = _get_length_from_XStringSet_holder(&x_holder);
+	x_len = _get_length_from_XStringSet_holder(&x_holder);
 
-	/* 1st pass: determine 'ans_length' */
-	ans_length = 0;
-	for (i = 0; i < x_length; i++) {
+	/* 1st pass: determine 'ans_len' */
+	ans_len = 0;
+	for (i = 0; i < x_len; i++) {
 		xx = _get_elt_from_XStringSet_holder(&x_holder, i);
-		ans_length += xx.length;
+		ans_len += xx.length;
+		if (ans_len > INT_MAX)
+			error("XStringSet object is too big to be "
+                              "unlisted (would result in an XString\n"
+			      "  object of length 2^31 or more)");
 	}
-	PROTECT(ans_tag = NEW_RAW(ans_length));
+	PROTECT(ans_tag = NEW_RAW(ans_len));
 
 	/* 2nd pass: fill 'ans' */
 	tag_offset = 0;
-	for (i = 0; i < x_length; i++) {
+	for (i = 0; i < x_len; i++) {
 		xx = _get_elt_from_XStringSet_holder(&x_holder, i);
 		Ocopy_bytes_to_i1i2_with_lkup(tag_offset,
 				tag_offset + xx.length - 1,
