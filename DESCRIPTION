@@ -1,10 +1,9 @@
 Package: Biostrings
-Title: String objects representing biological sequences, and matching
-	algorithms
+Title: Efficient manipulation of biological strings
 Description: Memory efficient string containers, string matching
 	algorithms, and other utilities, for fast manipulation of large
 	biological sequences or sets of sequences.
-Version: 2.45.3
+Version: 2.45.4
 Encoding: UTF-8
 Author: H. Pagès, P. Aboyoun, R. Gentleman, and S. DebRoy
 Maintainer: H. Pagès <hpages@fredhutch.org>
