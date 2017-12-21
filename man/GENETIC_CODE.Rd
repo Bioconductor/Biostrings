@@ -139,7 +139,7 @@ getGeneticCode(id_or_name2="1", full.search=FALSE, as.data.frame=FALSE)
   The "official names" of the various codes ("Standard", "SGC0",
   "Vertebrate Mitochondrial", "SGC1", etc..) and their ids (1, 2, etc...)
   were taken from the print-form ASN.1 version of the above document
-  (version 4.0 at the time of this writting):
+  (version 4.0 at the time of this writing):
 
     \url{ftp://ftp.ncbi.nih.gov/entrez/misc/data/gc.prt}
 }
