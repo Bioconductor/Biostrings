@@ -153,3 +153,20 @@ setMethod("[", "QualityScaledXStringSet",
     }
 )
 
+
+setReplaceMethod("[", "QualityScaledXStringSet",
+    function(x, i, j, ..., value) {
+        if (!missing(j) || length(list(...)) > 0)
+            stop("invalid subsetting")
+
+        base.x <- as(x, "XStringSet")
+        base.val <- as(value, "XStringSet")
+        base.x[i] <- base.val
+
+        qual.x <- quality(x)
+        qual.val <- quality(value)
+        qual.x[i] <- qual.val
+        
+        QualityScaledXStringSet(base.x, qual.x)
+    }
+)    
