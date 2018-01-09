@@ -16,6 +16,21 @@ setMethod("reverse", "MaskedXString",
     }
 )
 
+setMethod("reverse", "QualityScaledDNAStringSet",
+    function(x, ...)
+    {
+        x@quality <- reverse(quality(x))
+        callNextMethod()
+    }
+)
+
+setMethod("reverse", "QualityScaledRNAStringSet",
+    function(x, ...)
+    {
+        x@quality <- reverse(quality(x))
+        callNextMethod()
+    }
+)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "complement" generic and methods.
@@ -64,7 +79,6 @@ setMethod("complement", "MaskedRNAString",
         x
     }
 )
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "reverseComplement" generic and methods.
@@ -122,6 +136,22 @@ setMethod("reverseComplement", "MaskedRNAString",
         x@unmasked <- reverseComplement(unmasked(x))
         x@masks <- reverse(masks(x))
         x
+    }
+)
+
+setMethod("reverseComplement", "QualityScaledDNAStringSet",
+    function(x, ...)
+    {
+        x@quality <- reverse(quality(x))
+        callNextMethod()
+    }
+)
+
+setMethod("reverseComplement", "QualityScaledRNAStringSet",
+    function(x, ...)
+    {
+        x@quality <- reverse(quality(x))
+        callNextMethod()
     }
 )
 
