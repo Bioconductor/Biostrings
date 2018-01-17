@@ -114,20 +114,33 @@ QualityScaledAAStringSet <- function(x, quality) QualityScaledXStringSet(AAStrin
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### narrow()
+### Overwrite some endomorphic methods for XStringSet objects
 ###
 
 setMethod("narrow", "QualityScaledXStringSet",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE)
     {
-        x@ranges <-
-          narrow(x@ranges, start=start, end=end, width=width,
-                 use.names=use.names)
-        if (all(width(x@quality@ranges) > 1)) {
-            x@quality@ranges <-
-              narrow(x@quality@ranges, start=start, end=end, width=width,
-                     use.names=use.names)
-        }
+        x <- callNextMethod()
+        x@quality <- narrow(x@quality, start=start, end=end, width=width,
+                                       use.names=use.names)
+        x
+    }
+)
+
+setMethod("reverse", "QualityScaledXStringSet",
+    function(x)
+    {
+        x <- callNextMethod()
+        x@quality <- reverse(x@quality)
+        x
+    }
+)
+
+setMethod("reverseComplement", "QualityScaledDNAStringSet",
+    function(x)
+    {
+        x <- callNextMethod()
+        x@quality <- reverse(x@quality)
         x
     }
 )
