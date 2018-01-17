@@ -120,28 +120,33 @@ QualityScaledAAStringSet <- function(x, quality) QualityScaledXStringSet(AAStrin
 setMethod("narrow", "QualityScaledXStringSet",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE)
     {
-        x <- callNextMethod()
         x@quality <- narrow(x@quality, start=start, end=end, width=width,
                                        use.names=use.names)
-        x
+        callNextMethod()
     }
 )
 
 setMethod("reverse", "QualityScaledXStringSet",
     function(x)
     {
-        x <- callNextMethod()
         x@quality <- reverse(x@quality)
-        x
+        callNextMethod()
     }
 )
 
 setMethod("reverseComplement", "QualityScaledDNAStringSet",
     function(x)
     {
-        x <- callNextMethod()
         x@quality <- reverse(x@quality)
-        x
+        callNextMethod()
+    }
+)
+
+setMethod("reverseComplement", "QualityScaledRNAStringSet",
+    function(x)
+    {
+        x@quality <- reverse(x@quality)
+        callNextMethod()
     }
 )
 

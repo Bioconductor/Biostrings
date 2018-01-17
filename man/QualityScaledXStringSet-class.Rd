@@ -28,6 +28,7 @@
 \alias{narrow,QualityScaledXStringSet-method}
 \alias{reverse,QualityScaledXStringSet-method}
 \alias{reverseComplement,QualityScaledDNAStringSet-method}
+\alias{reverseComplement,QualityScaledRNAStringSet-method}
 
 \alias{show,QualityScaledXStringSet-method}
 
