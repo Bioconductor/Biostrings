@@ -112,7 +112,7 @@ function(x,
                     dim(fuzzyMatrix),
                     fuzzyLookupTable,
                     PACKAGE="Biostrings")
-    if (method == "levenshtein")
+    if (method %in% c("levenshtein", "substitutionMatrix"))
       answer <- -answer
   }
 
