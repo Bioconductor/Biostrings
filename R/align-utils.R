@@ -108,22 +108,18 @@ setMethod("mismatchTable", "QualityAlignedXStringSet",
                          prefixColNames = "")
         if (nrow(output) == 0) {
             output <- cbind(output, "Quality" = character(0))
-                } else {
-            if (length(quality(unaligned(x))) == 1) {
-                if (width(quality(unaligned(x))) == 1)
-                    quality <-
-                      Views(quality(unaligned(x))[[1]][rep.int(1L, max(output[["End"]]))],
-                            start = output[["Start"]], end = output[["End"]])
-                else
-                    quality <-
-                      Views(quality(unaligned(x))[[1]], start = output[["Start"]],
-                            end = output[["End"]])
+        } else {
+            x_unaligned_quality <- quality(unaligned(x))
+            if (length(x_unaligned_quality) != length(x)) {
+                ## Just for sanity but should never fail.
+                stopifnot(length(x_unaligned_quality) == 1L)
+                x_unaligned_quality <- rep.int(x_unaligned_quality, length(x))
             }
-            else
-                quality <-
-                  narrow(quality(unaligned(x))[output[["Id"]]],
-                         start = output[["Start"]], end = output[["End"]])
-            output <- cbind(output, "Quality" = as.character(quality))
+            start <- output[["Start"]]
+            end <- output[["End"]]
+            quality <- narrow(x_unaligned_quality[output[["Id"]]],
+                              start=start, end=end)
+            output <- cbind(output, "Quality"=as.character(quality))
         }
         if (any(nchar(prefixColNames) > 0))
             names(output) <- paste(prefixColNames, names(output), sep = "")

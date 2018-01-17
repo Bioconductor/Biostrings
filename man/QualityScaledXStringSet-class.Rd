@@ -6,6 +6,8 @@
 \alias{QualityScaledXStringSet-class}
 \alias{QualityScaledXStringSet}
 
+\alias{parallelSlotNames,QualityScaledXStringSet-method}
+
 \alias{class:QualityScaledBStringSet}
 \alias{QualityScaledBStringSet-class}
 \alias{QualityScaledBStringSet}
@@ -23,13 +25,9 @@
 \alias{quality}
 \alias{quality,QualityScaledXStringSet-method}
 
-% Inherited method:
 \alias{narrow,QualityScaledXStringSet-method}
-\alias{append,QualityScaledXStringSet,QualityScaledXStringSet-method}
 
-% Standard generic methods:
 \alias{show,QualityScaledXStringSet-method}
-\alias{[,QualityScaledXStringSet-method}
 
 
 \title{QualityScaledBStringSet, QualityScaledDNAStringSet, QualityScaledRNAStringSet and QualityScaledAAStringSet objects}

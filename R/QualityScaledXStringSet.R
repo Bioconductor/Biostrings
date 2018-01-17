@@ -3,12 +3,19 @@
 ### -------------------------------------------------------------------------
 ###
 
+
 setClass("QualityScaledXStringSet",
     contains="XStringSet",
     representation(
         "VIRTUAL",
-        quality = "XStringQuality"
+        quality="XStringQuality"
     )
+)
+
+### Combine the new parallel slots with those of the parent class. Make sure
+### to put the new parallel slots *first*.
+setMethod("parallelSlotNames", "QualityScaledXStringSet",
+    function(x) c("quality", callNextMethod())
 )
 
 ### QualityScaledXStringSet subclasses
@@ -27,14 +34,12 @@ setClass("QualityScaledAAStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Validity.
+### Validity
 ###
 
 .valid.QualityScaledXStringSet <- function(object)
 {
     message <- NULL
-    if (!(length(object@quality) %in% c(1, length(object))))
-        message <- c(message, "'length(quality)' != 1 or length of 'XStringSet'")
     if (!all(nchar(object@quality) == 1 | nchar(object@quality) == nchar(object)))
         message <- c(message, "'nchar(quality)' must equal 1 or nchar of 'XStringSet'")
     message
@@ -50,26 +55,54 @@ setValidity("QualityScaledXStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessor methods.
+### Accessor methods
 ###
 
 setGeneric("quality", function(x) standardGeneric("quality"), useAsDefault = function(x) x@quality)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The user-friendly versatile constructors.
+### The user-friendly versatile constructors
 ###
+
+### The returned 'quality' is guaranteed to have the shape of 'x' (i.e. same
+### length() and width()).
+.normarg_quality <- function(quality, x)
+{
+    if (!is(quality, "XStringQuality"))
+        stop("'quality' must be of class 'XStringQuality'")
+    quality_width <- width(quality)
+    x_width <- width(x)
+    if (length(quality) == length(x)) {
+        recycle_me <- quality_width != x_width
+        if (any(recycle_me & quality_width != 1L))
+            stop(wmsg("the quality strings must be of length 1 or have the ",
+                      "same length as their corresponding string in 'x'"))
+        recycle_idx <- which(recycle_me)
+        width2 <- x_width[recycle_idx]
+        idx <- relist(rep.int(1L, sum(width2)), PartitioningByWidth(width2))
+        quality[recycle_idx] <- quality[recycle_idx][idx]
+        return(quality)
+    }
+    if (length(quality) == 1L) {
+        if (all(x_width == quality_width))
+            return(rep.int(quality, length(x)))
+        if (quality_width != 1L)
+            stop(wmsg("when 'quality' is a single string it must be ",
+                      "a single letter or have the same width as all ",
+                      "the strings in 'x'"))
+        quality <- PhredQuality(BStringSet(rep.int(quality[[1L]], max(x_width)),
+                                           start=1L, end=x_width))
+        return(quality)
+    }
+    stop("'length(quality)' must equal 'length(x)' or 1")
+}
 
 QualityScaledXStringSet <- function(x, quality) {
     if (!is(x, "XStringSet"))
         stop("'x' must be of class 'XStringSet'")
-    if (!is(quality, "XStringQuality"))
-        stop("'quality' must be of class 'XStringQuality'")
-    if (!(length(quality) %in% c(1, length(x))))
-        stop("'length(quality)' must equal 1 or 'length(x)'")
-    if (!all(nchar(quality) == 1 | nchar(quality) == nchar(x)))
-        stop("'nchar(quality)' must equal 1 or 'nchar(x)'")
-    output <- as(x, paste("QualityScaled", class(x), sep=""))
+    quality <- .normarg_quality(quality, x)
+    output <- as(x, paste0("QualityScaled", class(x)))
     slot(output, "quality", check=FALSE) <- quality
     output
 }
@@ -81,7 +114,7 @@ QualityScaledAAStringSet <- function(x, quality) QualityScaledXStringSet(AAStrin
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Inherited methods.
+### narrow()
 ###
 
 setMethod("narrow", "QualityScaledXStringSet",
@@ -100,17 +133,8 @@ setMethod("narrow", "QualityScaledXStringSet",
 )
 
 
-setMethod("append", c("QualityScaledXStringSet", "QualityScaledXStringSet"),
-    function(x, values, after=length(x))
-    {
-        QualityScaledXStringSet(append(as(x, "XStringSet"), as(values, "XStringSet"), after=after),
-                                as(append(x@quality, values@quality, after=after), class(x@quality)))
-    }
-)
-
-
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "show" method.
+### show()
 ###
 
 setMethod("show", "QualityScaledXStringSet",
@@ -125,31 +149,4 @@ setMethod("show", "QualityScaledXStringSet",
     }
 )
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting.
-###
-
-.safe.subset.XStringSet <- function(x, i)
-{
-    if (length(x) == 1) x else x[i]
-}
-
-setMethod("[", "QualityScaledXStringSet",
-    function(x, i, j, ..., drop)
-    {
-        if (!missing(j) || length(list(...)) > 0)
-            stop("invalid subsetting")
-        if (missing(i) || (is.logical(i) && all(i)))
-            return(x)
-        if (is.logical(i))
-            i <- which(i)
-        if (!is.numeric(i) || any(is.na(i)))
-            stop("invalid subsetting")
-        if (any(i < 1) || any(i > length(x)))
-            stop("subscript out of bounds")
-        slot(x, "quality", check=FALSE) <- .safe.subset.XStringSet(quality(x), i)
-        callNextMethod(x, i)
-    }
-)
 
