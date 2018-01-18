@@ -244,6 +244,10 @@ static double pairwiseAlignment(
 	const int nCharString1Minus1 = nCharString1 - 1;
 	const int nCharString2Minus1 = nCharString2 - 1;
 
+	align1InfoPtr->startRange = -1;
+	align2InfoPtr->startRange = -1;
+	align1InfoPtr->widthRange = 0;
+	align2InfoPtr->widthRange = 0;
 	if (nCharString1 < 1 || nCharString2 < 1) {
 		double zeroCharScore;
 		if (nCharString1 >= 1 && align1InfoPtr->endGap)
@@ -393,12 +397,6 @@ static double pairwiseAlignment(
 		memset(align2InfoPtr->startIndel, 0, alignmentBufferSize * sizeof(int));
 		memset(align1InfoPtr->widthIndel, 0, alignmentBufferSize * sizeof(int));
 		memset(align2InfoPtr->widthIndel, 0, alignmentBufferSize * sizeof(int));
-
-		align1InfoPtr->startRange = -1;
-		align2InfoPtr->startRange = -1;
-		align1InfoPtr->widthRange = 0;
-		align2InfoPtr->widthRange = 0;
-
 		for (j = 1, jMinus1 = 0, jElt = nCharString2Minus1; j <= nCharString2; j++, jMinus1++, jElt--) {
 			tempMatrix = prevMatrix;
 			prevMatrix = currMatrix;
@@ -860,7 +858,6 @@ SEXP XStringSet_align_pairwiseAlignment(
 					INTEGER(fuzzyLookupTable),
 					LENGTH(fuzzyLookupTable),
 					&alignBuffer);
-
 			*align1MismatchEnds = align1Info.lengthMismatch + align1MismatchPrevEnd;
 			*align2MismatchEnds = align2Info.lengthMismatch + align2MismatchPrevEnd;
 			if (align1Info.lengthMismatch > 0) {
