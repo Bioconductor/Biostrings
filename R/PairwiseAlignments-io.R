@@ -67,7 +67,7 @@
     setdiff(IRanges(1L, postaligned_width), postaligned_mismatches_or_indels)
 }
 
-.makePipes <- function(x)
+.make_pipes <- function(x)
 {
     if (!is(x, "PairwiseAlignments") || length(x) != 1L)
         stop("'x' must be a PairwiseAlignments object of length 1")
@@ -90,100 +90,71 @@
     BString(paste(tmp, collapse=""))
 }
 
-.makeXStringSetFrom2XStrings <- function(x1=NULL, x2=NULL)
+.make_blank_BString <- function(nblank)
 {
-    #if (is.null(x1) && is.null(x2))
-    #    return(BStringSet(c("", "")))
-    if (is.null(x1)) {
-        x1 <- XString(seqtype(x2), "-")
-        x1 <- rep.int(x1, length(x2))
-    }
-    if (is.null(x2)) {
-        x2 <- XString(seqtype(x1), "-")
-        x2 <- rep.int(x2, length(x1))
-    }
-    c(as(x1, "XStringSet"), as(x2, "XStringSet"))
+    rep.int(BString(" "), nblank)
 }
 
-.makeXStringFromSpaces <- function(nspace)
-{
-    rep.int(BString(" "), nspace)
-}
-
-.makePostalignedSeqs <- function(x, trim.global=FALSE)
+.makePostalignedSeqs <- function(x)
 {
     if (!is(x, "PairwiseAlignments") || length(x) != 1L)
         stop("'x' must be a PairwiseAlignments object of length 1")
-    x_pattern <- pattern(x)  # QualityAlignedXStringSet object
-    x_subject <- subject(x)  # QualityAlignedXStringSet object
-    postaligned_pattern <- aligned(x_pattern)[[1L]]
-    postaligned_subject <- aligned(x_subject)[[1L]]
-    ans_seqs <- c(as(postaligned_pattern, "XStringSet"),
-                  as(postaligned_subject, "XStringSet"))
-    ## Sanity check:
-    if (!isConstant(width(ans_seqs)))
-        stop("Biostrings internal error: the 2 post-aligned sequences ",
-             "must have the same length")
-    unaligned_pattern <- unaligned(x_pattern)
-    pattern_name <- names(unaligned(x_pattern))
+
+    x_type <- type(x)
+    global.pattern <- x_type %in% c("global", "global-local")
+    global.subject <- x_type %in% c("global", "local-global")
+
+    aligned_pattern <- get_aligned_pattern(x@pattern, x@subject,
+                                           global.pattern, global.subject,
+                                           check=TRUE)
+    aligned_subject <- get_aligned_pattern(x@subject, x@pattern,
+                                           global.subject, global.pattern)
+    ans_seqs <- c(as(aligned_pattern, "XStringSet"),
+                  as(aligned_subject, "XStringSet"))
+
+    original_pattern <- x@pattern@unaligned
+    pattern_name <- names(original_pattern)
     if (is.null(pattern_name))
         pattern_name <- ""
-    unaligned_subject <- unaligned(x_subject)
-    subject_name <- names(unaligned(x_subject))
+    original_subject <- x@subject@unaligned
+    subject_name <- names(original_subject)
     if (is.null(subject_name))
         subject_name <- ""
-    ans_ranges <- c(x_pattern@range, x_subject@range)
-    ans_pipes <- .makePipes(x)
-    if (trim.global) {
-        names(ans_seqs) <- c(pattern_name, subject_name)
-        return(list(ans_seqs, ans_ranges, ans_pipes))
-    }
-    x_type <- type(x)
-    is_pattern_global <- x_type %in% c("global", "global-local")
-    is_subject_global <- x_type %in% c("global", "local-global")
-    if (is_pattern_global) {
-        unaligned_pattern <- unaligned_pattern[[1L]]
+    names(ans_seqs) <- c(pattern_name, subject_name)
+
+    ans_ranges <- c(x@pattern@range, x@subject@range)
+    ans_pipes <- .make_pipes(x)
+
+    if (global.pattern) {
+        original_pattern <- original_pattern[[1L]]
         start1 <- start(ans_ranges)[1L]
         if (start1 > 1L) {
-            prefix1 <- subseq(unaligned_pattern, end=start1 - 1L)
-            prefixes <- .makeXStringSetFrom2XStrings(x1=prefix1)
-            ans_seqs <- xscat(prefixes, ans_seqs)
-            prefix <- .makeXStringFromSpaces(length(prefix1))
-            ans_pipes <- xscat(prefix, ans_pipes)
+            prefix <- .make_blank_BString(start1 - 1L)
+            ans_pipes <- c(prefix, ans_pipes)
             start(ans_ranges)[1L] <- 1L
         }
         end1 <- end(ans_ranges)[1L]
-        if (end1 < length(unaligned_pattern)) {
-            suffix1 <- subseq(unaligned_pattern, start=end1 + 1L)
-            suffixes <- .makeXStringSetFrom2XStrings(x1=suffix1)
-            ans_seqs <- xscat(ans_seqs, suffixes)
-            suffix <- .makeXStringFromSpaces(length(suffix1))
-            ans_pipes <- xscat(ans_pipes, suffix)
-            end(ans_ranges)[1L] <- length(unaligned_pattern)
+        if (end1 < length(original_pattern)) {
+            suffix <- .make_blank_BString(length(original_pattern) - end1)
+            ans_pipes <- c(ans_pipes, suffix)
+            end(ans_ranges)[1L] <- length(original_pattern)
         }
     }
-    if (is_subject_global) {
-        unaligned_subject <- unaligned_subject[[1L]]
+    if (global.subject) {
+        original_subject <- original_subject[[1L]]
         start2 <- start(ans_ranges)[2L]
         if (start2 > 1L) {
-            prefix2 <- subseq(unaligned_subject, end=start2 - 1L)
-            prefixes <- .makeXStringSetFrom2XStrings(x2=prefix2)
-            ans_seqs <- xscat(prefixes, ans_seqs)
-            prefix <- .makeXStringFromSpaces(length(prefix2))
-            ans_pipes <- xscat(prefix, ans_pipes)
+            prefix <- .make_blank_BString(start2 - 1L)
+            ans_pipes <- c(prefix, ans_pipes)
             start(ans_ranges)[2L] <- 1L
         }
         end2 <- end(ans_ranges)[2L]
-        if (end2 < length(unaligned_subject)) {
-            suffix2 <- subseq(unaligned_subject, start=end2 + 1L)
-            suffixes <- .makeXStringSetFrom2XStrings(x2=suffix2)
-            ans_seqs <- xscat(ans_seqs, suffixes)
-            suffix <- .makeXStringFromSpaces(length(suffix2))
-            ans_pipes <- xscat(ans_pipes, suffix)
-            end(ans_ranges)[2L] <- length(unaligned_subject)
+        if (end2 < length(original_subject)) {
+            suffix <- .make_blank_BString(length(original_subject) - end2)
+            ans_pipes <- c(ans_pipes, suffix)
+            end(ans_ranges)[2L] <- length(original_subject)
         }
     }
-    names(ans_seqs) <- c(pattern_name, subject_name)
     list(ans_seqs, ans_ranges, ans_pipes)
 }
 

@@ -110,7 +110,7 @@ setMethod("aligned", "AlignedXStringSet0",
                       names(letters2codes) <- codecX@letters
                       gapCode <- as.raw(letters2codes[["-"]])
                   }
-                  value <- 
+                  value <-
                     .Call2("AlignedXStringSet_align_aligned", x, gapCode, PACKAGE="Biostrings")
               }
               value

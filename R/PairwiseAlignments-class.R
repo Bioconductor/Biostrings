@@ -256,13 +256,122 @@ setValidity("PairwiseAlignments",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### get_aligned_pattern()
+###
+
+### 'x_pattern' and 'x_subject' must come from the "pattern" and "subject"
+### slots of a PairwiseAlignments object of length 1. They're both expected
+### to be AlignedXStringSet0 objects of length 1.
+### 'global.pattern' and 'global.subject' must indicate whether the pattern
+### and/or subject were globally aligned or not.
+get_aligned_pattern <- function(x_pattern, x_subject,
+                                global.pattern=TRUE, global.subject=TRUE,
+                                check=FALSE)
+{
+    if (!is(x_pattern, "AlignedXStringSet0") || length(x_pattern) != 1L)
+        stop("'x_pattern' must be an AlignedXStringSet0 object of length 1")
+    if (!is(x_subject, "AlignedXStringSet0") || length(x_subject) != 1L)
+        stop("'x_subject' must be an AlignedXStringSet0 object of length 1")
+    aligned_pattern <- aligned(x_pattern)[[1L]]  # XString object
+
+    ## Sanity check:
+    if (check) {
+        aligned_subject <- aligned(x_subject)[[1L]]  # XString object
+        stopifnot(identical(length(aligned_pattern),
+                            length(aligned_subject)))
+    }
+
+    ans <- aligned_pattern
+    original_pattern <- x_pattern@unaligned[[1L]]  # XString object
+    ## We only need 'original_subject' for its length.
+    original_subject <- x_subject@unaligned[[1L]]  # XString object
+    if (global.pattern) {
+        start1 <- start(x_pattern@range)
+        if (start1 > 1L) {
+            prefix1 <- subseq(original_pattern, end=start1 - 1L)
+            ans <- c(prefix1, ans)
+        }
+        end1 <- end(x_pattern@range)
+        if (end1 < length(original_pattern)) {
+            suffix1 <- subseq(original_pattern, start=end1 + 1L)
+            ans <- c(ans, suffix1)
+        }
+    }
+    if (global.subject) {
+        start2 <- start(x_subject@range)
+        if (start2 > 1L) {
+            prefix2 <- rep.int(XString(seqtype(ans), "-"), start2 - 1L)
+            ans <- c(prefix2, ans)
+        }
+        end2 <- end(x_subject@range)
+        if (end2 < length(original_subject)) {
+            suffix2 <- rep.int(XString(seqtype(ans), "-"),
+                               length(original_subject) - end2)
+            ans <- c(ans, suffix2)
+        }
+    }
+    ans
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor methods.
 ###
 
 setMethod("pattern", "PairwiseAlignments", function(x) x@pattern)
 setMethod("subject", "PairwiseAlignments", function(x) x@subject)
+
+### Conflicts with DelayedArray::type!
 setGeneric("type", function(x) standardGeneric("type"))
 setMethod("type", "PairwiseAlignments", function(x) x@type)
+
+setGeneric("alignedPattern", function(x) standardGeneric("alignedPattern"))
+setGeneric("alignedSubject", function(x) standardGeneric("alignedSubject"))
+
+setMethod("alignedPattern", "PairwiseAlignments",
+    function(x)
+    {
+        x_pattern <- pattern(x)
+        x_subject <- subject(x)
+        x_type <- type(x)
+        global.pattern <- x_type %in% c("global", "global-local")
+        global.subject <- x_type %in% c("global", "local-global")
+        ans <- do.call(c,
+            lapply(seq_along(x),
+                function(i) {
+                    as(get_aligned_pattern(x_pattern[i], x_subject[i],
+                                           global.pattern, global.subject),
+                       "XStringSet")
+                }
+            )
+        )
+        names(ans) <- names(x_pattern@unaligned)
+        ans
+    }
+)
+
+setMethod("alignedSubject", "PairwiseAlignments",
+    function(x)
+    {
+        x_pattern <- pattern(x)
+        x_subject <- subject(x)
+        x_type <- type(x)
+        global.pattern <- x_type %in% c("global", "global-local")
+        global.subject <- x_type %in% c("global", "local-global")
+        ans <- do.call(c,
+            lapply(seq_along(x),
+                function(i) {
+                    as(get_aligned_pattern(x_subject[i], x_pattern[i],
+                                           global.subject, global.pattern),
+                       "XStringSet")
+                }
+            )
+        )
+        names(ans) <- names(x_subject@unaligned)
+        ans
+    }
+)
+
 setMethod("score", "PairwiseAlignments", function(x) x@score)
 setMethod("insertion", "PairwiseAlignments", function(x) indel(subject(x)))
 setMethod("deletion", "PairwiseAlignments", function(x) indel(pattern(x)))
@@ -287,36 +396,55 @@ setMethod("pid", "PairwiseAlignments",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "show" method.
+### The "show" method
 ###
-
-### TODO: Make the "show" method to format the alignment in a SGD fashion
+### TODO: Maybe make the "show" method format the alignment in a SGD fashion
 ### i.e. split in 60-letter blocks and use the "|" character to highlight
 ### exact matches.
-setMethod("show", "PairwiseAlignments",
-    function(object) {
-        if (length(object) == 0)
-            cat("Empty Pairwise Alignment\n")
-        else {
-            cat(switch(type(object), "global" = "Global", "overlap" = "Overlap",
-                       "local" = "Local", "global-local" = "Global-Local",
-                       "local-global" = "Local-Global"),
-                " ", class(object), " (1 of ", length(object), ")\n", sep = "")
-            if (width(pattern(object))[1] == 0 || width(subject(object))[1] == 0) {
-                patternSpaces <- 0
-                subjectSpaces <- 0
-            } else {
-                patternSpaces <-
-                  floor(log10(start(subject(object))[1])) - floor(log10(start(pattern(object))[1]))
-		        subjectSpaces <- max(0, - patternSpaces)
-		        patternSpaces <- max(0, patternSpaces)
-            }
-            cat(paste(c("pattern: ", rep(" ", patternSpaces)), collapse = ""))
-            show(pattern(object)[1])
-            cat(paste(c("subject: ", rep(" ", subjectSpaces)), collapse = ""))
-            show(subject(object)[1])
-            cat("score:", score(object)[1], "\n")
-        }
+###
+
+.show_PairwiseAlignments <- function(x)
+{
+    x_len <- length(x)
+    if (x_len == 0L)
+        cat("Empty ")
+    cat(switch(type(x), "global"="Global", "overlap"="Overlap",
+               "local"="Local", "global-local" = "Global-Local",
+               "local-global"="Local-Global"),
+        " ", class(x), sep="")
+    if (x_len == 0L) {
+        cat("\n")
+        return()
     }
+    cat(" (1 of ", x_len, ")\n", sep="")
+    x1 <- x[1L]
+
+    x_type <- type(x)
+    global.pattern <- x_type %in% c("global", "global-local")
+    global.subject <- x_type %in% c("global", "local-global")
+    p1start <- if (global.pattern)
+                   ""
+               else
+                   paste0("[", start(x1@pattern@range), "]")
+    s1start <- if (global.subject)
+                   ""
+               else
+                   paste0("[", start(x1@subject@range), "]")
+    width <- max(nchar(p1start), nchar(s1start))
+    if (width != 0L) {
+        p1start <- format(p1start, justify="right", width=width+1L)
+        s1start <- format(s1start, justify="right", width=width+1L)
+    }
+
+    width <- getOption("width") - 9L
+    pattern1 <- toSeqSnippet(alignedPattern(x1)[[1L]], width)
+    subject1 <- toSeqSnippet(alignedSubject(x1)[[1L]], width)
+    cat("pattern:", p1start, " ", pattern1, "\n", sep="")
+    cat("subject:", s1start, " ", subject1, "\n", sep="")
+    cat("score:", score(x1), "\n")
+}
+
+setMethod("show", "PairwiseAlignments",
+    function(object) .show_PairwiseAlignments(object)
 )
 

@@ -209,7 +209,7 @@ setMethod("aligned", "PairwiseAlignmentsSingleSubject",
 setMethod("as.character", "PairwiseAlignmentsSingleSubject",
           function(x)
           {
-              as.character(aligned(x))
+              as.character(alignedPattern(x))
           })
 
 setMethod("toString", "PairwiseAlignmentsSingleSubject", function(x, ...) toString(as.character(x), ...))

@@ -12,6 +12,8 @@
 \alias{PairwiseAlignmentsSingleSubjectSummary-class}
 \alias{PairwiseAlignmentsSingleSubjectSummary}
 
+\alias{parallelSlotNames,PairwiseAlignments-method}
+
 % Constructor-like functions and generics:
 \alias{PairwiseAlignments,XString,XString-method}
 \alias{PairwiseAlignments,XStringSet,missing-method}
@@ -27,6 +29,10 @@
 \alias{subject,PairwiseAlignments-method}
 \alias{type}
 \alias{type,PairwiseAlignments-method}
+\alias{alignedPattern}
+\alias{alignedSubject}
+\alias{alignedPattern,PairwiseAlignments-method}
+\alias{alignedSubject,PairwiseAlignments-method}
 \alias{score,PairwiseAlignments-method}
 \alias{insertion,PairwiseAlignments-method}
 \alias{deletion,PairwiseAlignments-method}
@@ -146,16 +152,20 @@
 
   \describe{
     \item{}{
-      \code{pattern(x)}:
-      The \code{AlignedXStringSet} object for the pattern.
+      \code{alignedPattern(x), alignedSubject(x)}:
+      Extract the aligned patterns or subjects as an \code{XStringSet} object.
+      The 2 objects returned by \code{alignedPattern(x)} and
+      \code{alignedSubject(x)} are guaranteed to have the same
+      shape (i.e. same \code{length()} and \code{width()}).
     }
     \item{}{
-      \code{subject(x)}:
-      The \code{AlignedXStringSet} object for the subject.
+      \code{pattern(x), subject(x)}:
+      Extract the aligned patterns or subjects as an \code{AlignedXStringSet0}
+      object.
     }
     \item{}{
       \code{summary(object, ...)}:
-      Generates a summary for the \code{PairwiseAlignments}.
+      Generates a summary for the \code{PairwiseAlignments} object.
     }
   }
 }
@@ -170,9 +180,10 @@
     }
     \item{}{
       \code{length(x)}:
-      The length of the \code{aligned(pattern(x))} and
-    \code{aligned(subject(x))}. 
-      There is a method for \code{PairwiseAlignmentsSingleSubjectSummary} as well.
+      The common length of \code{alignedPattern(x)} and
+      \code{alignedSubject(x)}.
+      There is a method for \code{PairwiseAlignmentsSingleSubjectSummary}
+      as well.
     }
     \item{}{
       \code{type(x)}:
@@ -185,7 +196,7 @@
 \section{Aligned sequence methods}{
   In the code snippets below,
   \code{x} is a \code{PairwiseAlignmentsSingleSubject} object, except
-    otherwise noted. 
+  otherwise noted.
 
   \describe{
     \item{}{
@@ -199,7 +210,7 @@
     }
     \item{}{
       \code{as.character(x)}:
-      Converts \code{aligned(x)} to a character vector.
+      Equivalent to \code{as.character(alignedPattern(x))}.
     }
     \item{}{
       \code{as.matrix(x)}:
@@ -252,14 +263,14 @@
     \item{}{
       \code{insertion(x)}:
       An \code{\link[IRanges:IRangesList-class]{CompressedIRangesList}}
-    object containing the 
-      locations of the insertions from the perspective of the \code{pattern}.
+      object containing the locations of the insertions from the perspective
+      of the \code{pattern}.
     }
     \item{}{
       \code{deletion(x)}:
       An \code{\link[IRanges:IRangesList-class]{CompressedIRangesList}}
-    object containing the 
-      locations of the deletions from the perspective of the \code{pattern}.
+      object containing the locations of the deletions from the perspective
+      of the \code{pattern}.
     }
     \item{}{
       \code{indel(x)}:
@@ -307,19 +318,25 @@
 }
 
 \examples{
-  PairwiseAlignments("-PA--W-HEAE", "HEAGAWGHE-E")
-  pattern <- AAStringSet(c("HLDNLKGTF", "HVDDMPNAL"))
-  subject <- AAString("SMDDTEKMSMKL")
-  nw1 <- pairwiseAlignment(pattern, subject, substitutionMatrix = "BLOSUM50",
-    gapOpening = 3, gapExtension = 1)
-  pattern(nw1)
-  subject(nw1)
-  aligned(nw1)
-  as.character(nw1)
-  as.matrix(nw1)
-  nchar(nw1)
-  score(nw1)
-  nw1
+PairwiseAlignments("-PA--W-HEAE", "HEAGAWGHE-E")
+
+pattern <- AAStringSet(c("HLDNLKGTF", "HVDDMPNAKLLL"))
+subject <- AAString("SHLDTEKMSMKLL")
+pa1 <- pairwiseAlignment(pattern, subject, substitutionMatrix="BLOSUM50",
+                         gapOpening=3, gapExtension=1)
+pa1
+
+alignedPattern(pa1)
+alignedSubject(pa1)
+stopifnot(identical(width(alignedPattern(pa1)),
+                    width(alignedSubject(pa1))))
+
+as.character(pa1)
+
+aligned(pa1)
+as.matrix(pa1)
+nchar(pa1)
+score(pa1)
 }
 
 \keyword{methods}

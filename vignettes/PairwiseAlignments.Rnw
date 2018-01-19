@@ -263,16 +263,16 @@ subject and the latter being used to represent elementwise alignments between a
 set of patterns and a set of subjects.
 
 <<classes1>>=
-psa1 <- pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede")
-class(psa1)
+pa1 <- pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede")
+class(pa1)
 @
 
 and the \Rfunction{pairwiseAlignmentSummary} function holds the results of a
 summarized pairwise sequence alignment.
 
 <<classes2>>=
-summary(psa1)
-class(summary(psa1))
+summary(pa1)
+class(summary(pa1))
 @
 
 The \Rclass{AlignedXStringSet} and \Rclass{QualityAlignedXStringSet} classes
@@ -282,15 +282,15 @@ substitution scoring scheme and the latter class a quality-based scoring
 scheme.
 
 <<classes3>>=
-class(pattern(psa1))
+class(pattern(pa1))
 submat <-
   matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
 diag(submat) <- 0
-psa2 <-
+pa2 <-
   pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
                     substitutionMatrix = submat,
                     gapOpening = 0, gapExtension = 1)
-class(pattern(psa2))
+class(pattern(pa2))
 @
 
 \subsection{Exercise 2}
@@ -375,19 +375,19 @@ matches, number of mismatches, and number of aligned characters respectively.
 submat <-
   matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
 diag(submat) <- 0
-psa2 <-
+pa2 <-
   pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
                     substitutionMatrix = submat,
                     gapOpening = 0, gapExtension = 1)
-score(psa2)
-nedit(psa2)
-nmatch(psa2)
-nmismatch(psa2)
-nchar(psa2)
-aligned(psa2)
-as.character(psa2)
-as.matrix(psa2)
-consensusMatrix(psa2)
+score(pa2)
+nedit(pa2)
+nmatch(pa2)
+nmismatch(pa2)
+nchar(pa2)
+aligned(pa2)
+as.character(pa2)
+as.matrix(pa2)
+consensusMatrix(pa2)
 @
 
 The \Rfunction{summary}, \Rfunction{mismatchTable}, and
@@ -395,9 +395,9 @@ The \Rfunction{summary}, \Rfunction{mismatchTable}, and
 sequence alignments.
 
 <<helper2>>=
-summary(psa2)
-mismatchTable(psa2)
-mismatchSummary(psa2)
+summary(pa2)
+mismatchTable(pa2)
+mismatchSummary(pa2)
 @
 
 \begin{table}[ht]
@@ -440,11 +440,11 @@ well as operations including \Rfunction{start}, \Rfunction{end}, and
 ranges.
 
 <<helper3>>=
-class(pattern(psa2))
-aligned(pattern(psa2))
-nindel(pattern(psa2))
-start(subject(psa2))
-end(subject(psa2))
+class(pattern(pa2))
+aligned(pattern(pa2))
+nindel(pattern(pa2))
+start(subject(pa2))
+end(subject(pa2))
 @
 
 \subsection{Exercise 3}

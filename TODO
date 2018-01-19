@@ -1,3 +1,35 @@
+- pairwiseAlignment() is broken on BString objects:
+
+    pairwiseAlignment(BString("xxYYxx"), BString("YY"))
+    # Global PairwiseAlignmentsSingleSubject (1 of 1)
+    # pattern: xxYYxx
+    # subject: --YY--
+    # score: -34.03641
+    pairwiseAlignment(BString("YYYYYY"), BString("YY"))
+    # Global PairwiseAlignmentsSingleSubject (1 of 1)
+    # pattern: --YYYYYY
+    # subject: YY------
+    # score: -52
+
+  This 2nd alignment deosn't look like the best one.
+
+  Furthermore, aligning the 2 patterns above with a single call to
+  pairwiseAlignment() gives a different alignment for the 2nd pattern:
+
+    pa <- pairwiseAlignment(BStringSet(c("xxYYxx", "YYYYYY")), BString("YY"))
+    pa[1]
+    # Global PairwiseAlignmentsSingleSubject (1 of 1)
+    # pattern: xxYYxx
+    # subject: --YY--
+    # score: -34.03641
+    pa[2]
+    # Global PairwiseAlignmentsSingleSubject (1 of 1)
+    # pattern: YYYYYY
+    # subject: Y----Y
+    # score: -24.03641
+
+  This 2nd alignment looks correct now.
+
 Some R problems that maybe worth reporting
 ------------------------------------------
 

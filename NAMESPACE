@@ -339,7 +339,7 @@ export(
     unaligned, aligned, indel, nindel,
 
     ## PairwiseAlignments-class.R:
-    PairwiseAlignments, type, pid,
+    PairwiseAlignments, type, alignedPattern, alignedSubject, pid,
 
     ## PairwiseAlignmentsSingleSubject-class.R:
     PairwiseAlignmentsSingleSubject,
@@ -395,7 +395,7 @@ exportMethods(
     parallelSlotNames,
     unaligned, aligned, indel, nindel,
     parallelVectorNames,
-    subject, type, score, pid,
+    subject, type, alignedPattern, alignedSubject, score, pid,
     PairwiseAlignments, PairwiseAlignmentsSingleSubject,
     mismatch, nmatch, nmismatch, nedit,
     mismatchTable, mismatchSummary, coverage,

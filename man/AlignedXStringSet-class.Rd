@@ -168,8 +168,12 @@
 \examples{
 pattern <- AAString("LAND")
 subject <- AAString("LEAVES")
-nw1 <- pairwiseAlignment(pattern, subject, substitutionMatrix = "BLOSUM50", gapOpening = 3, gapExtension = 1)
-alignedPattern <- pattern(nw1)
+pa1 <- pairwiseAlignment(pattern, subject, substitutionMatrix="BLOSUM50",
+                         gapOpening=3, gapExtension=1)
+
+alignedPattern <- pattern(pa1)
+class(alignedPattern)  # AlignedXStringSet object
+
 unaligned(alignedPattern)
 aligned(alignedPattern)
 as.character(alignedPattern)
