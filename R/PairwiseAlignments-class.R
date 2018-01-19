@@ -432,11 +432,12 @@ setMethod("pid", "PairwiseAlignments",
                    paste0("[", start(x1@subject@range), "]")
     width <- max(nchar(p1start), nchar(s1start))
     if (width != 0L) {
-        p1start <- format(p1start, justify="right", width=width+1L)
-        s1start <- format(s1start, justify="right", width=width+1L)
+        width <- width + 1L
+        p1start <- format(p1start, justify="right", width=width)
+        s1start <- format(s1start, justify="right", width=width)
     }
 
-    width <- getOption("width") - 9L
+    width <- getOption("width") - 9L - width
     pattern1 <- toSeqSnippet(alignedPattern(x1)[[1L]], width)
     subject1 <- toSeqSnippet(alignedSubject(x1)[[1L]], width)
     cat("pattern:", p1start, " ", pattern1, "\n", sep="")
