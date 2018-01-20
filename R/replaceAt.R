@@ -19,15 +19,15 @@ setGeneric("replaceAt", signature="x",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Helper functions for checking that the ranges in a Ranges or RangesList
-### object are within specified limits.
+### Helper functions for checking that the ranges in an IntegerRanges or
+### RangesList object are within specified limits.
 ###
 
 ### Checks that the ranges in 'at' are within the limits specified by single
 ### integer values 'min_start' and 'max_end'.
 .is_within_limits1 <- function(at, min_start, max_end)
 {
-    stopifnot(is(at, "Ranges"))
+    stopifnot(is(at, "IntegerRanges"))
     stopifnot(isSingleInteger(min_start))
     stopifnot(isSingleInteger(max_end))
 
@@ -44,7 +44,7 @@ setGeneric("replaceAt", signature="x",
 .is_within_limits2 <- function(at, limits)
 {
     stopifnot(is(at, "RangesList"))
-    stopifnot(is(limits, "Ranges"))
+    stopifnot(is(limits, "IntegerRanges"))
     stopifnot(length(at) == length(limits))
 
     unlisted_at <- unlist(at, use.names=FALSE)
@@ -179,10 +179,10 @@ setGeneric("replaceAt", signature="x",
 {
     if (is.numeric(at))
         at <- .make_IRanges_from_numeric(at)
-    if (!is(at, "Ranges"))
+    if (!is(at, "IntegerRanges"))
         stop(.wrap_msg(
-            "'at' must be a Ranges object (or a numeric vector containing ",
-            "the start positions of zero-width ranges)"
+            "'at' must be an IntegerRanges object (or a numeric vector ",
+            "containing the start positions of zero-width ranges)"
         ))
     as(at, "IRanges", strict=FALSE)
 }
@@ -191,7 +191,7 @@ setGeneric("replaceAt", signature="x",
 {
     if (is.numeric(at))
         at <- .make_IRanges_from_numeric(at)
-    if (is(at, "Ranges"))
+    if (is(at, "IntegerRanges"))
         at <- IRangesList(at)
     if (is.list(at))
         at <- IntegerList(at)
@@ -202,9 +202,9 @@ setGeneric("replaceAt", signature="x",
             "'at' must be a RangesList object (or an IntegerList object ",
             "or a list of numeric vectors, containing the start positions ",
             "of zero-width ranges). ",
-            "Also it can be a Ranges object (or a numeric vector containing ",
-            "the start positions of zero-width ranges) and in that case ",
-            "is interpreted as a RangesList object of length 1."
+            "Also it can be an IntegerRanges object (or a numeric vector ",
+            "containing the start positions of zero-width ranges) and in ",
+            "that case is interpreted as a RangesList object of length 1."
         ))
     as(at, "CompressedIRangesList", strict=FALSE)
 }

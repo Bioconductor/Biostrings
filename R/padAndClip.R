@@ -44,8 +44,8 @@ padAndClip <- function(x, views, Lpadding.letter=" ", Rpadding.letter=" ",
     x_names <- names(x)
     x_mcols <- mcols(x)
 
-    if (!is(views, "Ranges"))
-        stop("'views' must be a Ranges object")
+    if (!is(views, "IntegerRanges"))
+        stop("'views' must be an IntegerRanges object")
     ## .V_recycle() is currently defined in replaceAt.R but it needs to move
     ## to a place more appropriate for sharing (see TODO note in replaceAt.R).
     views_start <- .V_recycle(start(views), x, "views", "'length(x)'")

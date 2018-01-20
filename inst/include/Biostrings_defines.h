@@ -153,8 +153,8 @@ typedef struct headtail {
  *                    |                           | eventually NULL elements).|
  * -------------------|-------------------------------------------------------|
  *  MATCHES_AS_RANGES | The starts and ends of the matches are stored.        |
- *                    | A Ranges object is        | An MIndex object is       |
- *                    | returned.                 | returned.                 |
+ *                    | An IntegerRanges object   | An MIndex object is       |
+ *                    | is returned.              | returned.                 |
  */
 #define MATCHES_AS_NULL		0
 #define MATCHES_AS_WHICH	1

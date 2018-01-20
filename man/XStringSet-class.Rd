@@ -210,7 +210,7 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
       set of subsequences (the left, middle and right subsequences)
       associated to the narrowing operation.
       See \code{?\link[IRanges]{threebands}} in the
-      IRanges package for the details.
+      \pkg{IRanges} package for the details.
     }
     \item{}{
       \code{subseq(x, start=NA, end=NA, width=NA) <- value}:
@@ -305,8 +305,8 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
       lines. The number of lines can be altered by setting the global
       options \code{showHeadLines} and \code{showTailLines}. If the 
       object length is less than the sum of the options, the full object 
-      is displayed. These options affect GRanges, GappedAlignments, 
-      Ranges and XString objects.
+      is displayed. These options affect GRanges, GAlignments, IRanges,
+      and XStringSet objects.
     }
   }
 }
