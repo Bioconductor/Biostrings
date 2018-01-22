@@ -33,8 +33,8 @@ replaceAt(x, at, value="")
     An \link{XString} or \link{XStringSet} object.
   }
   \item{at}{
-    Typically a \link[IRanges]{Ranges} object if \code{x} is an
-    \link{XString} object, and a \link[IRanges]{RangesList} object
+    Typically a \link[IRanges]{IntegerRanges} object if \code{x} is an
+    \link{XString} object, and an \link[IRanges]{IntegerRangesList} object
     if \code{x} is an \link{XStringSet} object.
 
     Alternatively, the ranges can be specified with only 1 number
@@ -48,10 +48,10 @@ replaceAt(x, at, value="")
     The following applies only if \code{x} is an \link{XStringSet} object:
 
     \code{at} is recycled to the length of \code{x} if necessary.
-    If \code{at} is a \link[IRanges]{Ranges} object (or a numeric vector),
-    it is first turned into a \link[IRanges]{RangesList} object of length 1
-    and then this \link[IRanges]{RangesList} object is recycled to the
-    length of \code{x}.
+    If \code{at} is a \link[IRanges]{IntegerRanges} object (or a numeric
+    vector), it is first turned into a \link[IRanges]{IntegerRangesList}
+    object of length 1 and then this \link[IRanges]{IntegerRangesList}
+    object is recycled to the length of \code{x}.
     This is useful for specifying the same ranges across all sequences
     in \code{x}.
     The \emph{effective shape} of \code{at} is described by its length
@@ -100,7 +100,7 @@ replaceAt(x, at, value="")
 
   \code{extractAt} is equivalent to \code{\link[IRanges]{extractList}}
   (defined and documented in the \pkg{IRanges} package) when \code{x} is an
-  \link{XString} object and \code{at} a \link[IRanges]{Ranges} object.
+  \link{XString} object and \code{at} a \link[IRanges]{IntegerRanges} object.
 }
 
 \author{H. Pagès}
@@ -124,7 +124,7 @@ replaceAt(x, at, value="")
     \item The \link{XString}, \link{XStringSet}, and \link{XStringSetList}
           classes.
 
-    \item The \link[IRanges]{Ranges}, \link[IRanges]{RangesList},
+    \item The \link[IRanges]{IntegerRanges}, \link[IRanges]{IntegerRangesList},
           \link[IRanges]{IntegerList}, and \link[IRanges]{CharacterList}
           classes defined and documented in the \pkg{IRanges} package.
   }

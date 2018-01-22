@@ -20,7 +20,7 @@ setGeneric("replaceAt", signature="x",
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Helper functions for checking that the ranges in an IntegerRanges or
-### RangesList object are within specified limits.
+### IntegerRangesList object are within specified limits.
 ###
 
 ### Checks that the ranges in 'at' are within the limits specified by single
@@ -43,7 +43,7 @@ setGeneric("replaceAt", signature="x",
 ### limits specified by 'limits[i]'.
 .is_within_limits2 <- function(at, limits)
 {
-    stopifnot(is(at, "RangesList"))
+    stopifnot(is(at, "IntegerRangesList"))
     stopifnot(is(limits, "IntegerRanges"))
     stopifnot(length(at) == length(limits))
 
@@ -197,14 +197,15 @@ setGeneric("replaceAt", signature="x",
         at <- IntegerList(at)
     if (is(at, "IntegerList"))
         at <- .make_CompressedIRangesList_from_IntegerList(at)
-    if (!is(at, "RangesList"))
+    if (!is(at, "IntegerRangesList"))
         stop(.wrap_msg(
-            "'at' must be a RangesList object (or an IntegerList object ",
-            "or a list of numeric vectors, containing the start positions ",
-            "of zero-width ranges). ",
+            "'at' must be an IntegerRangesList object (or an IntegerList ",
+            "object or a list of numeric vectors, containing the start ",
+            "positions of zero-width ranges). ",
             "Also it can be an IntegerRanges object (or a numeric vector ",
             "containing the start positions of zero-width ranges) and in ",
-            "that case is interpreted as a RangesList object of length 1."
+            "that case is interpreted as a IntegerRangesList object of ",
+            "length 1."
         ))
     as(at, "CompressedIRangesList", strict=FALSE)
 }
@@ -217,7 +218,7 @@ setGeneric("replaceAt", signature="x",
     at
 }
 
-### Returns a RangesList object of the same length as 'x'.
+### Returns an IntegerRangesList object of the same length as 'x'.
 .normarg_at2 <- function(at, x)
 {
     at <- .make_CompressedIRangesList_from_at(at)

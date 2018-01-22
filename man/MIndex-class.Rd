@@ -91,11 +91,11 @@
     \item{}{
       \code{as(x, "CompressedIRangesList")}:
       Turns \code{x} into an
-    \link[IRanges:IRangesList-class]{CompressedIRangesList} object. 
+    \link[IRanges]{CompressedIRangesList} object. 
       This coercion changes \code{x} from one
-    \link[IRanges:RangesList-class]{RangesList} 
+    \link[IRanges]{IntegerRangesList} 
       subtype to another with the underlying
-    \link[IRanges:Ranges-class]{Ranges} values remaining unchanged.
+    \link[IRanges]{IntegerRanges} values remaining unchanged.
     }
   }
 }

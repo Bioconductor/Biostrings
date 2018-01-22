@@ -30,10 +30,11 @@ stackStrings(x, from, to, shift=0L,
     An \link{XStringSet} object containing the strings to pad and clip.
   }
   \item{views}{
-    A \link[IRanges]{Ranges} object (recycled to the length of \code{x} if
-    necessary) defining the region to keep for each string. Because the
-    strings are first conceptually padded with an infinite number of
-    padding letters on both sides, regions can go beyond string limits.
+    A \link[IRanges]{IntegerRanges} object (recycled to the length of
+    \code{x} if necessary) defining the region to keep for each string.
+    Because the strings are first conceptually padded with an infinite
+    number of padding letters on both sides, regions can go beyond string
+    limits.
   }
   \item{Lpadding.letter, Rpadding.letter}{
     A single letter to use for padding on the left, and another one to
@@ -105,7 +106,7 @@ stackStrings(x, from, to, shift=0L,
 
     \item The \link{XStringSet} class.
 
-    \item The \link[IRanges]{Ranges} class in the \pkg{IRanges} package.
+    \item The \link[IRanges]{IntegerRanges} class in the \pkg{IRanges} package.
   }
 }
 
