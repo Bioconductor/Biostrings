@@ -441,7 +441,7 @@ function(filepath, format)
 ## helper to chop up strings into pieces.
 .strChop <- function(x, chopsize=10, simplify = TRUE)
 {
-  chunks <- breakInChunks(nchar(x), chopsize)
+  chunks <- breakInChunks(nchar(x), chunksize=chopsize)
   if(simplify==TRUE){
     sapply(seq_len(length(chunks)),
            function(i)
