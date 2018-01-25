@@ -91,16 +91,19 @@ setMethod("nchar", "XStringSet",
 ### Methods for XStringSet objects are inherited from the XVectorList class.
 ###
 
-setMethod("narrow", "character",
-    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
+### The "narrow" method for character vectors calls windows() so we only need
+### to implement a "windows" method for character vectors to make narrow()
+### also work on them.
+setMethod("windows", "character",
+    function(x, start=NA, end=NA, width=NA)
     {
-        if (!normargUseNames(use.names))
-            names(x) <- NULL
         x_width <- width(x)
-        solved_SEW <- solveUserSEW(x_width, start=start, end=end, width=width)
-        substr(x, start=start(solved_SEW), stop=end(solved_SEW))
+        ir <- solveUserSEW(x_width, start=start, end=end, width=width)
+        substr(x, start=start(ir), stop=end(ir))
     }
 )
+
+setMethod("narrow", "character", IRanges:::default_narrow)
 
 setMethod("subseq", "character",
     function(x, start=NA, end=NA, width=NA)

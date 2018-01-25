@@ -22,6 +22,7 @@
 % Methods:
 \alias{width,character-method}
 \alias{nchar,XStringSet-method}
+\alias{windows,character-method}
 \alias{narrow,character-method}
 \alias{subseq,character-method}
 \alias{threebands,character-method}

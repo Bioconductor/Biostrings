@@ -25,7 +25,7 @@
 \alias{quality}
 \alias{quality,QualityScaledXStringSet-method}
 
-\alias{narrow,QualityScaledXStringSet-method}
+\alias{windows,QualityScaledXStringSet-method}
 \alias{reverse,QualityScaledXStringSet-method}
 \alias{reverseComplement,QualityScaledDNAStringSet-method}
 \alias{reverseComplement,QualityScaledRNAStringSet-method}

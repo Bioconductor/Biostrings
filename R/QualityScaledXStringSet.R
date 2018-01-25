@@ -117,11 +117,13 @@ QualityScaledAAStringSet <- function(x, quality) QualityScaledXStringSet(AAStrin
 ### Overwrite some endomorphic methods for XStringSet objects
 ###
 
-setMethod("narrow", "QualityScaledXStringSet",
-    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
+### The "narrow" method for Vector objects calls windows() so we only need to
+### implement a "windows" method for QualityScaledXStringSet objects to make
+### narrow() work on these objects.
+setMethod("windows", "QualityScaledXStringSet",
+    function(x, start=NA, end=NA, width=NA)
     {
-        x@quality <- narrow(x@quality, start=start, end=end, width=width,
-                                       use.names=use.names)
+        x@quality <- windows(x@quality, start=start, end=end, width=width)
         callNextMethod()
     }
 )
