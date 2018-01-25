@@ -91,9 +91,9 @@ setMethod("nchar", "XStringSet",
 ### Methods for XStringSet objects are inherited from the XVectorList class.
 ###
 
-### The "narrow" method for character vectors calls windows() so we only need
-### to implement a "windows" method for character vectors to make narrow()
-### also work on them.
+### The default "narrow" method calls windows() so we only need to implement
+### a "windows" method for character vectors to make narrow() also work on
+### them.
 setMethod("windows", "character",
     function(x, start=NA, end=NA, width=NA)
     {
