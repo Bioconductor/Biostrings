@@ -103,8 +103,6 @@ setMethod("windows", "character",
     }
 )
 
-setMethod("narrow", "character", IRanges:::default_narrow)
-
 setMethod("subseq", "character",
     function(x, start=NA, end=NA, width=NA)
         narrow(x, start=start, end=end, width=width)
