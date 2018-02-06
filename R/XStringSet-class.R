@@ -9,6 +9,11 @@ setClass("XStringSet",
     prototype(elementType="XString")
 )
 
+### This tells some operations (e.g. pcompare() and narrow()) to ignore the
+### list-like nature of XStringSet derivatives i.e. to treat their list
+### elements as atoms.
+setMethod("pcompareRecursively", "XStringSet", function(x) FALSE)
+
 ### The concrete XStringSet subclasses below have no additional slots.
 setClass("BStringSet",
     contains="XStringSet",
