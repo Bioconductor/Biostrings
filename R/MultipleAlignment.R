@@ -481,7 +481,7 @@ function(filepath, format)
     ch <- unlist(lapply(ch, .insertSpaces))
     ## Convert mask to string format
     if(hasMask){
-      mskInd <- unlist(msk, use.names=FALSE) ## index that should be masked
+      mskInd <- as.integer(msk) ## index that should be masked
       mskCh <- paste(as.character(replace(rep(1,dim(x)[2]), mskInd, 0)),
         collapse="")
       mskCh <- .insertSpaces(mskCh)

@@ -80,7 +80,7 @@
     postaligned_match_ranges <- intersect(postaligned_pattern_match_ranges,
                                           postaligned_subject_match_ranges)
     ## Sanity check:
-    ii <- unlist(postaligned_match_ranges)
+    ii <- IRanges:::unlist_as_integer(postaligned_match_ranges)
     if (!identical(as.character(postaligned_pattern[ii]),
                    as.character(postaligned_subject[ii])))
         stop("Biostrings internal error: mismatches and/or indels ",
