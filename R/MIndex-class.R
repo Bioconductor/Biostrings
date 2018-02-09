@@ -105,7 +105,7 @@ setMethod("show", "MIndex",
     {
         cat("MIndex object of length ", length(object), "\n", sep="")
         irl <- as(object, "CompressedIRangesList")
-        IRanges:::showRangesList(irl, with.header=FALSE)
+        IRanges:::show_IntegerRangesList(irl, with.header=FALSE)
     }
 )
 
