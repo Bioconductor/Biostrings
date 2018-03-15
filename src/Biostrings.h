@@ -133,9 +133,14 @@ void _set_XStringSet_names(
 	SEXP names
 );
 
+SEXP _alloc_XStringSet(
+	const char *element_type,
+	SEXP width
+);
+
 SEXP new_XStringSet_from_CHARACTER(
 	SEXP classname,
-	SEXP element_type,
+	SEXP elementType,
 	SEXP x,
 	SEXP start,
 	SEXP width,
@@ -202,7 +207,7 @@ SEXP write_XStringSet_to_fasta(
 	SEXP lkup
 );
 
-SEXP fastq_geometry(
+SEXP fastq_seqlengths(
 	SEXP filexp_list,
 	SEXP nrec,
 	SEXP skip,

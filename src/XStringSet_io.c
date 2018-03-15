@@ -27,7 +27,6 @@ static int has_prefix(const char *s, const char *prefix)
 }
 
 
-
 /****************************************************************************
  *  A. FASTA FORMAT                                                         *
  ****************************************************************************/
@@ -58,6 +57,7 @@ typedef struct fasta_loader {
 
 /*
  * The FASTA INDEX loader.
+ * Used in parse_FASTA_file() to build the FASTA index only.
  */
 
 typedef struct index_fasta_loader_ext {
@@ -125,8 +125,8 @@ static void FASTA_INDEX_load_seq_data(FASTAloader *loader,
 	return;
 }
 
-static FASTAloader new_FASTAloader_with_INDEX_ext(
-		SEXP lkup, int load_descs, INDEX_FASTAloaderExt *loader_ext)
+static FASTAloader new_FASTAloader_with_INDEX_ext(SEXP lkup, int load_descs,
+		INDEX_FASTAloaderExt *loader_ext)
 {
 	FASTAloader loader;
 
@@ -472,23 +472,14 @@ SEXP read_XStringSet_from_fasta_blocks(SEXP seqlength,
 		SEXP filexp_list, SEXP nrec_list, SEXP offset_list,
 		SEXP elementType, SEXP lkup)
 {
-	const char *element_type;
-	char classname[40];  /* longest string should be "DNAStringSet" */
 	SEXP ans, filexp, nrec, offset;
 	FASTAloaderExt loader_ext;
 	FASTAloader loader;
 	int i, j, nrec_j, recno;
 	long long int offset_j, ninvalid;
 
-	element_type = CHAR(STRING_ELT(elementType, 0));
-	if (snprintf(classname, sizeof(classname), "%sSet", element_type)
-	    >= sizeof(classname))
-	{
-		error("Biostrings internal error in "
-		      "read_XStringSet_from_fasta_blocks(): "
-		      "'classname' buffer too small");
-	}
-	PROTECT(ans = alloc_XRawList(classname, element_type, seqlength));
+	PROTECT(ans = _alloc_XStringSet(CHAR(STRING_ELT(elementType, 0)),
+					seqlength));
 	loader_ext = new_FASTAloaderExt(ans);
 	loader = new_FASTAloader(lkup, &loader_ext);
 	for (i = 0; i < LENGTH(filexp_list); i++) {
@@ -594,48 +585,41 @@ typedef struct fastq_loader {
 } FASTQloader;
 
 /*
- * The FASTQ GEOM loader.
- * This loader keeps only the common width of the sequences (NA if the set
- * of sequences is not rectangular).
+ * The FASTQ SEQLEN loader.
+ * Used in parse_FASTQ_file() to load the read lengths only.
  */
 
-typedef struct geom_fastq_loader_ext {
-	int width;
-	//IntAE *seqlength_buf;
-} GEOM_FASTQloaderExt;
+typedef struct seqlen_fastq_loader_ext {
+	IntAE *seqlength_buf;
+} SEQLEN_FASTQloaderExt;
 
-static GEOM_FASTQloaderExt new_GEOM_FASTQloaderExt()
+static SEQLEN_FASTQloaderExt new_SEQLEN_FASTQloaderExt()
 {
-	GEOM_FASTQloaderExt loader_ext;
+	SEQLEN_FASTQloaderExt loader_ext;
 
-	loader_ext.width = NA_INTEGER;
-	//loader_ext.seqlength_buf = new_IntAE(0, 0, 0);
+	loader_ext.seqlength_buf = new_IntAE(0, 0, 0);
 	return loader_ext;
 }
 
-static void FASTQ_GEOM_load_seq(FASTQloader *loader, const Chars_holder *seq)
+static void FASTQ_SEQLEN_load_seq(FASTQloader *loader, const Chars_holder *seq)
 {
-	GEOM_FASTQloaderExt *loader_ext;
+	SEQLEN_FASTQloaderExt *loader_ext;
+	IntAE *seqlength_buf;
 
 	loader_ext = loader->ext;
-	if (loader->nrec == 0) {
-		loader_ext->width = seq->length;
-		return;
-	}
-	if (loader_ext->width == NA_INTEGER
-	 || seq->length == loader_ext->width)
-		return;
-	loader_ext->width = NA_INTEGER;
+	seqlength_buf = loader_ext->seqlength_buf;
+	IntAE_insert_at(seqlength_buf, IntAE_get_nelt(seqlength_buf),
+			seq->length);
 	return;
 }
 
-static FASTQloader new_FASTQloader_with_GEOM_ext(
-		GEOM_FASTQloaderExt *loader_ext)
+static FASTQloader new_FASTQloader_with_SEQLEN_ext(
+		SEQLEN_FASTQloaderExt *loader_ext)
 {
 	FASTQloader loader;
 
 	loader.load_seqid = NULL;
-	loader.load_seq = FASTQ_GEOM_load_seq;
+	loader.load_seq = FASTQ_SEQLEN_load_seq;
 	loader.load_qualid = NULL;
 	loader.load_qual = NULL;
 	loader.nrec = 0;
@@ -816,18 +800,17 @@ static const char *parse_FASTQ_file(SEXP filexp,
 	return NULL;
 }
 
-/* Return an integer vector of length 2. */
-static SEXP get_fastq_geometry(SEXP filexp_list,
+static SEXP get_fastq_seqlengths(SEXP filexp_list,
 		int nrec, int skip, int seek_first_rec)
 {
-	GEOM_FASTQloaderExt loader_ext;
+	SEQLEN_FASTQloaderExt loader_ext;
 	FASTQloader loader;
 	int recno, i;
-	SEXP filexp, ans;
+	SEXP filexp;
 	const char *errmsg;
 
-	loader_ext = new_GEOM_FASTQloaderExt();
-	loader = new_FASTQloader_with_GEOM_ext(&loader_ext);
+	loader_ext = new_SEQLEN_FASTQloaderExt();
+	loader = new_FASTQloader_with_SEQLEN_ext(&loader_ext);
 	recno = 0;
 	for (i = 0; i < LENGTH(filexp_list); i++) {
 		filexp = VECTOR_ELT(filexp_list, i);
@@ -838,11 +821,7 @@ static SEXP get_fastq_geometry(SEXP filexp_list,
 			      CHAR(STRING_ELT(GET_NAMES(filexp_list), i)),
 			      errmsg_buf);
 	}
-	PROTECT(ans = NEW_INTEGER(2));
-	INTEGER(ans)[0] = loader.nrec;
-	INTEGER(ans)[1] = loader_ext.width;
-	UNPROTECT(1);
-	return ans;
+	return new_INTEGER_from_IntAE(loader_ext.seqlength_buf);
 }
 
 /* --- .Call ENTRY POINT ---
@@ -852,14 +831,15 @@ static SEXP get_fastq_geometry(SEXP filexp_list,
  *   skip:            An integer vector of length 1.
  *   seek_first_rec:  A logical vector of length 1.
  */
-SEXP fastq_geometry(SEXP filexp_list, SEXP nrec, SEXP skip, SEXP seek_first_rec)
+SEXP fastq_seqlengths(SEXP filexp_list,
+		SEXP nrec, SEXP skip, SEXP seek_first_rec)
 {
 	int nrec0, skip0, seek_rec0;
 
 	nrec0 = INTEGER(nrec)[0];
 	skip0 = INTEGER(skip)[0];
 	seek_rec0 = LOGICAL(seek_first_rec)[0];
-	return get_fastq_geometry(filexp_list, nrec0, skip0, seek_rec0);
+	return get_fastq_seqlengths(filexp_list, nrec0, skip0, seek_rec0);
 }
 
 /* --- .Call ENTRY POINT --- */
@@ -867,10 +847,8 @@ SEXP read_XStringSet_from_fastq(SEXP filexp_list, SEXP nrec, SEXP skip,
 		SEXP seek_first_rec,
 		SEXP use_names, SEXP elementType, SEXP lkup)
 {
-	int nrec0, skip0, seek_rec0, load_seqids, ans_length, i, recno;
-	SEXP filexp, ans_geom, ans_width, ans, ans_names;
-	const char *element_type;
-	char classname[40];  /* longest string should be "DNAStringSet" */
+	int nrec0, skip0, seek_rec0, load_seqids, recno, i;
+	SEXP filexp, ans_width, ans, ans_names;
 	FASTQloaderExt loader_ext;
 	FASTQloader loader;
 
@@ -878,29 +856,10 @@ SEXP read_XStringSet_from_fastq(SEXP filexp_list, SEXP nrec, SEXP skip,
 	skip0 = INTEGER(skip)[0];
 	seek_rec0 = LOGICAL(seek_first_rec)[0];
 	load_seqids = LOGICAL(use_names)[0];
-	PROTECT(ans_geom = get_fastq_geometry(filexp_list,
-					      nrec0, skip0, seek_rec0));
-	ans_length = INTEGER(ans_geom)[0];
-	PROTECT(ans_width = NEW_INTEGER(ans_length));
-	if (ans_length != 0) {
-		if (INTEGER(ans_geom)[1] == NA_INTEGER) {
-			UNPROTECT(2);
-			error("read_XStringSet_from_fastq(): FASTQ files with "
-			      "variable sequence lengths are not supported yet");
-		}
-		for (recno = 0; recno < ans_length; recno++)
-			INTEGER(ans_width)[recno] = INTEGER(ans_geom)[1];
-	}
-	element_type = CHAR(STRING_ELT(elementType, 0));
-	if (snprintf(classname, sizeof(classname), "%sSet", element_type)
-	    >= sizeof(classname))
-	{
-		UNPROTECT(2);
-		error("Biostrings internal error in "
-		      "read_XStringSet_from_fastq(): "
-		      "'classname' buffer too small");
-	}
-	PROTECT(ans = alloc_XRawList(classname, element_type, ans_width));
+	PROTECT(ans_width = get_fastq_seqlengths(filexp_list,
+						  nrec0, skip0, seek_rec0));
+	PROTECT(ans = _alloc_XStringSet(CHAR(STRING_ELT(elementType, 0)),
+					ans_width));
 	loader_ext = new_FASTQloaderExt(ans, lkup);
 	loader = new_FASTQloader(load_seqids, &loader_ext);
 	recno = 0;

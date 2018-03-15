@@ -77,11 +77,29 @@ void _set_XStringSet_names(SEXP x, SEXP names)
 
 
 /****************************************************************************
+ * _alloc_XStringSet()
+ */
+
+SEXP _alloc_XStringSet(const char *element_type, SEXP width)
+{
+	char classname[40];  /* longest string should be "DNAStringSet" */
+
+	if (snprintf(classname, sizeof(classname), "%sSet", element_type) >=
+	    sizeof(classname))
+	{
+		error("Biostrings internal error in _alloc_XStringSet(): "
+		      "'classname' buffer too small");
+	}
+	return alloc_XRawList(classname, element_type, width);
+}
+
+
+/****************************************************************************
  * From CHARACTER to XStringSet and vice-versa.
  */
 
 /* --- .Call ENTRY POINT --- */
-SEXP new_XStringSet_from_CHARACTER(SEXP classname, SEXP element_type,
+SEXP new_XStringSet_from_CHARACTER(SEXP classname, SEXP elementType,
 		SEXP x, SEXP start, SEXP width, SEXP lkup)
 {
 	SEXP ans, x_elt;
@@ -91,7 +109,7 @@ SEXP new_XStringSet_from_CHARACTER(SEXP classname, SEXP element_type,
 	Chars_holder ans_elt_holder;
 
 	PROTECT(ans = alloc_XRawList(CHAR(STRING_ELT(classname, 0)),
-				     CHAR(STRING_ELT(element_type, 0)),
+				     CHAR(STRING_ELT(elementType, 0)),
 				     width));
 	ans_holder = hold_XVectorList(ans);
 	ans_len = get_length_from_XVectorList_holder(&ans_holder);
@@ -184,7 +202,7 @@ SEXP XStringSet_unlist(SEXP x)
 		ans_len += xx.length;
 		if (ans_len > INT_MAX)
 			error("XStringSet object is too big to be "
-                              "unlisted (would result in an XString\n"
+			      "unlisted (would result in an XString\n"
 			      "  object of length 2^31 or more)");
 	}
 	PROTECT(ans_tag = NEW_RAW(ans_len));

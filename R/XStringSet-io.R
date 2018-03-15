@@ -186,7 +186,7 @@ fasta.seqlengths <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
 ### FASTQ
 ###
 
-fastq.geometry <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
+fastq.seqlengths <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
 {
     filexp_list <- XVector:::open_input_files(filepath)
     on.exit(.finalize_filexp_list(filexp_list))
@@ -194,9 +194,18 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
     skip <- .normarg_skip(skip)
     if (!isTRUEorFALSE(seek.first.rec)) 
         stop(wmsg("'seek.first.rec' must be TRUE or FALSE"))
-    .Call2("fastq_geometry",
+    .Call2("fastq_seqlengths",
            filexp_list, nrec, skip, seek.first.rec,
            PACKAGE="Biostrings")
+}
+
+fastq.geometry <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
+{
+    seqlengths <- fastq.seqlengths(filepath, nrec, skip, seek.first.rec)
+    common_seqlength <- runValue(Rle(seqlengths))
+    if (length(common_seqlength) != 1L)
+        common_seqlength <- NA_integer_
+    c(length(seqlengths), common_seqlength)
 }
 
 .read_XStringSet_from_fastq <- function(filepath, nrec, skip, seek.first.rec,

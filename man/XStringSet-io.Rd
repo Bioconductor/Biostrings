@@ -9,6 +9,7 @@
 
 \alias{fasta.seqlengths}
 \alias{fasta.index}
+\alias{fastq.seqlengths}
 \alias{fastq.geometry}
 
 \alias{writeXStringSet}
@@ -40,6 +41,7 @@ fasta.seqlengths(filepath,
 fasta.index(filepath,
             nrec=-1L, skip=0L, seek.first.rec=FALSE, seqtype="B")
 
+fastq.seqlengths(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
 fastq.geometry(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
 
 ## Write an XStringSet object to a FASTA (or FASTQ) file:
@@ -213,12 +215,17 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
   and thus will be more memory efficient if only a small subset of sequences
   is requested.
 
-  The \code{fastq.geometry} utility returns an integer vector describing
-  the "geometry" of the FASTQ files i.e. a vector of length 2 where the
-  first element is the total number of FASTQ records in the files and
-  the second element the common "width" of these files (this width is
-  \code{NA} if the files contain no FASTQ records or records with
-  different widths).
+  The \code{fastq.seqlengths} utility returns the read lengths in an integer
+  vector with one element per FASTQ record in the input files.
+
+  The \code{fastq.geometry} utility is a convenience wrapper around
+  \code{fastq.seqlengths} that returns an integer vector of length 2
+  describing the \emph{geometry} of the FASTQ files. The first integer gives
+  the total number of FASTQ records in the files and the second element the
+  common length of the reads (this common length is set to \code{NA} in case
+  of variable length reads or if no FASTQ record was found). This compact
+  representation of the geometry can be useful if the FASTQ files are known
+  to contain fixed length reads.
 
   \code{writeXStringSet} writes an \link{XStringSet} object to a file.
   Like with \code{readDNAStringSet} and family, only FASTA and FASTQ
