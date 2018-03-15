@@ -65,11 +65,11 @@ typedef struct fastaindex_loader_ext {
 	LLongAE *offset_buf;
 	CharAEAE *desc_buf;
 	IntAE *seqlength_buf;
-} FASTAINDEX_loaderExt;
+} FASTAINDEXloaderExt;
 
-static FASTAINDEX_loaderExt new_FASTAINDEX_loaderExt()
+static FASTAINDEXloaderExt new_FASTAINDEXloaderExt()
 {
-	FASTAINDEX_loaderExt loader_ext;
+	FASTAINDEXloaderExt loader_ext;
 
 	loader_ext.recno_buf = new_IntAE(0, 0, 0);
 	loader_ext.offset_buf = new_LLongAE(0, 0, 0);
@@ -82,7 +82,7 @@ static void FASTAINDEX_load_desc_line(FASTAloader *loader,
 				      int recno, long long int offset,
 				      const Chars_holder *desc_line)
 {
-	FASTAINDEX_loaderExt *loader_ext;
+	FASTAINDEXloaderExt *loader_ext;
 	IntAE *recno_buf;
 	LLongAE *offset_buf;
 	CharAEAE *desc_buf;
@@ -103,7 +103,7 @@ static void FASTAINDEX_load_desc_line(FASTAloader *loader,
 
 static void FASTAINDEX_load_empty_seq(FASTAloader *loader)
 {
-	FASTAINDEX_loaderExt *loader_ext;
+	FASTAINDEXloaderExt *loader_ext;
 	IntAE *seqlength_buf;
 
 	loader_ext = loader->ext;
@@ -115,7 +115,7 @@ static void FASTAINDEX_load_empty_seq(FASTAloader *loader)
 static void FASTAINDEX_load_seq_data(FASTAloader *loader,
 		const Chars_holder *seq_data)
 {
-	FASTAINDEX_loaderExt *loader_ext;
+	FASTAINDEXloaderExt *loader_ext;
 	IntAE *seqlength_buf;
 
 	loader_ext = loader->ext;
@@ -125,8 +125,8 @@ static void FASTAINDEX_load_seq_data(FASTAloader *loader,
 	return;
 }
 
-static FASTAloader new_FASTAINDEX_loader(SEXP lkup, int load_descs,
-					 FASTAINDEX_loaderExt *loader_ext)
+static FASTAloader new_FASTAloader_with_FASTAINDEX_ext(
+		SEXP lkup, int load_descs, FASTAINDEXloaderExt *loader_ext)
 {
 	FASTAloader loader;
 
@@ -152,11 +152,11 @@ static FASTAloader new_FASTAINDEX_loader(SEXP lkup, int load_descs,
 typedef struct fasta_loader_ext {
 	XVectorList_holder ans_holder;
 	Chars_holder ans_elt_holder;
-} FASTA_loaderExt;
+} FASTAloaderExt;
 
-static FASTA_loaderExt new_FASTA_loaderExt(SEXP ans)
+static FASTAloaderExt new_FASTAloaderExt(SEXP ans)
 {
-	FASTA_loaderExt loader_ext;
+	FASTAloaderExt loader_ext;
 
 	loader_ext.ans_holder = hold_XVectorList(ans);
 	return loader_ext;
@@ -164,7 +164,7 @@ static FASTA_loaderExt new_FASTA_loaderExt(SEXP ans)
 
 static void FASTA_load_empty_seq(FASTAloader *loader)
 {
-	FASTA_loaderExt *loader_ext;
+	FASTAloaderExt *loader_ext;
 	Chars_holder *ans_elt_holder;
 
 	loader_ext = loader->ext;
@@ -179,7 +179,7 @@ static void FASTA_load_empty_seq(FASTAloader *loader)
 static void FASTA_load_seq_data(FASTAloader *loader,
 		const Chars_holder *seq_data)
 {
-	FASTA_loaderExt *loader_ext;
+	FASTAloaderExt *loader_ext;
 	Chars_holder *ans_elt_holder;
 
 	loader_ext = loader->ext;
@@ -192,7 +192,7 @@ static void FASTA_load_seq_data(FASTAloader *loader,
 	return;
 }
 
-static FASTAloader new_FASTA_loader(SEXP lkup, FASTA_loaderExt *loader_ext)
+static FASTAloader new_FASTAloader(SEXP lkup, FASTAloaderExt *loader_ext)
 {
 	FASTAloader loader;
 
@@ -402,7 +402,7 @@ SEXP fasta_index(SEXP filexp_list,
 		 SEXP nrec, SEXP skip, SEXP seek_first_rec, SEXP lkup)
 {
 	int nrec0, skip0, seek_rec0, i, recno, old_nrec, new_nrec, k;
-	FASTAINDEX_loaderExt loader_ext;
+	FASTAINDEXloaderExt loader_ext;
 	FASTAloader loader;
 	IntAE *seqlength_buf, *fileno_buf;
 	SEXP filexp;
@@ -412,8 +412,8 @@ SEXP fasta_index(SEXP filexp_list,
 	nrec0 = INTEGER(nrec)[0];
 	skip0 = INTEGER(skip)[0];
 	seek_rec0 = LOGICAL(seek_first_rec)[0];
-	loader_ext = new_FASTAINDEX_loaderExt();
-	loader = new_FASTAINDEX_loader(lkup, 1, &loader_ext);
+	loader_ext = new_FASTAINDEXloaderExt();
+	loader = new_FASTAloader_with_FASTAINDEX_ext(lkup, 1, &loader_ext);
 	seqlength_buf = loader_ext.seqlength_buf;
 	fileno_buf = new_IntAE(0, 0, 0);
 	for (i = recno = 0; i < LENGTH(filexp_list); i++) {
@@ -475,7 +475,7 @@ SEXP read_XStringSet_from_fasta_blocks(SEXP seqlength,
 	const char *element_type;
 	char classname[40];  /* longest string should be "DNAStringSet" */
 	SEXP ans, filexp, nrec, offset;
-	FASTA_loaderExt loader_ext;
+	FASTAloaderExt loader_ext;
 	FASTAloader loader;
 	int i, j, nrec_j, recno;
 	long long int offset_j, ninvalid;
@@ -489,8 +489,8 @@ SEXP read_XStringSet_from_fasta_blocks(SEXP seqlength,
 		      "'classname' buffer too small");
 	}
 	PROTECT(ans = alloc_XRawList(classname, element_type, seqlength));
-	loader_ext = new_FASTA_loaderExt(ans);
-	loader = new_FASTA_loader(lkup, &loader_ext);
+	loader_ext = new_FASTAloaderExt(ans);
+	loader = new_FASTAloader(lkup, &loader_ext);
 	for (i = 0; i < LENGTH(filexp_list); i++) {
 		filexp = VECTOR_ELT(filexp_list, i);
 		nrec = VECTOR_ELT(nrec_list, i);
@@ -600,11 +600,11 @@ typedef struct fastq_loader {
 
 typedef struct fastqgeom_loader_ext {
 	int width;
-} FASTQGEOM_loaderExt;
+} FASTQGEOMloaderExt;
 
-static FASTQGEOM_loaderExt new_FASTQGEOM_loaderExt()
+static FASTQGEOMloaderExt new_FASTQGEOMloaderExt()
 {
-	FASTQGEOM_loaderExt loader_ext;
+	FASTQGEOMloaderExt loader_ext;
 
 	loader_ext.width = NA_INTEGER;
 	return loader_ext;
@@ -612,7 +612,7 @@ static FASTQGEOM_loaderExt new_FASTQGEOM_loaderExt()
 
 static void FASTQGEOM_load_seq(FASTQloader *loader, const Chars_holder *seq)
 {
-	FASTQGEOM_loaderExt *loader_ext;
+	FASTQGEOMloaderExt *loader_ext;
 
 	loader_ext = loader->ext;
 	if (loader->nrec == 0) {
@@ -626,7 +626,8 @@ static void FASTQGEOM_load_seq(FASTQloader *loader, const Chars_holder *seq)
 	return;
 }
 
-static FASTQloader new_FASTQGEOM_loader(FASTQGEOM_loaderExt *loader_ext)
+static FASTQloader new_FASTQloader_with_FASTQGEOM_ext(
+		FASTQGEOMloaderExt *loader_ext)
 {
 	FASTQloader loader;
 
@@ -648,11 +649,11 @@ typedef struct fastq_loader_ext {
 	XVectorList_holder ans_holder;
 	const int *lkup;
 	int lkup_length;
-} FASTQ_loaderExt;
+} FASTQloaderExt;
 
-static FASTQ_loaderExt new_FASTQ_loaderExt(SEXP ans, SEXP lkup)
+static FASTQloaderExt new_FASTQloaderExt(SEXP ans, SEXP lkup)
 {
-	FASTQ_loaderExt loader_ext;
+	FASTQloaderExt loader_ext;
 
 	loader_ext.ans_names_buf =
 		new_CharAEAE(_get_XStringSet_length(ans), 0);
@@ -669,7 +670,7 @@ static FASTQ_loaderExt new_FASTQ_loaderExt(SEXP ans, SEXP lkup)
 
 static void FASTQ_load_seqid(FASTQloader *loader, const Chars_holder *seqid)
 {
-	FASTQ_loaderExt *loader_ext;
+	FASTQloaderExt *loader_ext;
 	CharAEAE *ans_names_buf;
 
 	loader_ext = loader->ext;
@@ -681,7 +682,7 @@ static void FASTQ_load_seqid(FASTQloader *loader, const Chars_holder *seqid)
 
 static void FASTQ_load_seq(FASTQloader *loader, const Chars_holder *seq)
 {
-	FASTQ_loaderExt *loader_ext;
+	FASTQloaderExt *loader_ext;
 	Chars_holder ans_elt_holder;
 
 	loader_ext = loader->ext;
@@ -696,8 +697,8 @@ static void FASTQ_load_seq(FASTQloader *loader, const Chars_holder *seq)
 	return;
 }
 
-static FASTQloader new_FASTQ_loader(int load_seqids,
-				    FASTQ_loaderExt *loader_ext)
+static FASTQloader new_FASTQloader(int load_seqids,
+				   FASTQloaderExt *loader_ext)
 {
 	FASTQloader loader;
 
@@ -817,7 +818,7 @@ SEXP fastq_geometry(SEXP filexp_list,
 		SEXP nrec, SEXP skip, SEXP seek_first_rec)
 {
 	int nrec0, skip0, seek_rec0, i, recno;
-	FASTQGEOM_loaderExt loader_ext;
+	FASTQGEOMloaderExt loader_ext;
 	FASTQloader loader;
 	const char *errmsg;
 	SEXP filexp, ans;
@@ -825,8 +826,8 @@ SEXP fastq_geometry(SEXP filexp_list,
 	nrec0 = INTEGER(nrec)[0];
 	skip0 = INTEGER(skip)[0];
 	seek_rec0 = LOGICAL(seek_first_rec)[0];
-	loader_ext = new_FASTQGEOM_loaderExt();
-	loader = new_FASTQGEOM_loader(&loader_ext);
+	loader_ext = new_FASTQGEOMloaderExt();
+	loader = new_FASTQloader_with_FASTQGEOM_ext(&loader_ext);
 	recno = 0;
 	for (i = 0; i < LENGTH(filexp_list); i++) {
 		filexp = VECTOR_ELT(filexp_list, i);
@@ -853,7 +854,7 @@ SEXP read_XStringSet_from_fastq(SEXP filexp_list, SEXP nrec, SEXP skip,
 	SEXP filexp, ans_geom, ans_width, ans, ans_names;
 	const char *element_type;
 	char classname[40];  /* longest string should be "DNAStringSet" */
-	FASTQ_loaderExt loader_ext;
+	FASTQloaderExt loader_ext;
 	FASTQloader loader;
 
 	nrec0 = INTEGER(nrec)[0];
@@ -883,8 +884,8 @@ SEXP read_XStringSet_from_fastq(SEXP filexp_list, SEXP nrec, SEXP skip,
 		      "'classname' buffer too small");
 	}
 	PROTECT(ans = alloc_XRawList(classname, element_type, ans_width));
-	loader_ext = new_FASTQ_loaderExt(ans, lkup);
-	loader = new_FASTQ_loader(load_seqids, &loader_ext);
+	loader_ext = new_FASTQloaderExt(ans, lkup);
+	loader = new_FASTQloader(load_seqids, &loader_ext);
 	recno = 0;
 	for (i = 0; i < LENGTH(filexp_list); i++) {
 		filexp = VECTOR_ELT(filexp_list, i);
