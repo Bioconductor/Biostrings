@@ -875,7 +875,7 @@ SEXP read_XStringSet_from_fastq(SEXP filexp_list, SEXP nrec, SEXP skip,
 		_set_XStringSet_names(ans, ans_names);
 		UNPROTECT(1);
 	}
-	UNPROTECT(3);
+	UNPROTECT(2);
 	return ans;
 }
 
