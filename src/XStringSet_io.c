@@ -57,19 +57,19 @@ typedef struct fasta_loader {
 } FASTAloader;
 
 /*
- * The FASTAINDEX loader.
+ * The FASTA INDEX loader.
  */
 
-typedef struct fastaindex_loader_ext {
+typedef struct index_fasta_loader_ext {
 	IntAE *recno_buf;
 	LLongAE *offset_buf;
 	CharAEAE *desc_buf;
 	IntAE *seqlength_buf;
-} FASTAINDEXloaderExt;
+} INDEX_FASTAloaderExt;
 
-static FASTAINDEXloaderExt new_FASTAINDEXloaderExt()
+static INDEX_FASTAloaderExt new_INDEX_FASTAloaderExt()
 {
-	FASTAINDEXloaderExt loader_ext;
+	INDEX_FASTAloaderExt loader_ext;
 
 	loader_ext.recno_buf = new_IntAE(0, 0, 0);
 	loader_ext.offset_buf = new_LLongAE(0, 0, 0);
@@ -78,11 +78,11 @@ static FASTAINDEXloaderExt new_FASTAINDEXloaderExt()
 	return loader_ext;
 }
 
-static void FASTAINDEX_load_desc_line(FASTAloader *loader,
-				      int recno, long long int offset,
-				      const Chars_holder *desc_line)
+static void FASTA_INDEX_load_desc_line(FASTAloader *loader,
+				       int recno, long long int offset,
+				       const Chars_holder *desc_line)
 {
-	FASTAINDEXloaderExt *loader_ext;
+	INDEX_FASTAloaderExt *loader_ext;
 	IntAE *recno_buf;
 	LLongAE *offset_buf;
 	CharAEAE *desc_buf;
@@ -101,9 +101,9 @@ static void FASTAINDEX_load_desc_line(FASTAloader *loader,
 	return;
 }
 
-static void FASTAINDEX_load_empty_seq(FASTAloader *loader)
+static void FASTA_INDEX_load_empty_seq(FASTAloader *loader)
 {
-	FASTAINDEXloaderExt *loader_ext;
+	INDEX_FASTAloaderExt *loader_ext;
 	IntAE *seqlength_buf;
 
 	loader_ext = loader->ext;
@@ -112,10 +112,10 @@ static void FASTAINDEX_load_empty_seq(FASTAloader *loader)
 	return;
 }
 
-static void FASTAINDEX_load_seq_data(FASTAloader *loader,
+static void FASTA_INDEX_load_seq_data(FASTAloader *loader,
 		const Chars_holder *seq_data)
 {
-	FASTAINDEXloaderExt *loader_ext;
+	INDEX_FASTAloaderExt *loader_ext;
 	IntAE *seqlength_buf;
 
 	loader_ext = loader->ext;
@@ -125,8 +125,8 @@ static void FASTAINDEX_load_seq_data(FASTAloader *loader,
 	return;
 }
 
-static FASTAloader new_FASTAloader_with_FASTAINDEX_ext(
-		SEXP lkup, int load_descs, FASTAINDEXloaderExt *loader_ext)
+static FASTAloader new_FASTAloader_with_INDEX_ext(
+		SEXP lkup, int load_descs, INDEX_FASTAloaderExt *loader_ext)
 {
 	FASTAloader loader;
 
@@ -137,9 +137,9 @@ static FASTAloader new_FASTAloader_with_FASTAINDEX_ext(
 		loader.lkup = INTEGER(lkup);
 		loader.lkup_length = LENGTH(lkup);
 	}
-	loader.load_desc_line = load_descs ? &FASTAINDEX_load_desc_line : NULL;
-	loader.load_empty_seq = &FASTAINDEX_load_empty_seq;
-	loader.load_seq_data = &FASTAINDEX_load_seq_data;
+	loader.load_desc_line = load_descs ? &FASTA_INDEX_load_desc_line : NULL;
+	loader.load_empty_seq = &FASTA_INDEX_load_empty_seq;
+	loader.load_seq_data = &FASTA_INDEX_load_seq_data;
 	loader.nrec = 0;
 	loader.ext = loader_ext;
 	return loader;
@@ -402,7 +402,7 @@ SEXP fasta_index(SEXP filexp_list,
 		 SEXP nrec, SEXP skip, SEXP seek_first_rec, SEXP lkup)
 {
 	int nrec0, skip0, seek_rec0, i, recno, old_nrec, new_nrec, k;
-	FASTAINDEXloaderExt loader_ext;
+	INDEX_FASTAloaderExt loader_ext;
 	FASTAloader loader;
 	IntAE *seqlength_buf, *fileno_buf;
 	SEXP filexp;
@@ -412,8 +412,8 @@ SEXP fasta_index(SEXP filexp_list,
 	nrec0 = INTEGER(nrec)[0];
 	skip0 = INTEGER(skip)[0];
 	seek_rec0 = LOGICAL(seek_first_rec)[0];
-	loader_ext = new_FASTAINDEXloaderExt();
-	loader = new_FASTAloader_with_FASTAINDEX_ext(lkup, 1, &loader_ext);
+	loader_ext = new_INDEX_FASTAloaderExt();
+	loader = new_FASTAloader_with_INDEX_ext(lkup, 1, &loader_ext);
 	seqlength_buf = loader_ext.seqlength_buf;
 	fileno_buf = new_IntAE(0, 0, 0);
 	for (i = recno = 0; i < LENGTH(filexp_list); i++) {
@@ -594,25 +594,28 @@ typedef struct fastq_loader {
 } FASTQloader;
 
 /*
- * The FASTQGEOM loader keeps only the common width of the sequences
- * (NA if the set of sequences is not rectangular).
+ * The FASTQ GEOM loader.
+ * This loader keeps only the common width of the sequences (NA if the set
+ * of sequences is not rectangular).
  */
 
-typedef struct fastqgeom_loader_ext {
+typedef struct geom_fastq_loader_ext {
 	int width;
-} FASTQGEOMloaderExt;
+	//IntAE *seqlength_buf;
+} GEOM_FASTQloaderExt;
 
-static FASTQGEOMloaderExt new_FASTQGEOMloaderExt()
+static GEOM_FASTQloaderExt new_GEOM_FASTQloaderExt()
 {
-	FASTQGEOMloaderExt loader_ext;
+	GEOM_FASTQloaderExt loader_ext;
 
 	loader_ext.width = NA_INTEGER;
+	//loader_ext.seqlength_buf = new_IntAE(0, 0, 0);
 	return loader_ext;
 }
 
-static void FASTQGEOM_load_seq(FASTQloader *loader, const Chars_holder *seq)
+static void FASTQ_GEOM_load_seq(FASTQloader *loader, const Chars_holder *seq)
 {
-	FASTQGEOMloaderExt *loader_ext;
+	GEOM_FASTQloaderExt *loader_ext;
 
 	loader_ext = loader->ext;
 	if (loader->nrec == 0) {
@@ -626,13 +629,13 @@ static void FASTQGEOM_load_seq(FASTQloader *loader, const Chars_holder *seq)
 	return;
 }
 
-static FASTQloader new_FASTQloader_with_FASTQGEOM_ext(
-		FASTQGEOMloaderExt *loader_ext)
+static FASTQloader new_FASTQloader_with_GEOM_ext(
+		GEOM_FASTQloaderExt *loader_ext)
 {
 	FASTQloader loader;
 
 	loader.load_seqid = NULL;
-	loader.load_seq = FASTQGEOM_load_seq;
+	loader.load_seq = FASTQ_GEOM_load_seq;
 	loader.load_qualid = NULL;
 	loader.load_qual = NULL;
 	loader.nrec = 0;
@@ -813,25 +816,22 @@ static const char *parse_FASTQ_file(SEXP filexp,
 	return NULL;
 }
 
-/* --- .Call ENTRY POINT --- */
-SEXP fastq_geometry(SEXP filexp_list,
-		SEXP nrec, SEXP skip, SEXP seek_first_rec)
+/* Return an integer vector of length 2. */
+static SEXP get_fastq_geometry(SEXP filexp_list,
+		int nrec, int skip, int seek_first_rec)
 {
-	int nrec0, skip0, seek_rec0, i, recno;
-	FASTQGEOMloaderExt loader_ext;
+	GEOM_FASTQloaderExt loader_ext;
 	FASTQloader loader;
-	const char *errmsg;
+	int recno, i;
 	SEXP filexp, ans;
+	const char *errmsg;
 
-	nrec0 = INTEGER(nrec)[0];
-	skip0 = INTEGER(skip)[0];
-	seek_rec0 = LOGICAL(seek_first_rec)[0];
-	loader_ext = new_FASTQGEOMloaderExt();
-	loader = new_FASTQloader_with_FASTQGEOM_ext(&loader_ext);
+	loader_ext = new_GEOM_FASTQloaderExt();
+	loader = new_FASTQloader_with_GEOM_ext(&loader_ext);
 	recno = 0;
 	for (i = 0; i < LENGTH(filexp_list); i++) {
 		filexp = VECTOR_ELT(filexp_list, i);
-		errmsg = parse_FASTQ_file(filexp, nrec0, skip0, seek_rec0,
+		errmsg = parse_FASTQ_file(filexp, nrec, skip, seek_first_rec,
 					  &loader, &recno);
 		if (errmsg != NULL)
 			error("reading FASTQ file %s: %s",
@@ -843,6 +843,23 @@ SEXP fastq_geometry(SEXP filexp_list,
 	INTEGER(ans)[1] = loader_ext.width;
 	UNPROTECT(1);
 	return ans;
+}
+
+/* --- .Call ENTRY POINT ---
+ * Args:
+ *   filexp_list:     A list of external pointers.
+ *   nrec:            An integer vector of length 1.
+ *   skip:            An integer vector of length 1.
+ *   seek_first_rec:  A logical vector of length 1.
+ */
+SEXP fastq_geometry(SEXP filexp_list, SEXP nrec, SEXP skip, SEXP seek_first_rec)
+{
+	int nrec0, skip0, seek_rec0;
+
+	nrec0 = INTEGER(nrec)[0];
+	skip0 = INTEGER(skip)[0];
+	seek_rec0 = LOGICAL(seek_first_rec)[0];
+	return get_fastq_geometry(filexp_list, nrec0, skip0, seek_rec0);
 }
 
 /* --- .Call ENTRY POINT --- */
@@ -861,8 +878,8 @@ SEXP read_XStringSet_from_fastq(SEXP filexp_list, SEXP nrec, SEXP skip,
 	skip0 = INTEGER(skip)[0];
 	seek_rec0 = LOGICAL(seek_first_rec)[0];
 	load_seqids = LOGICAL(use_names)[0];
-	PROTECT(ans_geom = fastq_geometry(filexp_list, nrec, skip,
-					  seek_first_rec));
+	PROTECT(ans_geom = get_fastq_geometry(filexp_list,
+					      nrec0, skip0, seek_rec0));
 	ans_length = INTEGER(ans_geom)[0];
 	PROTECT(ans_width = NEW_INTEGER(ans_length));
 	if (ans_length != 0) {
