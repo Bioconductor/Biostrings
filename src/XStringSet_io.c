@@ -445,7 +445,7 @@ SEXP fasta_index(SEXP filexp_list,
 /* --- .Call ENTRY POINT ---
  * "FASTA blocks" are groups of consecutive FASTA records.
  * Args:
- *   seqlength:   Integer vector with 1 element per record to read. The
+ *   seqlengths:  Integer vector with 1 element per record to read. The
  *                elements must be placed in the order that the records are
  *                going to be read.
  *   filexp_list: A list of N "File External Pointers" (see src/io_utils.c in
@@ -468,7 +468,7 @@ SEXP fasta_index(SEXP filexp_list,
  *                inferred from this).
  *   lkup:        Lookup table for encoding the incoming sequence bytes.
  */
-SEXP read_XStringSet_from_fasta_blocks(SEXP seqlength,
+SEXP read_XStringSet_from_fasta_blocks(SEXP seqlengths,
 		SEXP filexp_list, SEXP nrec_list, SEXP offset_list,
 		SEXP elementType, SEXP lkup)
 {
@@ -479,7 +479,7 @@ SEXP read_XStringSet_from_fasta_blocks(SEXP seqlength,
 	long long int offset_j, ninvalid;
 
 	PROTECT(ans = _alloc_XStringSet(CHAR(STRING_ELT(elementType, 0)),
-					seqlength));
+					seqlengths));
 	loader_ext = new_FASTAloaderExt(ans);
 	loader = new_FASTAloader(lkup, &loader_ext);
 	for (i = 0; i < LENGTH(filexp_list); i++) {

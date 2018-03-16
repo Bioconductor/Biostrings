@@ -190,7 +190,7 @@ SEXP fasta_index(
 );
 
 SEXP read_XStringSet_from_fasta_blocks(
-	SEXP seqlength,
+	SEXP seqlengths,
 	SEXP filexp_list,
 	SEXP nrec_list,
 	SEXP offset_list,

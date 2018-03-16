@@ -150,11 +150,11 @@ fasta.seqlengths <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
     filexp_list <- XVector:::open_input_files(used_filepath)
     on.exit(.finalize_filexp_list(filexp_list))
 
-    ## Prepare 'seqlength'.
-    seqlength <- ssorted_fai[ , "seqlength"]
+    ## Prepare 'seqlengths'.
+    seqlengths <- ssorted_fai[ , "seqlength"]
 
     .Call2("read_XStringSet_from_fasta_blocks",
-           seqlength, filexp_list, nrec_list, offset_list,
+           seqlengths, filexp_list, nrec_list, offset_list,
            elementType, lkup,
            PACKAGE="Biostrings")
 }
