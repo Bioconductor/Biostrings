@@ -183,7 +183,7 @@ SEXP DNAStringSet_translate(SEXP x, SEXP skip_code, SEXP dna_codes,
 		X_elt = _get_elt_from_XStringSet_holder(&X, i);
 		INTEGER(width)[i] = X_elt.length / 3;
 	}
-	PROTECT(ans = alloc_XRawList("AAStringSet", "AAString", width));
+	PROTECT(ans = _alloc_XStringSet("AAString", width));
 	Y = _hold_XStringSet(ans);
 	ans_width = _get_XStringSet_width(ans);
 	for (i = 0; i < ans_length; i++) {

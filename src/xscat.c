@@ -67,7 +67,6 @@ SEXP XStringSet_xscat(SEXP args)
 	SEXP arg, ans_width, ans;
 	const char *ans_element_type;
 	Chars_holder arg_elt_holder, ans_elt_holder;
-	char ans_classname[40];  /* longest string should be "DNAStringSet" */
 
 	nargs = LENGTH(args);
 	if (nargs == 0)
@@ -106,15 +105,7 @@ SEXP XStringSet_xscat(SEXP args)
 			ii[j]++;
 		}
 	}
-
-	if (snprintf(ans_classname, sizeof(ans_classname),
-			"%sSet", ans_element_type) >= sizeof(ans_classname)) {
-		UNPROTECT(1);
-		error("Biostrings internal error in XStringSet_xscat(): "
-		      "'ans_classname' buffer too small");
-	}
-	PROTECT(ans = alloc_XRawList(ans_classname, ans_element_type,
-				     ans_width));
+	PROTECT(ans = _alloc_XStringSet(ans_element_type, ans_width));
 
 	/* 3rd pass: fill 'ans' */
 	ans_holder = hold_XVectorList(ans);

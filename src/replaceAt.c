@@ -201,7 +201,7 @@ SEXP XStringSet_replaceAt(SEXP x, SEXP at, SEXP value)
 	IRanges_holder at_elt_holder;
 	XStringSet_holder value_elt_holder;
 
-	const char *ans_classname, *ans_elt_type;
+	const char *ans_classname, *ans_element_type;
 	SEXP ans;
 	RangesOrderBufs bufs;
 	XStringSet_holder ans_holder;
@@ -265,8 +265,9 @@ SEXP XStringSet_replaceAt(SEXP x, SEXP at, SEXP value)
 
 	/* Allocate 'ans' and 'bufs' */
 	ans_classname = get_classname(x);
-	ans_elt_type = get_List_elementType(x);
-	PROTECT(ans = alloc_XRawList(ans_classname, ans_elt_type, ans_width));
+	ans_element_type = get_List_elementType(x);
+	PROTECT(ans = alloc_XRawList(ans_classname, ans_element_type,
+				     ans_width));
 	ret_code = alloc_RangesOrderBufs(&bufs, max_replacements);
 	if (ret_code == -1) {
 		UNPROTECT(2);

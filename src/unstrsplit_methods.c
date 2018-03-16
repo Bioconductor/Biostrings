@@ -54,8 +54,7 @@ SEXP XStringSetList_unstrsplit(SEXP x, SEXP sep, SEXP seqtype)
 	Chars_holder sep_holder, ans_elt_holder;
 	int x_len, sep_len, i;
 	const char *seqtype0;
-	char ans_elt_type[37];  /* longest string should be "DNAString" */
-	char ans_classname[40];  /* longest string should be "DNAStringSet" */
+	char ans_element_type[37];  /* longest string should be "DNAString" */
 	SEXP ans, ans_width, ans_names;
 
 	x_holder = _hold_XStringSetList(x);
@@ -63,16 +62,11 @@ SEXP XStringSetList_unstrsplit(SEXP x, SEXP sep, SEXP seqtype)
 	sep_holder = hold_XRaw(sep);
 	sep_len = sep_holder.length;
 	seqtype0 = CHAR(STRING_ELT(seqtype, 0));
-	if (snprintf(ans_elt_type, sizeof(ans_elt_type),
-		     "%sString", seqtype0) >= sizeof(ans_elt_type))
+	if (snprintf(ans_element_type, sizeof(ans_element_type),
+		     "%sString", seqtype0) >= sizeof(ans_element_type))
 		error("Biostrings internal error in "
 		      "XStringSetList_unstrsplit(): "
-		      "'ans_elt_type' buffer too small");
-	if (snprintf(ans_classname, sizeof(ans_classname),
-		     "%sSet", ans_elt_type) >= sizeof(ans_classname))
-		error("Biostrings internal error in "
-		      "XStringSetList_unstrsplit(): "
-		      "'ans_classname' buffer too small");
+		      "'ans_element_type' buffer too small");
 
 	/* 1st pass: compute 'ans_width' */
 	PROTECT(ans_width = NEW_INTEGER(x_len));
@@ -84,7 +78,7 @@ SEXP XStringSetList_unstrsplit(SEXP x, SEXP sep, SEXP seqtype)
 	}
 
 	/* Allocate 'ans' */
-	PROTECT(ans = alloc_XRawList(ans_classname, ans_elt_type, ans_width));
+	PROTECT(ans = _alloc_XStringSet(ans_element_type, ans_width));
 
 	/* 2nd pass: fill 'ans' */
 	ans_holder = _hold_XStringSet(ans);
