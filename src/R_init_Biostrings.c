@@ -174,7 +174,6 @@ void R_init_Biostrings(DllInfo *info)
 
 /* XStringSet_class.c */
 	REGISTER_CCALLABLE(_get_XStringSet_length);
-	REGISTER_CCALLABLE(_get_XStringSet_xsbaseclassname);
 	REGISTER_CCALLABLE(_hold_XStringSet);
 	REGISTER_CCALLABLE(_get_length_from_XStringSet_holder);
 	REGISTER_CCALLABLE(_get_elt_from_XStringSet_holder);

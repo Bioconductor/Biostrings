@@ -265,7 +265,7 @@ SEXP XStringSet_replaceAt(SEXP x, SEXP at, SEXP value)
 
 	/* Allocate 'ans' and 'bufs' */
 	ans_classname = get_classname(x);
-	ans_elt_type = _get_XStringSet_xsbaseclassname(x);
+	ans_elt_type = get_List_elementType(x);
 	PROTECT(ans = alloc_XRawList(ans_classname, ans_elt_type, ans_width));
 	ret_code = alloc_RangesOrderBufs(&bufs, max_replacements);
 	if (ret_code == -1) {

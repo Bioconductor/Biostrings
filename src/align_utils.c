@@ -86,7 +86,7 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	CompressedIRangesList_holder indel_holder = hold_CompressedIRangesList(indel);
 
 	const char *stringSetClass = get_qualityless_classname(unaligned);
-	const char *stringClass = _get_XStringSet_xsbaseclassname(unaligned);
+	const char *stringClass = get_List_elementType(unaligned);
 
 	int numberOfStrings = _get_XStringSet_length(unaligned);
 
@@ -176,7 +176,7 @@ SEXP PairwiseAlignmentsSingleSubject_align_aligned(SEXP alignment, SEXP gapCode,
 	CompressedIRangesList_holder indelSubject_holder = hold_CompressedIRangesList(indelSubject);
 
 	const char *stringSetClass = get_qualityless_classname(unalignedPattern);
-	const char *stringClass = _get_XStringSet_xsbaseclassname(unalignedPattern);
+	const char *stringClass = get_List_elementType(unalignedPattern);
 
 	int numberOfAlignments = get_IRanges_length(rangePattern);
 	int numberOfChars = INTEGER(_get_XStringSet_width(GET_SLOT(subject, install("unaligned"))))[0];

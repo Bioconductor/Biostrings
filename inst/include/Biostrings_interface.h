@@ -135,8 +135,6 @@ char RNAdecode(char code);
 
 int get_XStringSet_length(SEXP x);
 
-const char *get_XStringSet_xsbaseclassname(SEXP x);
-
 XStringSet_holder hold_XStringSet(SEXP x);
 
 int get_length_from_XStringSet_holder(const XStringSet_holder *x_holder);

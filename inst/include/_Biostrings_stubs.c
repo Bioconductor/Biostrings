@@ -60,11 +60,6 @@ DEFINE_CCALLABLE_STUB(int, get_XStringSet_length,
 	(     x)
 )
 
-DEFINE_CCALLABLE_STUB(const char *, get_XStringSet_xsbaseclassname,
-	(SEXP x),
-	(     x)
-)
-
 DEFINE_CCALLABLE_STUB(XStringSet_holder, hold_XStringSet,
 	(SEXP x),
 	(     x)

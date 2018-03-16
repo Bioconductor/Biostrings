@@ -82,7 +82,7 @@ SEXP XStringSet_xscat(SEXP args)
 		args_holder[j] = _hold_XStringSet(arg);
 		arg_lengths[j] = _get_XStringSet_length(arg);
 		if (j == 0) {
-			ans_element_type = _get_XStringSet_xsbaseclassname(arg);
+			ans_element_type = get_List_elementType(arg);
 			ans_length = arg_lengths[j];
 		} else {
 			if (arg_lengths[j] > ans_length)

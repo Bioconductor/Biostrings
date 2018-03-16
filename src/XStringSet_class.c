@@ -29,11 +29,6 @@ SEXP _get_XStringSet_width(SEXP x)
 	return get_XVectorList_width(x);
 }
 
-const char *_get_XStringSet_xsbaseclassname(SEXP x)
-{
-	return get_List_elementType(x);
-}
-
 
 /****************************************************************************
  * C-level abstract getters.
@@ -220,8 +215,7 @@ SEXP XStringSet_unlist(SEXP x)
 	}
 
 	/* Make 'ans' */
-	PROTECT(ans = new_XRaw_from_tag(_get_XStringSet_xsbaseclassname(x),
-					ans_tag));
+	PROTECT(ans = new_XRaw_from_tag(get_List_elementType(x), ans_tag));
 	UNPROTECT(2);
 	return ans;
 }

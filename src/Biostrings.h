@@ -111,8 +111,6 @@ int _get_XStringSet_length(SEXP x);
 
 SEXP _get_XStringSet_width(SEXP x);
 
-const char *_get_XStringSet_xsbaseclassname(SEXP x);
-
 XStringSet_holder _hold_XStringSet(SEXP x);
 
 int _get_length_from_XStringSet_holder(const XStringSet_holder *x_holder);
