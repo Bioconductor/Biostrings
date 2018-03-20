@@ -154,13 +154,19 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
   }
   \item{...}{
     Further format-specific arguments.
-    If \code{format="fasta"}, the \code{width} argument (single integer)
-    can be used to specify the maximum number of letters per line of
-    sequence.
-    If \code{format="fastq"}, the \code{qualities} argument (\link{BStringSet}
-    object) can be used to specify the qualities. If the qualities are
-    omitted, then the fake quality ';' is assigned to each letter in
-    \code{x} and written to the file.
+
+    If \code{format="fasta"}, the \code{width} argument can be used to
+    specify the maximum number of letters per line of sequence.
+    \code{width} must be a single integer.
+
+    If \code{format="fastq"}, the \code{qualities} argument can be used to
+    specify the quality strings. \code{qualities} must be a \link{BStringSet}
+    object. If the argument is omitted, then the quality strings are
+    taken from the \code{qualities} metadata column of \code{x} (i.e. from
+    \code{mcols(x)$qualities}). If \code{x} has no \code{qualities} metadata
+    column and the \code{qualities} argument is omitted, then the fake
+    quality ';' is assigned to each letter in \code{x} and written to
+    the FASTQ file.
   }
   \item{objname}{
     The name of the serialized object.
@@ -344,31 +350,45 @@ mcols(reads)$qualities
 ## corresponding read:
 stopifnot(identical(width(mcols(reads)$qualities), width(reads)))
 
+## Write the reads to a FASTQ file:
+outfile <- tempfile()
+writeXStringSet(reads, outfile, format="fastq")
+outfile2 <- tempfile()
+writeXStringSet(reads, outfile2, compress=TRUE, format="fastq")
+
+## Sanity checks:
+stopifnot(identical(readLines(outfile), readLines(filepath)))
+stopifnot(identical(readLines(outfile), readLines(outfile2)))
+
+## ---------------------------------------------------------------------
+## C. GENERATE FAKE READS AND WRITE THEM TO A FASTQ FILE
+## ---------------------------------------------------------------------
+
 library(BSgenome.Celegans.UCSC.ce2)
+
 ## Create a "sliding window" on chr I:
 sw_start <- seq.int(1, length(Celegans$chrI)-50, by=50)
 sw <- Views(Celegans$chrI, start=sw_start, width=10)
-my_fake_shortreads <- as(sw, "XStringSet")
-my_fake_ids <- sprintf("ID\%06d",  seq_len(length(my_fake_shortreads)))
-names(my_fake_shortreads) <- my_fake_ids
-my_fake_shortreads
+my_fake_reads <- as(sw, "XStringSet")
+my_fake_ids <- sprintf("ID\%06d",  seq_len(length(my_fake_reads)))
+names(my_fake_reads) <- my_fake_ids
+my_fake_reads
 
-## Fake quality ';' will be assigned to each base in 'my_fake_shortreads':
+## Fake quality ';' will be assigned to each base in 'my_fake_reads':
 out2 <- tempfile()
-writeXStringSet(my_fake_shortreads, out2, format="fastq")
+writeXStringSet(my_fake_reads, out2, format="fastq")
 
 ## Passing qualities thru the 'qualities' argument:
-my_fake_quals <- rep.int(BStringSet("DCBA@?>=<;"),
-                         length(my_fake_shortreads))
+my_fake_quals <- rep.int(BStringSet("DCBA@?>=<;"), length(my_fake_reads))
 my_fake_quals
 out3 <- tempfile()
-writeXStringSet(my_fake_shortreads, out3, format="fastq",
+writeXStringSet(my_fake_reads, out3, format="fastq",
                 qualities=my_fake_quals)
 
 ## ---------------------------------------------------------------------
-## C. SERIALIZATION
+## D. SERIALIZATION
 ## ---------------------------------------------------------------------
-saveXStringSet(my_fake_shortreads, "my_fake_shortreads", dirpath=tempdir())
+saveXStringSet(my_fake_reads, "my_fake_reads", dirpath=tempdir())
 }
 
 \keyword{utilities}

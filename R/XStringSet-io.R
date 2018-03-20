@@ -323,6 +323,8 @@ readAAStringSet <- function(filepath, format="fasta",
 
 .write_XStringSet_to_fastq <- function(x, filexp_list, qualities=NULL)
 {
+    if (is.null(qualities))
+        qualities <- mcols(x)$qualities
     if (!is.null(qualities)) {
         if (!is(qualities, "BStringSet"))
             stop(wmsg("'qualities' must be NULL or a BStringSet object"))
@@ -331,8 +333,8 @@ readAAStringSet <- function(filepath, format="fasta",
     }
     lkup <- get_seqtype_conversion_lookup(seqtype(x), "B")
     .Call2("write_XStringSet_to_fastq",
-          x, filexp_list, qualities, lkup,
-          PACKAGE="Biostrings")
+           x, filexp_list, qualities, lkup,
+           PACKAGE="Biostrings")
 }
 
 writeXStringSet <- function(x, filepath, append=FALSE,
