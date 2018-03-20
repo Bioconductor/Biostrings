@@ -264,11 +264,12 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
 }
 
 \seealso{
-  \link{XStringSet-class},
-  \link{BString-class},
-  \link{DNAString-class},
-  \link{RNAString-class},
-  \link{AAString-class}
+  \itemize{
+    \item \link{XStringSet}, \link{BStringSet}, \link{DNAStringSet},
+          \link{RNAStringSet}, and \link{AAStringSet} objects.
+
+    \item \link{QualityScaledDNAStringSet} objects.
+  }
 }
 
 \examples{
@@ -361,7 +362,21 @@ stopifnot(identical(readLines(outfile), readLines(filepath)))
 stopifnot(identical(readLines(outfile), readLines(outfile2)))
 
 ## ---------------------------------------------------------------------
-## C. GENERATE FAKE READS AND WRITE THEM TO A FASTQ FILE
+## C. READ A FASTQ FILE AS A QualityScaledDNAStringSet OBJECT
+## ---------------------------------------------------------------------
+
+## For this you need to know the quality scoring scheme used in the file.
+## For example, if the file contains "Phred quality scores" (this is the
+## standard Sanger variant to assess reliability of a base call), do:
+reads <- readDNAStringSet(filepath, format="fastq", with.qualities=TRUE)
+quals <- PhredQuality(mcols(reads)$qualities)
+QualityScaledDNAStringSet(reads, quals)
+
+## Replace PhredQuality() with SolexaQuality() or IlluminaQuality() if
+## the quality scores are Solexa quality scores.
+
+## ---------------------------------------------------------------------
+## D. GENERATE FAKE READS AND WRITE THEM TO A FASTQ FILE
 ## ---------------------------------------------------------------------
 
 library(BSgenome.Celegans.UCSC.ce2)
@@ -386,7 +401,7 @@ writeXStringSet(my_fake_reads, out3, format="fastq",
                 qualities=my_fake_quals)
 
 ## ---------------------------------------------------------------------
-## D. SERIALIZATION
+## E. SERIALIZATION
 ## ---------------------------------------------------------------------
 saveXStringSet(my_fake_reads, "my_fake_reads", dirpath=tempdir())
 }
