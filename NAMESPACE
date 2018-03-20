@@ -331,6 +331,7 @@ export(
     quality,
     QualityScaledBStringSet, QualityScaledDNAStringSet,
     QualityScaledRNAStringSet, QualityScaledAAStringSet,
+    readQualityScaledDNAStringSet, writeQualityScaledXStringSet,
 
     ## InDel-class.R:
     insertion, deletion,

@@ -170,3 +170,33 @@ setMethod("show", "QualityScaledXStringSet",
 )
 
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### readQualityScaledDNAStringSet() / writeQualityScaledXStringSet()
+###
+
+readQualityScaledDNAStringSet <- function(filepath,
+                       quality.scoring=c("phred", "solexa", "illumina"),
+                       nrec=-1L, skip=0L, seek.first.rec=FALSE,
+                       use.names=TRUE)
+{
+    quality.scoring <- match.arg(quality.scoring)
+    x <- readDNAStringSet(filepath, format="fastq",
+                          nrec, skip, seek.first.rec,
+                          use.names, with.qualities=TRUE)
+    qualities <- mcols(x)[ , "qualities"]
+    quals <- switch(quality.scoring,
+                    phred=PhredQuality(qualities),
+                    solexa=SolexaQuality(qualities),
+                    illumina=IlluminaQuality(qualities))
+    QualityScaledDNAStringSet(x, quals)
+}
+
+writeQualityScaledXStringSet <- function(x, filepath,
+                       append=FALSE, compress=FALSE, compression_level=NA)
+{
+    if (!is(x, "QualityScaledXStringSet"))
+        stop(wmsg("'x' must be a QualityScaledXStringSet object"))
+    writeXStringSet(x, filepath, append, compress, compression_level,
+                       format="fastq", qualities=quality(x))
+}
+

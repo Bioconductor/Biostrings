@@ -265,10 +265,13 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
 
 \seealso{
   \itemize{
-    \item \link{XStringSet}, \link{BStringSet}, \link{DNAStringSet},
-          \link{RNAStringSet}, and \link{AAStringSet} objects.
+    \item \link{BStringSet}, \link{DNAStringSet}, \link{RNAStringSet},
+          and \link{AAStringSet} objects.
 
-    \item \link{QualityScaledDNAStringSet} objects.
+    \item \code{\link{readQualityScaledDNAStringSet}} and
+          \code{\link{writeQualityScaledXStringSet}} for reading/writing
+          a \link{QualityScaledDNAStringSet} object (or other
+          \link{QualityScaledXStringSet} derivative) from/to a FASTQ file.
   }
 }
 
@@ -365,15 +368,20 @@ stopifnot(identical(readLines(outfile), readLines(outfile2)))
 ## C. READ A FASTQ FILE AS A QualityScaledDNAStringSet OBJECT
 ## ---------------------------------------------------------------------
 
-## For this you need to know the quality scoring scheme used in the file.
-## For example, if the file contains "Phred quality scores" (this is the
-## standard Sanger variant to assess reliability of a base call), do:
+## Use readQualityScaledDNAStringSet() if you want the object to be
+## returned as a QualityScaledDNAStringSet instead of a DNAStringSet
+## object. See ?readQualityScaledDNAStringSet for more information.
+
+## Note that readQualityScaledDNAStringSet() is a simple wrapper to
+## readDNAStringSet() that does the following if the file contains
+## "Phred quality scores" (which is the standard Sanger variant to
+## assess reliability of a base call):
 reads <- readDNAStringSet(filepath, format="fastq", with.qualities=TRUE)
 quals <- PhredQuality(mcols(reads)$qualities)
 QualityScaledDNAStringSet(reads, quals)
 
-## Replace PhredQuality() with SolexaQuality() or IlluminaQuality() if
-## the quality scores are Solexa quality scores.
+## The call to PhredQuality() is replaced with a call to SolexaQuality()
+## or IlluminaQuality() if the quality scores are Solexa quality scores.
 
 ## ---------------------------------------------------------------------
 ## D. GENERATE FAKE READS AND WRITE THEM TO A FASTQ FILE

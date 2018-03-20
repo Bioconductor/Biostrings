@@ -315,15 +315,26 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
 \author{H. Pagès}
 
 \seealso{
-  \link{XStringSet-comparison},
-  \link{XString-class},
-  \link{XStringViews-class},
-  \link{XStringSetList-class},
-  \code{\link[XVector]{subseq}},
-  \code{\link[IRanges]{narrow}},
-  \code{\link{substr}},
-  \code{\link[XVector]{compact}},
-  \link[XVector]{XVectorList-class}
+  \itemize{
+    \item \code{\link{readDNAStringSet}} and \code{\link{writeXStringSet}}
+          for reading/writing a \link{DNAStringSet} object (or other
+          \link{XStringSet} derivative) from/to a FASTA or FASTQ file.
+
+    \item \link{XStringSet-comparison}
+
+    \item \link{XString} objects.
+
+    \item \link{XStringViews} objects.
+
+    \item \link{XStringSetList} objects.
+
+    \item \code{\link[XVector]{subseq}}, \code{\link[IRanges]{narrow}},
+          and \code{\link{substr}}.
+
+    \item \code{\link[XVector]{compact}}
+
+    \item \link[XVector]{XVectorList} objects.
+  }
 }
 
 \examples{
