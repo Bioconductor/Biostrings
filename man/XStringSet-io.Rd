@@ -25,24 +25,31 @@
 \usage{
 ## Read FASTA (or FASTQ) files in an XStringSet object:
 readBStringSet(filepath, format="fasta",
-               nrec=-1L, skip=0L, seek.first.rec=FALSE, use.names=TRUE)
+                nrec=-1L, skip=0L, seek.first.rec=FALSE,
+                use.names=TRUE, with.qualities=FALSE)
 readDNAStringSet(filepath, format="fasta",
-               nrec=-1L, skip=0L, seek.first.rec=FALSE, use.names=TRUE)
+                nrec=-1L, skip=0L, seek.first.rec=FALSE,
+                use.names=TRUE, with.qualities=FALSE)
 readRNAStringSet(filepath, format="fasta",
-               nrec=-1L, skip=0L, seek.first.rec=FALSE, use.names=TRUE)
+                nrec=-1L, skip=0L, seek.first.rec=FALSE,
+                use.names=TRUE, with.qualities=FALSE)
 readAAStringSet(filepath, format="fasta",
-               nrec=-1L, skip=0L, seek.first.rec=FALSE, use.names=TRUE)
+                nrec=-1L, skip=0L, seek.first.rec=FALSE,
+                use.names=TRUE, with.qualities=FALSE)
 
 ## Extract basic information about FASTA (or FASTQ) files
 ## without actually loading the sequence data:
 fasta.seqlengths(filepath,
-                 nrec=-1L, skip=0L, seek.first.rec=FALSE, seqtype="B",
-                 use.names=TRUE)
+                nrec=-1L, skip=0L, seek.first.rec=FALSE,
+                seqtype="B", use.names=TRUE)
 fasta.index(filepath,
-            nrec=-1L, skip=0L, seek.first.rec=FALSE, seqtype="B")
+                nrec=-1L, skip=0L, seek.first.rec=FALSE,
+                seqtype="B")
 
-fastq.seqlengths(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
-fastq.geometry(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
+fastq.seqlengths(filepath,
+                nrec=-1L, skip=0L, seek.first.rec=FALSE)
+fastq.geometry(filepath,
+                nrec=-1L, skip=0L, seek.first.rec=FALSE)
 
 ## Write an XStringSet object to a FASTA (or FASTQ) file:
 writeXStringSet(x, filepath, append=FALSE,
@@ -91,11 +98,19 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
     files with embedded FASTA data.
   }
   \item{use.names}{
-    Should the returned vector be named? For FASTA the names are taken
-    from the record description lines. For FASTQ they are taken from
-    the record sequence ids.
-    Dropping the names can help reducing memory footprint e.g. for
-    a FASTQ file containing millions of reads.
+    \code{TRUE} (the default) or \code{FALSE}. If \code{TRUE}, then the
+    returned vector is named. For FASTA the names are taken from the record
+    description lines. For FASTQ they are taken from the record sequence ids.
+    Dropping the names with \code{use.names=FALSE} can help reduce memory
+    footprint e.g. for a FASTQ file containing millions of reads.
+  }
+  \item{with.qualities}{
+    \code{TRUE} or \code{FALSE} (the default).
+    This argument is only supported when reading a FASTQ file.
+    If \code{TRUE}, then the quality strings are also read and returned
+    in the \code{qualities} metadata column of the returned \link{DNAStringSet}
+    object. Note that by default the quality strings are ignored. This
+    helps reduce memory footprint if the FASTQ file contains millions of reads.
   }
   \item{seqtype}{
     A single string specifying the type of sequences contained in the
@@ -178,10 +193,7 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
   The files are read in the order they were specified and the sequences
   are stored in the returned object in the order they were read.
 
-  Only FASTA and FASTQ files are supported for now. The read qualities
-  stored in FASTQ files are ignored by \code{readDNAStringSet} and family.
-  When multiple input FASTQ files are specified, all must have the same
-  "width" (i.e. all their sequences must have the same length).
+  Only FASTA and FASTQ files are supported for now.
 
   The \code{fasta.seqlengths} utility returns an integer vector with one
   element per FASTA record in the input files. Each element is the length
@@ -314,8 +326,23 @@ stopifnot(identical(readLines(out23a), readLines(out23b)))
 
 filepath <- system.file("extdata", "s_1_sequence.txt",
                         package="Biostrings")
+
 fastq.geometry(filepath)
-readDNAStringSet(filepath, format="fastq")
+
+## The quality strings are ignored by default:
+reads <- readDNAStringSet(filepath, format="fastq")
+reads
+mcols(reads)
+
+## Use 'with.qualities=TRUE' to load them:
+reads <- readDNAStringSet(filepath, format="fastq", with.qualities=TRUE)
+reads
+mcols(reads)
+mcols(reads)$qualities
+
+## Each quality string contains one letter per nucleotide in the
+## corresponding read:
+stopifnot(identical(width(mcols(reads)$qualities), width(reads)))
 
 library(BSgenome.Celegans.UCSC.ce2)
 ## Create a "sliding window" on chr I:

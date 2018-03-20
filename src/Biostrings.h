@@ -219,7 +219,8 @@ SEXP read_XStringSet_from_fastq(
 	SEXP seek_first_rec,
 	SEXP use_names,
 	SEXP elementType,
-	SEXP lkup
+	SEXP lkup,
+	SEXP with_qualities
 );
 
 SEXP write_XStringSet_to_fastq(

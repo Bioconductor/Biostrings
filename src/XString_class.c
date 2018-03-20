@@ -99,19 +99,31 @@ char _RNAdecode(char code)
  * From CHARACTER to XString and vice-versa.
  */
 
+/* TODO: Move this to XVector (together with copy_Chars_holder). */
 void _copy_CHARSXP_to_Chars_holder(Chars_holder *dest, SEXP src,
 		int start_in_src, const int *lkup, int lkup_length)
 {
 	int i1, i2;
+	char *dest_ptr;
 
 	i1 = start_in_src - 1;
 	i2 = i1 + dest->length - 1;
-	/* dest.ptr is a const char * so we need to cast it
-	   to char * before we can write to it */
-	Ocopy_bytes_from_i1i2_with_lkup(i1, i2,
-			(char *) dest->ptr, dest->length,
+	if (start_in_src < 1 || i2 >= LENGTH(src))
+		error("Biostrings internal error in "
+		      "_copy_CHARSXP_to_Chars_holder(): "
+		      "'start_in_src' must be >= 1 and <= "
+		      "'LENGTH(src)' - 'dest->length' + 1");
+	/* dest->ptr is a (const char *) so we need to cast it to (char *)
+	   before we can write to it */
+	dest_ptr = (char *) dest->ptr;
+	if (lkup == NULL) {
+		memcpy(dest_ptr, CHAR(src) + i1, dest->length);
+	} else {
+		Ocopy_bytes_from_i1i2_with_lkup(i1, i2,
+			dest_ptr, dest->length,
 			CHAR(src), LENGTH(src),
 			lkup, lkup_length);
+	}
 	return;
 }
 
@@ -163,7 +175,7 @@ SEXP new_XString_from_CHARACTER(SEXP classname,
 	ans_holder = hold_XRaw(ans);
 	if (lkup == R_NilValue) {
 		lkup0 = NULL;
-                lkup_length = 0;
+		lkup_length = 0;
 	} else {
 		lkup0 = INTEGER(lkup);
 		lkup_length = LENGTH(lkup);

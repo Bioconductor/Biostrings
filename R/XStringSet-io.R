@@ -42,7 +42,7 @@ fasta.index <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
     on.exit(.finalize_filexp_list(filexp_list))
     nrec <- .normarg_nrec(nrec)
     skip <- .normarg_skip(skip)
-    if (!isTRUEorFALSE(seek.first.rec)) 
+    if (!isTRUEorFALSE(seek.first.rec))
         stop(wmsg("'seek.first.rec' must be TRUE or FALSE"))
     seqtype <- match.arg(seqtype, c("B", "DNA", "RNA", "AA"))
     lkup <- get_seqtype_conversion_lookup("B", seqtype)
@@ -192,7 +192,7 @@ fastq.seqlengths <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
     on.exit(.finalize_filexp_list(filexp_list))
     nrec <- .normarg_nrec(nrec)
     skip <- .normarg_skip(skip)
-    if (!isTRUEorFALSE(seek.first.rec)) 
+    if (!isTRUEorFALSE(seek.first.rec))
         stop(wmsg("'seek.first.rec' must be TRUE or FALSE"))
     .Call2("fastq_seqlengths",
            filexp_list, nrec, skip, seek.first.rec,
@@ -209,18 +209,26 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
 }
 
 .read_XStringSet_from_fastq <- function(filepath, nrec, skip, seek.first.rec,
-                                        use.names, elementType, lkup)
+                                        use.names, elementType, lkup,
+                                        with.qualities)
 {
     filexp_list <- XVector:::open_input_files(filepath)
     on.exit(.finalize_filexp_list(filexp_list))
     nrec <- .normarg_nrec(nrec)
     skip <- .normarg_skip(skip)
-    if (!isTRUEorFALSE(seek.first.rec)) 
+    if (!isTRUEorFALSE(seek.first.rec))
         stop(wmsg("'seek.first.rec' must be TRUE or FALSE"))
-    .Call2("read_XStringSet_from_fastq",
-           filexp_list, nrec, skip, seek.first.rec,
-           use.names, elementType, lkup,
-           PACKAGE="Biostrings")
+    if (!isTRUEorFALSE(with.qualities))
+        stop(wmsg("'with.qualities' must be TRUE or FALSE"))
+    C_ans <- .Call2("read_XStringSet_from_fastq",
+                    filexp_list, nrec, skip, seek.first.rec,
+                    use.names, elementType, lkup, with.qualities,
+                    PACKAGE="Biostrings")
+    if (!with.qualities)
+        return(C_ans)
+    ans <- C_ans[[1L]]
+    mcols(ans)$qualities <- C_ans[[2L]]
+    ans
 }
 
 
@@ -231,12 +239,13 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
 
 .read_XStringSet <- function(filepath, format,
                              nrec=-1L, skip=0L, seek.first.rec=FALSE,
-                             use.names=TRUE, seqtype="B")
+                             use.names=TRUE, seqtype="B",
+                             with.qualities=FALSE)
 {
     if (!isSingleString(format))
         stop(wmsg("'format' must be a single string"))
     format <- match.arg(tolower(format), c("fasta", "fastq"))
-    if (!isTRUEorFALSE(use.names)) 
+    if (!isTRUEorFALSE(use.names))
         stop(wmsg("'use.names' must be TRUE or FALSE"))
     elementType <- paste(seqtype, "String", sep="")
     lkup <- get_seqtype_conversion_lookup("B", seqtype)
@@ -245,11 +254,15 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
     if (format == "fastq") {
         ans <- .read_XStringSet_from_fastq(filepath,
                                            nrec, skip, seek.first.rec,
-                                           use.names, elementType, lkup)
+                                           use.names, elementType, lkup,
+                                           with.qualities)
         return(ans)
     }
 
     ## Read FASTA.
+    if (!identical(with.qualities, FALSE))
+        stop(wmsg("The 'with.qualities' argument is only supported ",
+                  "when reading a FASTQ file."))
     if (is.data.frame(filepath)) {
         if (!(identical(nrec, -1L) &&
               identical(skip, 0L) &&
@@ -267,27 +280,27 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
 
 readBStringSet <- function(filepath, format="fasta",
                            nrec=-1L, skip=0L, seek.first.rec=FALSE,
-                           use.names=TRUE)
+                           use.names=TRUE, with.qualities=FALSE)
     .read_XStringSet(filepath, format, nrec, skip, seek.first.rec,
-                     use.names, "B")
+                     use.names, "B", with.qualities)
 
 readDNAStringSet <- function(filepath, format="fasta",
                              nrec=-1L, skip=0L, seek.first.rec=FALSE,
-                             use.names=TRUE)
+                             use.names=TRUE, with.qualities=FALSE)
     .read_XStringSet(filepath, format, nrec, skip, seek.first.rec,
-                     use.names, "DNA")
+                     use.names, "DNA", with.qualities)
 
 readRNAStringSet <- function(filepath, format="fasta",
                              nrec=-1L, skip=0L, seek.first.rec=FALSE,
-                             use.names=TRUE)
+                             use.names=TRUE, with.qualities=FALSE)
     .read_XStringSet(filepath, format, nrec, skip, seek.first.rec,
-                     use.names, "RNA")
+                     use.names, "RNA", with.qualities)
 
 readAAStringSet <- function(filepath, format="fasta",
                             nrec=-1L, skip=0L, seek.first.rec=FALSE,
-                            use.names=TRUE)
+                            use.names=TRUE, with.qualities=FALSE)
     .read_XStringSet(filepath, format, nrec, skip, seek.first.rec,
-                     use.names, "AA")
+                     use.names, "AA", with.qualities)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -296,11 +309,11 @@ readAAStringSet <- function(filepath, format="fasta",
 
 .write_XStringSet_to_fasta <- function(x, filexp_list, width=80L)
 {
-    if (!isSingleNumber(width)) 
+    if (!isSingleNumber(width))
         stop(wmsg("'width' must be a single integer"))
-    if (!is.integer(width)) 
+    if (!is.integer(width))
         width <- as.integer(width)
-    if (width < 1L) 
+    if (width < 1L)
         stop(wmsg("'width' must be an integer >= 1"))
     lkup <- get_seqtype_conversion_lookup(seqtype(x), "B")
     .Call2("write_XStringSet_to_fasta",
@@ -387,7 +400,7 @@ saveXStringSet <- function(x, objname, dirpath=".",
         ## 'x_dup2unq' mapping. This means that the "pre-compression trick"
         ## works only if 'x' is a rectangular DNAStringSet instance with no
         ## IUPAC ambiguity codes.
-        pdict <- try(PDict(x), silent=TRUE)  
+        pdict <- try(PDict(x), silent=TRUE)
         if (!is(pdict, "try-error") && !is.null(pdict@dups0)) {
             x_dups <- pdict@dups0
             x_names <- names(x)
