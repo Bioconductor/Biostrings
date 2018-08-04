@@ -35,7 +35,7 @@
         #include "_Biostrings_stubs.c" // note the underscore!
 
       If you also need to call C routines defined in XVector (e.g. hold_XRaw),
-      IRanges (e.g. hold_IRanges), and/or S4Vector (e.g. copy_vector_block),
+      IRanges (e.g. hold_IRanges), and/or S4Vectors (e.g. copy_vector_block),
       then add an XVector_stubs.c, IRanges_stubs.c, and/or S4Vector_stubs.c
       file in a similar fashion.
 

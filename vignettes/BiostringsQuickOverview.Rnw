@@ -40,9 +40,8 @@
 
 %\tableofcontents
 
-Please note that \emph{most} but \emph{not all} the functionalities
-provided by the \Rpackage{Biostrings} package are listed in this
-document.
+Most but not all functions defined in the \Rpackage{Biostrings} package
+are summarized here.
 
 %-----------------------------------------------------------------------------
 
@@ -107,7 +106,10 @@ document.
 \Rfunction{letterFrequency} &
     Tabulate the letters (all the letters in the alphabet for
     \Rfunction{alphabetFrequency}, only the specified letters for
-    \Rfunction{letterFrequency}) of a sequence or set of sequences. \\
+    \Rfunction{letterFrequency}) in a sequence or set of sequences. \\
+\hline
+\Rfunction{uniqueLetters} &
+    Extract the unique letters from a sequence or set of sequences. \\
 \hline
 \Rfunction{letterFrequencyInSlidingView} &
     Specialized version of \Rfunction{letterFrequency} that tallies the
@@ -149,7 +151,9 @@ document.
 \Rfunction{translate} &
     Translate a set of DNA sequences into a set of Amino Acid sequences. \\
 \hline
-\Rfunction{chartr} & Translate the letters in a set of sequences. \\
+\Rfunction{chartr}\par
+\Rfunction{replaceAmbiguities} &
+    Replace letters in a sequence or set of sequences. \\
 \hline
 \Rfunction{subseq}, \Rfunction{subseq<-}\par
 \Rfunction{extractAt}, \Rfunction{replaceAt} &

@@ -3,14 +3,13 @@ Title: Efficient manipulation of biological strings
 Description: Memory efficient string containers, string matching
 	algorithms, and other utilities, for fast manipulation of large
 	biological sequences or sets of sequences.
-Version: 2.49.0
+Version: 2.49.1
 Encoding: UTF-8
 Author: H. Pagès, P. Aboyoun, R. Gentleman, and S. DebRoy
 Maintainer: H. Pagès <hpages@fredhutch.org>
 biocViews: SequenceMatching, Alignment, Sequencing, Genetics,
 	DataImport, DataRepresentation, Infrastructure
-Depends: R (>= 2.8.0), methods, BiocGenerics (>= 0.15.6),
-	S4Vectors (>= 0.17.25), IRanges (>= 2.13.24), XVector (>= 0.19.8)
+Depends: R (>= 3.5.0), methods, BiocGenerics, S4Vectors, IRanges, XVector
 Imports: graphics, methods, stats, utils
 LinkingTo: S4Vectors, IRanges, XVector
 Enhances: Rmpi
@@ -41,6 +40,7 @@ Collate: 00datacache.R
 	XStringSet-io.R
 	letter.R
 	getSeq.R
+	letterFrequency.R
 	dinucleotideFrequencyTest.R
 	chartr.R
 	reverseComplement.R
@@ -68,7 +68,6 @@ Collate: 00datacache.R
 	XStringPartialMatches-class.R
 	XStringQuality-class.R
 	QualityScaledXStringSet.R
-	letterFrequency.R
 	InDel-class.R
 	AlignedXStringSet-class.R
 	PairwiseAlignments-class.R

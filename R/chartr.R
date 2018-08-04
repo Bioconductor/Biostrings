@@ -46,3 +46,13 @@ setMethod("chartr", c(old="ANY", new="ANY", x="MaskedXString"),
     }
 )
 
+### A simple wrapper to chartr().
+replaceAmbiguities <- function(x, new="N")
+{
+    if (!(isSingleString(new) && nchar(new) == 1L))
+        stop("'new' must be a single letter")
+    old <- paste(setdiff(names(IUPAC_CODE_MAP), DNA_BASES), collapse="")
+    new <- strrep(new, nchar(old))
+    chartr(old, new, x)
+}
+

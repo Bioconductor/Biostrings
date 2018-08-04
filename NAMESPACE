@@ -138,10 +138,13 @@ export(
     oligonucleotideTransitions,
     twoWayAlphabetFrequency,
 
+    ## chartr.R:
+    replaceAmbiguities,
+
     ## dinucleotideFrequencyTest.R
     dinucleotideFrequencyTest,
 
-    ## reverse.R:
+    ## reverseComplement.R:
     complement, reverseComplement,
 
     ## translate.R:
