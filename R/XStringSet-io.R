@@ -5,9 +5,9 @@
 
 ### 'filexp_list' must be a list of "file external pointers" returned by
 ### XVector:::open_input_files() or XVector:::open_output_file().
-.finalize_filexp_list <- function(filexp_list)
+.close_filexp_list <- function(filexp_list)
 {
-    for (filexp in filexp_list) XVector:::finalize_filexp(filexp)
+    for (filexp in filexp_list) XVector:::close_filexp(filexp)
 }
 
 .normarg_nrec <- function(nrec)
@@ -30,16 +30,33 @@
     skip
 }
 
+.is_filexp_list <- function(filepath)
+{
+    is.list(filepath) && length(filepath) != 0L &&
+                         is(filepath[[1L]], "externalptr")
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### FASTA
 ###
 
+.read_fasta_files <- function(filexp_list, nrec, skip, seek.first.rec,
+                              use.names, elementType, lkup)
+{
+    nrec <- .normarg_nrec(nrec)
+    skip <- .normarg_skip(skip)
+    if (!isTRUEorFALSE(seek.first.rec))
+        stop(wmsg("'seek.first.rec' must be TRUE or FALSE"))
+    .Call2("read_fasta_files", filexp_list, nrec, skip, seek.first.rec,
+                               use.names, elementType, lkup,
+                               PACKAGE="Biostrings")
+}
+
 fasta.index <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
                         seqtype="B")
 {
-    filexp_list <- XVector:::open_input_files(filepath)
-    on.exit(.finalize_filexp_list(filexp_list))
+    filexp_list <- open_input_files(filepath)
     nrec <- .normarg_nrec(nrec)
     skip <- .normarg_skip(skip)
     if (!isTRUEorFALSE(seek.first.rec))
@@ -147,13 +164,12 @@ fasta.seqlengths <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
     fileno <- ssorted_fai[ , "fileno"]
     used_fileno <- as.integer(names(nrec_list))
     used_filepath <- filepath[match(used_fileno, fileno)]
-    filexp_list <- XVector:::open_input_files(used_filepath)
-    on.exit(.finalize_filexp_list(filexp_list))
+    filexp_list <- open_input_files(used_filepath)
 
     ## Prepare 'seqlengths'.
     seqlengths <- ssorted_fai[ , "seqlength"]
 
-    .Call2("read_XStringSet_from_fasta_blocks",
+    .Call2("read_fasta_blocks",
            seqlengths, filexp_list, nrec_list, offset_list,
            elementType, lkup,
            PACKAGE="Biostrings")
@@ -186,10 +202,29 @@ fasta.seqlengths <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
 ### FASTQ
 ###
 
+.read_fastq_files <- function(filexp_list, nrec, skip, seek.first.rec,
+                              use.names, elementType, lkup, with.qualities)
+{
+    nrec <- .normarg_nrec(nrec)
+    skip <- .normarg_skip(skip)
+    if (!isTRUEorFALSE(seek.first.rec))
+        stop(wmsg("'seek.first.rec' must be TRUE or FALSE"))
+    if (!isTRUEorFALSE(with.qualities))
+        stop(wmsg("'with.qualities' must be TRUE or FALSE"))
+    C_ans <- .Call2("read_fastq_files",
+                    filexp_list, nrec, skip, seek.first.rec,
+                    use.names, elementType, lkup, with.qualities,
+                    PACKAGE="Biostrings")
+    if (!with.qualities)
+        return(C_ans)
+    ans <- C_ans[[1L]]
+    mcols(ans)$qualities <- C_ans[[2L]]
+    ans
+}
+
 fastq.seqlengths <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
 {
-    filexp_list <- XVector:::open_input_files(filepath)
-    on.exit(.finalize_filexp_list(filexp_list))
+    filexp_list <- open_input_files(filepath)
     nrec <- .normarg_nrec(nrec)
     skip <- .normarg_skip(skip)
     if (!isTRUEorFALSE(seek.first.rec))
@@ -212,15 +247,14 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
                                         use.names, elementType, lkup,
                                         with.qualities)
 {
-    filexp_list <- XVector:::open_input_files(filepath)
-    on.exit(.finalize_filexp_list(filexp_list))
+    filexp_list <- open_input_files(filepath)
     nrec <- .normarg_nrec(nrec)
     skip <- .normarg_skip(skip)
     if (!isTRUEorFALSE(seek.first.rec))
         stop(wmsg("'seek.first.rec' must be TRUE or FALSE"))
     if (!isTRUEorFALSE(with.qualities))
         stop(wmsg("'with.qualities' must be TRUE or FALSE"))
-    C_ans <- .Call2("read_XStringSet_from_fastq",
+    C_ans <- .Call2("read_fastq_files",
                     filexp_list, nrec, skip, seek.first.rec,
                     use.names, elementType, lkup, with.qualities,
                     PACKAGE="Biostrings")
@@ -252,10 +286,12 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
 
     ## Read FASTQ.
     if (format == "fastq") {
-        ans <- .read_XStringSet_from_fastq(filepath,
-                                           nrec, skip, seek.first.rec,
-                                           use.names, elementType, lkup,
-                                           with.qualities)
+        if (!.is_filexp_list(filepath))
+            filepath <- open_input_files(filepath)
+        ans <- .read_fastq_files(filepath,
+                                 nrec, skip, seek.first.rec,
+                                 use.names, elementType, lkup,
+                                 with.qualities)
         return(ans)
     }
 
@@ -263,6 +299,12 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
     if (!identical(with.qualities, FALSE))
         stop(wmsg("The 'with.qualities' argument is only supported ",
                   "when reading a FASTQ file."))
+    if (.is_filexp_list(filepath)) {
+        ans <- .read_fasta_files(filepath,
+                                 nrec, skip, seek.first.rec,
+                                 use.names, elementType, lkup)
+        return(ans)
+    }
     if (is.data.frame(filepath)) {
         if (!(identical(nrec, -1L) &&
               identical(skip, 0L) &&
@@ -353,7 +395,7 @@ writeXStringSet <- function(x, filepath, append=FALSE,
                    "fastq"=.write_XStringSet_to_fastq(x, filexp_list, ...)
                ),
                silent=FALSE)
-    .finalize_filexp_list(filexp_list)
+    .close_filexp_list(filexp_list)
     if (is(res, "try-error") && !append) {
         ## Get the expamded path and remove the file.
         expath <- attr(filexp_list[[1L]], "expath")

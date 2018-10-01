@@ -179,7 +179,17 @@ SEXP XString_xscat(SEXP args);
 SEXP XStringSet_xscat(SEXP args);
 
 
-/* XStringSet_io.c */
+/* read_fasta_files.c */
+
+SEXP read_fasta_files(
+	SEXP filexp_list,
+	SEXP nrec,
+	SEXP skip,
+	SEXP seek_first_rec,
+	SEXP use_names,
+	SEXP elementType,
+	SEXP lkup
+);
 
 SEXP fasta_index(
 	SEXP filexp_list,
@@ -189,7 +199,7 @@ SEXP fasta_index(
 	SEXP lkup
 );
 
-SEXP read_XStringSet_from_fasta_blocks(
+SEXP read_fasta_blocks(
 	SEXP seqlengths,
 	SEXP filexp_list,
 	SEXP nrec_list,
@@ -205,6 +215,9 @@ SEXP write_XStringSet_to_fasta(
 	SEXP lkup
 );
 
+
+/* read_fastq_files.c */
+
 SEXP fastq_seqlengths(
 	SEXP filexp_list,
 	SEXP nrec,
@@ -212,7 +225,7 @@ SEXP fastq_seqlengths(
 	SEXP seek_first_rec
 );
 
-SEXP read_XStringSet_from_fastq(
+SEXP read_fastq_files(
 	SEXP filexp_list,
 	SEXP nrec,
 	SEXP skip,

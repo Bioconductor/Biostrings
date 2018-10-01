@@ -25,31 +25,31 @@
 \usage{
 ## Read FASTA (or FASTQ) files in an XStringSet object:
 readBStringSet(filepath, format="fasta",
-                nrec=-1L, skip=0L, seek.first.rec=FALSE,
-                use.names=TRUE, with.qualities=FALSE)
+               nrec=-1L, skip=0L, seek.first.rec=FALSE,
+               use.names=TRUE, with.qualities=FALSE)
 readDNAStringSet(filepath, format="fasta",
-                nrec=-1L, skip=0L, seek.first.rec=FALSE,
-                use.names=TRUE, with.qualities=FALSE)
+               nrec=-1L, skip=0L, seek.first.rec=FALSE,
+               use.names=TRUE, with.qualities=FALSE)
 readRNAStringSet(filepath, format="fasta",
-                nrec=-1L, skip=0L, seek.first.rec=FALSE,
-                use.names=TRUE, with.qualities=FALSE)
+               nrec=-1L, skip=0L, seek.first.rec=FALSE,
+               use.names=TRUE, with.qualities=FALSE)
 readAAStringSet(filepath, format="fasta",
-                nrec=-1L, skip=0L, seek.first.rec=FALSE,
-                use.names=TRUE, with.qualities=FALSE)
+               nrec=-1L, skip=0L, seek.first.rec=FALSE,
+               use.names=TRUE, with.qualities=FALSE)
 
 ## Extract basic information about FASTA (or FASTQ) files
 ## without actually loading the sequence data:
 fasta.seqlengths(filepath,
-                nrec=-1L, skip=0L, seek.first.rec=FALSE,
-                seqtype="B", use.names=TRUE)
+               nrec=-1L, skip=0L, seek.first.rec=FALSE,
+               seqtype="B", use.names=TRUE)
 fasta.index(filepath,
-                nrec=-1L, skip=0L, seek.first.rec=FALSE,
-                seqtype="B")
+               nrec=-1L, skip=0L, seek.first.rec=FALSE,
+               seqtype="B")
 
 fastq.seqlengths(filepath,
-                nrec=-1L, skip=0L, seek.first.rec=FALSE)
+               nrec=-1L, skip=0L, seek.first.rec=FALSE)
 fastq.geometry(filepath,
-                nrec=-1L, skip=0L, seek.first.rec=FALSE)
+               nrec=-1L, skip=0L, seek.first.rec=FALSE)
 
 ## Write an XStringSet object to a FASTA (or FASTQ) file:
 writeXStringSet(x, filepath, append=FALSE,
@@ -68,7 +68,12 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
 
     Note that special values like \code{""} or \code{"|cmd"} (typically
     supported by other I/O functions in R) are not supported here.
-    Also \code{filepath} cannot be a connection.
+
+    Also \code{filepath} cannot be a standard \link[base]{connection}.
+    However \code{filepath} can be an object as returned by
+    \code{open_input_files}. This object can be used to read files
+    by chunks. See "READ FILES BY CHUNK" in the examples section for
+    the details.
   }
   \item{format}{
     Either \code{"fasta"} (the default) or \code{"fastq"}.
@@ -334,18 +339,18 @@ stopifnot(identical(readLines(out23a), readLines(out23b)))
 ## B. READ/WRITE FASTQ FILES
 ## ---------------------------------------------------------------------
 
-filepath <- system.file("extdata", "s_1_sequence.txt",
-                        package="Biostrings")
+filepath5 <- system.file("extdata", "s_1_sequence.txt",
+                         package="Biostrings")
 
-fastq.geometry(filepath)
+fastq.geometry(filepath5)
 
 ## The quality strings are ignored by default:
-reads <- readDNAStringSet(filepath, format="fastq")
+reads <- readDNAStringSet(filepath5, format="fastq")
 reads
 mcols(reads)
 
 ## Use 'with.qualities=TRUE' to load them:
-reads <- readDNAStringSet(filepath, format="fastq", with.qualities=TRUE)
+reads <- readDNAStringSet(filepath5, format="fastq", with.qualities=TRUE)
 reads
 mcols(reads)
 mcols(reads)$qualities
@@ -361,11 +366,52 @@ outfile2 <- tempfile()
 writeXStringSet(reads, outfile2, compress=TRUE, format="fastq")
 
 ## Sanity checks:
-stopifnot(identical(readLines(outfile), readLines(filepath)))
+stopifnot(identical(readLines(outfile), readLines(filepath5)))
 stopifnot(identical(readLines(outfile), readLines(outfile2)))
 
 ## ---------------------------------------------------------------------
-## C. READ A FASTQ FILE AS A QualityScaledDNAStringSet OBJECT
+## C. READ FILES BY CHUNK
+## ---------------------------------------------------------------------
+## readDNAStringSet() supports reading an arbitrary number of FASTA or
+## FASTQ records at a time in a loop. This can be useful to process
+## big FASTA or FASTQ files by chunk and thus avoids loading the entire
+## file in memory. To achieve this the files to read from need to be
+## opened with open_input_files() first. Note that open_input_files()
+## accepts a vector of file paths and/or URLs.
+
+## With FASTA files:
+files <- open_input_files(filepath4)
+i <- 0
+while (TRUE) {
+    i <- i + 1
+    ## Load 4000 records at a time. Each new call to readDNAStringSet()
+    ## picks up where the previous call left.
+    dna <- readDNAStringSet(files, nrec=4000)
+    if (length(dna) == 0L)
+        break
+    cat("processing chunk", i, "...\n")
+    ## do something with 'dna' ...
+}
+
+## With FASTQ files:
+files <- open_input_files(filepath5)
+i <- 0
+while (TRUE) {
+    i <- i + 1
+    ## Load 75 records at a time.
+    reads <- readDNAStringSet(files, format="fastq", nrec=75)
+    if (length(reads) == 0L)
+        break
+    cat("processing chunk", i, "...\n")
+    ## do something with 'reads' ...
+}
+
+## IMPORTANT NOTE: Like connections, the object returned by
+## open_input_files() can NOT be shared across workers in the
+## context of parallelization!
+
+## ---------------------------------------------------------------------
+## D. READ A FASTQ FILE AS A QualityScaledDNAStringSet OBJECT
 ## ---------------------------------------------------------------------
 
 ## Use readQualityScaledDNAStringSet() if you want the object to be
@@ -376,7 +422,7 @@ stopifnot(identical(readLines(outfile), readLines(outfile2)))
 ## readDNAStringSet() that does the following if the file contains
 ## "Phred quality scores" (which is the standard Sanger variant to
 ## assess reliability of a base call):
-reads <- readDNAStringSet(filepath, format="fastq", with.qualities=TRUE)
+reads <- readDNAStringSet(filepath5, format="fastq", with.qualities=TRUE)
 quals <- PhredQuality(mcols(reads)$qualities)
 QualityScaledDNAStringSet(reads, quals)
 
@@ -384,7 +430,7 @@ QualityScaledDNAStringSet(reads, quals)
 ## or IlluminaQuality() if the quality scores are Solexa quality scores.
 
 ## ---------------------------------------------------------------------
-## D. GENERATE FAKE READS AND WRITE THEM TO A FASTQ FILE
+## E. GENERATE FAKE READS AND WRITE THEM TO A FASTQ FILE
 ## ---------------------------------------------------------------------
 
 library(BSgenome.Celegans.UCSC.ce2)
@@ -409,7 +455,7 @@ writeXStringSet(my_fake_reads, out3, format="fastq",
                 qualities=my_fake_quals)
 
 ## ---------------------------------------------------------------------
-## E. SERIALIZATION
+## F. SERIALIZATION
 ## ---------------------------------------------------------------------
 saveXStringSet(my_fake_reads, "my_fake_reads", dirpath=tempdir())
 }
