@@ -91,11 +91,17 @@
     .aa2byte(genetic.code[m])
 }
 
-.translate <- function(x, genetic.code=GENETIC_CODE, if.fuzzy.codon="error")
+.translate <- function(x, genetic.code=GENETIC_CODE, no.init.codon=FALSE,
+                          if.fuzzy.codon="error")
 {
-    init_genetic_code <- genetic_code <- .normarg_genetic.code(genetic.code)
-    alt_init_codons <- attr(genetic_code, "alt_init_codons")
-    init_genetic_code[alt_init_codons] <- "M"
+    genetic_code <- .normarg_genetic.code(genetic.code)
+    if (!isTRUEorFALSE(no.init.codon))
+        stop(wmsg("'no.init.codon' must be TRUE or FALSE"))
+    if (!no.init.codon) {
+        init_genetic_code <- genetic_code
+        alt_init_codons <- attr(genetic_code, "alt_init_codons")
+        init_genetic_code[alt_init_codons] <- "M"
+    }
 
     if.fuzzy.codon <- .normarg_if.fuzzy.codon(if.fuzzy.codon)
     if.non.ambig <- if.fuzzy.codon[[1L]]
@@ -107,12 +113,18 @@
         codon_alphabet <- names(IUPAC_CODE_MAP)
         genetic_code <- .make_fuzzy_genetic_code(genetic_code,
                                                  keep.ambig.codons=TRUE)
-        init_genetic_code <- .make_fuzzy_genetic_code(init_genetic_code,
-                                                      keep.ambig.codons=TRUE)
+        if (!no.init.codon)
+            init_genetic_code <-
+                        .make_fuzzy_genetic_code(init_genetic_code,
+                                                 keep.ambig.codons=TRUE)
     }
 
     lkup <- .make_translation_lkup(codon_alphabet, genetic_code)
-    init_lkup <- .make_translation_lkup(codon_alphabet, init_genetic_code)
+    if (no.init.codon) {
+        init_lkup <- lkup
+    } else {
+        init_lkup <- .make_translation_lkup(codon_alphabet, init_genetic_code)
+    }
     dna_codes <- DNAcodes(baseOnly=FALSE)
     skip_code <- dna_codes[["+"]]
     ans <- .Call2("DNAStringSet_translate",
@@ -130,7 +142,8 @@
 ###
 
 setGeneric("translate", signature="x",
-    function(x, genetic.code=GENETIC_CODE, if.fuzzy.codon="error")
+    function(x, genetic.code=GENETIC_CODE, no.init.codon=FALSE,
+                if.fuzzy.codon="error")
         standardGeneric("translate")
 )
 
@@ -139,26 +152,38 @@ setMethod("translate", "DNAStringSet", .translate)
 setMethod("translate", "RNAStringSet", .translate)
 
 setMethod("translate", "DNAString",
-    function(x, genetic.code=GENETIC_CODE, if.fuzzy.codon="error")
-        translate(DNAStringSet(x), genetic.code=genetic.code,
+    function(x, genetic.code=GENETIC_CODE, no.init.codon=FALSE,
+                if.fuzzy.codon="error")
+        translate(DNAStringSet(x),
+                  genetic.code=genetic.code,
+                  no.init.codon=no.init.codon,
                   if.fuzzy.codon=if.fuzzy.codon)[[1L]]
 )
 
 setMethod("translate", "RNAString",
-    function(x, genetic.code=GENETIC_CODE, if.fuzzy.codon="error")
-        translate(RNAStringSet(x), genetic.code=genetic.code,
+    function(x, genetic.code=GENETIC_CODE, no.init.codon=FALSE,
+                if.fuzzy.codon="error")
+        translate(RNAStringSet(x),
+                  genetic.code=genetic.code,
+                  no.init.codon=no.init.codon,
                   if.fuzzy.codon=if.fuzzy.codon)[[1L]]
 )
 
 setMethod("translate", "MaskedDNAString",
-    function(x, genetic.code=GENETIC_CODE, if.fuzzy.codon="error")
-        translate(injectHardMask(x), genetic.code=genetic.code,
+    function(x, genetic.code=GENETIC_CODE, no.init.codon=FALSE,
+                if.fuzzy.codon="error")
+        translate(injectHardMask(x),
+                  genetic.code=genetic.code,
+                  no.init.codon=no.init.codon,
                   if.fuzzy.codon=if.fuzzy.codon)
 )
 
 setMethod("translate", "MaskedRNAString",
-    function(x, genetic.code=GENETIC_CODE, if.fuzzy.codon="error")
-        translate(injectHardMask(x), genetic.code=genetic.code,
+    function(x, genetic.code=GENETIC_CODE, no.init.codon=FALSE,
+                if.fuzzy.codon="error")
+        translate(injectHardMask(x),
+                  genetic.code=genetic.code,
+                  no.init.codon=no.init.codon,
                   if.fuzzy.codon=if.fuzzy.codon)
 )
 
