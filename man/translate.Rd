@@ -23,7 +23,8 @@
 
 \usage{
 ## Translating DNA/RNA:
-translate(x, genetic.code=GENETIC_CODE, if.fuzzy.codon="error")
+translate(x, genetic.code=GENETIC_CODE, no.init.codon=FALSE,
+             if.fuzzy.codon="error")
 
 ## Extracting codons without translating them:
 codons(x)
@@ -54,6 +55,14 @@ codons(x)
     See \code{?\link{AA_ALPHABET}} for the Amino Acid alphabet, and
     \code{?\link{GENETIC_CODE}} for The Standard Genetic Code and its
     known variants.
+  }
+  \item(no.init.codon){
+    By default, \code{translate()} assumes that the first codon in a DNA
+    or RNA sequence is the initiation codon. This means that the
+    \code{alt_init_codons} attribute on the supplied \code{genetic.code}
+    will be used to translate the \emph{alternative initiation codons}.
+    This can be changed by setting \code{no.init.codon} to TRUE, in which
+    case the \code{alt_init_codons} attribute will be ignored.
   }
   \item{if.fuzzy.codon}{
     How fuzzy codons (i.e codon with IUPAC ambiguities) should be handled.
@@ -156,9 +165,14 @@ codons(x)
 
 dna1 <- DNAString("TTGATATGGCCCTTATAA")
 translate(dna1)
+## TTG is an alternative initiation codon in the Standard Genetic Code:
+translate(dna1, no.init.codon=TRUE)
 
 SGC1 <- getGeneticCode("SGC1")  # Vertebrate Mitochondrial code
 translate(dna1, genetic.code=SGC1)
+## TTG is NOT an alternative initiation codon in the Vertebrate
+## Mitochondrial code:
+translate(dna1, genetic.code=SGC1, no.init.codon=TRUE)
 
 ## All 6 codons except 4th (CCC) are fuzzy:
 dna2 <- DNAString("HTGATHTGRCCCYTRTRA")
