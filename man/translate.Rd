@@ -56,7 +56,7 @@ codons(x)
     \code{?\link{GENETIC_CODE}} for The Standard Genetic Code and its
     known variants.
   }
-  \item(no.init.codon){
+  \item{no.init.codon}{
     By default, \code{translate()} assumes that the first codon in a DNA
     or RNA sequence is the initiation codon. This means that the
     \code{alt_init_codons} attribute on the supplied \code{genetic.code}
