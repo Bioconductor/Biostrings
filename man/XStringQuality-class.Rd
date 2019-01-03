@@ -42,7 +42,9 @@
 \alias{coerce,NumericList,IlluminaQuality-method}
 
 \alias{as.vector,XStringQuality-method}
+\alias{coerce,XStringQuality,CompressedIntegerList-method}
 \alias{coerce,XStringQuality,IntegerList-method}
+\alias{coerce,XStringQuality,CompressedNumericList-method}
 \alias{coerce,XStringQuality,NumericList-method}
 
 \alias{as.matrix,XStringQuality-method}

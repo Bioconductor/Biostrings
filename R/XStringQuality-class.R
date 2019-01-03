@@ -48,11 +48,13 @@ setMethod("p2q", "IlluminaQuality", function(x) function(p) -10 * log10(p))
 
 qualityConverter <- function(x, qualityClass, outputType) {
     .BStringSet2integer <- function(x, scale) {
-        if (length(x) == 0)
-            value <- integer(0)
-        else
-            value <- as.integer(charToRaw(as.character(x))) - offset(scale)
-        value
+        if (length(x) != 1L)
+            stop(wmsg("as.integer()/as.numeric() can be used on a ",
+                      qualityClass, " object of length 1 only. ",
+                      "Coerce to IntegerList or NumericList (with ",
+                      "'as( , \"IntegerList\")' or 'as( , \"NumericList\")') ",
+                      "when the object is of arbitrary length."))
+        as.integer(charToRaw(as.character(x))) - offset(scale)
     }
     .integer2BStringSet <- function(x, scale) {
         if (length(x) == 0)
@@ -193,17 +195,27 @@ setMethod("as.vector", "XStringQuality",
              "or \"any\" when 'x' is an XStringQuality object")
     }
 )
+
 ### Return the quality scores.
-setAs("XStringQuality", "IntegerList",
-    function(from)
-        relist(as.integer(as(unlist(from, use.names=FALSE), class(from))),
-               from)
+.from_XStringQuality_to_CompressedIntegerList <- function(from)
+    relist(as.integer(as(unlist(from, use.names=FALSE), class(from))), from)
+
+setAs("XStringQuality", "CompressedIntegerList",
+    .from_XStringQuality_to_CompressedIntegerList
 )
+setAs("XStringQuality", "IntegerList",
+    .from_XStringQuality_to_CompressedIntegerList
+)
+
 ### Return the probabilities.
+.from_XStringQuality_to_CompressedNumericList <- function(from)
+    relist(as.numeric(as(unlist(from, use.names=FALSE), class(from))), from)
+
+setAs("XStringQuality", "CompressedNumericList",
+    .from_XStringQuality_to_CompressedNumericList
+)
 setAs("XStringQuality", "NumericList",
-    function(from)
-        relist(as.numeric(as(unlist(from, use.names=FALSE), class(from))),
-               from)
+    .from_XStringQuality_to_CompressedNumericList
 )
 
 ### Return the quality scores.
