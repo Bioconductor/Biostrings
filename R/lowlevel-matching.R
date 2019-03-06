@@ -31,7 +31,7 @@ normargPattern <- function(pattern, subject, argname="pattern")
             return(pattern)
     } else if (!isSingleString(pattern))
         stop("'", argname, "' must be a single string or an XString object")
-    pattern <- try(XString(seqtype(subject), pattern))
+    pattern <- try(do.call(xsbaseclass(subject),list(pattern)))
     if (is(pattern, "try-error"))
         stop("could not turn '", argname, "' into a ",
              subject_baseclass, " instance")
@@ -431,7 +431,7 @@ hasLetterAt <- function(x, letter, at, fixed=TRUE)
     if (!is(letter, "XString")) {
         if (!isSingleString(letter))
             stop("'letter' must be a character string or an XString object")
-        letter <- XString(seqtype(x), letter)
+        letter <- do.call(xsbaseclass(x),list(letter))
     } else {
         if (seqtype(letter) != seqtype(x))
             stop("'x' and 'letter' must have the same sequence type")
