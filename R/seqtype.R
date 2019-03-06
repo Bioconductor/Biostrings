@@ -42,25 +42,24 @@ setGeneric("seqtype<-", signature="x",
 ### 
 
 xsbaseclass <- function(x) paste(seqtype(x), "String", sep="")
+xsbaseclass.fun <- function(x, suffix = "")
+{
+    match.fun(paste0(xsbaseclass(x), suffix))
+}
 
 setGeneric("xscodes", signature = "x",
            function(x, baseOnly = FALSE, ...) standardGeneric("xscodes")
 )
 setMethod("xscodes","ANY",
           function(x, baseOnly){
-            if (!isTRUEorFALSE(baseOnly)){
-              stop("'baseOnly' must be TRUE or FALSE")
-            }
-            seqtype <- try(seqtype(x))
-            if(is(seqtype,"try-error")){
-              stop("'seqtype' function is not implemented for class '",class(x),
-                   "'")
-            }
-            switch(seqtype,
-                   DNA=DNAcodes(baseOnly),
-                   RNA=RNAcodes(baseOnly),
-                   0:255
-            )
+              if (!isTRUEorFALSE(baseOnly))
+                  stop("'baseOnly' must be TRUE or FALSE")
+              seqtype <- seqtype(x)
+              switch(seqtype,
+                    DNA=DNAcodes(baseOnly),
+                    RNA=RNAcodes(baseOnly),
+                    0:255
+              )
           })
 
 xscodec <- function(x)
