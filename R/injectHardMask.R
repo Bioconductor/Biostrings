@@ -16,7 +16,8 @@ setMethod("injectHardMask", "XStringViews",
         } else {
             if (!isSingleString(letter) || nchar(letter) != 1)
                 stop("'letter' must be a single letter")
-            letter <- XString(x_seqtype, letter)
+            FUN <- baseclass.fun(x_seqtype)
+            letter <- FUN(letter)
         }
         code <- XString.readCodes(letter, 1L)
         y <- gaps(x)

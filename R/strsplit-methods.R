@@ -23,7 +23,8 @@ setMethod("unstrsplit", "XStringSetList",
     function(x, sep="")
     {
         x_seqtype <- seqtype(x)
-        sep <- XString(x_seqtype, sep)
+        FUN <- baseclass.fun(x_seqtype)
+        sep <- FUN(sep)
         .Call("XStringSetList_unstrsplit", x, sep, x_seqtype,
               PACKAGE="Biostrings")
     }

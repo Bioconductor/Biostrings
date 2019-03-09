@@ -164,7 +164,8 @@ setReplaceMethod("subseq", "XStringSet",
 ### 'x' must be a character string or an XString object.
 .oneSeqToXStringSet <- function(seqtype, x, start, end, width, use.names)
 {
-    ans_xvector <- XString(seqtype, x)
+    FUN <- baseclass.fun(seqtype)
+    ans_xvector <- FUN(x)
     ans_ranges <- solveUserSEW(length(ans_xvector),
                                start=start, end=end, width=width,
                                rep.refwidths=TRUE)
@@ -180,26 +181,29 @@ setReplaceMethod("subseq", "XStringSet",
     extractList(ans_xvector, ans_ranges)
 }
 
+.multipleSeqToXStringSet <- function(seqtype, x, start, end, width, use.names)
+{
+  use.names <- normargUseNames(use.names)
+  ans_elementType <- paste(seqtype, "String", sep="")
+  ans_class <- paste(ans_elementType, "Set", sep="")
+  solved_SEW <- solveUserSEW(width(x), start=start, end=end, width=width)
+  ans <- .Call2("new_XStringSet_from_CHARACTER",
+                ans_class, ans_elementType,
+                x, start(solved_SEW), width(solved_SEW),
+                get_seqtype_conversion_lookup("B", seqtype),
+                PACKAGE="Biostrings")
+  if (use.names)
+    names(ans) <- names(x)
+  ans
+}
+
 .charToXStringSet <- function(seqtype, x, start, end, width, use.names)
 {
     if (length(x) == 1L) {
-        ans <- .oneSeqToXStringSet(seqtype, x, start, end, width, use.names)
-        return(ans)
+        return(.oneSeqToXStringSet(seqtype, x, start, end, width, use.names))
     }
-    use.names <- normargUseNames(use.names)
-    ans_elementType <- paste(seqtype, "String", sep="")
-    ans_class <- paste(ans_elementType, "Set", sep="")
-    solved_SEW <- solveUserSEW(width(x), start=start, end=end, width=width)
-    ans <- .Call2("new_XStringSet_from_CHARACTER",
-                 ans_class, ans_elementType,
-                 x, start(solved_SEW), width(solved_SEW),
-                 get_seqtype_conversion_lookup("B", seqtype),
-                 PACKAGE="Biostrings")
-    if (use.names)
-        names(ans) <- names(x)
-    ans
+    .multipleSeqToXStringSet(seqtype, x, start, end, width, use.names)
 }
-
 
 setGeneric("XStringSet", signature="x",
     function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
@@ -266,8 +270,8 @@ setMethod("XStringSet", "list",
         }
         tmp_class <- paste(tmp_elementType, "Set", sep="")
         tmp <- XVector:::new_XVectorList_from_list_of_XVector(tmp_class, x)
-        XStringSet(seqtype, tmp,
-                   start=start, end=end, width=width, use.names=use.names)
+        FUN <- match.fun(tmp_class)
+        FUN(tmp, start=start, end=end, width=width, use.names=use.names)
     }
 )
 
@@ -280,26 +284,31 @@ setMethod("XStringSet", "AsIs",
         if (!is.character(x))
             stop("unsuported input type")
         class(x) <- "character" # keeps the names (unlike as.character())
-	.charToXStringSet(seqtype, x, start, end, width, use.names)
+	      .charToXStringSet(seqtype, x, start, end, width, use.names)
     }
 )
 
 setMethod("XStringSet", "probetable",
-    function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
-        XStringSet(seqtype, x$sequence,
-                   start=start, end=end, width=width, use.names=use.names)
+    function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE){
+        FUN <- baseclass.fun(seqtype, suffix = "Set")
+        FUN(x$sequence, start=start, end=end, width=width, use.names=use.names)
+    }
 )
 
 ### Default method.
 setMethod("XStringSet", "ANY",
-    function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
-        XStringSet(seqtype, as.character(x),
-                   start=start, end=end, width=width, use.names=use.names)
+    function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE){
+      FUN <- baseclass.fun(seqtype, suffix = "Set")
+      FUN(as.character(x), start=start, end=end, width=width, 
+          use.names=use.names)
+    }
 )
 
 setMethod("XStringSet", "missing",
-    function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
-        XStringSet(seqtype, NULL)
+    function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE){
+      FUN <- baseclass.fun(seqtype, suffix = "Set")
+      FUN(NULL)
+    }
 )
 
 
@@ -346,7 +355,8 @@ setAs("ANY", "XStringSet",
         from_seqtype <- try(seqtype(from), silent=TRUE)
         if (is(from_seqtype, "try-error"))
             from_seqtype <- "B"
-        XStringSet(from_seqtype, from)
+        FUN <- baseclass.fun(from_seqtype, suffix = "Set")
+        FUN(from)
     }
 )
 

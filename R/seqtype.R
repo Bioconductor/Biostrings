@@ -41,7 +41,12 @@ setGeneric("seqtype<-", signature="x",
 ### not on what particular data are in 'x'. Not exported.
 ### 
 
-xsbaseclass <- function(x) paste(seqtype(x), "String", sep="")
+baseclass <- function(seqtype) paste(seqtype, "String", sep="")
+baseclass.fun <- function(seqtype, suffix = "")
+{
+  match.fun(paste0(baseclass(seqtype), suffix))
+}
+xsbaseclass <- function(x) baseclass(seqtype(x))
 xsbaseclass.fun <- function(x, suffix = "")
 {
     match.fun(paste0(xsbaseclass(x), suffix))
