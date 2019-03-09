@@ -224,18 +224,16 @@ setMethod("XStringSet", "factor",
     {
         if (is.null(seqtype))
             seqtype <- "B"
+        FUN <- baseclass.fun(seqtype, suffix = "Set")
         if (length(x) < nlevels(x)) {
-            ans <- .charToXStringSet(seqtype, as.character(x),
-                                     start, end, width, use.names)
-            return(ans)
+            return(FUN(as.character(x),start, end, width, use.names))
         }
         ## If 'x' has less levels than elements, then it's cheaper to
         ## operate on its levels. In case of equality (i.e. if
         ## length(x) == nlevels(x)), the price is the same but the final
         ## XStringSet object obtained by operating on the levels might use
         ## less memory (if 'x' contains duplicated values).
-        ans <- .charToXStringSet(seqtype, levels(x),
-                                 start, end, width, use.names)
+        ans <- FUN(levels(x), start, end, width, use.names)
         ans[as.integer(x)]
     }
 )
