@@ -81,7 +81,7 @@ setMethod("width", "character",
     {
         if (any(is.na(x)))
             stop("NAs in 'x' are not supported")
-        nchar(x, type="bytes")
+        nchar(x, type="chars")
     }
 )
 
@@ -180,7 +180,7 @@ setReplaceMethod("subseq", "XStringSet",
 ###
 
 setGeneric("make_XStringSet_from_strings", signature="x0",
-    function(x0, strings, start, end, width)
+    function(x0, strings, start, width)
     {
         stopifnot(is(x0, "XStringSet"))
         if (!is.character(strings))
@@ -191,14 +191,12 @@ setGeneric("make_XStringSet_from_strings", signature="x0",
 
 ### Default method.
 setMethod("make_XStringSet_from_strings", "XStringSet",
-    function(x0, strings, start, end, width)
+    function(x0, strings, start, width)
     {
-      solved_SEW <- solveUserSEW(width(strings),
-                                 start=start, end=end, width=width)
         lkup <- get_seqtype_conversion_lookup("B", seqtype(x0))
         .Call2("new_XStringSet_from_CHARACTER",
-               class(x0), elementType(x0), strings, start(solved_SEW),
-               width(solved_SEW), lkup, PACKAGE="Biostrings")
+               class(x0), elementType(x0), strings, start, width, lkup, 
+               PACKAGE="Biostrings")
     }
 )
 
@@ -229,7 +227,11 @@ setMethod("make_XStringSet_from_strings", "XStringSet",
     } else {
         use.names <- normargUseNames(use.names)
         x0 <- new2(paste0(seqtype, "StringSet"), check=FALSE)
-        ans <- make_XStringSet_from_strings(x0, strings, start, end, width)
+        solved_SEW <- solveUserSEW(width(strings),
+                                   start=start, end=end, width=width)
+        ans <- make_XStringSet_from_strings(x0, strings,
+                                            start(solved_SEW),
+                                            width(solved_SEW))
         if (use.names)
             names(ans) <- names(strings)
     }
