@@ -114,7 +114,7 @@ XString.write <- function(x, i, imax=integer(0), value)
 ###
 
 setGeneric("make_XString_from_string", signature="x0",
-    function(x0, string, start, width)
+    function(x0, string, start, end, width)
     {
         stopifnot(is(x0, "XString"))
         if (!isSingleString(string))
@@ -125,11 +125,13 @@ setGeneric("make_XString_from_string", signature="x0",
 
 ### Default method.
 setMethod("make_XString_from_string", "XString",
-    function(x0, string, start, width)
+    function(x0, string, start, end, width)
     {
+        solved_SEW <- solveUserSEW(width(string), 
+                                   start=start, end=end, width=width)
         lkup <- get_seqtype_conversion_lookup("B", seqtype(x0))
         .Call2("new_XString_from_CHARACTER",
-               class(x0), string, start, width, lkup,
+               class(x0), string, start(solved_SEW), width(solved_SEW), lkup,
                PACKAGE="Biostrings")
     }
 )
@@ -139,9 +141,7 @@ setMethod("make_XString_from_string", "XString",
     if (!isSingleString(string))
         stop(wmsg("input must be a single non-NA string"))
     x0 <- new2(paste0(seqtype, "String"), check=FALSE)
-    solved_SEW <- solveUserSEW(width(string),
-                               start=start, end=end, width=width)
-    make_XString_from_string(x0, string, start(solved_SEW), width(solved_SEW))
+    make_XString_from_string(x0, string, start, end, width)
 }
 
 

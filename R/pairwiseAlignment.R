@@ -341,16 +341,14 @@ mpi.XStringSet.pairwiseAlignment <-
     subsets <- vector("list", k)
     for (i in seq_len(k)) {
       indices <- ((i-1)*perNode+1):ifelse(i < k, i*perNode, n)
-      FUN.pattern <- xsbaseclass.fun(pattern, suffix = "Set")
       if (length(subject) == 1) {
           subsets[[i]] <-
-            list(pattern = FUN.pattern(as.character(pattern[indices])),
+            list(pattern = XStringSet(seqtype(pattern), as.character(pattern[indices])),
                  subject = subject)
       } else {
-          FUN.subject <- xsbaseclass.fun(subject, suffix = "Set")
           subsets[[i]] <-
-            list(pattern = FUN.pattern(as.character(pattern[indices])),
-                 subject = FUN.subject(as.character(subject[indices])))
+            list(pattern = XStringSet(seqtype(pattern), as.character(pattern[indices])),
+                 subject = XStringSet(seqtype(subject), as.character(subject[indices])))
       }
     }
 
@@ -425,25 +423,23 @@ mpi.QualityScaledXStringSet.pairwiseAlignment <-
     subsets <- vector("list", k)
     for (i in seq_len(k)) {
       indices <- ((i-1)*perNode+1):ifelse(i < k, i*perNode, n)
-      FUN.pattern <- xsbaseclass.fun(pattern, suffix = "Set")
       if (length(subject) == 1) {
         subsets[[i]] <-
           list(pattern =
-               QualityScaledXStringSet(FUN.pattern(
+               QualityScaledXStringSet(XStringSet(seqtype(pattern),
                  as.character(pattern[indices])),
                    do.call(class(quality(pattern)),
                      list(as.character(quality(pattern[indices]))))),
                subject = subject)
       } else {
-        FUN.subject <- xsbaseclass.fun(subject, suffix = "Set")
         subsets[[i]] <-
           list(pattern =
-               QualityScaledXStringSet(FUN.pattern(
+               QualityScaledXStringSet(XStringSet(seqtype(pattern),
                  as.character(pattern[indices])),
                    do.call(class(quality(pattern)),
                      list(as.character(quality(pattern[indices]))))),
                subject =
-               QualityScaledXStringSet(FUN.subject(
+               QualityScaledXStringSet(XStringSet(seqtype(subject),
                  as.character(subject[indices])),
                    do.call(class(quality(subject)),
                      list(as.character(quality(subject[indices]))))))
@@ -532,10 +528,8 @@ setMethod("pairwiseAlignment", c("ANY", "ANY"),
             pattern_seqtype <- subject_seqtype
         if (subject_seqtype == "B")
             subject_seqtype <- pattern_seqtype
-        FUN.pattern <- baseclass.fun(pattern_seqtype, suffix = "Set")
-        FUN.subject <- baseclass.fun(subject_seqtype, suffix = "Set")
-        pattern <- FUN.pattern(pattern)
-        subject <- FUN.subject(subject)
+        pattern <- XStringSet(pattern_seqtype, pattern)
+        subject <- XStringSet(subject_seqtype, subject)
 
         if (!is.null(substitutionMatrix)) {
             mpi.XStringSet.pairwiseAlignment(pattern, subject,
@@ -566,8 +560,7 @@ setMethod("pairwiseAlignment", c("ANY", "QualityScaledXStringSet"),
              scoreOnly=FALSE)
     {
         if (is.character(pattern)) {
-            FUN <- xsbaseclass.fun(subject, suffix = "Set")
-            pattern <- FUN(pattern)
+            pattern <- XStringSet(seqtype(subject), pattern)
         } else {
             pattern <- as(pattern, "XStringSet")
         }
@@ -600,8 +593,7 @@ setMethod("pairwiseAlignment", c("QualityScaledXStringSet", "ANY"),
              scoreOnly=FALSE)
     {
         if (is.character(subject)) {
-            FUN <- xsbaseclass.fun(subject, suffix = "Set")
-            subject <- FUN(subject)
+            subject <- XStringSet(seqtype(pattern), subject)
         } else {
             subject <- as(subject, "XStringSet")
         }

@@ -82,16 +82,15 @@ setMethod("nchar", "XStringSetList", IRanges:::nchar_CompressedList)
         y <- x
     }
     unlisted_y <- unlist(y, use.names=FALSE, recursive=FALSE)
-    FUN <- baseclass.fun(seqtype, suffix = "Set")
     if (!is.list(unlisted_y) && length(unlisted_y) == sum(x_eltNROWS)) {
-        unlisted_ans <- FUN(unlisted_y)
+        unlisted_ans <- XStringSet(seqtype, unlisted_y)
     } else {
         ## In that case 'length(unlisted_y)' should be < 'sum(x_eltNROWS)'
         ## which means unlist() was not able to fully unlist 'y'. So let's
         ## try to turn each list element into an XStringSet object and then
         ## combine them together. This is of course much slower than if
         ## unlist() had succeeded.
-        y <- lapply(unname(y), FUN)
+        y <- lapply(unname(y), XStringSet, seqtype=seqtype)
         unlisted_ans <- do.call(c, y)
     }
     relist(unlisted_ans, x)
@@ -100,8 +99,7 @@ setMethod("nchar", "XStringSetList", IRanges:::nchar_CompressedList)
 .new_XStringSetList_from_List <- function(seqtype, x)
 {
     unlisted_x <- unlist(x, use.names=FALSE)
-    FUN <- baseclass.fun(seqtype, suffix = "Set")
-    unlisted_ans <- FUN(unlisted_x)
+    unlisted_ans <- XStringSet(seqtype, unlisted_x)
     ans <- relist(unlisted_ans, x)
     ## relist() puts the names back but not the metadata columns.
     mcols(ans) <- mcols(x)

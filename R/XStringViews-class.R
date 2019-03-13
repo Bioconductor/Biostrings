@@ -115,8 +115,8 @@ setMethod("XStringSet", "XStringViews",
     {
         y <- fromXStringViewsToStringSet(x, out.of.limits="warning",
                                          use.names=use.names)
-        FUN <- baseclass.fun(seqtype, suffix = "Set")
-        FUN(y, start=start, end=end, width=width, use.names=TRUE)
+        XStringSet(seqtype, y,
+                   start=start, end=end, width=width, use.names=TRUE)
     }
 )
 

@@ -149,16 +149,15 @@ function(pattern, subject, type = "global", substitutionMatrix = NULL,
                      values = comparison[["values"]][whichSubject]),
                 class = "rle")
     substitutionIndices <- (explodedPattern != "-") & (explodedSubject != "-")
-    FUN <- baseclass.fun(seqtype, suffix = "Set")
     new(pwaClass,
         pattern =
           new("AlignedXStringSet",
-              unaligned = FUN(paste(degappedPattern, collapse = "")),
+              unaligned = XStringSet(seqtype, paste(degappedPattern, collapse = "")),
               range = getRange(patternRle), mismatch = getMismatches(patternRle),
               indel = getIndels(comparison, "-")),
         subject =
           new("AlignedXStringSet",
-              unaligned = FUN(paste(degappedSubject, collapse = "")),
+              unaligned = XStringSet(seqtype, paste(degappedSubject, collapse = "")),
               range = getRange(subjectRle), mismatch = getMismatches(subjectRle),
               indel = getIndels(comparison, "+")),
         type = type,

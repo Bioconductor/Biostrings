@@ -180,7 +180,7 @@ setReplaceMethod("subseq", "XStringSet",
 ###
 
 setGeneric("make_XStringSet_from_strings", signature="x0",
-    function(x0, strings, start, width)
+    function(x0, strings, start, end, width)
     {
         stopifnot(is(x0, "XStringSet"))
         if (!is.character(strings))
@@ -191,20 +191,21 @@ setGeneric("make_XStringSet_from_strings", signature="x0",
 
 ### Default method.
 setMethod("make_XStringSet_from_strings", "XStringSet",
-    function(x0, strings, start, width)
+    function(x0, strings, start, end, width)
     {
+      solved_SEW <- solveUserSEW(width(strings),
+                                 start=start, end=end, width=width)
         lkup <- get_seqtype_conversion_lookup("B", seqtype(x0))
         .Call2("new_XStringSet_from_CHARACTER",
-               class(x0), elementType(x0), strings, start, width, lkup,
-               PACKAGE="Biostrings")
+               class(x0), elementType(x0), strings, start(solved_SEW),
+               width(solved_SEW), lkup, PACKAGE="Biostrings")
     }
 )
 
 ### 'x' must be a character string or an XString object.
 .oneSeqToXStringSet <- function(seqtype, x, start, end, width, use.names)
 {
-    FUN <- baseclass.fun(seqtype)
-    ans_xvector <- FUN(x)
+    ans_xvector <- XString(seqtype, x)
     ans_ranges <- solveUserSEW(length(ans_xvector),
                                start=start, end=end, width=width,
                                rep.refwidths=TRUE)
@@ -228,11 +229,7 @@ setMethod("make_XStringSet_from_strings", "XStringSet",
     } else {
         use.names <- normargUseNames(use.names)
         x0 <- new2(paste0(seqtype, "StringSet"), check=FALSE)
-        solved_SEW <- solveUserSEW(width(strings),
-                                   start=start, end=end, width=width)
-        ans <- make_XStringSet_from_strings(x0, strings,
-                                            start(solved_SEW),
-                                            width(solved_SEW))
+        ans <- make_XStringSet_from_strings(x0, strings, start, end, width)
         if (use.names)
             names(ans) <- names(strings)
     }
@@ -265,16 +262,18 @@ setMethod("XStringSet", "factor",
     {
         if (is.null(seqtype))
             seqtype <- "B"
-        FUN <- baseclass.fun(seqtype, suffix = "Set")
         if (length(x) < nlevels(x)) {
-            return(FUN(as.character(x),start, end, width, use.names))
+          ans <- .charToXStringSet(seqtype, as.character(x),
+                                   start, end, width, use.names)
+          return(ans)
         }
         ## If 'x' has less levels than elements, then it's cheaper to
         ## operate on its levels. In case of equality (i.e. if
         ## length(x) == nlevels(x)), the price is the same but the final
         ## XStringSet object obtained by operating on the levels might use
         ## less memory (if 'x' contains duplicated values).
-        ans <- FUN(levels(x), start, end, width, use.names)
+        ans <- .charToXStringSet(seqtype, levels(x),
+                                 start, end, width, use.names)
         ans[as.integer(x)]
     }
 )
@@ -309,8 +308,8 @@ setMethod("XStringSet", "list",
         }
         tmp_class <- paste(tmp_elementType, "Set", sep="")
         tmp <- XVector:::new_XVectorList_from_list_of_XVector(tmp_class, x)
-        FUN <- match.fun(tmp_class)
-        FUN(tmp, start=start, end=end, width=width, use.names=use.names)
+        XStringSet(seqtype, tmp,
+                   start=start, end=end, width=width, use.names=use.names)
     }
 )
 
@@ -329,24 +328,22 @@ setMethod("XStringSet", "AsIs",
 
 setMethod("XStringSet", "probetable",
     function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE){
-        FUN <- baseclass.fun(seqtype, suffix = "Set")
-        FUN(x$sequence, start=start, end=end, width=width, use.names=use.names)
+        XStringSet(seqtype, x$sequence,
+                   start=start, end=end, width=width, use.names=use.names)
     }
 )
 
 ### Default method.
 setMethod("XStringSet", "ANY",
     function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE){
-      FUN <- baseclass.fun(seqtype, suffix = "Set")
-      FUN(as.character(x), start=start, end=end, width=width, 
-          use.names=use.names)
+        XStringSet(seqtype, as.character(x),
+                   start=start, end=end, width=width, use.names=use.names)
     }
 )
 
 setMethod("XStringSet", "missing",
     function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE){
-      FUN <- baseclass.fun(seqtype, suffix = "Set")
-      FUN(NULL)
+        XStringSet(seqtype, NULL)
     }
 )
 
@@ -394,8 +391,7 @@ setAs("ANY", "XStringSet",
         from_seqtype <- try(seqtype(from), silent=TRUE)
         if (is(from_seqtype, "try-error"))
             from_seqtype <- "B"
-        FUN <- baseclass.fun(from_seqtype, suffix = "Set")
-        FUN(from)
+        XStringSet(from_seqtype, from)
     }
 )
 
