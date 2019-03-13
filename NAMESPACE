@@ -60,9 +60,11 @@ export(
     seqtype, "seqtype<-", get_seqtype_conversion_lookup, alphabet,
 
     ## XString-class.R:
+    make_XString_from_string,
     BString, DNAString, RNAString, AAString,
 
     ## XStringSet-class.R:
+    make_XStringSet_from_strings,
     BStringSet, DNAStringSet, RNAStringSet, AAStringSet,
 
     ## MaskedXString-class.R:

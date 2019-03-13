@@ -155,11 +155,50 @@ setReplaceMethod("subseq", "XStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The XStringSet() constructor. NOT exported.
+### make_XStringSet_from_strings()
 ###
-### This constructor and its helper functions use the uSEW (user-specified
-### Start/End/Width) interface.
+### Low-level generic called by XStringSet() constructor. Not intended to be
+### used directly by the end user.
+### Purpose is to make it easy to extend the XStringSet() constructor to
+### support XStringSet derivatives defined in other packages. For example,
+### defining the following method in the Modstrings package will make calls
+### of the form 'XStringSet("ModDNA", ...)' work (granted that seqtype()
+### works properly on ModDNAStringSet objects via appropriate methods):
 ###
+###   setMethod("make_XStringSet_from_strings", "ModStringSet",
+###       function(x0, strings, start, width)
+###       {
+###           codec <- modscodec(seqtype(x0))
+###           strings <- vapply(strings,
+###               function(string)
+###                   .convert_letters_to_one_byte_codes(string, codec),
+###               character(1),
+###               USE.NAMES=FALSE)
+###           callNextMethod()
+###       }
+###   )
+###
+
+setGeneric("make_XStringSet_from_strings", signature="x0",
+    function(x0, strings, start, width)
+    {
+        stopifnot(is(x0, "XStringSet"))
+        if (!is.character(strings))
+            stop(wmsg("input must be a character vector"))
+        standardGeneric("make_XStringSet_from_strings")
+    }
+)
+
+### Default method.
+setMethod("make_XStringSet_from_strings", "XStringSet",
+    function(x0, strings, start, width)
+    {
+        lkup <- get_seqtype_conversion_lookup("B", seqtype(x0))
+        .Call2("new_XStringSet_from_CHARACTER",
+               class(x0), elementType(x0), strings, start, width, lkup,
+               PACKAGE="Biostrings")
+    }
+)
 
 ### 'x' must be a character string or an XString object.
 .oneSeqToXStringSet <- function(seqtype, x, start, end, width, use.names)
@@ -180,26 +219,32 @@ setReplaceMethod("subseq", "XStringSet",
     extractList(ans_xvector, ans_ranges)
 }
 
-.charToXStringSet <- function(seqtype, x, start, end, width, use.names)
+.charToXStringSet <- function(seqtype, strings, start, end, width, use.names)
 {
-    if (length(x) == 1L) {
-        ans <- .oneSeqToXStringSet(seqtype, x, start, end, width, use.names)
-        return(ans)
+    if (length(strings) == 1L) {
+        ans <- .oneSeqToXStringSet(seqtype, strings,
+                                   start, end, width, use.names)
+    } else {
+        use.names <- normargUseNames(use.names)
+        x0 <- new2(paste0(seqtype, "StringSet"), check=FALSE)
+        solved_SEW <- solveUserSEW(width(strings),
+                                   start=start, end=end, width=width)
+        ans <- make_XStringSet_from_strings(x0, strings,
+                                            start(solved_SEW),
+                                            width(solved_SEW))
+        if (use.names)
+            names(ans) <- names(strings)
     }
-    use.names <- normargUseNames(use.names)
-    ans_elementType <- paste(seqtype, "String", sep="")
-    ans_class <- paste(ans_elementType, "Set", sep="")
-    solved_SEW <- solveUserSEW(width(x), start=start, end=end, width=width)
-    ans <- .Call2("new_XStringSet_from_CHARACTER",
-                 ans_class, ans_elementType,
-                 x, start(solved_SEW), width(solved_SEW),
-                 get_seqtype_conversion_lookup("B", seqtype),
-                 PACKAGE="Biostrings")
-    if (use.names)
-        names(ans) <- names(x)
     ans
 }
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The XStringSet() constructor. NOT exported.
+###
+### This constructor and its helper functions use the uSEW (user-specified
+### Start/End/Width) interface.
+###
 
 setGeneric("XStringSet", signature="x",
     function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
