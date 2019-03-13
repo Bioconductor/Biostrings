@@ -41,16 +41,31 @@ setGeneric("seqtype<-", signature="x",
 ### not on what particular data are in 'x'. Not exported.
 ### 
 
-xsbaseclass <- function(x) paste(seqtype(x), "String", sep="")
-
-xscodes <- function(x, baseOnly=FALSE)
+baseclass <- function(seqtype) paste(seqtype, "String", sep="")
+baseclass.fun <- function(seqtype, suffix = "")
 {
-    switch(seqtype(x),
-        DNA=DNAcodes(baseOnly),
-        RNA=RNAcodes(baseOnly),
-        0:255
-    )
+  match.fun(paste0(baseclass(seqtype), suffix))
 }
+xsbaseclass <- function(x) baseclass(seqtype(x))
+xsbaseclass.fun <- function(x, suffix = "")
+{
+    match.fun(paste0(xsbaseclass(x), suffix))
+}
+
+setGeneric("xscodes", signature = "x",
+           function(x, baseOnly = FALSE, ...) standardGeneric("xscodes")
+)
+setMethod("xscodes","ANY",
+          function(x, baseOnly){
+              if (!isTRUEorFALSE(baseOnly))
+                  stop("'baseOnly' must be TRUE or FALSE")
+              seqtype <- seqtype(x)
+              switch(seqtype,
+                    DNA=DNAcodes(baseOnly),
+                    RNA=RNAcodes(baseOnly),
+                    0:255
+              )
+          })
 
 xscodec <- function(x)
 {

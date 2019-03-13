@@ -21,6 +21,7 @@
 % seqtype.R (put aliases for specific methods in corresponding man pages):
 \alias{seqtype}
 \alias{seqtype<-}
+\alias{xscodes}
 \alias{get_seqtype_conversion_lookup}
 
 % XString-class.R:
