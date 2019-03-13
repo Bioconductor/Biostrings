@@ -31,6 +31,12 @@ setMethod("seqtype", "DNAString", function(x) "DNA")
 setMethod("seqtype", "RNAString", function(x) "RNA")
 setMethod("seqtype", "AAString", function(x) "AA")
 
+.copySubSharedRaw <- function(x, start=1, nchar=NA, lkup=NULL)
+{
+    ans <- SharedRaw(nchar)
+    SharedVector.copy(ans, start, start + nchar - 1L, src=x, lkup=lkup)
+}
+
 ### Downgrades 'x' to a B/DNA/RNA/AAString instance!
 setReplaceMethod("seqtype", "XString",
     function(x, value)
@@ -87,41 +93,68 @@ XString.write <- function(x, i, imax=integer(0), value)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### make_XString_from_string()
+###
+### Low-level generic called by XString() constructor. Not intended to be
+### used directly by the end user.
+### Purpose is to make it easy to extend the XString() constructor to
+### support XString derivatives defined in other packages. For example,
+### defining the following method in the Modstrings package will make calls
+### of the form 'XString("ModDNA", ...)' work (granted that seqtype() works
+### properly on ModDNAString objects via appropriate methods):
+###
+###   setMethod("make_XString_from_string", "ModString",
+###       function(x0, string, start, width)
+###       {
+###           codec <- modscodec(seqtype(x0))
+###           string <- .convert_letters_to_one_byte_codes(string, codec)
+###           callNextMethod()
+###       }
+###   )
+###
+
+setGeneric("make_XString_from_string", signature="x0",
+    function(x0, string, start, width)
+    {
+        stopifnot(is(x0, "XString"))
+        if (!isSingleString(string))
+            stop(wmsg("input must be a single non-NA string"))
+        standardGeneric("make_XString_from_string")
+    }
+)
+
+### Default method.
+setMethod("make_XString_from_string", "XString",
+    function(x0, string, start, width)
+    {
+        lkup <- get_seqtype_conversion_lookup("B", seqtype(x0))
+        .Call2("new_XString_from_CHARACTER",
+               class(x0), string, start, width, lkup,
+               PACKAGE="Biostrings")
+    }
+)
+
+.charToXString <- function(seqtype, string, start, end, width)
+{
+    if (!isSingleString(string))
+        stop(wmsg("input must be a single non-NA string"))
+    x0 <- new2(paste0(seqtype, "String"), check=FALSE)
+    solved_SEW <- solveUserSEW(width(string),
+                               start=start, end=end, width=width)
+    make_XString_from_string(x0, string, start(solved_SEW), width(solved_SEW))
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The XString() constructor. NOT exported.
 ###
 ### This constructor and its helper functions use the uSEW (user-specified
 ### Start/End/Width) interface.
 ###
 
-.charToXString <- function(seqtype, x, start, end, width)
-{
-    classname <- paste(seqtype, "String", sep="")
-    solved_SEW <- solveUserSEW(width(x), start=start, end=end, width=width)
-    .Call2("new_XString_from_CHARACTER",
-          classname,
-          x, start(solved_SEW), width(solved_SEW),
-          get_seqtype_conversion_lookup("B", seqtype),
-          PACKAGE="Biostrings")
-}
-
-.copySubSharedRaw <- function(x, start=1, nchar=NA, lkup=NULL)
-{
-    ans <- SharedRaw(nchar)
-    SharedVector.copy(ans, start, start + nchar - 1L, src=x, lkup=lkup)
-}
-
 setGeneric("XString", signature="x",
     function(seqtype, x, start=NA, end=NA, width=NA)
         standardGeneric("XString")
-)
-
-setMethod("XString", "factor",
-    function(seqtype, x, start=NA, end=NA, width=NA)
-    {
-        if (is.null(seqtype))
-            seqtype <- "B"
-        .charToXString(seqtype, as.character(x), start, end, width)
-    }
 )
 
 setMethod("XString", "character",
@@ -130,6 +163,15 @@ setMethod("XString", "character",
         if (is.null(seqtype))
             seqtype <- "B"
         .charToXString(seqtype, x, start, end, width)
+    }
+)
+
+setMethod("XString", "factor",
+    function(seqtype, x, start=NA, end=NA, width=NA)
+    {
+        if (is.null(seqtype))
+            seqtype <- "B"
+        .charToXString(seqtype, as.character(x), start, end, width)
     }
 )
 
