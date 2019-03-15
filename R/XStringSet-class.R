@@ -82,24 +82,25 @@ setMethod("width", "character",
         if (anyNA(x))
             stop("NAs in 'x' are not supported")
 
-        ## The strings in 'x' can contain bytes with value > 127 (e.g.
-        ## when doing 'BStringSet(rawToChar(as.raw(135L)))' or
-        ## 'SolexaQuality(99L)') so need to be interpreted as ordinary
-        ## C strings otherwise the call to 'nchar(x, type="chars")' below
-        ## will fail:
+        ## Bytes with values > 127 in 'x' break 'nchar(x, type="chars")'
+        ## on some systems, depending on how LC_CTYPE is set. For example
+        ## on my Linux laptop where LC_CTYPE set to en_US.UTF-8:
+        ##   Sys.getlocale("LC_CTYPE")  # en_US.UTF-8
         ##   x <- rawToChar(as.raw(135L))
-        ##   nchar(x, type="chars") # invalid multibyte string, element 1
-        ## Using 'nchar(x, type="bytes")' is not a good option either
+        ##   nchar(x, type="chars")  # invalid multibyte string, element 1
+        ## These byte values are legit. For example they occur when doing
+        ## 'BStringSet(rawToChar(as.raw(135L)))' or 'SolexaQuality(99L)'.
+        ## The purpose of temporarily setting LC_CTYPE to C below is to
+        ## overwrite its current value to make sure that
+        ## 'nchar(rawToChar(as.raw(byte)), type="chars")' will succeed
+        ## for any value of byte between 0 and 255.
+        ## Note that using 'nchar(x, type="bytes")' wouldn't be an option
         ## because it breaks the Modstrings package (which uses multibyte
         ## characters).
 
         prev_LC_CTYPE <- Sys.getlocale("LC_CTYPE")
         Sys.setlocale("LC_CTYPE", "C")
         on.exit(Sys.setlocale("LC_CTYPE", prev_LC_CTYPE))
-
-        prev_LC_COLLATE <- Sys.getlocale("LC_COLLATE")
-        Sys.setlocale("LC_COLLATE", "C")
-        on.exit(Sys.setlocale("LC_COLLATE", prev_LC_COLLATE), add=TRUE)
 
         nchar(x, type="chars")
     }
