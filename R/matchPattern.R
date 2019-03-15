@@ -142,7 +142,7 @@ gregexpr2 <- function(pattern, text)
                    PACKAGE="Biostrings")
     if (count.only)
         return(C_ans)
-    Views(subject, start = start(C_ans), width = width(C_ans))
+    Views(subject, start=start(C_ans), width=width(C_ans))
 }
 
 .XStringViews.matchPattern <- function(pattern, subject,
@@ -170,7 +170,7 @@ gregexpr2 <- function(pattern, text)
                    PACKAGE="Biostrings")
     if (count.only)
         return(C_ans)
-    Views(subject(subject), start = start(C_ans), width = width(C_ans))
+    Views(subject(subject), start=start(C_ans), width=width(C_ans))
 }
 
 

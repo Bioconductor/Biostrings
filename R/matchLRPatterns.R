@@ -37,7 +37,7 @@ setMethod("matchLRPatterns", "XString",
             }
         }
         ans_width <- ans_end - ans_start + 1L
-        Views(subject, start = ans_start, width = ans_width)
+        Views(subject, start=ans_start, width=ans_width)
     }
 )
 
@@ -57,26 +57,26 @@ setMethod("matchLRPatterns", "XStringViews",
         ans_start <- ans_width <- integer(0)
         subject <- trim(subject)
         Lcounts <- vcountPattern(Lpattern, subject,
-                                 max.mismatch = max.Lmismatch,
-                                 with.indels = with.Lindels,
-                                 fixed = Lfixed)
+                                 max.mismatch=max.Lmismatch,
+                                 with.indels=with.Lindels,
+                                 fixed=Lfixed)
         candidates <- which(Lcounts > 0L)
         if (length(candidates) != 0L) {
             subject <- subject[candidates]
             Lcounts <- Lcounts[candidates]
             Lmatches <- matchPattern(Lpattern, subject,
-                                     max.mismatch = max.Lmismatch,
-                                     with.indels = with.Lindels,
-                                     fixed = Lfixed)
-            Rranges <- IRanges(start = end(Lmatches) + 1L,
-                               width = max.gaplength + nchar(Rpattern))
+                                     max.mismatch=max.Lmismatch,
+                                     with.indels=with.Lindels,
+                                     fixed=Lfixed)
+            Rranges <- IRanges(start=end(Lmatches) + 1L,
+                               width=max.gaplength + nchar(Rpattern))
             Rranges <- pintersect(Rranges,
                                   rep(as(subject, "IRanges"), Lcounts))
             Rsubject <- as(Views(subject(subject), Rranges), "XStringSet")
             Rmatches <- vmatchPattern(Rpattern, Rsubject,
-                                      max.mismatch = max.Rmismatch,
-                                      with.indels = with.Rindels,
-                                      fixed = Rfixed)
+                                      max.mismatch=max.Rmismatch,
+                                      with.indels=with.Rindels,
+                                      fixed=Rfixed)
             Rcounts <- elementNROWS(Rmatches)
             Roffset <- unlist(endIndex(Rmatches), use.names=FALSE)
             if (length(Roffset) != 0L) {
@@ -84,7 +84,7 @@ setMethod("matchLRPatterns", "XStringViews",
                 ans_width <- rep.int(width(Lmatches), Rcounts) + Roffset
             }
         }
-        Views(subject(subject), start = ans_start, width = ans_width)
+        Views(subject(subject), start=ans_start, width=ans_width)
     }
 )
 

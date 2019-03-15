@@ -22,6 +22,7 @@
 \alias{seqtype}
 \alias{seqtype<-}
 \alias{xscodes}
+\alias{xscodes,ANY-method}
 \alias{get_seqtype_conversion_lookup}
 
 % XString-class.R:

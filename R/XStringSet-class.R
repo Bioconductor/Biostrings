@@ -79,8 +79,28 @@ setMethod("relistToClass", "XString",
 setMethod("width", "character",
     function(x)
     {
-        if (any(is.na(x)))
+        if (anyNA(x))
             stop("NAs in 'x' are not supported")
+
+        ## The strings in 'x' can contain bytes with value > 127 (e.g.
+        ## when doing 'BStringSet(rawToChar(as.raw(135L)))' or
+        ## 'SolexaQuality(99L)') so need to be interpreted as ordinary
+        ## C strings otherwise the call to 'nchar(x, type="chars")' below
+        ## will fail:
+        ##   x <- rawToChar(as.raw(135L))
+        ##   nchar(x, type="chars") # invalid multibyte string, element 1
+        ## Using 'nchar(x, type="bytes")' is not a good option either
+        ## because it breaks the Modstrings package (which uses multibyte
+        ## characters).
+
+        prev_LC_CTYPE <- Sys.getlocale("LC_CTYPE")
+        Sys.setlocale("LC_CTYPE", "C")
+        on.exit(Sys.setlocale("LC_CTYPE", prev_LC_CTYPE))
+
+        prev_LC_COLLATE <- Sys.getlocale("LC_COLLATE")
+        Sys.setlocale("LC_COLLATE", "C")
+        on.exit(Sys.setlocale("LC_COLLATE", prev_LC_COLLATE), add=TRUE)
+
         nchar(x, type="chars")
     }
 )

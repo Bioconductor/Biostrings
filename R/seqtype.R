@@ -43,12 +43,13 @@ setGeneric("seqtype<-", signature="x",
 
 xsbaseclass <- function(x) paste(seqtype(x), "String", sep="")
 
-setGeneric("xscodes", signature = "x",
-    function(x, baseOnly = FALSE, ...) standardGeneric("xscodes")
+setGeneric("xscodes", signature="x",
+    function(x, baseOnly=FALSE, ...) standardGeneric("xscodes")
 )
 
-setMethod("xscodes","ANY",
-    function(x, baseOnly){
+setMethod("xscodes", "ANY",
+    function(x, baseOnly=FALSE)
+    {
         if (!isTRUEorFALSE(baseOnly))
             stop("'baseOnly' must be TRUE or FALSE")
         seqtype <- seqtype(x)
