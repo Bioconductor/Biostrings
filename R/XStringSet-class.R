@@ -81,7 +81,7 @@ setMethod("width", "character",
     {
         if (any(is.na(x)))
             stop("NAs in 'x' are not supported")
-        nchar(x, type="bytes")
+        nchar(x, type="chars")
     }
 )
 
