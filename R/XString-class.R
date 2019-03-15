@@ -78,7 +78,7 @@ XString.readCodes <- function(x, i, imax=integer(0))
 ### methods):
 ###
 ###   setMethod("extract_character_from_XString_by_positions", "ModString",
-###       function(x, pos, collapse=FALSE, lkup=NULL)
+###       function(x, pos, collapse=FALSE)
 ###       {
 ###           ans <- callNextMethod()
 ###           codec <- modscodec(seqtype(x))
@@ -86,7 +86,7 @@ XString.readCodes <- function(x, i, imax=integer(0))
 ###       }
 ###   )
 ###   setMethod("extract_character_from_XString_by_ranges", "ModString",
-###       function(x, start, width, collapse=FALSE, lkup=NULL)
+###       function(x, start, width, collapse=FALSE)
 ###       {
 ###           ans <- callNextMethod()
 ###           codec <- modscodec(seqtype(x))
@@ -96,7 +96,7 @@ XString.readCodes <- function(x, i, imax=integer(0))
 ###
 
 setGeneric("extract_character_from_XString_by_positions", signature="x",
-    function(x, pos, collapse=FALSE, lkup=NULL)
+    function(x, pos, collapse=FALSE)
     {
         ## Only light checking of 'pos' (i.e. we don't check that it contains
         ## valid positions on 'x').
@@ -109,16 +109,16 @@ setGeneric("extract_character_from_XString_by_positions", signature="x",
 
 ### Default method.
 setMethod("extract_character_from_XString_by_positions", "XString",
-    function(x, pos, collapse=FALSE, lkup=NULL)
+    function(x, pos, collapse=FALSE)
     {
         XVector:::extract_character_from_XRaw_by_positions(x, pos,
                                                            collapse=collapse,
-                                                           lkup=lkup)
+                                                           lkup=xs_dec_lkup(x))
     }
 )
 
 setGeneric("extract_character_from_XString_by_ranges", signature="x",
-    function(x, start, width, collapse=FALSE, lkup=NULL)
+    function(x, start, width, collapse=FALSE)
     {
         ## Only light checking of 'start' and 'width' (i.e. we don't check
         ## that they have the same length and define valid ranges on 'x').
@@ -131,11 +131,11 @@ setGeneric("extract_character_from_XString_by_ranges", signature="x",
 
 ### Default method.
 setMethod("extract_character_from_XString_by_ranges", "XString",
-    function(x, start, width, collapse=FALSE, lkup=NULL)
+    function(x, start, width, collapse=FALSE)
     {
         XVector:::extract_character_from_XRaw_by_ranges(x, start, width,
                                                         collapse=collapse,
-                                                        lkup=lkup)
+                                                        lkup=xs_dec_lkup(x))
     }
 )
 
@@ -298,8 +298,7 @@ setAs("character", "XString", function(from) BString(from))
 
 setMethod("as.character", "XString",
     function(x)
-        extract_character_from_XString_by_ranges(x, 1L, length(x),
-                                                 lkup=xs_dec_lkup(x))
+        extract_character_from_XString_by_ranges(x, 1L, length(x))
 )
 
 setMethod("toString", "XString", function(x, ...) as.character(x))

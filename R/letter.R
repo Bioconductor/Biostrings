@@ -46,9 +46,7 @@ setMethod("letter", "XString",
             stop("subscript 'i' must be an integer vector")
         if (!is.integer(i))
             i <- as.integer(i)
-        extract_character_from_XString_by_positions(x, i,
-                                                    collapse=TRUE,
-                                                    lkup=xs_dec_lkup(x))
+        extract_character_from_XString_by_positions(x, i, collapse=TRUE)
     }
 )
 

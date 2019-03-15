@@ -170,8 +170,7 @@ XStringViews.get_view <- function(x, start, end)
         Rmargin <- format("", width=end-lx)
         end <- lx
     }
-    s <- extract_character_from_XString_by_ranges(x, start, end - start + 1L,
-                                                  lkup=xs_dec_lkup(x))
+    s <- extract_character_from_XString_by_ranges(x, start, end - start + 1L)
     paste0(Lmargin, s, Rmargin)
 }
 
