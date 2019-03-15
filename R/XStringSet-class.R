@@ -84,16 +84,17 @@ setMethod("width", "character",
 
         ## Bytes with values > 127 in 'x' break 'nchar(x, type="chars")'
         ## on some systems, depending on how LC_CTYPE is set. For example
-        ## on my Linux laptop where LC_CTYPE set to en_US.UTF-8:
+        ## on my Linux laptop where LC_CTYPE is set to en_US.UTF-8:
         ##   Sys.getlocale("LC_CTYPE")  # en_US.UTF-8
         ##   x <- rawToChar(as.raw(135L))
         ##   nchar(x, type="chars")  # invalid multibyte string, element 1
-        ## These byte values are legit. For example they occur when doing
-        ## 'BStringSet(rawToChar(as.raw(135L)))' or 'SolexaQuality(99L)'.
+        ## These byte values are legit e.g. they occur when doing things
+        ## like 'SolexaQuality(99L)' or 'BString(rawToChar(as.raw(135L)))'.
         ## The purpose of temporarily setting LC_CTYPE to C below is to
-        ## overwrite its current value to make sure that
-        ## 'nchar(rawToChar(as.raw(byte)), type="chars")' will succeed
-        ## for any value of byte between 0 and 255.
+        ## make sure that the call to 'nchar(x, type="chars")' will always
+        ## succeed and do the right thing. A simple test is:
+        ##   x <- safeExplode(rawToChar(as.raw(1:255)))
+        ##   stopifnot(identical(width(x), rep.int(1L, 255)))
         ## Note that using 'nchar(x, type="bytes")' wouldn't be an option
         ## because it breaks the Modstrings package (which uses multibyte
         ## characters).

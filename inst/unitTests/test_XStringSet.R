@@ -28,6 +28,12 @@
 
 ### -------------------------------------------------------------------------
 
+test_width_character <- function()
+{
+    x <- safeExplode(rawToChar(as.raw(1:255)))
+    checkIdentical(width(x), rep.int(1L, 255))
+}
+
 test_DNAStringSet_constructor <- function()
 {
     dna <- DNAStringSet(DNA_ALPHABET)
