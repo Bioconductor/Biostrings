@@ -99,11 +99,6 @@ SEXP new_XString_from_CHARACTER(
 	SEXP lkup
 );
 
-SEXP new_CHARACTER_from_XString(
-	SEXP x,
-	SEXP lkup
-);
-
 
 /* XStringSet_class.c */
 

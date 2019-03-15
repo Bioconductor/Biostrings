@@ -24,6 +24,10 @@
 \alias{get_seqtype_conversion_lookup}
 
 % XString-class.R:
+\alias{extract_character_from_XString_by_positions}
+\alias{extract_character_from_XString_by_positions,XString-method}
+\alias{extract_character_from_XString_by_ranges}
+\alias{extract_character_from_XString_by_ranges,XString-method}
 \alias{make_XString_from_string}
 \alias{make_XString_from_string,XString-method}
 

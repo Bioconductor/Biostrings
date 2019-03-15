@@ -158,7 +158,7 @@ setReplaceMethod("subseq", "XStringSet",
 ### make_XStringSet_from_strings()
 ###
 ### Low-level generic called by XStringSet() constructor. Not intended to be
-### used directly by the end user.
+### called directly by the end user.
 ### Purpose is to make it easy to extend the XStringSet() constructor to
 ### support XStringSet derivatives defined in other packages. For example,
 ### defining the following method in the Modstrings package will make calls
@@ -182,10 +182,15 @@ setReplaceMethod("subseq", "XStringSet",
 setGeneric("make_XStringSet_from_strings", signature="x0",
     function(x0, strings, start, width)
     {
-        stopifnot(is(x0, "XStringSet"))
+        ## Only light checking of 'start' and 'width' (i.e. we don't check
+        ## that they have the same length as 'strings' and define valid
+        ## ranges on its elements).
+        stopifnot(is(x0, "XStringSet"), is.integer(start), is.integer(width))
         if (!is.character(strings))
             stop(wmsg("input must be a character vector"))
-        standardGeneric("make_XStringSet_from_strings")
+        ans <- standardGeneric("make_XStringSet_from_strings")
+        stopifnot(class(ans) == class(x0))
+        ans
     }
 )
 
@@ -198,6 +203,19 @@ setMethod("make_XStringSet_from_strings", "XStringSet",
                class(x0), elementType(x0), strings, start, width, lkup,
                PACKAGE="Biostrings")
     }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The XStringSet() constructor. NOT exported.
+###
+### This constructor and its helper functions use the uSEW (user-specified
+### Start/End/Width) interface.
+###
+
+setGeneric("XStringSet", signature="x",
+    function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
+        standardGeneric("XStringSet")
 )
 
 ### 'x' must be a character string or an XString object.
@@ -237,19 +255,6 @@ setMethod("make_XStringSet_from_strings", "XStringSet",
     }
     ans
 }
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The XStringSet() constructor. NOT exported.
-###
-### This constructor and its helper functions use the uSEW (user-specified
-### Start/End/Width) interface.
-###
-
-setGeneric("XStringSet", signature="x",
-    function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
-        standardGeneric("XStringSet")
-)
 
 setMethod("XStringSet", "character",
     function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)

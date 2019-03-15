@@ -186,17 +186,3 @@ SEXP new_XString_from_CHARACTER(SEXP classname,
 	return ans;
 }
 
-/* --- .Call ENTRY POINT --- */
-SEXP new_CHARACTER_from_XString(SEXP x, SEXP lkup)
-{
-	Chars_holder x_holder;
-	SEXP ans, ans_elt;
-
-	x_holder = hold_XRaw(x);
-	PROTECT(ans = NEW_CHARACTER(1));
-	PROTECT(ans_elt = _new_CHARSXP_from_Chars_holder(&x_holder, lkup));
-	SET_STRING_ELT(ans, 0, ans_elt);
-	UNPROTECT(2);
-	return ans;
-}
-

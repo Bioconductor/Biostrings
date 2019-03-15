@@ -155,36 +155,40 @@ setMethod("as.data.frame", "XStringViews",
 ### nchar(XStringViews.get_view(x, start, end)) is always end-start+1
 XStringViews.get_view <- function(x, start, end)
 {
+    start <- as.integer(start)
+    end <- as.integer(end)
     lx <- length(x)
-    if (end < 1 || start > lx)
-            return(format("", width=end-start+1))
+    if (end < 1L || start > lx)
+            return(format("", width=end-start+1L))
     Lmargin <- ""
-    if (start < 1) {
-        Lmargin <- format("", width=1-start)
-        start <- 1
+    if (start < 1L) {
+        Lmargin <- format("", width=1L-start)
+        start <- 1L
     }
     Rmargin <- ""
     if (end > lx) {
         Rmargin <- format("", width=end-lx)
         end <- lx
     }
-    paste(Lmargin, XString.read(x, start, end), Rmargin, sep="")
+    s <- extract_character_from_XString_by_ranges(x, start, end - start + 1L,
+                                                  lkup=xs_dec_lkup(x))
+    paste0(Lmargin, s, Rmargin)
 }
 
 ### nchar(XStringViews.get_snippet(x, start, end, snippetWidth)) is <= snippetWidth
 XStringViews.get_snippet <- function(x, start, end, snippetWidth)
 {
-    if (snippetWidth < 7)
-        snippetWidth <- 7
-    width <- end - start + 1
+    if (snippetWidth < 7L)
+        snippetWidth <- 7L
+    width <- end - start + 1L
     if (width <= snippetWidth) {
         XStringViews.get_view(x, start, end)
     } else {
-        w1 <- (snippetWidth - 2) %/% 2
-        w2 <- (snippetWidth - 3) %/% 2
-        paste(XStringViews.get_view(x, start, start+w1-1),
+        w1 <- (snippetWidth - 2L) %/% 2L
+        w2 <- (snippetWidth - 3L) %/% 2L
+        paste(XStringViews.get_view(x, start, start+w1-1L),
               "...",
-              XStringViews.get_view(x, end-w2+1, end), sep="")
+              XStringViews.get_view(x, end-w2+1L, end), sep="")
     }
 }
 
@@ -201,8 +205,8 @@ XStringViews.show_vframe_line <- function(x, i, iW, startW, endW, widthW)
 {
     start <- start(x)[i]
     end <- end(x)[i]
-    width <- end - start + 1
-    snippetWidth <- getOption("width") - 6 - iW - startW - endW - widthW
+    width <- end - start + 1L
+    snippetWidth <- getOption("width") - 6L - iW - startW - endW - widthW
     cat(format(paste("[", i,"]", sep=""), width=iW, justify="right"), " ",
         format(start, width=startW, justify="right"), " ",
         format(end, width=endW, justify="right"), " ",
@@ -217,11 +221,11 @@ XStringViews.show_vframe <- function(x)
     ntail <- get_showTailLines()
     cat("\nviews:")
     lx <- length(x)
-    if (lx == 0)
+    if (lx == 0L)
         cat(" NONE\n")
     else {
         cat("\n")
-        iW <- nchar(as.character(lx)) + 2 # 2 for the brackets
+        iW <- nchar(as.character(lx)) + 2L  # 2 for the brackets
         startMax <- max(start(x))
         startW <- max(nchar(startMax), nchar("start"))
         endMax <- max(end(x))
@@ -229,11 +233,11 @@ XStringViews.show_vframe <- function(x)
         widthMax <- max(width(x))
         widthW <- max(nchar(widthMax), nchar("width"))
         XStringViews.show_vframe_header(iW, startW, endW, widthW)
-        if (lx <= nhead + ntail +1) {
+        if (lx <= nhead + ntail + 1L) {
             for (i in seq_len(lx))
                 XStringViews.show_vframe_line(x, i, iW, startW, endW, widthW)
         } else {
-            if (nhead > 0)
+            if (nhead > 0L)
                 for (i in seq_len(nhead))
                     XStringViews.show_vframe_line(x, i, iW, startW, endW, 
                                                   widthW)
@@ -245,7 +249,7 @@ XStringViews.show_vframe <- function(x)
                 " ",
                 format("...", width=widthW, justify="right"),
                 " ...\n", sep="")
-            if (ntail > 0)
+            if (ntail > 0L)
                 for (i in (lx-ntail+1L):lx)
                     XStringViews.show_vframe_line(x, i, iW, startW, endW, 
                                                   widthW)

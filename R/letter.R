@@ -42,11 +42,13 @@ setMethod("letter", "character",
 setMethod("letter", "XString",
     function(x, i)
     {
-        if (!is.numeric(i) || any(is.na(i)))
-            stop("'i' must be an NA-free numeric vector")
-        if (!all(i >= 1) || !all(i <= x@length))
-            stop("subscript out of bounds")
-        XString.read(x, i)
+        if (!is.numeric(i))
+            stop("subscript 'i' must be an integer vector")
+        if (!is.integer(i))
+            i <- as.integer(i)
+        extract_character_from_XString_by_positions(x, i,
+                                                    collapse=TRUE,
+                                                    lkup=xs_dec_lkup(x))
     }
 )
 
@@ -54,14 +56,18 @@ setMethod("letter", "XString",
 setMethod("letter", "XStringViews",
     function(x, i)
     {
-        if (!is.numeric(i) || any(is.na(i)))
-            stop("'i' must be an NA-free numeric vector")
+        if (!is.numeric(i))
+            stop("subscript 'i' must be an integer vector")
+        if (!is.integer(i))
+            i <- as.integer(i)
+        if (anyNA(i))
+            stop("subscript 'i' cannot contain NAs")
         if (length(x) == 0)
             return(character(0))
-        imax <- min(nchar(x))
-        if (!all(i >= 1) || !all(i <= imax))
+        imax <- min(width(x))
+        if (!all(i >= 1L) || !all(i <= imax))
             stop("subscript out of bounds")
-        sapply(seq_len(length(x)), function(n) XString.read(x[[n]], i))
+        sapply(x, letter, i)
     }
 )
 

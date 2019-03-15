@@ -54,49 +54,97 @@ setReplaceMethod("seqtype", "XString",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "XString.read", "XString.readCodes" and "XString.write" functions.
-### NOT exported!
+### XString.readCodes()
 ###
-
-XString.read <- function(x, i, imax=integer(0))
-{
-    SharedRaw.read(x@shared, x@offset + i, x@offset + imax,
-                      dec_lkup=xs_dec_lkup(x))
-}
 
 XString.readCodes <- function(x, i, imax=integer(0))
 {
     SharedRaw.readInts(x@shared, x@offset + i, x@offset + imax)
 }
 
-### Only used at initialization time! (XString objects are immutable.)
-### 'value' must be a character string (this is not checked).
-XString.write <- function(x, i, imax=integer(0), value)
-{
-    if (missing(i) && missing(imax)) {
-        nbytes <- nchar(value, type="bytes")
-        if (nbytes == 0)
-            return(x)
-        ## Write data starting immediately after the last byte in SharedRaw object
-        ## 'x@shared' that belongs to the sequence XString object 'x' is
-        ## pointing at.
-        ## This is safe because SharedRaw.write() is protected against subscripts
-        ## 'i' and 'imax' being "out of bounds".
-        i <- x@length + 1L
-        imax <- x@length <- x@length + nbytes
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### extract_character_from_XString_by_positions() and
+### extract_character_from_XString_by_ranges()
+###
+### Low-level generics called by the as.character(), show(), and letter()
+### methods for XString and XStringViews objects. Not intended to be called
+### directly by the end user.
+### Purpose is to facilitate support for XString derivatives defined in
+### other packages. For example, defining the following methods in the
+### Modstrings package will make as.character(), show(), and letter()
+### work as expected on ModString and ModStringViews objects (granted
+### that seqtype() works properly on ModString derivatives via appropriate
+### methods):
+###
+###   setMethod("extract_character_from_XString_by_positions", "ModString",
+###       function(x, pos, collapse=FALSE, lkup=NULL)
+###       {
+###           ans <- callNextMethod()
+###           codec <- modscodec(seqtype(x))
+###           .convert_one_byte_codes_to_letters(ans, codec)
+###       }
+###   )
+###   setMethod("extract_character_from_XString_by_ranges", "ModString",
+###       function(x, start, width, collapse=FALSE, lkup=NULL)
+###       {
+###           ans <- callNextMethod()
+###           codec <- modscodec(seqtype(x))
+###           .convert_one_byte_codes_to_letters(ans, codec)
+###       }
+###   )
+###
+
+setGeneric("extract_character_from_XString_by_positions", signature="x",
+    function(x, pos, collapse=FALSE, lkup=NULL)
+    {
+        ## Only light checking of 'pos' (i.e. we don't check that it contains
+        ## valid positions on 'x').
+        stopifnot(is(x, "XString"), is.integer(pos))
+        ans <- standardGeneric("extract_character_from_XString_by_positions")
+        stopifnot(is.character(ans))
+        ans
     }
-    #cat(x@offset + i, " -- ", x@offset + imax, "\n", sep="")
-    SharedRaw.write(x@shared, x@offset + i, x@offset + imax, value=value,
-                       enc_lkup=xs_enc_lkup(x))
-    x
-}
+)
+
+### Default method.
+setMethod("extract_character_from_XString_by_positions", "XString",
+    function(x, pos, collapse=FALSE, lkup=NULL)
+    {
+        XVector:::extract_character_from_XRaw_by_positions(x, pos,
+                                                           collapse=collapse,
+                                                           lkup=lkup)
+    }
+)
+
+setGeneric("extract_character_from_XString_by_ranges", signature="x",
+    function(x, start, width, collapse=FALSE, lkup=NULL)
+    {
+        ## Only light checking of 'start' and 'width' (i.e. we don't check
+        ## that they have the same length and define valid ranges on 'x').
+        stopifnot(is(x, "XString"), is.integer(start), is.integer(width))
+        ans <- standardGeneric("extract_character_from_XString_by_ranges")
+        stopifnot(is.character(ans))
+        ans
+    }
+)
+
+### Default method.
+setMethod("extract_character_from_XString_by_ranges", "XString",
+    function(x, start, width, collapse=FALSE, lkup=NULL)
+    {
+        XVector:::extract_character_from_XRaw_by_ranges(x, start, width,
+                                                        collapse=collapse,
+                                                        lkup=lkup)
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### make_XString_from_string()
 ###
 ### Low-level generic called by XString() constructor. Not intended to be
-### used directly by the end user.
+### called directly by the end user.
 ### Purpose is to make it easy to extend the XString() constructor to
 ### support XString derivatives defined in other packages. For example,
 ### defining the following method in the Modstrings package will make calls
@@ -116,10 +164,16 @@ XString.write <- function(x, i, imax=integer(0), value)
 setGeneric("make_XString_from_string", signature="x0",
     function(x0, string, start, width)
     {
-        stopifnot(is(x0, "XString"))
+        ## Only light checking of 'start' and 'width' (i.e. we don't check
+        ## that they define a valid range on 'string').
+        stopifnot(is(x0, "XString"),
+                  isSingleInteger(start),
+                  isSingleInteger(width))
         if (!isSingleString(string))
             stop(wmsg("input must be a single non-NA string"))
-        standardGeneric("make_XString_from_string")
+        ans <- standardGeneric("make_XString_from_string")
+        stopifnot(class(ans) == class(x0))
+        ans
     }
 )
 
@@ -134,16 +188,6 @@ setMethod("make_XString_from_string", "XString",
     }
 )
 
-.charToXString <- function(seqtype, string, start, end, width)
-{
-    if (!isSingleString(string))
-        stop(wmsg("input must be a single non-NA string"))
-    x0 <- new2(paste0(seqtype, "String"), check=FALSE)
-    solved_SEW <- solveUserSEW(width(string),
-                               start=start, end=end, width=width)
-    make_XString_from_string(x0, string, start(solved_SEW), width(solved_SEW))
-}
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The XString() constructor. NOT exported.
@@ -156,6 +200,16 @@ setGeneric("XString", signature="x",
     function(seqtype, x, start=NA, end=NA, width=NA)
         standardGeneric("XString")
 )
+
+.charToXString <- function(seqtype, string, start, end, width)
+{
+    if (!isSingleString(string))
+        stop(wmsg("input must be a single non-NA string"))
+    x0 <- new2(paste0(seqtype, "String"), check=FALSE)
+    solved_SEW <- solveUserSEW(width(string),
+                               start=start, end=end, width=width)
+    make_XString_from_string(x0, string, start(solved_SEW), width(solved_SEW))
+}
 
 setMethod("XString", "character",
     function(seqtype, x, start=NA, end=NA, width=NA)
@@ -244,9 +298,8 @@ setAs("character", "XString", function(from) BString(from))
 
 setMethod("as.character", "XString",
     function(x)
-        .Call2("new_CHARACTER_from_XString",
-              x, xs_dec_lkup(x),
-              PACKAGE="Biostrings")
+        extract_character_from_XString_by_ranges(x, 1L, length(x),
+                                                 lkup=xs_dec_lkup(x))
 )
 
 setMethod("toString", "XString", function(x, ...) as.character(x))
