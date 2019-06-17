@@ -251,8 +251,8 @@ is set to \Robject{-Inf}?
 \section{Pairwise Sequence Alignment Classes}
 
 Following the design principles of Bioconductor and R, the pairwise sequence
-alignment functionality in the \Rpackage{Biostrings} package keeps the end-user
-close to their data through the use of five specialty classes:  
+alignment functionality in the \Rpackage{Biostrings} package keeps the end
+user close to their data through the use of five specialty classes:
 \Rclass{PairwiseAlignments}, \Rclass{PairwiseAlignmentsSingleSubject},
 \Rclass{PairwiseAlignmentsSingleSubjectSummary}, \Rclass{AlignedXStringSet}, and
 \Rclass{QualityAlignedXStringSet}. The \Rclass{PairwiseAlignmentsSingleSubject}
@@ -296,7 +296,8 @@ class(pattern(pa2))
 \subsection{Exercise 2}
 \begin{enumerate}
 \item What is the primary benefit of formal summary classes like
-\Rclass{PairwiseAlignmentsSingleSubjectSummary} and \Rclass{summary.lm} to end-users? 
+\Rclass{PairwiseAlignmentsSingleSubjectSummary} and \Rclass{summary.lm} to
+end users?
 \end{enumerate}
 
 [Answer provided in section \ref{sec:Answers2}.]
@@ -942,8 +943,8 @@ pairwiseAlignment("zyzzyx", "syzygy", type = "overlap", gapExtension = Inf)
 \begin{enumerate}
 \item What is the primary benefit of formal summary classes like
 \Rclass{PairwiseAlignmentsSingleSubjectSummary} and \Rclass{summary.lm}
-to end-users?
-\textit{These classes allow the end-user to extract the summary output for
+to end users?
+\textit{These classes allow the end user to extract the summary output for
 further operations.}
 <<ans2a>>=
 ex2 <- summary(pairwiseAlignment("zyzzyx", "syzygy"))
