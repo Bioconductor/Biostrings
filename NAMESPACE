@@ -347,7 +347,7 @@ export(
     unaligned, aligned, indel, nindel,
 
     ## PairwiseAlignments-class.R:
-    PairwiseAlignments, type, alignedPattern, alignedSubject, pid,
+    PairwiseAlignments, alignedPattern, alignedSubject, pid,
 
     ## PairwiseAlignmentsSingleSubject-class.R:
     PairwiseAlignmentsSingleSubject,

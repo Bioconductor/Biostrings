@@ -321,8 +321,6 @@ get_aligned_pattern <- function(x_pattern, x_subject,
 setMethod("pattern", "PairwiseAlignments", function(x) x@pattern)
 setMethod("subject", "PairwiseAlignments", function(x) x@subject)
 
-### Conflicts with DelayedArray::type!
-setGeneric("type", function(x) standardGeneric("type"))
 setMethod("type", "PairwiseAlignments", function(x) x@type)
 
 setGeneric("alignedPattern", function(x) standardGeneric("alignedPattern"))
