@@ -24,23 +24,34 @@ static int has_prefix(const char *s, const char *prefix)
 	return 1;
 }
 
-/* TODO: Move this to XVector (together with _copy_CHARSXP_to_Chars_holder). */
-static void copy_Chars_holder(Chars_holder *dest, const Chars_holder *src,
-			      const int *lkup, int lkup_length)
+static int translate(Chars_holder *x, const int *lkup, int lkup_len)
 {
-	char *dest_ptr;
+	char *dest;
+	int nbinvalid, i, j, c;
 
-	/* dest->ptr is a (const char *) so we need to cast it to (char *)
+	/* x->ptr is a (const char *) so we need to cast it to (char *)
 	   before we can write to it */
-	dest_ptr = (char *) dest->ptr;
-	if (lkup == NULL) {
-		memcpy(dest_ptr, src->ptr, dest->length);
-	} else {
-		Ocopy_bytes_to_i1i2_with_lkup(0, dest->length - 1,
-			dest_ptr, dest->length,
-			src->ptr, src->length,
-			lkup, lkup_length);
+	dest = (char *) x->ptr;
+	nbinvalid = j = 0;
+	for (i = 0; i < x->length; i++) {
+		c = translate_byte(x->ptr[i], lkup, lkup_len);
+		if (c == NA_INTEGER) {
+			nbinvalid++;
+			continue;
+		}
+		dest[j++] = (char) c;
 	}
+	x->length = j;
+	return nbinvalid;
+}
+
+static void append_Chars_holder(Chars_holder *dest, const Chars_holder *src)
+{
+	/* dest->ptr is a (const char *) so we need to cast it to (char *)
+	   in order to write to it */
+	memcpy((char *) dest->ptr + dest->length,
+	       src->ptr, src->length * sizeof(char));
+	dest->length += src->length;
 	return;
 }
 
@@ -52,21 +63,26 @@ static void copy_Chars_holder(Chars_holder *dest, const Chars_holder *src,
 static const char *FASTQ_line1_markup = "@", *FASTQ_line3_markup = "+";
 
 typedef struct fastq_loader {
-	void (*load_seqid)(struct fastq_loader *loader,
-			   const Chars_holder *seqid);
-	void (*load_seq)(struct fastq_loader *loader,
-			 const Chars_holder *seq);
-	void (*load_qualid)(struct fastq_loader *loader,
-			    const Chars_holder *qualid);
-	void (*load_qual)(struct fastq_loader *loader,
-			  const Chars_holder *qual);
-	int nrec;
+	void (*new_seqid_hook)(struct fastq_loader *loader,
+			       const Chars_holder *seqid);
+	void (*new_empty_seq_hook)(struct fastq_loader *loader);
+	const char *(*append_seq_hook)(struct fastq_loader *loader,
+				       Chars_holder *seq_data);
+	void (*new_qualid_hook)(struct fastq_loader *loader,
+				const Chars_holder *qualid);
+        void (*new_empty_qual_hook)(struct fastq_loader *loader);
+	const char *(*append_qual_hook)(struct fastq_loader *loader,
+					const Chars_holder *qual_data);
+	const int *lkup;
+	int lkup_len;
 	void *ext;  /* loader extension (optional) */
 } FASTQloader;
 
 /*
  * The FASTQ SEQLEN loader.
  * Used in parse_FASTQ_file() to load the read lengths only.
+ * Does NOT check that the read sequences are valid and completely ignores
+ * the quality sequences.
  */
 
 typedef struct seqlen_fastq_loader_ext {
@@ -81,65 +97,93 @@ static SEQLEN_FASTQloaderExt new_SEQLEN_FASTQloaderExt()
 	return loader_ext;
 }
 
-static void FASTQ_SEQLEN_load_seq(FASTQloader *loader, const Chars_holder *seq)
+static void FASTQ_SEQLEN_new_empty_seq_hook(FASTQloader *loader)
 {
 	SEQLEN_FASTQloaderExt *loader_ext;
 	IntAE *seqlength_buf;
 
 	loader_ext = loader->ext;
 	seqlength_buf = loader_ext->seqlength_buf;
-	IntAE_insert_at(seqlength_buf, IntAE_get_nelt(seqlength_buf),
-			seq->length);
+	IntAE_insert_at(seqlength_buf, IntAE_get_nelt(seqlength_buf), 0);
 	return;
 }
 
-static FASTQloader new_FASTQloader_with_SEQLEN_ext(
+/* Unlike FASTQ_append_seq_hook(), FASTQ_SEQLEN_append_seq_hook() does NOT
+   check that the read sequence is valid. */
+static const char *FASTQ_SEQLEN_append_seq_hook(FASTQloader *loader,
+		Chars_holder *seq_data)
+{
+	SEQLEN_FASTQloaderExt *loader_ext;
+	IntAE *seqlength_buf;
+
+	loader_ext = loader->ext;
+	seqlength_buf = loader_ext->seqlength_buf;
+	seqlength_buf->elts[IntAE_get_nelt(seqlength_buf) - 1] +=
+		seq_data->length;
+	return NULL;
+}
+
+static FASTQloader new_FASTQloader_with_SEQLEN_ext(SEXP lkup,
 		SEQLEN_FASTQloaderExt *loader_ext)
 {
 	FASTQloader loader;
 
-	loader.load_seqid = NULL;
-	loader.load_seq = FASTQ_SEQLEN_load_seq;
-	loader.load_qualid = NULL;
-	loader.load_qual = NULL;
-	loader.nrec = 0;
+	loader.new_seqid_hook = NULL;
+	loader.new_empty_seq_hook = FASTQ_SEQLEN_new_empty_seq_hook;
+	loader.append_seq_hook = FASTQ_SEQLEN_append_seq_hook;
+	loader.new_qualid_hook = NULL;
+	loader.new_empty_qual_hook = NULL;
+	loader.append_qual_hook = NULL;
+	if (lkup == R_NilValue) {
+		loader.lkup = NULL;
+		loader.lkup_len = 0;
+	} else {
+		loader.lkup = INTEGER(lkup);
+		loader.lkup_len = LENGTH(lkup);
+	}
 	loader.ext = loader_ext;
 	return loader;
 }
 
 /*
  * The FASTQ loader.
+ * Unlike the FASTQ SEQLEN loader, the FASTQ loader returns an error if a
+ * read sequence is invalid or if a quality sequence is longer than the
+ * corresponding read sequence. Note that a quality sequence shorter than
+ * the corresponding read sequence is not considered an error. It's padded
+ * to the length of the read with whatever bytes were present in the
+ * BStringSet object where the quality sequences are copied (this object
+ * is pre-allocated and its geometry always reflects the read lengths).
+ * Unfortunately this is likely to cause problems downstream.
  */
 
 typedef struct fastq_loader_ext {
 	CharAEAE *seqid_buf;
 	XVectorList_holder seq_holder;
-	const int *lkup;
-	int lkup_length;
+	int nseq;
+	Chars_holder seq_elt_holder;
 	XVectorList_holder qual_holder;
+	int nqual;
+	Chars_holder qual_elt_holder;
 } FASTQloaderExt;
 
-static FASTQloaderExt new_FASTQloaderExt(SEXP sequences, SEXP lkup,
-		SEXP qualities)
+static FASTQloaderExt new_FASTQloaderExt(SEXP sequences, SEXP qualities)
 {
 	FASTQloaderExt loader_ext;
 
 	loader_ext.seqid_buf =
 		new_CharAEAE(_get_XStringSet_length(sequences), 0);
 	loader_ext.seq_holder = hold_XVectorList(sequences);
-	if (lkup == R_NilValue) {
-		loader_ext.lkup = NULL;
-		loader_ext.lkup_length = 0;
-	} else {
-		loader_ext.lkup = INTEGER(lkup);
-		loader_ext.lkup_length = LENGTH(lkup);
-	}
-	if (qualities != R_NilValue)
+	loader_ext.nseq = -1;
+	if (qualities != R_NilValue) {
 		loader_ext.qual_holder = hold_XVectorList(qualities);
+		loader_ext.nqual = -1;
+	}
 	return loader_ext;
 }
 
-static void FASTQ_load_seqid(FASTQloader *loader, const Chars_holder *seqid)
+static void FASTQ_new_seqid_hook(FASTQloader *loader,
+				 const Chars_holder *seqid)
 {
 	FASTQloaderExt *loader_ext;
 	CharAEAE *seqid_buf;
@@ -151,57 +195,110 @@ static void FASTQ_load_seqid(FASTQloader *loader, const Chars_holder *seqid)
 	return;
 }
 
-static void FASTQ_load_seq(FASTQloader *loader, const Chars_holder *seq)
+static void FASTQ_new_empty_seq_hook(FASTQloader *loader)
 {
 	FASTQloaderExt *loader_ext;
-	Chars_holder seq_elt_holder;
+	Chars_holder *seq_elt_holder;
 
 	loader_ext = loader->ext;
-	seq_elt_holder = get_elt_from_XRawList_holder(
+	seq_elt_holder = &(loader_ext->seq_elt_holder);
+	loader_ext->nseq++;
+	*seq_elt_holder = get_elt_from_XRawList_holder(
 					&(loader_ext->seq_holder),
-					loader->nrec);
-	copy_Chars_holder(&seq_elt_holder, seq,
-			  loader_ext->lkup, loader_ext->lkup_length);
+					loader_ext->nseq);
+	seq_elt_holder->length = 0;
 	return;
 }
 
-static void FASTQ_load_qual(FASTQloader *loader, const Chars_holder *qual)
+/* Unlike FASTQ_SEQLEN_append_seq_hook(), FASTQ_append_seq_hook() does check
+   that the read sequence is valid. */
+static const char *FASTQ_append_seq_hook(FASTQloader *loader,
+		Chars_holder *seq_data)
 {
 	FASTQloaderExt *loader_ext;
-	Chars_holder qual_elt_holder;
+	Chars_holder *seq_elt_holder;
+	int ninvalid;
 
 	loader_ext = loader->ext;
-	qual_elt_holder = get_elt_from_XRawList_holder(
+	seq_elt_holder = &(loader_ext->seq_elt_holder);
+	if (loader->lkup != NULL) {
+		ninvalid = translate(seq_data,
+				     loader->lkup,
+				     loader->lkup_len);
+		if (ninvalid != 0)
+			return "read sequence contains invalid letters";
+	}
+	append_Chars_holder(seq_elt_holder, seq_data);
+	return NULL;
+}
+
+static void FASTQ_new_empty_qual_hook(FASTQloader *loader)
+{
+	FASTQloaderExt *loader_ext;
+	Chars_holder *qual_elt_holder;
+
+	loader_ext = loader->ext;
+	qual_elt_holder = &(loader_ext->qual_elt_holder);
+	loader_ext->nqual++;
+	*qual_elt_holder = get_elt_from_XRawList_holder(
 					&(loader_ext->qual_holder),
-					loader->nrec);
-	copy_Chars_holder(&qual_elt_holder, qual, NULL, 0);
+					loader_ext->nqual);
+	qual_elt_holder->length = 0;
 	return;
+}
+
+/* Check that the quality sequence is not longer than the read sequence.
+   This prevents writing beyond the pre-allocated memory for the quality
+   sequence. */
+static const char *FASTQ_append_qual_hook(FASTQloader *loader,
+		const Chars_holder *qual_data)
+{
+	FASTQloaderExt *loader_ext;
+	Chars_holder *seq_elt_holder, *qual_elt_holder;
+
+	loader_ext = loader->ext;
+	seq_elt_holder = &(loader_ext->seq_elt_holder);
+	qual_elt_holder = &(loader_ext->qual_elt_holder);
+	if (qual_elt_holder->length + qual_data->length >
+	    seq_elt_holder->length)
+	{
+		return "quality sequence is longer than read sequence";
+	}
+	append_Chars_holder(qual_elt_holder, qual_data);
+	return NULL;
 }
 
 static FASTQloader new_FASTQloader(int load_seqids, int load_quals,
-				   FASTQloaderExt *loader_ext)
+		SEXP lkup, FASTQloaderExt *loader_ext)
 {
 	FASTQloader loader;
 
-	loader.load_seqid = load_seqids ? &FASTQ_load_seqid : NULL;
-	loader.load_seq = FASTQ_load_seq;
+	loader.new_seqid_hook = load_seqids ? &FASTQ_new_seqid_hook : NULL;
+	loader.new_empty_seq_hook = FASTQ_new_empty_seq_hook;
+	loader.append_seq_hook = FASTQ_append_seq_hook;
 	if (load_quals) {
 		/* Quality ids are always ignored for now. */
-		//loader.load_qualid = &FASTQ_load_qualid;
-		loader.load_qualid = NULL;
-		loader.load_qual = &FASTQ_load_qual;
+		//loader.new_qualid_hook = &FASTQ_new_qualid_hook;
+		loader.new_qualid_hook = NULL;
+		loader.new_empty_qual_hook = &FASTQ_new_empty_qual_hook;
+		loader.append_qual_hook = &FASTQ_append_qual_hook;
 	} else {
-		loader.load_qualid = NULL;
-		loader.load_qual = NULL;
+		loader.new_qualid_hook = NULL;
+		loader.new_empty_qual_hook = NULL;
+		loader.append_qual_hook = NULL;
 	}
-	loader.nrec = 0;
+	if (lkup == R_NilValue) {
+		loader.lkup = NULL;
+		loader.lkup_len = 0;
+	} else {
+		loader.lkup = INTEGER(lkup);
+		loader.lkup_len = LENGTH(lkup);
+	}
 	loader.ext = loader_ext;
 	return loader;
 }
 
-/*
- * Ignore empty lines.
- */
+/* Ignore empty lines. */
 static const char *parse_FASTQ_file(SEXP filexp,
 		int nrec, int skip, int seek_first_rec,
 		FASTQloader *loader,
@@ -209,10 +306,11 @@ static const char *parse_FASTQ_file(SEXP filexp,
 {
 	int lineno, EOL_in_buf, EOL_in_prev_buf, ret_code, nbyte_in,
 	    FASTQ_line1_markup_length, FASTQ_line3_markup_length,
-	    lineinrecno, load_rec, seq_len;
+	    lineinrecno, dont_load;
 	char buf[IOBUF_SIZE];
 	Chars_holder data;
 	long long int prev_offset;
+	const char *errmsg;
 
 	FASTQ_line1_markup_length = strlen(FASTQ_line1_markup);
 	FASTQ_line3_markup_length = strlen(FASTQ_line3_markup);
@@ -232,14 +330,12 @@ static const char *parse_FASTQ_file(SEXP filexp,
 				 "from line %d", lineno);
 			return errmsg_buf;
 		}
-		if (!EOL_in_buf) {
-			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "cannot read line %d, line is too long",
-				 lineno);
-			return errmsg_buf;
+		if (EOL_in_buf) {
+			nbyte_in = strlen(buf);
+			data.length = delete_trailing_LF_or_CRLF(buf, nbyte_in);
+		} else {
+			data.length = nbyte_in = IOBUF_SIZE - 1;
 		}
-		nbyte_in = strlen(buf);
-		data.length = delete_trailing_LF_or_CRLF(buf, nbyte_in);
 		prev_offset = *offset;
 		*offset += nbyte_in;
 		if (seek_first_rec) {
@@ -250,23 +346,25 @@ static const char *parse_FASTQ_file(SEXP filexp,
 				continue;
 			}
 		}
-		if (data.length == 0)
-			continue; // we ignore empty lines
-		buf[data.length] = '\0';
 		data.ptr = buf;
-		lineinrecno++;
-		if (lineinrecno > 4)
-			lineinrecno = 1;
+		if (EOL_in_prev_buf) {
+			if (data.length == 0)
+				continue;  // we ignore empty lines
+			lineinrecno++;
+			if (lineinrecno > 4)
+				lineinrecno = 1;
+		}
+		if (!EOL_in_buf && (lineinrecno == 1 || lineinrecno == 3)) {
+			snprintf(errmsg_buf, sizeof(errmsg_buf),
+				 "cannot read line %d, "
+				 "line is too long", lineno);
+			return errmsg_buf;
+		}
+		buf[data.length] = '\0';
+		errmsg = NULL;
 		switch (lineinrecno) {
 		    case 1:
-			if (!has_prefix(buf, FASTQ_line1_markup)) {
-				snprintf(errmsg_buf, sizeof(errmsg_buf),
-				     "\"%s\" expected at beginning of line %d",
-				     FASTQ_line1_markup, lineno);
-				return errmsg_buf;
-			}
-			load_rec = *recno >= skip;
-			if (load_rec && nrec >= 0 && *recno >= skip + nrec) {
+			if (nrec >= 0 && *recno >= skip + nrec) {
 				/* Calls to filexp_seek() are costly on
 				   compressed files and the cost increases as
 				   we advance in the file. This is not a
@@ -274,54 +372,59 @@ static const char *parse_FASTQ_file(SEXP filexp,
 				   becomes one when reading a compressed file
 				   by chunk. */
 				filexp_seek(filexp, prev_offset, SEEK_SET);
+				*offset = prev_offset;
 				return NULL;
 			}
-			load_rec = load_rec && loader != NULL;
-			if (load_rec && nrec >= 0)
-				load_rec = *recno < skip + nrec;
-			if (load_rec && loader->load_seqid != NULL) {
-				data.ptr += FASTQ_line1_markup_length;
-				data.length -= FASTQ_line1_markup_length;
-				loader->load_seqid(loader, &data);
+			if (!has_prefix(buf, FASTQ_line1_markup)) {
+				snprintf(errmsg_buf, sizeof(errmsg_buf),
+				    "\"%s\" expected at beginning of line %d",
+				    FASTQ_line1_markup, lineno);
+				return errmsg_buf;
 			}
-		    break;
+			dont_load = *recno < skip || loader == NULL;
+			if (dont_load || loader->new_seqid_hook == NULL)
+				continue;
+			data.ptr += FASTQ_line1_markup_length;
+			data.length -= FASTQ_line1_markup_length;
+			loader->new_seqid_hook(loader, &data);
+			continue;
 		    case 2:
-			if (load_rec) {
-				seq_len = data.length;
-				if  (loader->load_seq != NULL)
-					loader->load_seq(loader, &data);
-			}
-		    break;
+			if (dont_load || loader->new_empty_seq_hook == NULL)
+				continue;
+			if (EOL_in_prev_buf)
+				loader->new_empty_seq_hook(loader);
+			if (loader->append_seq_hook != NULL)
+				errmsg = loader->append_seq_hook(loader, &data);
+			break;
 		    case 3:
 			if (!has_prefix(buf, FASTQ_line3_markup)) {
 				snprintf(errmsg_buf, sizeof(errmsg_buf),
-					 "\"%s\" expected at beginning of "
-					 "line %d", FASTQ_line3_markup, lineno);
+				    "\"%s\" expected at beginning of line %d",
+				    FASTQ_line3_markup, lineno);
 				return errmsg_buf;
 			}
-			if (load_rec && loader->load_qualid != NULL) {
-				data.ptr += FASTQ_line3_markup_length;
-				data.length -= FASTQ_line3_markup_length;
-				loader->load_qualid(loader, &data);
-			}
-		    break;
+			if (dont_load || loader->new_qualid_hook == NULL)
+				continue;
+			data.ptr += FASTQ_line3_markup_length;
+			data.length -= FASTQ_line3_markup_length;
+			loader->new_qualid_hook(loader, &data);
+			continue;
 		    case 4:
-			if (load_rec) {
-				if (data.length != seq_len) {
-					snprintf(errmsg_buf, sizeof(errmsg_buf),
-						 "length of quality string "
-						 "at line %d\n  differs from "
-						 "length of corresponding "
-						 "sequence", lineno);
-					return errmsg_buf;
-				}
-				if (loader->load_qual != NULL)
-					loader->load_qual(loader, &data);
-			}
-			if (load_rec)
-				loader->nrec++;
-			(*recno)++;
-		    break;
+			if (EOL_in_buf)
+				(*recno)++;
+			if (dont_load || loader->new_empty_qual_hook == NULL)
+				continue;
+			if (EOL_in_prev_buf)
+				loader->new_empty_qual_hook(loader);
+			if (loader->append_qual_hook != NULL)
+				errmsg = loader->append_qual_hook(loader,
+								  &data);
+			break;
+		}
+		if (errmsg != NULL) {
+			snprintf(errmsg_buf, sizeof(errmsg_buf),
+				 "line %d: %s", lineno, errmsg);
+			return errmsg_buf;
 		}
 	}
 	if (seek_first_rec) {
@@ -348,7 +451,7 @@ static SEXP get_fastq_seqlengths(SEXP filexp_list,
 	const char *errmsg;
 
 	loader_ext = new_SEQLEN_FASTQloaderExt();
-	loader = new_FASTQloader_with_SEQLEN_ext(&loader_ext);
+	loader = new_FASTQloader_with_SEQLEN_ext(R_NilValue, &loader_ext);
 	recno = 0;
 	for (i = 0; i < LENGTH(filexp_list); i++) {
 		filexp = VECTOR_ELT(filexp_list, i);
@@ -411,6 +514,7 @@ SEXP read_fastq_files(SEXP filexp_list, SEXP nrec, SEXP skip,
 	FASTQloaderExt loader_ext;
 	FASTQloader loader;
 	long long int offset;
+	const char *errmsg;
 
 	nrec0 = INTEGER(nrec)[0];
 	skip0 = INTEGER(skip)[0];
@@ -429,8 +533,8 @@ SEXP read_fastq_files(SEXP filexp_list, SEXP nrec, SEXP skip,
 		qualities = R_NilValue;
 	}
 	/* 2nd pass */
-	loader_ext = new_FASTQloaderExt(sequences, lkup, qualities);
-	loader = new_FASTQloader(load_seqids, load_quals, &loader_ext);
+	loader_ext = new_FASTQloaderExt(sequences, qualities);
+	loader = new_FASTQloader(load_seqids, load_quals, lkup, &loader_ext);
 	recno = 0;
 	for (i = 0; i < LENGTH(filexp_list); i++) {
 		filexp = VECTOR_ELT(filexp_list, i);
@@ -439,9 +543,15 @@ SEXP read_fastq_files(SEXP filexp_list, SEXP nrec, SEXP skip,
 		   This is not a problem when reading the entire file but
 		   becomes one when reading a compressed file by chunk. */
 		offset = filexp_tell(filexp);
-		parse_FASTQ_file(filexp, nrec0, skip0, seek_rec0,
-				 &loader,
-				 &recno, &offset);
+		errmsg = parse_FASTQ_file(filexp, nrec0, skip0, seek_rec0,
+					  &loader,
+					  &recno, &offset);
+		if (errmsg != NULL) {
+			UNPROTECT(load_quals ? 3 : 2);
+			error("reading FASTQ file %s: %s",
+			      CHAR(STRING_ELT(GET_NAMES(filexp_list), i)),
+			      errmsg_buf);
+		}
 	}
 	if (load_seqids) {
 		PROTECT(seqids =
@@ -537,7 +647,7 @@ SEXP write_XStringSet_to_fastq(SEXP x, SEXP filexp_list,
 		SEXP qualities, SEXP lkup)
 {
 	XStringSet_holder X, Q;
-	int x_length, lkup_length, i;
+	int x_length, lkup_len, i;
 	const int *lkup0;
 	SEXP filexp, x_names, q_names;
 	const char *id;
@@ -557,10 +667,10 @@ SEXP write_XStringSet_to_fastq(SEXP x, SEXP filexp_list,
 	filexp = VECTOR_ELT(filexp_list, 0);
 	if (lkup == R_NilValue) {
 		lkup0 = NULL;
-		lkup_length = 0;
+		lkup_len = 0;
 	} else {
 		lkup0 = INTEGER(lkup);
-		lkup_length = LENGTH(lkup);
+		lkup_len = LENGTH(lkup);
 	}
 	x_names = get_XVectorList_names(x);
 	for (i = 0; i < x_length; i++) {
@@ -569,7 +679,7 @@ SEXP write_XStringSet_to_fastq(SEXP x, SEXP filexp_list,
 		Ocopy_bytes_from_i1i2_with_lkup(0, X_elt.length - 1,
 			buf, X_elt.length,
 			X_elt.ptr, X_elt.length,
-			lkup0, lkup_length);
+			lkup0, lkup_len);
 		buf[X_elt.length] = 0;
 		write_FASTQ_id(filexp, FASTQ_line1_markup, id);
 		write_FASTQ_seq(filexp, buf);

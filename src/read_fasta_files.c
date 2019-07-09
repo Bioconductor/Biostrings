@@ -26,6 +26,37 @@ static int has_prefix(const char *s, const char *prefix)
 	return 1;
 }
 
+static int translate(Chars_holder *x, const int *lkup, int lkup_len)
+{
+	char *dest;
+	int nbinvalid, i, j, c;
+
+	/* x->ptr is a (const char *) so we need to cast it to (char *)
+	   before we can write to it */
+	dest = (char *) x->ptr;
+	nbinvalid = j = 0;
+	for (i = 0; i < x->length; i++) {
+		c = translate_byte(x->ptr[i], lkup, lkup_len);
+		if (c == NA_INTEGER) {
+			nbinvalid++;
+			continue;
+		}
+		dest[j++] = (char) c;
+	}
+	x->length = j;
+	return nbinvalid;
+}
+
+static void append_Chars_holder(Chars_holder *dest, const Chars_holder *src)
+{
+	/* dest->ptr is a (const char *) so we need to cast it to (char *)
+	   in order to write to it */
+	memcpy((char *) dest->ptr + dest->length,
+	       src->ptr, src->length * sizeof(char));
+	dest->length += src->length;
+        return;
+}
+
 
 /****************************************************************************
  * FASTA parser
@@ -36,15 +67,14 @@ static int has_prefix(const char *s, const char *prefix)
 static const char *FASTA_comment_markup = ";", *FASTA_desc_markup = ">";
 
 typedef struct fasta_loader {
+	void (*new_desc_hook)(struct fasta_loader *loader,
+			      int recno, long long int offset,
+			      const Chars_holder *desc_line);
+	void (*new_empty_seq_hook)(struct fasta_loader *loader);
+	void (*append_seq_hook)(struct fasta_loader *loader,
+				const Chars_holder *seq_data);
 	const int *lkup;
-	int lkup_length;
-	void (*load_desc_line)(struct fasta_loader *loader,
-			       int recno, long long int offset,
-			       const Chars_holder *desc_line);
-	void (*load_empty_seq)(struct fasta_loader *loader);
-	void (*load_seq_data)(struct fasta_loader *loader,
-			      const Chars_holder *seq_data);
-	int nrec;
+	int lkup_len;
 	void *ext;  /* loader extension (optional) */
 } FASTAloader;
 
@@ -71,9 +101,9 @@ static INDEX_FASTAloaderExt new_INDEX_FASTAloaderExt()
 	return loader_ext;
 }
 
-static void FASTA_INDEX_load_desc_line(FASTAloader *loader,
-				       int recno, long long int offset,
-				       const Chars_holder *desc_line)
+static void FASTA_INDEX_new_desc_hook(FASTAloader *loader,
+		int recno, long long int offset,
+		const Chars_holder *desc_line)
 {
 	INDEX_FASTAloaderExt *loader_ext;
 	IntAE *recno_buf;
@@ -94,7 +124,7 @@ static void FASTA_INDEX_load_desc_line(FASTAloader *loader,
 	return;
 }
 
-static void FASTA_INDEX_load_empty_seq(FASTAloader *loader)
+static void FASTA_INDEX_new_empty_seq_hook(FASTAloader *loader)
 {
 	INDEX_FASTAloaderExt *loader_ext;
 	IntAE *seqlength_buf;
@@ -105,7 +135,7 @@ static void FASTA_INDEX_load_empty_seq(FASTAloader *loader)
 	return;
 }
 
-static void FASTA_INDEX_load_seq_data(FASTAloader *loader,
+static void FASTA_INDEX_append_seq_hook(FASTAloader *loader,
 		const Chars_holder *seq_data)
 {
 	INDEX_FASTAloaderExt *loader_ext;
@@ -118,22 +148,21 @@ static void FASTA_INDEX_load_seq_data(FASTAloader *loader,
 	return;
 }
 
-static FASTAloader new_FASTAloader_with_INDEX_ext(SEXP lkup, int load_descs,
+static FASTAloader new_FASTAloader_with_INDEX_ext(int load_descs, SEXP lkup,
 		INDEX_FASTAloaderExt *loader_ext)
 {
 	FASTAloader loader;
 
+	loader.new_desc_hook = load_descs ? &FASTA_INDEX_new_desc_hook : NULL;
+	loader.new_empty_seq_hook = &FASTA_INDEX_new_empty_seq_hook;
+	loader.append_seq_hook = &FASTA_INDEX_append_seq_hook;
 	if (lkup == R_NilValue) {
 		loader.lkup = NULL;
-		loader.lkup_length = 0;
+		loader.lkup_len = 0;
 	} else {
 		loader.lkup = INTEGER(lkup);
-		loader.lkup_length = LENGTH(lkup);
+		loader.lkup_len = LENGTH(lkup);
 	}
-	loader.load_desc_line = load_descs ? &FASTA_INDEX_load_desc_line : NULL;
-	loader.load_empty_seq = &FASTA_INDEX_load_empty_seq;
-	loader.load_seq_data = &FASTA_INDEX_load_seq_data;
-	loader.nrec = 0;
 	loader.ext = loader_ext;
 	return loader;
 }
@@ -143,45 +172,44 @@ static FASTAloader new_FASTAloader_with_INDEX_ext(SEXP lkup, int load_descs,
  */
 
 typedef struct fasta_loader_ext {
-	XVectorList_holder ans_holder;
-	Chars_holder ans_elt_holder;
+	XVectorList_holder seq_holder;
+	int nseq;
+	Chars_holder seq_elt_holder;
 } FASTAloaderExt;
 
-static FASTAloaderExt new_FASTAloaderExt(SEXP ans)
+static FASTAloaderExt new_FASTAloaderExt(SEXP sequences)
 {
 	FASTAloaderExt loader_ext;
 
-	loader_ext.ans_holder = hold_XVectorList(ans);
+	loader_ext.seq_holder = hold_XVectorList(sequences);
+	loader_ext.nseq = -1;
 	return loader_ext;
 }
 
-static void FASTA_load_empty_seq(FASTAloader *loader)
+static void FASTA_new_empty_seq_hook(FASTAloader *loader)
 {
 	FASTAloaderExt *loader_ext;
-	Chars_holder *ans_elt_holder;
+	Chars_holder *seq_elt_holder;
 
 	loader_ext = loader->ext;
-	ans_elt_holder = &(loader_ext->ans_elt_holder);
-	*ans_elt_holder = get_elt_from_XRawList_holder(
-					&(loader_ext->ans_holder),
-					loader->nrec);
-	ans_elt_holder->length = 0;
+	seq_elt_holder = &(loader_ext->seq_elt_holder);
+	loader_ext->nseq++;
+	*seq_elt_holder = get_elt_from_XRawList_holder(
+					&(loader_ext->seq_holder),
+					loader_ext->nseq);
+	seq_elt_holder->length = 0;
 	return;
 }
 
-static void FASTA_load_seq_data(FASTAloader *loader,
+static void FASTA_append_seq_hook(FASTAloader *loader,
 		const Chars_holder *seq_data)
 {
 	FASTAloaderExt *loader_ext;
-	Chars_holder *ans_elt_holder;
+	Chars_holder *seq_elt_holder;
 
 	loader_ext = loader->ext;
-	ans_elt_holder = &(loader_ext->ans_elt_holder);
-	/* ans_elt_holder->ptr is a const char * so we need to cast it to
-	   char * in order to write to it */
-	memcpy((char *) ans_elt_holder->ptr + ans_elt_holder->length,
-	       seq_data->ptr, seq_data->length * sizeof(char));
-	ans_elt_holder->length += seq_data->length;
+	seq_elt_holder = &(loader_ext->seq_elt_holder);
+	append_Chars_holder(seq_elt_holder, seq_data);
 	return;
 }
 
@@ -189,61 +217,37 @@ static FASTAloader new_FASTAloader(SEXP lkup, FASTAloaderExt *loader_ext)
 {
 	FASTAloader loader;
 
+	loader.new_desc_hook = NULL;
+	loader.new_empty_seq_hook = &FASTA_new_empty_seq_hook;
+	loader.append_seq_hook = &FASTA_append_seq_hook;
 	if (lkup == R_NilValue) {
 		loader.lkup = NULL;
-		loader.lkup_length = 0;
+		loader.lkup_len = 0;
 	} else {
 		loader.lkup = INTEGER(lkup);
-		loader.lkup_length = LENGTH(lkup);
+		loader.lkup_len = LENGTH(lkup);
 	}
-	loader.load_desc_line = NULL;
-	loader.load_empty_seq = &FASTA_load_empty_seq;
-	loader.load_seq_data = &FASTA_load_seq_data;
-	loader.nrec = 0;
 	loader.ext = loader_ext;
 	return loader;
 }
 
-static int translate(Chars_holder *seq_data, const int *lkup, int lkup_length)
-{
-	char *dest;
-	int nbinvalid, i, j, key, val;
-
-	/* seq_data->ptr is a const char * so we need to cast it to
-	   char * before we can write to it */
-	dest = (char *) seq_data->ptr;
-	nbinvalid = j = 0;
-	for (i = 0; i < seq_data->length; i++) {
-		key = (unsigned char) seq_data->ptr[i];
-		if (key >= lkup_length || (val = lkup[key]) == NA_INTEGER) {
-			nbinvalid++;
-			continue;
-		}
-		dest[j++] = val;
-	}
-	seq_data->length = j;
-	return nbinvalid;
-}
-
-/*
- * Ignore empty lines and lines starting with 'FASTA_comment_markup' like in
- * the original Pearson FASTA format.
- */
+/* Ignore empty lines and lines starting with 'FASTA_comment_markup' like in
+   the original Pearson FASTA format. */
 static const char *parse_FASTA_file(SEXP filexp,
 		int nrec, int skip, int seek_first_rec,
 		FASTAloader *loader,
 		int *recno, long long int *offset, long long int *ninvalid)
 {
 	int lineno, EOL_in_buf, EOL_in_prev_buf, ret_code, nbyte_in,
-	    FASTA_desc_markup_length, load_rec, is_new_rec;
+	    FASTA_desc_markup_length, dont_load, is_comment, is_desc;
 	char buf[IOBUF_SIZE];
 	Chars_holder data;
 	long long int prev_offset;
 
 	FASTA_desc_markup_length = strlen(FASTA_desc_markup);
-	load_rec = -1;
 	lineno = 0;
 	EOL_in_buf = 1;
+	dont_load = -1;
 	while (1) {
 		if (EOL_in_buf)
 			lineno++;
@@ -274,30 +278,23 @@ static const char *parse_FASTA_file(SEXP filexp,
 			}
 		}
 		data.ptr = buf;
-		if (!EOL_in_prev_buf)
-			goto parse_seq_data;
-		if (data.length == 0)
-			continue; // we ignore empty lines
-		if (has_prefix(data.ptr, FASTA_comment_markup)) {
-			if (!EOL_in_buf) {
+		if (EOL_in_prev_buf) {
+			if (data.length == 0)
+				continue;  // we ignore empty lines
+			is_comment = has_prefix(buf, FASTA_comment_markup);
+			is_desc = has_prefix(buf, FASTA_desc_markup);
+			if (!EOL_in_buf && (is_comment || is_desc)) {
 				snprintf(errmsg_buf, sizeof(errmsg_buf),
 					 "cannot read line %d, "
 					 "line is too long", lineno);
 				return errmsg_buf;
 			}
-			continue; // we ignore comment lines
+			if (is_comment)
+				continue;  // we ignore comment lines
 		}
 		buf[data.length] = '\0';
-		is_new_rec = has_prefix(data.ptr, FASTA_desc_markup);
-		if (is_new_rec) {
-			if (!EOL_in_buf) {
-				snprintf(errmsg_buf, sizeof(errmsg_buf),
-					 "cannot read line %d, "
-					 "line is too long", lineno);
-				return errmsg_buf;
-			}
-			load_rec = *recno >= skip;
-			if (load_rec && nrec >= 0 && *recno >= skip + nrec) {
+		if (EOL_in_prev_buf && is_desc) {
+			if (nrec >= 0 && *recno >= skip + nrec) {
 				/* Calls to filexp_seek() are costly on
 				   compressed files and the cost increases as
 				   we advance in the file. This is not a
@@ -308,34 +305,33 @@ static const char *parse_FASTA_file(SEXP filexp,
 				*offset = prev_offset;
 				return NULL;
 			}
-			load_rec = load_rec && loader != NULL;
-			if (load_rec && loader->load_desc_line != NULL) {
+			dont_load = *recno < skip || loader == NULL;
+			if (!dont_load && loader->new_desc_hook != NULL) {
 				data.ptr += FASTA_desc_markup_length;
 				data.length -= FASTA_desc_markup_length;
-				loader->load_desc_line(loader,
-						       *recno, prev_offset,
-						       &data);
+				loader->new_desc_hook(loader,
+						      *recno, prev_offset,
+						      &data);
 			}
-			if (load_rec && loader->load_empty_seq != NULL)
-				loader->load_empty_seq(loader);
-			if (load_rec)
-				loader->nrec++;
+			if (!dont_load && loader->new_empty_seq_hook != NULL)
+				loader->new_empty_seq_hook(loader);
 			(*recno)++;
 			continue;
 		}
-		if (load_rec == -1) {
+		if (dont_load == -1) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "\"%s\" expected at beginning of line %d",
 				 FASTA_desc_markup, lineno);
 			return errmsg_buf;
 		}
-		parse_seq_data:
-		if (load_rec && loader->load_seq_data != NULL) {
+		if (dont_load || loader->new_empty_seq_hook == NULL)
+			continue;
+		if (loader->append_seq_hook != NULL) {
 			if (loader->lkup != NULL)
 				*ninvalid += translate(&data,
 						       loader->lkup,
-						       loader->lkup_length);
-			loader->load_seq_data(loader, &data);
+						       loader->lkup_len);
+			loader->append_seq_hook(loader, &data);
 		}
 	}
 	if (seek_first_rec) {
@@ -363,7 +359,7 @@ static SEXP get_fasta_seqlengths(SEXP filexp_list,
 	long long int offset0, offset, ninvalid;
 
 	loader_ext = new_INDEX_FASTAloaderExt();
-	loader = new_FASTAloader_with_INDEX_ext(lkup, use_names, &loader_ext);
+	loader = new_FASTAloader_with_INDEX_ext(use_names, lkup, &loader_ext);
 	recno = 0;
 	for (i = 0; i < LENGTH(filexp_list); i++) {
 		filexp = VECTOR_ELT(filexp_list, i);
@@ -528,7 +524,7 @@ SEXP fasta_index(SEXP filexp_list,
 	skip0 = INTEGER(skip)[0];
 	seek_rec0 = LOGICAL(seek_first_rec)[0];
 	loader_ext = new_INDEX_FASTAloaderExt();
-	loader = new_FASTAloader_with_INDEX_ext(lkup, 1, &loader_ext);
+	loader = new_FASTAloader_with_INDEX_ext(1, lkup, &loader_ext);
 	seqlength_buf = loader_ext.seqlength_buf;
 	fileno_buf = new_IntAE(0, 0, 0);
 	for (i = recno = 0; i < LENGTH(filexp_list); i++) {
@@ -627,7 +623,7 @@ SEXP read_fasta_blocks(SEXP seqlengths,
 SEXP write_XStringSet_to_fasta(SEXP x, SEXP filexp_list, SEXP width, SEXP lkup)
 {
 	XStringSet_holder X;
-	int x_length, width0, lkup_length, i, j1, j2, dest_nbytes;
+	int x_length, width0, lkup_len, i, j1, j2, dest_nbytes;
 	const int *lkup0;
 	SEXP filexp, x_names, desc;
 	Chars_holder X_elt;
@@ -642,10 +638,10 @@ SEXP write_XStringSet_to_fasta(SEXP x, SEXP filexp_list, SEXP width, SEXP lkup)
 	buf[width0] = 0;
 	if (lkup == R_NilValue) {
 		lkup0 = NULL;
-		lkup_length = 0;
+		lkup_len = 0;
 	} else {
 		lkup0 = INTEGER(lkup);
-		lkup_length = LENGTH(lkup);
+		lkup_len = LENGTH(lkup);
 	}
 	x_names = get_XVectorList_names(x);
 	for (i = 0; i < x_length; i++) {
@@ -667,7 +663,7 @@ SEXP write_XStringSet_to_fasta(SEXP x, SEXP filexp_list, SEXP width, SEXP lkup)
 			Ocopy_bytes_from_i1i2_with_lkup(j1, j2,
 				buf, dest_nbytes,
 				X_elt.ptr, X_elt.length,
-				lkup0, lkup_length);
+				lkup0, lkup_len);
 			buf[dest_nbytes] = 0;
 			filexp_puts(filexp, buf);
 			filexp_puts(filexp, "\n");

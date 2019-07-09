@@ -4,7 +4,7 @@
 
 
 ### 'filexp_list' must be a list of "file external pointers" returned by
-### XVector:::open_input_files() or XVector:::open_output_file().
+### XVector::open_input_files() or XVector:::open_output_file().
 .close_filexp_list <- function(filexp_list)
 {
     for (filexp in filexp_list) XVector:::close_filexp(filexp)
