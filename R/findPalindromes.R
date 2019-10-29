@@ -145,19 +145,15 @@ setMethod("findPalindromes", "MaskedXString",
 }
 
 setGeneric("palindromeArmLength", signature="x",
-    function(x, max.mismatch=0, ...)
-        standardGeneric("palindromeArmLength")
+    function(x, max.mismatch=0) standardGeneric("palindromeArmLength")
 )
 
 setMethod("palindromeArmLength", "XString",
-    function(x, max.mismatch=0, ...)
-    {
-        .palindrome_arm_length(x, max.mismatch, NULL)
-    }
+    function(x, max.mismatch=0) .palindrome_arm_length(x, max.mismatch, NULL)
 )
 
 setMethod("palindromeArmLength", "DNAString",
-    function(x, max.mismatch=0, ...)
+    function(x, max.mismatch=0)
     {
         L2R_lkup <- .get_DNAorRNA_palindrome_L2R_lkup()
         .palindrome_arm_length(x, max.mismatch, L2R_lkup)
@@ -165,7 +161,7 @@ setMethod("palindromeArmLength", "DNAString",
 )
 
 setMethod("palindromeArmLength", "RNAString",
-    function(x, max.mismatch=0, ...)
+    function(x, max.mismatch=0)
     {
         L2R_lkup <- .get_DNAorRNA_palindrome_L2R_lkup()
         .palindrome_arm_length(x, max.mismatch, L2R_lkup)
@@ -173,14 +169,13 @@ setMethod("palindromeArmLength", "RNAString",
 )
 
 setMethod("palindromeArmLength", "XStringViews",
-    function(x, max.mismatch=0, ...)
+    function(x, max.mismatch=0)
     {
         if (length(x) == 0)
             return(integer(0))
         sapply(seq_len(length(x)),
                function(i)
-                   palindromeArmLength(x[[i]],
-                       max.mismatch=max.mismatch, ...))
+                   palindromeArmLength(x[[i]], max.mismatch=max.mismatch))
     }
 )
 
@@ -190,46 +185,46 @@ setMethod("palindromeArmLength", "XStringViews",
 ###
 
 setGeneric("palindromeLeftArm", signature="x",
-    function(x, max.mismatch=0, ...)
+    function(x, max.mismatch=0)
         standardGeneric("palindromeLeftArm")
 )
 
 setGeneric("palindromeRightArm", signature="x",
-    function(x, max.mismatch=0, ...)
+    function(x, max.mismatch=0)
         standardGeneric("palindromeRightArm")
 )
 
 setMethod("palindromeLeftArm", "XString",
-    function(x, max.mismatch=0, ...)
+    function(x, max.mismatch=0)
         subseq(x,
             start=1L,
-            end=palindromeArmLength(x, max.mismatch=max.mismatch, ...)
+            end=palindromeArmLength(x, max.mismatch=max.mismatch)
         )
 )
 
 setMethod("palindromeRightArm", "XString",
-    function(x, max.mismatch=0, ...)
+    function(x, max.mismatch=0)
     {
-        start <- nchar(x) - palindromeArmLength(x,
-                                max.mismatch=max.mismatch, ...) + 1L
+        start <- nchar(x) -
+                 palindromeArmLength(x, max.mismatch=max.mismatch) +
+                 1L
         subseq(x, start=start, end=nchar(x))
     }
 )
 
 setMethod("palindromeLeftArm", "XStringViews",
-    function(x, max.mismatch=0, ...)
+    function(x, max.mismatch=0)
     {
         ans_start <- start(x)
-        ans_width <- palindromeArmLength(x, max.mismatch=max.mismatch, ...)
+        ans_width <- palindromeArmLength(x, max.mismatch=max.mismatch)
         unsafe.newXStringViews(subject(x), ans_start, ans_width)
     }
 )
 
 setMethod("palindromeRightArm", "XStringViews",
-    function(x, max.mismatch=0, ...)
+    function(x, max.mismatch=0)
     {
-        ans_width <- palindromeArmLength(x,
-                         max.mismatch=max.mismatch, ...)
+        ans_width <- palindromeArmLength(x, max.mismatch=max.mismatch)
         ans_start <- end(x) - ans_width + 1L
         unsafe.newXStringViews(subject(x), ans_start, ans_width)
     }

@@ -28,15 +28,17 @@
 
   \code{palindromeArmLength}, \code{palindromeLeftArm}, and
   \code{palindromeRightArm} are utility functions for operating on
-  palindromic sequences.
+  palindromic sequences. They should typically be used on the output
+  of \code{findPalindromes}.
 }
 
 \usage{
 findPalindromes(subject, min.armlength=4,
                 max.looplength=1, min.looplength=0, max.mismatch=0)
-palindromeArmLength(x, max.mismatch=0, ...)
-palindromeLeftArm(x, max.mismatch=0, ...)
-palindromeRightArm(x, max.mismatch=0, ...)
+
+palindromeArmLength(x, max.mismatch=0)
+palindromeLeftArm(x, max.mismatch=0)
+palindromeRightArm(x, max.mismatch=0)
 }
 
 \arguments{
@@ -65,9 +67,6 @@ palindromeRightArm(x, max.mismatch=0, ...)
   \item{x}{
     An \link{XString} object containing a 2-arm palindrome, or an
     \link{XStringViews} object containing a set of 2-arm palindromes.
-  }
-  \item{...}{
-    Additional arguments to be passed to or from methods.
   }
 }
 
