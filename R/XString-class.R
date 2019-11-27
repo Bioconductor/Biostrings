@@ -330,22 +330,62 @@ setMethod("as.vector", "XString",
 ### The "show" method.
 ###
 
-### 'x' must be an XString or MaskedXString object.
+### All the IUPAC ambiguity letters minus N.
+.dark_gray_bg_letters <- c("M", "R", "W", "S", "Y", "K", "V", "H", "D", "B")
+
+### A named character vector with names in 'union(DNA_ALPHABET, RNA_ALPHABET)'.
+### Colors for A, C, G, and T were inspired by
+###   https://en.wikipedia.org/wiki/Nucleotide#Structure
+.DNA_AND_RNA_COLORED_LETTERS <- c(
+    ## Generated with crayon::make_style(rgb(1, 0.5, 0.5), bg=TRUE)("A")
+    A="\033[48;5;217mA\033[49m",
+    ## Generated with crayon::make_style(rgb(0.5, 1, 0.5), bg=TRUE)("C")
+    C="\033[48;5;157mC\033[49m",
+    ## Generated with crayon::make_style(rgb(0.5, 1, 1), bg=TRUE)("G")
+    G="\033[48;5;159mG\033[49m",
+    ## Generated with crayon::make_style(rgb(1, 0,8, 0.5), bg=TRUE)("T")
+    T="\033[48;5;223mT\033[49m",
+    U="\033[48;5;228mT\033[49m",
+    ## Format string generated with
+    ## crayon::inverse(crayon::make_style(rgb(0.5,0.5,0.5))("%s"))
+    setNames(sprintf("\033[7m\033[38;5;244m%s\033[39m\033[27m",
+                     .dark_gray_bg_letters),
+             .dark_gray_bg_letters),
+    ## Generated with crayon::inverse(crayon::make_style("grey")("N"))
+    N="\033[7m\033[38;5;249mN\033[39m\033[27m"
+)
+
+add_dna_and_rna_colors <- function(x)
+{
+    x <- safeExplode(x)
+    m <- match(x, names(.DNA_AND_RNA_COLORED_LETTERS))
+    match_idx <- which(!is.na(m))
+    x[match_idx] <- .DNA_AND_RNA_COLORED_LETTERS[m[match_idx]]
+    paste0(x, collapse="")
+}
+
+compact_ellipsis <- rawToChar(as.raw(c(0xe2, 0x80, 0xa6)))
+
+### 'x' must be a single character string, or an XString or
+### MaskedXString object.
 toSeqSnippet <- function(x, width)
 {
     if (width < 7L)
         width <- 7L
-    seqlen <- length(x)
-    if (seqlen <= width) {
-        as.character(x)
+    x_nchar <- nchar(x)
+    stopifnot(length(x_nchar) == 1L)
+    if (x_nchar <= width) {
+        ans <- as.character(x)
     } else {
-        w1 <- (width - 2) %/% 2
-        w2 <- (width - 3) %/% 2
-        paste(as.character(subseq(x, start=1, width=w1)),
-              "...",
-              as.character(subseq(x, end=seqlen, width=w2)),
-              sep="")
+        w1 <- (width - 1L) %/% 2L
+        w2 <- (width - 1L) %/% 2L
+        ans <- paste0(as.character(subseq(x, start=1, width=w1)),
+                      compact_ellipsis,
+                      as.character(subseq(x, end=x_nchar, width=w2)))
     }
+    if (seqtype(x) %in% c("DNA", "RNA"))
+        ans <- add_dna_and_rna_colors(ans)
+    ans
 }
 
 setMethod("show", "XString",
@@ -353,7 +393,7 @@ setMethod("show", "XString",
     {
         lo <- object@length
         cat("  ", lo, "-letter \"", class(object), "\" instance\n", sep="")
-        cat("seq:", toSeqSnippet(object, getOption("width") - 5))
+        cat("seq:", toSeqSnippet(object, getOption("width") - 5L))
         cat("\n")
     }
 )

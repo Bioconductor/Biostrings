@@ -171,6 +171,8 @@ XStringViews.get_view <- function(x, start, end)
         end <- lx
     }
     s <- extract_character_from_XString_by_ranges(x, start, end - start + 1L)
+    if (seqtype(x) %in% c("DNA", "RNA"))
+        s <- add_dna_and_rna_colors(s)
     paste0(Lmargin, s, Rmargin)
 }
 
@@ -183,10 +185,10 @@ XStringViews.get_snippet <- function(x, start, end, snippetWidth)
     if (width <= snippetWidth) {
         XStringViews.get_view(x, start, end)
     } else {
-        w1 <- (snippetWidth - 2L) %/% 2L
-        w2 <- (snippetWidth - 3L) %/% 2L
+        w1 <- (snippetWidth - 1L) %/% 2L
+        w2 <- (snippetWidth - 1L) %/% 2L
         paste(XStringViews.get_view(x, start, start+w1-1L),
-              "...",
+              compact_ellipsis,
               XStringViews.get_view(x, end-w2+1L, end), sep="")
     }
 }
