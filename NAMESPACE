@@ -1,20 +1,11 @@
 useDynLib(Biostrings)
 
 import(methods)
+importFrom(graphics, axis, legend, lines, par, plot.new, plot.window, title)
+importFrom(stats, chisq.test, complete.cases, diffinv, pchisq, setNames)
+importFrom(utils, data, packageVersion)
 
-importFrom(graphics,
-    axis, legend, lines, par, plot.new,
-    plot.window, title
-)
-
-importFrom(stats,
-    chisq.test, complete.cases, diffinv,
-    pchisq, setNames
-)
-
-importFrom(utils,
-    data, packageVersion
-)
+importFrom(crayon, make_style, inverse)
 
 import(BiocGenerics)
 import(S4Vectors)

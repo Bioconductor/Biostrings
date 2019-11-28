@@ -358,30 +358,29 @@ toSeqSnippet <- function(x, width)
     ans
 }
 
-### All the IUPAC ambiguity letters minus N.
-.dark_gray_bg_letters <- c("M", "R", "W", "S", "Y", "K", "V", "H", "D", "B")
+### Placeholder, initialized in .onLoad()
+DNA_AND_RNA_COLORED_LETTERS <- NULL
 
-### A named character vector with names in 'union(DNA_ALPHABET, RNA_ALPHABET)'.
+### Return a named character vector where all the names are single letters.
 ### Colors for A, C, G, and T were inspired by
 ###   https://en.wikipedia.org/wiki/Nucleotide#Structure
-.DNA_AND_RNA_COLORED_LETTERS <- c(
-    ## Generated with crayon::make_style(rgb(1, 0.5, 0.5), bg=TRUE)("A")
-    A="\033[48;5;217mA\033[49m",
-    ## Generated with crayon::make_style(rgb(0.5, 1, 0.5), bg=TRUE)("C")
-    C="\033[48;5;157mC\033[49m",
-    ## Generated with crayon::make_style(rgb(0.5, 1, 1), bg=TRUE)("G")
-    G="\033[48;5;159mG\033[49m",
-    ## Generated with crayon::make_style(rgb(1, 0,8, 0.5), bg=TRUE)("T")
-    T="\033[48;5;223mT\033[49m",
-    U="\033[48;5;228mU\033[49m",
-    ## Format string generated with
-    ## crayon::inverse(crayon::make_style(rgb(0.5,0.5,0.5))("%s"))
-    setNames(sprintf("\033[7m\033[38;5;244m%s\033[39m\033[27m",
-                     .dark_gray_bg_letters),
-             .dark_gray_bg_letters),
-    ## Generated with crayon::inverse(crayon::make_style("grey")("N"))
-    N="\033[7m\033[38;5;249mN\033[39m\033[27m"
-)
+### Called in .onLoad() to initialize DNA_AND_RNA_COLORED_LETTERS.
+make_DNA_AND_RNA_COLORED_LETTERS <- function()
+{
+    ## All the IUPAC ambiguity letters minus N.
+    dark_gray_bg_letters <- c("M", "R", "W", "S", "Y", "K", "V", "H", "D", "B")
+    c(
+        A=make_style(rgb(1, 0.5, 0.5), bg=TRUE)("A"),
+        C=make_style(rgb(0.5, 1, 0.5), bg=TRUE)("C"),
+        G=make_style(rgb(0.5, 1, 1), bg=TRUE)("G"),
+        T=make_style(rgb(1, 0.8, 0.5), bg=TRUE)("T"),
+        U=make_style(rgb(1, 1, 0.5), bg=TRUE)("U"),
+        setNames(sprintf(inverse(make_style(rgb(0.5,0.5,0.5))("%s")),
+                         dark_gray_bg_letters),
+                 dark_gray_bg_letters),
+        N=inverse(make_style("grey")("N"))
+    )
+}
 
 ### 'x' must be a character vector.
 .add_dna_and_rna_colors <- function(x)
@@ -389,9 +388,9 @@ toSeqSnippet <- function(x, width)
     ans <- vapply(x,
         function(xi) {
             xi <- safeExplode(xi)
-            m <- match(xi, names(.DNA_AND_RNA_COLORED_LETTERS))
+            m <- match(xi, names(DNA_AND_RNA_COLORED_LETTERS))
             match_idx <- which(!is.na(m))
-            xi[match_idx] <- .DNA_AND_RNA_COLORED_LETTERS[m[match_idx]]
+            xi[match_idx] <- DNA_AND_RNA_COLORED_LETTERS[m[match_idx]]
             paste0(xi, collapse="")
         },
         character(1),

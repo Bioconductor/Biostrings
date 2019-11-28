@@ -8,6 +8,7 @@
     .Call2("init_RNAlkups",
           RNA_STRING_CODEC@enc_lkup, RNA_STRING_CODEC@dec_lkup,
           PACKAGE=pkgname)
+    DNA_AND_RNA_COLORED_LETTERS <<- make_DNA_AND_RNA_COLORED_LETTERS()
 }
 
 .onUnload <- function(libpath)
