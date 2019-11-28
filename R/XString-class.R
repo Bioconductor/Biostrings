@@ -341,16 +341,17 @@ toSeqSnippet <- function(x, width)
 {
     if (width < 7L)
         width <- 7L
-    x_nchar <- nchar(x)
-    stopifnot(length(x_nchar) == 1L)
-    if (x_nchar <= width) {
+    ## Do NOT use nchar() here as it wouldn't do the right thing on a
+    ## MaskedXString object!
+    x_len <- length(x)
+    if (x_len <= width) {
         ans <- as.character(x)
     } else {
         w1 <- (width - 1L) %/% 2L
         w2 <- (width - 1L) %/% 2L
         ans <- paste0(as.character(subseq(x, start=1, width=w1)),
                       compact_ellipsis,
-                      as.character(subseq(x, end=x_nchar, width=w2)))
+                      as.character(subseq(x, end=x_len, width=w2)))
     }
     if (is(x, "XString") || is(x, "MaskedXString"))
         class(ans) <- seqtype(x)  # for S3 dispatch in add_colors()
