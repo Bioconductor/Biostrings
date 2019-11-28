@@ -447,22 +447,26 @@ setAs("ANY", "XStringSet",
 .XStringSet.show_frame_line <- function(x, i, iW, widthW)
 {
     width <- nchar(x)[i]
-    snippetWidth <- getOption("width") - 2 - iW - widthW
+    snippet_width <- getOption("width") - 2L - iW - widthW
     if (!is.null(names(x)))
-        snippetWidth <- snippetWidth - .namesW - 1
-    seq_snippet <- toSeqSnippet(x[[i]], snippetWidth)
-    if (!is.null(names(x)))
-        seq_snippet <- format(seq_snippet, width=snippetWidth)
+        snippet_width <- snippet_width - .namesW - 1L
+    snippet <- toSeqSnippet(x[[i]], snippet_width)
+    if (!is.null(names(x))) {
+        snippet_class <- class(snippet)
+        snippet <- format(snippet, width=snippet_width)
+        class(snippet) <- snippet_class
+    }
     cat(format(paste("[", i,"]", sep=""), width=iW, justify="right"), " ",
         format(width, width=widthW, justify="right"), " ",
-        seq_snippet,
+        add_colors(snippet),
         sep="")
     if (!is.null(names(x))) {
         snippet_name <- names(x)[i]
         if (is.na(snippet_name))
             snippet_name <- "<NA>"
         else if (nchar(snippet_name) > .namesW)
-            snippet_name <- paste(substr(snippet_name, 1, .namesW-3), "...", sep="")
+            snippet_name <- paste0(substr(snippet_name, 1L, .namesW - 1L),
+                                   compact_ellipsis)
         cat(" ", snippet_name, sep="")
     }
     cat("\n")
@@ -500,8 +504,12 @@ setAs("ANY", "XStringSet",
 setMethod("show", "XStringSet",
     function(object)
     {
-        cat("  A ", class(object), " instance of length ", length(object), "\n", sep="")
-        if (length(object) != 0)
+        object_len <- length(object)
+        cat(class(object), " object of length ", length(object), sep="")
+        if (object_len != 0L)
+            cat(":")
+        cat("\n")
+        if (object_len != 0L)
             .XStringSet.show_frame(object)
     }
 )

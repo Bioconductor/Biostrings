@@ -438,8 +438,8 @@ setMethod("pid", "PairwiseAlignments",
     width <- getOption("width") - 9L - width
     pattern1 <- toSeqSnippet(alignedPattern(x1)[[1L]], width)
     subject1 <- toSeqSnippet(alignedSubject(x1)[[1L]], width)
-    cat("pattern:", p1start, " ", pattern1, "\n", sep="")
-    cat("subject:", s1start, " ", subject1, "\n", sep="")
+    cat("pattern:", p1start, " ", add_colors(pattern1), "\n", sep="")
+    cat("subject:", s1start, " ", add_colors(subject1), "\n", sep="")
     cat("score:", score(x1), "\n")
 }
 

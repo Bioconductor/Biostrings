@@ -330,44 +330,13 @@ setMethod("as.vector", "XString",
 ### The "show" method.
 ###
 
-### All the IUPAC ambiguity letters minus N.
-.dark_gray_bg_letters <- c("M", "R", "W", "S", "Y", "K", "V", "H", "D", "B")
-
-### A named character vector with names in 'union(DNA_ALPHABET, RNA_ALPHABET)'.
-### Colors for A, C, G, and T were inspired by
-###   https://en.wikipedia.org/wiki/Nucleotide#Structure
-.DNA_AND_RNA_COLORED_LETTERS <- c(
-    ## Generated with crayon::make_style(rgb(1, 0.5, 0.5), bg=TRUE)("A")
-    A="\033[48;5;217mA\033[49m",
-    ## Generated with crayon::make_style(rgb(0.5, 1, 0.5), bg=TRUE)("C")
-    C="\033[48;5;157mC\033[49m",
-    ## Generated with crayon::make_style(rgb(0.5, 1, 1), bg=TRUE)("G")
-    G="\033[48;5;159mG\033[49m",
-    ## Generated with crayon::make_style(rgb(1, 0,8, 0.5), bg=TRUE)("T")
-    T="\033[48;5;223mT\033[49m",
-    U="\033[48;5;228mT\033[49m",
-    ## Format string generated with
-    ## crayon::inverse(crayon::make_style(rgb(0.5,0.5,0.5))("%s"))
-    setNames(sprintf("\033[7m\033[38;5;244m%s\033[39m\033[27m",
-                     .dark_gray_bg_letters),
-             .dark_gray_bg_letters),
-    ## Generated with crayon::inverse(crayon::make_style("grey")("N"))
-    N="\033[7m\033[38;5;249mN\033[39m\033[27m"
-)
-
-add_dna_and_rna_colors <- function(x)
-{
-    x <- safeExplode(x)
-    m <- match(x, names(.DNA_AND_RNA_COLORED_LETTERS))
-    match_idx <- which(!is.na(m))
-    x[match_idx] <- .DNA_AND_RNA_COLORED_LETTERS[m[match_idx]]
-    paste0(x, collapse="")
-}
-
 compact_ellipsis <- rawToChar(as.raw(c(0xe2, 0x80, 0xa6)))
 
+### NOT exported but used in the BSgenome package.
 ### 'x' must be a single character string, or an XString or
 ### MaskedXString object.
+### Return a character vector possibly with a class attribute on it for later
+### S3 dispatch in add_colors().
 toSeqSnippet <- function(x, width)
 {
     if (width < 7L)
@@ -383,23 +352,77 @@ toSeqSnippet <- function(x, width)
                       compact_ellipsis,
                       as.character(subseq(x, end=x_nchar, width=w2)))
     }
-    if (seqtype(x) %in% c("DNA", "RNA"))
-        ans <- add_dna_and_rna_colors(ans)
+    if (is(x, "XString") || is(x, "MaskedXString"))
+        class(ans) <- seqtype(x)  # for S3 dispatch in add_colors()
     ans
 }
+
+### All the IUPAC ambiguity letters minus N.
+.dark_gray_bg_letters <- c("M", "R", "W", "S", "Y", "K", "V", "H", "D", "B")
+
+### A named character vector with names in 'union(DNA_ALPHABET, RNA_ALPHABET)'.
+### Colors for A, C, G, and T were inspired by
+###   https://en.wikipedia.org/wiki/Nucleotide#Structure
+.DNA_AND_RNA_COLORED_LETTERS <- c(
+    ## Generated with crayon::make_style(rgb(1, 0.5, 0.5), bg=TRUE)("A")
+    A="\033[48;5;217mA\033[49m",
+    ## Generated with crayon::make_style(rgb(0.5, 1, 0.5), bg=TRUE)("C")
+    C="\033[48;5;157mC\033[49m",
+    ## Generated with crayon::make_style(rgb(0.5, 1, 1), bg=TRUE)("G")
+    G="\033[48;5;159mG\033[49m",
+    ## Generated with crayon::make_style(rgb(1, 0,8, 0.5), bg=TRUE)("T")
+    T="\033[48;5;223mT\033[49m",
+    U="\033[48;5;228mU\033[49m",
+    ## Format string generated with
+    ## crayon::inverse(crayon::make_style(rgb(0.5,0.5,0.5))("%s"))
+    setNames(sprintf("\033[7m\033[38;5;244m%s\033[39m\033[27m",
+                     .dark_gray_bg_letters),
+             .dark_gray_bg_letters),
+    ## Generated with crayon::inverse(crayon::make_style("grey")("N"))
+    N="\033[7m\033[38;5;249mN\033[39m\033[27m"
+)
+
+### 'x' must be a character vector.
+.add_dna_and_rna_colors <- function(x)
+{
+    ans <- vapply(x,
+        function(xi) {
+            xi <- safeExplode(xi)
+            m <- match(xi, names(.DNA_AND_RNA_COLORED_LETTERS))
+            match_idx <- which(!is.na(m))
+            xi[match_idx] <- .DNA_AND_RNA_COLORED_LETTERS[m[match_idx]]
+            paste0(xi, collapse="")
+        },
+        character(1),
+        USE.NAMES=FALSE
+    )
+    x_names <- names(x)
+    if (!is.null(x_names))
+        names(ans) <- x_names
+    ans
+}
+
+add_colors <- function(x) UseMethod("add_colors")
+add_colors.default <- identity
+add_colors.DNA <- add_colors.RNA <- .add_dna_and_rna_colors
 
 setMethod("show", "XString",
     function(object)
     {
-        lo <- object@length
-        cat("  ", lo, "-letter \"", class(object), "\" instance\n", sep="")
-        cat("seq:", toSeqSnippet(object, getOption("width") - 5L))
-        cat("\n")
+        object_len <- object@length
+        cat(object_len, "-letter ", class(object), " object\n", sep="")
+        snippet <- toSeqSnippet(object, getOption("width") - 5L)
+        cat("seq: ", add_colors(snippet), "\n", sep="")
     }
 )
 
 setMethod("showAsCell", "XString",
-    function(object) safeExplode(as.character(object))
+    function(object)
+    {
+        ans <- safeExplode(as.character(object))
+        class(ans) <- seqtype(object)
+        ans
+    }
 )
 
 

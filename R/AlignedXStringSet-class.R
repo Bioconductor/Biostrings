@@ -146,13 +146,16 @@ setMethod("show", "AlignedXStringSet0",
         if (length(object) == 0)
             cat("Empty ", class(object), "\n", sep = "")
         else {
-            if (length(object) > 1)
+            if (length(object) > 1L)
                 cat(class(object), " (1 of ", length(object), ")\n", sep = "")
-            if (width(object)[1] == 0)
+            if (width(object)[1] == 0) {
                 cat("[1] \"\"\n")
-            else
+            } else {
+                snippet <- toSeqSnippet(aligned(object)[[1L]],
+                                        getOption("width") - 8L)
                 cat(paste("[", start(object)[1], "]", sep = ""),
-                    toSeqSnippet(aligned(object)[[1]], getOption("width") - 8), "\n")
+                    add_colors(snippet), "\n")
+            }
         }
     }
 )
