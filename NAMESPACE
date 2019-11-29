@@ -5,7 +5,7 @@ importFrom(graphics, axis, legend, lines, par, plot.new, plot.window, title)
 importFrom(stats, chisq.test, complete.cases, diffinv, pchisq, setNames)
 importFrom(utils, data, packageVersion)
 
-importFrom(crayon, make_style, inverse)
+importFrom(crayon, make_style, black)
 
 import(BiocGenerics)
 import(S4Vectors)

@@ -367,18 +367,24 @@ DNA_AND_RNA_COLORED_LETTERS <- NULL
 ### Called in .onLoad() to initialize DNA_AND_RNA_COLORED_LETTERS.
 make_DNA_AND_RNA_COLORED_LETTERS <- function()
 {
+    ## Not sure why but the built-in white() style in the crayon package
+    ## produces some kind of light grey text color. So we define a style
+    ## that produces a text color that is 100% white.
+    whiter <- make_style(rgb(1, 1, 1))
+    dark_grey_bg <- make_style(rgb(0.5,0.5,0.5), bg=TRUE)
+
     ## All the IUPAC ambiguity letters minus N.
-    dark_gray_bg_letters <- c("M", "R", "W", "S", "Y", "K", "V", "H", "D", "B")
+    dark_grey_bg_letters <- c("M", "R", "W", "S", "Y", "K", "V", "H", "D", "B")
+
     c(
-        A=make_style(rgb(1, 0.5, 0.5), bg=TRUE)("A"),
-        C=make_style(rgb(0.5, 1, 0.5), bg=TRUE)("C"),
-        G=make_style(rgb(0.5, 1, 1), bg=TRUE)("G"),
-        T=make_style(rgb(1, 0.8, 0.5), bg=TRUE)("T"),
-        U=make_style(rgb(1, 1, 0.5), bg=TRUE)("U"),
-        setNames(sprintf(inverse(make_style(rgb(0.5,0.5,0.5))("%s")),
-                         dark_gray_bg_letters),
-                 dark_gray_bg_letters),
-        N=inverse(make_style("grey")("N"))
+        A=make_style(rgb(1, 0.5, 0.5), bg=TRUE)(black("A")),
+        C=make_style(rgb(0.5, 1, 0.5), bg=TRUE)(black("C")),
+        G=make_style(rgb(0.5, 1, 1), bg=TRUE)(black("G")),
+        T=make_style(rgb(1, 0.8, 0.5), bg=TRUE)(black("T")),
+        U=make_style(rgb(1, 1, 0.5), bg=TRUE)(black("U")),
+        setNames(sprintf(dark_grey_bg(whiter("%s")), dark_grey_bg_letters),
+                 dark_grey_bg_letters),
+        N=make_style("grey", bg=TRUE)(whiter("N"))
     )
 }
 
