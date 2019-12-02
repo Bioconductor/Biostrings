@@ -1,9 +1,10 @@
 useDynLib(Biostrings)
 
 import(methods)
+importFrom(utils, data, packageVersion)
+importFrom(grDevices, rgb)
 importFrom(graphics, axis, legend, lines, par, plot.new, plot.window, title)
 importFrom(stats, chisq.test, complete.cases, diffinv, pchisq, setNames)
-importFrom(utils, data, packageVersion)
 
 importFrom(crayon, make_style, black)
 
