@@ -3,7 +3,7 @@ Title: Efficient manipulation of biological strings
 Description: Memory efficient string containers, string matching
 	algorithms, and other utilities, for fast manipulation of large
 	biological sequences or sets of sequences.
-Version: 2.55.3
+Version: 2.55.4
 Encoding: UTF-8
 Author: H. Pagès, P. Aboyoun, R. Gentleman, and S. DebRoy
 Maintainer: H. Pagès <hpages@fredhutch.org>
@@ -31,6 +31,7 @@ Collate: 00datacache.R
 	GENETIC_CODE.R
 	XStringCodec-class.R
 	seqtype.R
+	add_colors.R
 	XString-class.R
 	XStringSet-class.R
 	XStringSet-comparison.R
