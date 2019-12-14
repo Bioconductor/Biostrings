@@ -1,11 +1,5 @@
 \name{Biostrings internals}
 
-% add_colors.R:
-\alias{as.data.frame.B}
-\alias{as.data.frame.DNA}
-\alias{as.data.frame.RNA}
-\alias{as.data.frame.AA}
-
 % XStringCodec class and methods:
 \alias{class:XStringCodec}
 \alias{XStringCodec-class}

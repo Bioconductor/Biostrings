@@ -200,7 +200,7 @@ XStringViews.get_snippet <- function(x, start, end, snippetWidth)
                       compact_ellipsis,
                       XStringViews.get_view(x, end-w2+1L, end))
     }
-    class(ans) <- seqtype(x)  # for S3 dispatch in add_colors()
+    class(ans) <- c(seqtype(x), class(ans))  # for S3 dispatch in add_colors()
     ans
 }
 

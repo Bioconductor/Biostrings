@@ -2,7 +2,7 @@
 ### add_colors()
 ### -------------------------------------------------------------------------
 ###
-### Unless stated otherwise, nothing in this file is exported.
+### Nothing in this file is exported.
 ###
 
 ### Placeholder, initialized in .onLoad()
@@ -58,10 +58,4 @@ make_DNA_AND_RNA_COLORED_LETTERS <- function()
 add_colors <- function(x) UseMethod("add_colors")
 add_colors.default <- identity
 add_colors.DNA <- add_colors.RNA <- .add_dna_and_rna_colors
-
-### Exported.
-as.data.frame.B <- as.data.frame.character
-as.data.frame.DNA <- as.data.frame.character
-as.data.frame.RNA <- as.data.frame.character
-as.data.frame.AA <- as.data.frame.character
 

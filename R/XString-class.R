@@ -335,8 +335,8 @@ compact_ellipsis <- rawToChar(as.raw(c(0xe2, 0x80, 0xa6)))
 ### NOT exported but used in the BSgenome package.
 ### 'x' must be a single character string, or an XString or
 ### MaskedXString object.
-### Return a character vector possibly with a class attribute on it for later
-### S3 dispatch in add_colors().
+### Return a character vector possibly with a class attribute on it for
+### later S3 dispatch in add_colors().
 toSeqSnippet <- function(x, width)
 {
     if (width < 7L)
@@ -354,7 +354,8 @@ toSeqSnippet <- function(x, width)
                       as.character(subseq(x, end=x_len, width=w2)))
     }
     if (is(x, "XString") || is(x, "MaskedXString"))
-        class(ans) <- seqtype(x)  # for S3 dispatch in add_colors()
+        class(ans) <- c(seqtype(x), class(ans))  # for S3 dispatch
+                                                 # in add_colors()
     ans
 }
 
@@ -372,7 +373,7 @@ setMethod("showAsCell", "XString",
     function(object)
     {
         ans <- safeExplode(as.character(object))
-        class(ans) <- seqtype(object)
+        class(ans) <- c(seqtype(object), class(ans))
         ans
     }
 )
