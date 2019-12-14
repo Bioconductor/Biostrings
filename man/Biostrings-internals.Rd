@@ -1,15 +1,10 @@
 \name{Biostrings internals}
-\docType{class}
 
-% SparseList class and methods:
-\alias{class:SparseList}
-\alias{SparseList-class}
-\alias{SparseList}
-
-\alias{length,SparseList-method}
-%\alias{ls,SparseList-method}
-\alias{as.list,SparseList-method}
-\alias{[[,SparseList-method}
+% add_colors.R:
+\alias{as.data.frame.B}
+\alias{as.data.frame.DNA}
+\alias{as.data.frame.RNA}
+\alias{as.data.frame.AA}
 
 % XStringCodec class and methods:
 \alias{class:XStringCodec}
@@ -37,6 +32,16 @@
 \alias{make_XStringSet_from_strings}
 \alias{make_XStringSet_from_strings,XStringSet-method}
 
+% SparseList class and methods:
+\alias{class:SparseList}
+\alias{SparseList-class}
+\alias{SparseList}
+
+\alias{length,SparseList-method}
+%\alias{ls,SparseList-method}
+\alias{as.list,SparseList-method}
+\alias{[[,SparseList-method}
+
 \title{Biostrings internals}
 
 \description{
@@ -47,5 +52,3 @@
 \author{H. Pagès}
 
 \keyword{internal}
-\keyword{methods}
-\keyword{classes}
