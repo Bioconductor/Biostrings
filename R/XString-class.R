@@ -330,7 +330,7 @@ setMethod("as.vector", "XString",
 ### The "show" method.
 ###
 
-compact_ellipsis <- rawToChar(as.raw(c(0xe2, 0x80, 0xa6)))
+compact_ellipsis <- intToUtf8(0x2026L)
 
 ### NOT exported but used in the BSgenome package.
 ### 'x' must be a single character string, or an XString or

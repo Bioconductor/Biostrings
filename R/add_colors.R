@@ -40,7 +40,7 @@ make_DNA_AND_RNA_COLORED_LETTERS <- function()
 {
     ans <- vapply(x,
         function(xi) {
-            xi <- safeExplode(xi)
+            xi <- strsplit(xi,"")[[1L]]
             m <- match(xi, names(DNA_AND_RNA_COLORED_LETTERS))
             match_idx <- which(!is.na(m))
             xi[match_idx] <- DNA_AND_RNA_COLORED_LETTERS[m[match_idx]]
