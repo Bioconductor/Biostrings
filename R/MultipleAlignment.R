@@ -790,8 +790,9 @@ function (x, i, iW)
         if (is.na(snippet_name))
             snippet_name <- "<NA>"
         else if (nchar(snippet_name) > .namesW)
-            snippet_name <- paste0(substr(snippet_name, 1L, .namesW - 1L),
-                                   compact_ellipsis)
+            snippet_name <- paste0(substr(snippet_name, 1L, .namesW - 3L),
+                                   #compact_ellipsis)
+                                   "...")
         cat(" ", snippet_name, sep="")
     }
     cat("\n")

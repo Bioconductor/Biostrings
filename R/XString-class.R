@@ -347,10 +347,11 @@ toSeqSnippet <- function(x, width)
     if (x_len <= width) {
         ans <- as.character(x)
     } else {
-        w1 <- (width - 1L) %/% 2L
-        w2 <- (width - 1L) %/% 2L
+        w1 <- (width - 2L) %/% 2L
+        w2 <- (width - 3L) %/% 2L
         ans <- paste0(as.character(subseq(x, start=1, width=w1)),
-                      compact_ellipsis,
+                      #compact_ellipsis,
+                      "...",
                       as.character(subseq(x, end=x_len, width=w2)))
     }
     if (is(x, "XString") || is(x, "MaskedXString"))

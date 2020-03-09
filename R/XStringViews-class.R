@@ -194,10 +194,11 @@ XStringViews.get_snippet <- function(x, start, end, snippetWidth)
     if (width <= snippetWidth) {
         ans <- XStringViews.get_view(x, start, end)
     } else {
-        w1 <- (snippetWidth - 1L) %/% 2L
-        w2 <- (snippetWidth - 1L) %/% 2L
+        w1 <- (snippetWidth - 2L) %/% 2L
+        w2 <- (snippetWidth - 3L) %/% 2L
         ans <- paste0(XStringViews.get_view(x, start, start+w1-1L),
-                      compact_ellipsis,
+                      #compact_ellipsis,
+                      "...",
                       XStringViews.get_view(x, end-w2+1L, end))
     }
     class(ans) <- c(seqtype(x), class(ans))  # for S3 dispatch in add_colors()
