@@ -76,24 +76,40 @@
   }
 }
 
+\section{Display}{
+  The letters in a DNAString object are colored when displayed by the
+  \code{show()} method. Set global option \code{Biostrings.coloring}
+  to FALSE to turn off this coloring.
+}
+
 \author{H. Pagès}
 
 \seealso{
-  \code{\link{IUPAC_CODE_MAP}},
-  \code{\link{letter}},
-  \link{XString-class},
-  \link{RNAString-class},
-  \code{\link{reverseComplement}},
-  \code{\link{alphabetFrequency}}
+  \itemize{
+    \item The \link{DNAStringSet} class to represent a collection of
+          DNAString objects.
+
+    \item The \link{XString} and \link{RNAString} classes.
+
+    \item \code{\link{reverseComplement}}
+
+    \item \code{\link{alphabetFrequency}}
+
+    \item \code{\link{IUPAC_CODE_MAP}}
+
+    \item \code{\link{letter}}
+  }
 }
 
 \examples{
 DNA_BASES
 DNA_ALPHABET
-d <- DNAString("TTGAAAA-CTC-N")
-length(d)
-alphabet(d)                 # DNA_ALPHABET
-alphabet(d, baseOnly=TRUE)  # DNA_BASES
+dna <- DNAString("TTGAAAA-CTC-N")
+dna  # 'options(Biostrings.coloring=FALSE)' to turn off coloring
+
+length(dna)
+alphabet(dna)                 # DNA_ALPHABET
+alphabet(dna, baseOnly=TRUE)  # DNA_BASES
 }
 
 \keyword{methods}

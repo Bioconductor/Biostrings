@@ -338,6 +338,11 @@ write.phylip(x, filepath)
   }
 }
 
+\section{Display}{
+  The letters in a DNAMultipleAlignment or RNAMultipleAlignment object
+  are colored when displayed by the \code{show()} method. Set global
+  option \code{Biostrings.coloring} to FALSE to turn off this coloring.
+}
 
 \author{P. Aboyoun and M. Carlson}
 

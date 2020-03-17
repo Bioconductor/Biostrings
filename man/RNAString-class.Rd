@@ -74,29 +74,44 @@
   }
 }
 
+\section{Display}{
+  The letters in an RNAString object are colored when displayed by the
+  \code{show()} method. Set global option \code{Biostrings.coloring}
+  to FALSE to turn off this coloring.
+}
+
 \author{H. Pagès}
 
 \seealso{
-  \code{\link{IUPAC_CODE_MAP}},
-  \code{\link{letter}},
-  \link{XString-class},
-  \link{DNAString-class},
-  \code{\link{reverseComplement}},
-  \code{\link{alphabetFrequency}}
+  \itemize{
+    \item The \link{RNAStringSet} class to represent a collection of
+          RNAString objects.
+
+    \item The \link{XString} and \link{DNAString} classes.
+
+    \item \code{\link{reverseComplement}}
+
+    \item \code{\link{alphabetFrequency}}
+
+    \item \code{\link{IUPAC_CODE_MAP}}
+
+    \item \code{\link{letter}}
+  }
 }
 
 \examples{
 RNA_BASES
 RNA_ALPHABET
-d <- DNAString("TTGAAAA-CTC-N")
-r <- RNAString(d)
-r
-alphabet(r)                 # RNA_ALPHABET
-alphabet(r, baseOnly=TRUE)  # RNA_BASES
+dna <- DNAString("TTGAAAA-CTC-N")
+rna <- RNAString(dna)
+rna  # 'options(Biostrings.coloring=FALSE)' to turn off coloring
+
+alphabet(rna)                 # RNA_ALPHABET
+alphabet(rna, baseOnly=TRUE)  # RNA_BASES
 
 ## When comparing an RNAString object with a DNAString object,
 ## U and T are considered equals:
-r == d  # TRUE
+rna == dna  # TRUE
 }
 
 \keyword{methods}

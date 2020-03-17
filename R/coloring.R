@@ -38,6 +38,8 @@ make_DNA_AND_RNA_COLORED_LETTERS <- function()
 ### 'x' must be a character vector.
 .add_dna_and_rna_colors <- function(x)
 {
+    if (!isTRUE(getOption("Biostrings.coloring", default=FALSE)))
+        return(x)
     ans <- vapply(x,
         function(xi) {
             xi <- safeExplode(xi)

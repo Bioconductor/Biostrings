@@ -312,6 +312,12 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
   }
 }
 
+\section{Display}{
+  The letters in a DNAStringSet or RNAStringSet object are colored
+  when displayed by the \code{show()} method. Set global option
+  \code{Biostrings.coloring} to FALSE to turn off this coloring.
+}
+
 \author{H. Pagès}
 
 \seealso{
@@ -355,7 +361,8 @@ subseq(x1, start=4, end=-3)
 BStringSet(subseq(x0, start=4, end=-3))
 
 dna0 <- DNAStringSet(x0, start=4, end=-3)
-dna0
+dna0  # 'options(Biostrings.coloring=FALSE)' to turn off coloring
+
 names(dna0)
 names(dna0)[2] <- "seqB"
 dna0
