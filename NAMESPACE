@@ -394,7 +394,7 @@ exportMethods(
     subpatterns, pattern,
     quality, encoding,
     insertion, deletion,
-    parallelSlotNames,
+    vertical_slot_names,
     unaligned, aligned, indel, nindel,
     parallelVectorNames,
     subject, type, alignedPattern, alignedSubject, score, pid,
