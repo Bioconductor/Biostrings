@@ -181,7 +181,6 @@ setMethod("show", "XStringSetList",
     }
 )
 
-### Display in a DataTable.
 setMethod("showAsCell", "XStringSetList",
      function(object) showAsCell(CharacterList(object))
 )
