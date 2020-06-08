@@ -6,7 +6,7 @@
 \alias{QualityScaledXStringSet-class}
 \alias{QualityScaledXStringSet}
 
-\alias{vertical_slot_names,QualityScaledXStringSet-method}
+\alias{parallel_slot_names,QualityScaledXStringSet-method}
 
 \alias{class:QualityScaledBStringSet}
 \alias{QualityScaledBStringSet-class}

@@ -12,7 +12,7 @@
 \alias{PairwiseAlignmentsSingleSubjectSummary-class}
 \alias{PairwiseAlignmentsSingleSubjectSummary}
 
-\alias{vertical_slot_names,PairwiseAlignments-method}
+\alias{parallel_slot_names,PairwiseAlignments-method}
 
 % Constructor-like functions and generics:
 \alias{PairwiseAlignments,XString,XString-method}

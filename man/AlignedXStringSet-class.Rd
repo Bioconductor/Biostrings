@@ -34,7 +34,7 @@
 \alias{toString,AlignedXStringSet0-method}
 
 % Internal:
-\alias{vertical_slot_names,AlignedXStringSet0-method}
+\alias{parallel_slot_names,AlignedXStringSet0-method}
 \alias{parallelVectorNames,AlignedXStringSet0-method}
 
 \title{AlignedXStringSet and QualityAlignedXStringSet objects}
