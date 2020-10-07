@@ -6,7 +6,7 @@ Description: Memory efficient string containers, string matching
 Version: 2.57.2
 Encoding: UTF-8
 Author: H. Pagès, P. Aboyoun, R. Gentleman, and S. DebRoy
-Maintainer: H. Pagès <hpages@fredhutch.org>
+Maintainer: H. Pagès <hpages.on.github@gmail.com>
 biocViews: SequenceMatching, Alignment, Sequencing, Genetics,
 	DataImport, DataRepresentation, Infrastructure
 Depends: R (>= 3.5.0), methods, BiocGenerics (>= 0.31.5),
