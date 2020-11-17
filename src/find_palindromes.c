@@ -22,25 +22,40 @@ static void get_find_palindromes_at(const char *x, int x_len,
 	int i1, int i2, int max_loop_len1, int min_arm_len, int max_nmis,
 	const int *lkup, int lkup_len)
 {
-	int arm_len, valid_indices;
+	int arm_len, valid_indices, nmis, first_mis1, first_mis2;
 	char c1, c2;
 
 	arm_len = 0;
+	nmis = 0;
 	while (((valid_indices = i1 >= 0 && i2 < x_len) &&
                 i2 - i1 <= max_loop_len1) || arm_len != 0)
 	{
 		if (valid_indices) {
 			c1 = x[i1];
 			c2 = x[i2];
+			/* Keep track of the index for the first mismatch in a palindrome arm search. */
+			if (nmis == 0 && !is_match(c1, c2, lkup, lkup_len)) {
+				first_mis1 = i1;
+				first_mis2 = i2;
+			}
 			if (is_match(c1, c2, lkup, lkup_len) ||
-			    max_nmis-- > 0) {
+			    nmis++ < max_nmis) {
 				arm_len++;
 				goto next;
 			}
 		}
 		if (arm_len >= min_arm_len)
 			_report_match(i1 + 2, i2 - i1 - 1);
+		/* If the search has not reached the end of the subject string,
+		 * or if it reached the end of the string but found a mismatch it can't include,
+		 * reset it to the first mismatch in the previous palindrome arm before continuing to search.
+		 */
+		if ((i1 > 0 && i2 + 1 < x_len) || nmis > max_nmis) {
+			i1 = first_mis1;
+			i2 = first_mis2;
+		}
 		arm_len = 0;
+		nmis = 0;
 	next:
 		i1--;
 		i2++;
