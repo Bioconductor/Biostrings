@@ -34,11 +34,12 @@
 
 \usage{
 findPalindromes(subject, min.armlength=4,
-                max.looplength=1, min.looplength=0, max.mismatch=0)
+                max.looplength=1, min.looplength=0, max.mismatch=0,
+                allow.wobble=FALSE)
 
-palindromeArmLength(x, max.mismatch=0)
-palindromeLeftArm(x, max.mismatch=0)
-palindromeRightArm(x, max.mismatch=0)
+palindromeArmLength(x, max.mismatch=0, allow.wobble=FALSE)
+palindromeLeftArm(x, max.mismatch=0, allow.wobble=FALSE)
+palindromeRightArm(x, max.mismatch=0, allow.wobble=FALSE)
 }
 
 \arguments{
@@ -63,6 +64,10 @@ palindromeRightArm(x, max.mismatch=0)
   \item{max.mismatch}{
     The maximum number of mismatching letters allowed between the 2 arms of
     the palindromes to search for.
+  }
+  \item{allow.wobble}{
+    Logical indicating whether wobble base pairs should be treated as
+    mismatches (the default) or matches.
   }
   \item{x}{
     An \link{XString} object containing a 2-arm palindrome, or an
