@@ -733,12 +733,15 @@ SEXP find_palindromes(
 	SEXP min_armlength,
 	SEXP max_looplength,
 	SEXP max_mismatch,
+	SEXP min_looplength,
+	SEXP allow_wobble,
 	SEXP L2R_lkup
 );
 
 SEXP palindrome_arm_length(
 	SEXP x,
 	SEXP max_mismatch,
+	SEXP allow_wobble,
 	SEXP L2R_lkup
 );
 
