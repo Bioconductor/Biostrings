@@ -105,8 +105,8 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(XStringViews_match_PWM, 7),
 
 /* find_palindromes.c */
-	CALLMETHOD_DEF(find_palindromes, 5),
-	CALLMETHOD_DEF(palindrome_arm_length, 3),
+	CALLMETHOD_DEF(find_palindromes, 7),
+	CALLMETHOD_DEF(palindrome_arm_length, 4),
 
 /* match_pdict_Twobit.c */
 	CALLMETHOD_DEF(build_Twobit, 3),
