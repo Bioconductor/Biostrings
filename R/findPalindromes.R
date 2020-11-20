@@ -42,6 +42,8 @@
         stop("'min.looplength' must be a non-negative integer")
     if (!is.logical(allow.wobble))
         stop("'allow.wobble' must be a logical")
+    if (allow.wobble && !is.null(L2R_lkup))
+    	    stop("subject must be DNA or RNA if 'allow.wobble' is TRUE")
     ## check max.mismatch
     max.mismatch <- normargMaxMismatch(max.mismatch)
     C_ans <- .Call2("find_palindromes",
