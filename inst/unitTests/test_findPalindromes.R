@@ -16,6 +16,10 @@ test_findPalindromes_on_non_nucleotide_sequence <- function()
     text3 <- BString("AATAAACTNTCAAATYCCY")
     current <- findPalindromes(text3, min.armlength=2)
     checkIdentical(IRanges(c(1, 3, 16), c(5, 15, 19)), ranges(current))
+    
+    text4 <- BString("i45hgfe7d321c3b4a56789uvwWVU98765A4B3C123D7EFGH54I")
+    current <- findPalindromes(text4, min.armlength = 5, max.looplength = length(text4), max.mismatch = 3)
+    checkIdentical(IRanges(c(18, 16, 14, 10, 8, 7), c(33, 35, 37, 41, 43, 44)), ranges(current))
 }
 
 test_findPalindromes_on_nucleotide_sequence <- function()
