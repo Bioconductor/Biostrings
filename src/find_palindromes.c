@@ -29,25 +29,47 @@ static void get_find_palindromes_at(const char *x, int x_len,
 	int i1, int i2, int max_loop_len1, int min_arm_len, int max_nmis,
 	int allow_wobble1, const int *lkup, int lkup_len)
 {
-	int arm_len, valid_indices;
+	int stack = max_nmis + 1; // size of stack (assumes max_nmis is small)
+	int arms[stack]; // lengths of matched arms
+	int arm_len, valid_indices, nmis;
 	char c1, c2;
+	static int ismatch;
 
 	arm_len = 0;
+	nmis = 0;
+	int count = 0; // position in stack
 	while (((valid_indices = i1 >= 0 && i2 < x_len) &&
                 i2 - i1 <= max_loop_len1) || arm_len != 0)
 	{
 		if (valid_indices) {
 			c1 = x[i1];
 			c2 = x[i2];
-			if (is_match(c1, c2, allow_wobble1, lkup, lkup_len) ||
-			    max_nmis-- > 0) {
+			ismatch = is_match(c1, c2, allow_wobble1, lkup, lkup_len);
+			if (!ismatch) {
+				arms[count] = arm_len;
+				count++;
+			}
+			if (ismatch ||
+			    nmis++ < max_nmis) {
 				arm_len++;
 				goto next;
 			}
 		}
 		if (arm_len >= min_arm_len)
 			_report_match(i1 + 2, i2 - i1 - 1);
-		arm_len = 0;
+		if ((i1 > 0 && i2 + 1 < x_len) || nmis > max_nmis) {
+				nmis--;
+				arm_len -= arms[0];
+				// pop off bottom of stack
+				for (int i = 1; i < count; i++)
+					arms[i] -= arms[0];
+				for (int i = 1; i < count; i++)
+					arms[i - 1] = arms[i];
+				count--;
+		} else {
+			arm_len = 0;
+			nmis = 0;
+		}
 	next:
 		i1--;
 		i2++;
