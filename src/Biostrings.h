@@ -740,6 +740,8 @@ SEXP find_palindromes(
 
 SEXP palindrome_arm_length(
 	SEXP x,
+	SEXP begin,
+	SEXP end,
 	SEXP max_mismatch,
 	SEXP allow_wobble,
 	SEXP L2R_lkup
