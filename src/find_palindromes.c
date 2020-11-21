@@ -134,11 +134,14 @@ SEXP find_palindromes(SEXP x, SEXP min_armlength, SEXP max_looplength,
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP palindrome_arm_length(SEXP x, SEXP max_mismatch, SEXP allow_wobble, SEXP L2R_lkup)
+SEXP palindrome_arm_length(SEXP x, SEXP begin, SEXP end, SEXP max_mismatch, SEXP allow_wobble, SEXP L2R_lkup)
 {
 	Chars_holder x_holder;
-	int x_len, max_nmis, lkup_len, arm_len, allow_wobble1;
+	int x_len, max_nmis, lkup_len, allow_wobble1;
 	const int *lkup;
+	int *b = INTEGER(begin);
+	int *e = INTEGER(end);
+	int l = length(begin);
 
 	x_holder = hold_XRaw(x);
 	x_len = x_holder.length;
@@ -151,8 +154,17 @@ SEXP palindrome_arm_length(SEXP x, SEXP max_mismatch, SEXP allow_wobble, SEXP L2
 		lkup = INTEGER(L2R_lkup);
 		lkup_len = LENGTH(L2R_lkup);
 	}
-	arm_len = get_palindrome_arm_length(x_holder.ptr, x_len, max_nmis,
-					    allow_wobble1, lkup, lkup_len);
-	return ScalarInteger(arm_len);
+	
+	SEXP ans;
+	PROTECT(ans = allocVector(INTSXP, l));
+	int *rans = INTEGER(ans);
+	
+	for (int i = 0; i < l; i++)
+		rans[i] = get_palindrome_arm_length(x_holder.ptr + b[i] - 1,
+			e[i] - b[i] + 1, max_nmis, allow_wobble1, lkup, lkup_len);
+	
+	UNPROTECT(1);
+	
+	return ans;
 }
 
