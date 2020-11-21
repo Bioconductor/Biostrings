@@ -144,7 +144,7 @@ setMethod("findPalindromes", "MaskedXString",
 {
     max.mismatch <- normargMaxMismatch(max.mismatch)
     armlength <- .Call2("palindrome_arm_length",
-                        x, max.mismatch, allow.wobble, L2R_lkup,
+                        x, 1L, length(x), max.mismatch, allow.wobble, L2R_lkup,
                         PACKAGE="Biostrings")
     if (armlength == 0L)
         stop("'x' is not a palindrome (no arms found)")
@@ -180,9 +180,19 @@ setMethod("palindromeArmLength", "XStringViews",
     {
         if (length(x) == 0)
             return(integer(0))
-        sapply(seq_len(length(x)),
-               function(i)
-                   palindromeArmLength(x[[i]], max.mismatch=max.mismatch, allow.wobble=allow.wobble))
+        
+        a <- attributes(x)
+        if (is(a$subject, "DNAString") ||
+        	    is(a$subject, "RNAString")) {
+        	    	L2R_lkup <- .get_DNAorRNA_palindrome_L2R_lkup()
+        	} else {
+        	    L2R_lkup <- NULL
+        	}
+        
+        max.mismatch <- normargMaxMismatch(max.mismatch)
+        .Call2("palindrome_arm_length",
+                            a$subject, start(a$ranges), end(a$ranges), max.mismatch, allow.wobble, L2R_lkup,
+                            PACKAGE="Biostrings")
     }
 )
 
