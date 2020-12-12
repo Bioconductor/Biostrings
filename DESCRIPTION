@@ -7,12 +7,12 @@ biocViews: SequenceMatching, Alignment, Sequencing, Genetics,
 	DataImport, DataRepresentation, Infrastructure
 URL: https://bioconductor.org/packages/Biostrings
 BugReports: https://github.com/Bioconductor/Biostrings/issues
-Version: 2.59.0
+Version: 2.59.1
 License: Artistic-2.0
 Encoding: UTF-8
 Author: H. Pagès, P. Aboyoun, R. Gentleman, and S. DebRoy
 Maintainer: H. Pagès <hpages.on.github@gmail.com>
-Depends: R (>= 3.5.0), methods, BiocGenerics (>= 0.31.5),
+Depends: R (>= 4.0.0), methods, BiocGenerics (>= 0.37.0),
 	S4Vectors (>= 0.27.12), IRanges (>= 2.23.9), XVector (>= 0.29.2)
 Imports: methods, utils, grDevices, graphics, stats, crayon
 LinkingTo: S4Vectors, IRanges, XVector
