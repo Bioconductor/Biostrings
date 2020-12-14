@@ -18,8 +18,8 @@ static int is_match(char c1, char c2, int allow_wobble1,
 	}
 	if (allow_wobble1) {
 		return c1 == c2 ||
-			(c1==2 && c2==8) || // G and T/U
-			(c1==1 && c2==4); // T/U and G
+			(c1 == 2 && c2 == 8) || // G and T/U
+			(c1 == 1 && c2 == 4); // T/U and G
 	} else {
 		return c1 == c2;
 	}
@@ -49,8 +49,7 @@ static void get_find_palindromes_at(const char *x, int x_len,
 				arms[count] = arm_len;
 				count++;
 			}
-			if (ismatch ||
-			    nmis++ < max_nmis) {
+			if (ismatch || nmis++ < max_nmis) {
 				arm_len++;
 				goto next;
 			}
@@ -134,17 +133,13 @@ SEXP find_palindromes(SEXP x, SEXP min_armlength, SEXP max_looplength,
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP palindrome_arm_length(SEXP x, SEXP begin, SEXP end, SEXP max_mismatch, SEXP allow_wobble, SEXP L2R_lkup)
+SEXP palindrome_arm_length(SEXP x, SEXP max_mismatch, SEXP allow_wobble, SEXP L2R_lkup)
 {
-	Chars_holder x_holder;
-	int x_len, max_nmis, lkup_len, allow_wobble1;
+	XStringSet_holder x_holder = _hold_XStringSet(x);
+	int x_len = _get_XStringSet_length(x);
+	int max_nmis, lkup_len, allow_wobble1;
 	const int *lkup;
-	int *b = INTEGER(begin);
-	int *e = INTEGER(end);
-	int l = length(begin);
 
-	x_holder = hold_XRaw(x);
-	x_len = x_holder.length;
 	max_nmis = INTEGER(max_mismatch)[0];
 	allow_wobble1 = INTEGER(allow_wobble)[0];
 	if (L2R_lkup == R_NilValue) {
@@ -156,12 +151,14 @@ SEXP palindrome_arm_length(SEXP x, SEXP begin, SEXP end, SEXP max_mismatch, SEXP
 	}
 	
 	SEXP ans;
-	PROTECT(ans = allocVector(INTSXP, l));
+	PROTECT(ans = NEW_INTEGER(x_len));
 	int *rans = INTEGER(ans);
 	
-	for (int i = 0; i < l; i++)
-		rans[i] = get_palindrome_arm_length(x_holder.ptr + b[i] - 1,
-			e[i] - b[i] + 1, max_nmis, allow_wobble1, lkup, lkup_len);
+	for (int i = 0; i < x_len; i++) {
+		Chars_holder x_elt_holder = _get_elt_from_XStringSet_holder(&x_holder, i);
+		rans[i] = get_palindrome_arm_length(x_elt_holder.ptr, x_elt_holder.length,
+											max_nmis, allow_wobble1, lkup, lkup_len);
+	}
 	
 	UNPROTECT(1);
 	
