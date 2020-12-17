@@ -148,9 +148,9 @@ setMethod("findPalindromes", "MaskedXString",
         stop("x must be DNA or RNA if 'allow.wobble' is TRUE")
 	
     max.mismatch <- normargMaxMismatch(max.mismatch)
-    armlength <- .Call2("palindrome_arm_length",
-                        x, max.mismatch, allow.wobble, L2R_lkup,
-                        PACKAGE="Biostrings")
+    .Call2("palindrome_arm_length",
+           x, max.mismatch, allow.wobble, L2R_lkup,
+           PACKAGE="Biostrings")
 }
 
 setGeneric("palindromeArmLength", signature="x",
@@ -158,13 +158,18 @@ setGeneric("palindromeArmLength", signature="x",
 )
 
 setMethod("palindromeArmLength", "XString",
-    function(x, max.mismatch=0, allow.wobble=FALSE) .palindrome_arm_length(x, max.mismatch, allow.wobble, NULL)
+    function(x, max.mismatch=0, allow.wobble=FALSE)
+    {
+    	    x <- as(x, "XStringSet")
+        .palindrome_arm_length(x, max.mismatch, allow.wobble, NULL)
+    }
 )
 
 setMethod("palindromeArmLength", "DNAString",
     function(x, max.mismatch=0, allow.wobble=FALSE)
     {
         L2R_lkup <- .get_DNAorRNA_palindrome_L2R_lkup()
+        x <- as(x, "DNAStringSet")
         .palindrome_arm_length(x, max.mismatch, allow.wobble, L2R_lkup)
     }
 )
@@ -173,6 +178,7 @@ setMethod("palindromeArmLength", "RNAString",
     function(x, max.mismatch=0, allow.wobble=FALSE)
     {
         L2R_lkup <- .get_DNAorRNA_palindrome_L2R_lkup()
+        x <- as(x, "RNAStringSet")
         .palindrome_arm_length(x, max.mismatch, allow.wobble, L2R_lkup)
     }
 )
