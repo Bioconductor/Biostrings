@@ -171,8 +171,9 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
     \code{mcols(x)$qualities}). If \code{x} has no \code{qualities} metadata
     column and the \code{qualities} argument is omitted, then the fake
     quality ';' is assigned to each letter in \code{x} and written to
-    the FASTQ file. If \code{x} is a \code{\link{QualityScaledXStringSet}}, the
-    contained qualites are used automatically.
+    the FASTQ file. If \code{x} is a \code{\link{QualityScaledXStringSet}} and
+    \code{qualities} is not defined, the \code{qualities} contained in \code{x}
+    are used automatically.
   }
   \item{objname}{
     The name of the serialized object.
