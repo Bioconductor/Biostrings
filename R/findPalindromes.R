@@ -43,7 +43,7 @@
     if (!isTRUEorFALSE(allow.wobble))
         stop("'allow.wobble' must be a logical")
     if (allow.wobble && !(seqtype(subject) %in% c("DNA", "RNA")))
-    	    stop("subject must be DNA or RNA if 'allow.wobble' is TRUE")
+        stop("subject must be DNA or RNA if 'allow.wobble' is TRUE")
     ## check max.mismatch
     max.mismatch <- normargMaxMismatch(max.mismatch)
     C_ans <- .Call2("find_palindromes",
@@ -142,11 +142,10 @@ setMethod("findPalindromes", "MaskedXString",
 
 .palindrome_arm_length <- function(x, max.mismatch, allow.wobble, L2R_lkup)
 {
-	if (!isTRUEorFALSE(allow.wobble))
+    if (!isTRUEorFALSE(allow.wobble))
         stop("'allow.wobble' must be a logical")
     if (allow.wobble && !(seqtype(x) %in% c("DNA", "RNA")))
         stop("x must be DNA or RNA if 'allow.wobble' is TRUE")
-	
     max.mismatch <- normargMaxMismatch(max.mismatch)
     .Call2("palindrome_arm_length",
            x, max.mismatch, allow.wobble, L2R_lkup,
@@ -160,7 +159,7 @@ setGeneric("palindromeArmLength", signature="x",
 setMethod("palindromeArmLength", "XString",
     function(x, max.mismatch=0, allow.wobble=FALSE)
     {
-    	    x <- as(x, "XStringSet")
+        x <- as(x, "XStringSet")
         .palindrome_arm_length(x, max.mismatch, allow.wobble, NULL)
     }
 )
@@ -188,13 +187,11 @@ setMethod("palindromeArmLength", "XStringViews",
     {
         if (length(x) == 0)
             return(integer(0))
-        
         if (seqtype(x) %in% c("DNA", "RNA")) {
-        	    	L2R_lkup <- .get_DNAorRNA_palindrome_L2R_lkup()
-        	} else {
-        	    L2R_lkup <- NULL
-        	}
-        
+            L2R_lkup <- .get_DNAorRNA_palindrome_L2R_lkup()
+        } else {
+            L2R_lkup <- NULL
+        }
         max.mismatch <- normargMaxMismatch(max.mismatch)
         x <- fromXStringViewsToStringSet(x, out.of.limits="error")
         .palindrome_arm_length(x, max.mismatch, allow.wobble, L2R_lkup)
@@ -206,13 +203,11 @@ setMethod("palindromeArmLength", "XStringSet",
     {
         if (length(x) == 0)
             return(integer(0))
-        
         if (seqtype(x) %in% c("DNA", "RNA")) {
-        	    	L2R_lkup <- .get_DNAorRNA_palindrome_L2R_lkup()
-        	} else {
-        	    L2R_lkup <- NULL
-        	}
-        
+            L2R_lkup <- .get_DNAorRNA_palindrome_L2R_lkup()
+        } else {
+            L2R_lkup <- NULL
+        }
         max.mismatch <- normargMaxMismatch(max.mismatch)
         .palindrome_arm_length(x, max.mismatch, allow.wobble, L2R_lkup)
     }

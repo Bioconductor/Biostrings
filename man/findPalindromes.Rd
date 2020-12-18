@@ -115,7 +115,7 @@ palindromeRightArm(x, max.mismatch=0, allow.wobble=FALSE)
   same length as \code{x}.
 }
 
-\author{H. Pagès}
+\author{H. Pagès, with contributions from Erik Wright and Thomas McCarthy}
 
 \seealso{
   \code{\link{maskMotif}},
@@ -164,9 +164,9 @@ findPalindromes(x4, max.looplength=19)
 
 ## Treat wobble base pairings as matches:
 x5 <- RNAString("AUGUCUNNNNAGGCGU")
-findPalindromes(x5, min.looplength=4, max.looplength=4)
-findPalindromes(x5, max.mismatch=2, min.looplength=4, max.looplength=4)
-findPalindromes(x5, allow.wobble=TRUE, min.looplength=4, max.looplength=4)
+findPalindromes(x5, max.looplength=4, min.looplength=4)
+findPalindromes(x5, max.looplength=4, min.looplength=4, max.mismatch=2)
+findPalindromes(x5, max.looplength=4, min.looplength=4, allow.wobble=TRUE)
 
 ## A real use case:
 library(BSgenome.Dmelanogaster.UCSC.dm3)
