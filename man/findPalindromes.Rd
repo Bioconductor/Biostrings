@@ -12,6 +12,7 @@
 \alias{palindromeArmLength,DNAString-method}
 \alias{palindromeArmLength,RNAString-method}
 \alias{palindromeArmLength,XStringViews-method}
+\alias{palindromeArmLength,XStringSet-method}
 
 \alias{palindromeLeftArm}
 \alias{palindromeRightArm}
@@ -34,11 +35,12 @@
 
 \usage{
 findPalindromes(subject, min.armlength=4,
-                max.looplength=1, min.looplength=0, max.mismatch=0)
+                max.looplength=1, min.looplength=0, max.mismatch=0,
+                allow.wobble=FALSE)
 
-palindromeArmLength(x, max.mismatch=0)
-palindromeLeftArm(x, max.mismatch=0)
-palindromeRightArm(x, max.mismatch=0)
+palindromeArmLength(x, max.mismatch=0, allow.wobble=FALSE)
+palindromeLeftArm(x, max.mismatch=0, allow.wobble=FALSE)
+palindromeRightArm(x, max.mismatch=0, allow.wobble=FALSE)
 }
 
 \arguments{
@@ -63,6 +65,10 @@ palindromeRightArm(x, max.mismatch=0)
   \item{max.mismatch}{
     The maximum number of mismatching letters allowed between the 2 arms of
     the palindromes to search for.
+  }
+  \item{allow.wobble}{
+    Logical indicating whether wobble base pairs (G/U or G/T base pairings)
+    should be treated as mismatches (the default) or matches.
   }
   \item{x}{
     An \link{XString} object containing a 2-arm palindrome, or an
@@ -155,6 +161,12 @@ findPalindromes(RNAString(x3))
 ## Note that palindromes can be nested:
 x4 <- DNAString("ACGTTNAACGTCCAAAATTTTCCACGTTNAACGT")
 findPalindromes(x4, max.looplength=19)
+
+## Treat wobble base pairings as matches:
+x5 <- RNAString("AUGUCUNNNNAGGCGU")
+findPalindromes(x5, min.looplength=4, max.looplength=4)
+findPalindromes(x5, max.mismatch=2, min.looplength=4, max.looplength=4)
+findPalindromes(x5, allow.wobble=TRUE, min.looplength=4, max.looplength=4)
 
 ## A real use case:
 library(BSgenome.Dmelanogaster.UCSC.dm3)
