@@ -365,7 +365,9 @@ readAAStringSet <- function(filepath, format="fasta",
 
 .write_XStringSet_to_fastq <- function(x, filexp_list, qualities=NULL)
 {
-    if (is.null(qualities))
+    if (is(x, "QualityScaledXStringSet")) {
+        qualities <- quality(x)
+    } else if (is.null(qualities))
         qualities <- mcols(x)$qualities
     if (!is.null(qualities)) {
         if (!is(qualities, "BStringSet"))
