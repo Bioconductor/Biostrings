@@ -1,6 +1,8 @@
 #include "Biostrings.h"
 #include "XVector_interface.h"
 #include "IRanges_interface.h"
+#include <R_ext/Utils.h>
+
 
 #include <stdio.h>
 
@@ -122,6 +124,11 @@ SEXP find_palindromes(SEXP x, SEXP min_armlength, SEXP max_looplength,
 	}
 	_init_match_reporting("MATCHES_AS_RANGES", 1);
 	for (n = 0; n < x_len; n++) {
+		/* Check for an interrupt from R every 256 iterations
+		 * Benchmarking suggests checking at 2^m iterations is fastest.
+		 */
+		if (n % 256 == 0) R_CheckUserInterrupt();
+
 		/* Find palindromes centered on n. */
 		get_find_palindromes_at(x_holder.ptr, x_len,
 					n - 1 - min_loop_len1,
