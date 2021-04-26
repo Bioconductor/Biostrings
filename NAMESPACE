@@ -79,6 +79,7 @@ exportMethods(
     nchar, width,
     seqtype, "seqtype<-",
     seqinfo, "seqinfo<-",
+    getSeq,
     updateObject,
     names, "names<-", "[", "[[",
     show, showAsCell,
