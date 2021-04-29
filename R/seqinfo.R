@@ -8,7 +8,7 @@ setMethod("seqinfo", "DNAStringSet", function(x) {
     if (is.null(si)) {
         sn <- names(x)
         if (is.null(sn))
-            sn <- as.character(seq_len(length(x)))
+            sn <- as.character(seq_along(x))
         si <- Seqinfo(sn, width(x))
     }
     si
