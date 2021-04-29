@@ -48,13 +48,10 @@ metadata(probes)
 ## Get generated seqinfo table
 seqinfo(probes)
 
-## Subsetting seqinfo table to 10K seqnames
-seqinfo(probes) <- seqinfo(probes)[as.character(1:10000)]
-## See result: 10K seqnames
-seqinfo(probes)
+## Subsetting seqinfo table to 10 seqnames
+probes10 <- probes[1:10]
+seqinfo(probes10) <- seqinfo(probes)[as.character(1:10)]
+## See result: 10 seqnames
+seqinfo(probes10)
 
-## Restore generated seqinfo by setting to NULL
-metadata(probes)$seqinfo <- NULL
-## Generated seqinfo table
-seqinfo(probes)
 }
