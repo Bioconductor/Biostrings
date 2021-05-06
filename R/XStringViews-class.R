@@ -137,10 +137,16 @@ setAs("XStringSet", "Views", .XStringSetAsViews)
 setAs("XStringSet", "XStringViews", .XStringSetAsViews)
 
 setMethod("as.data.frame", "XStringViews",
-          function (x, row.names = NULL, optional = FALSE, ...)
-          {
-              as.data.frame(as(x, "XStringSet"), row.names, optional, ...)
-          })
+    function(x, row.names=NULL, optional= FALSE)
+    {
+        ans1 <- as.data.frame(as(x, "IRanges"), row.names=row.names, optional=optional)
+        ans2 <- as.data.frame(as(x, "XStringSet"), row.names=row.names, optional=optional)
+        stopifnot(ncol(ans2) == 1L)  # should never happen
+        colnames(ans2)[[1L]] <- "seq"
+        cbind(ans1, ans2)
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.
