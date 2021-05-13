@@ -1,4 +1,4 @@
-check.replace.seqinfo <- function() {
+test_replace_seqinfo <- function() {
     value <- Seqinfo(c("a", "b", "c"), c(9, 2, 0))
     x <- DNAStringSet(c(a="TTTCATAGG", b="AA"))
     ## names are not identical (length)
