@@ -96,18 +96,14 @@ SEXP AlignedXStringSet_align_aligned(SEXP alignedXStringSet, SEXP gapCode)
 	PROTECT(alignedWidth = AlignedXStringSet_nchar(alignedXStringSet));
 	PROTECT(alignedStart = NEW_INTEGER(LENGTH(alignedWidth)));
 	int totalNChars = 0;
-	const int *width_i, *start_i;
-	int *start_iPlus1;
-	for (i = 0, width_i = INTEGER(alignedWidth); i < LENGTH(alignedWidth); i++, width_i++) {
+	const int *width_i;
+	int *start_i;
+	for (i = 0, start_i = INTEGER(alignedStart), width_i = INTEGER(alignedWidth);
+	     i < LENGTH(alignedWidth);
+	     i++, start_i++, width_i++)
+	{
+		*start_i = 1 + totalNChars;
 		totalNChars += *width_i;
-	}
-	if (totalNChars > 0) {
-		INTEGER(alignedStart)[0] = 1;
-		for (i = 0, start_i = INTEGER(alignedStart), width_i = INTEGER(alignedWidth),
-				start_iPlus1 = INTEGER(alignedStart) + 1; i < LENGTH(alignedWidth) - 1;
-				i++, start_i++, width_i++, start_iPlus1++) {
-			*start_iPlus1 = *start_i + *width_i;
-		}
 	}
 	SEXP alignedStringTag;
 	PROTECT(alignedStringTag = NEW_RAW(totalNChars));
@@ -188,12 +184,12 @@ SEXP PairwiseAlignmentsSingleSubject_align_aligned(SEXP alignment, SEXP gapCode,
 	PROTECT(mappedStart = NEW_INTEGER(numberOfAlignments));
 	int totalNChars = numberOfAlignments * numberOfChars;
 	int *width_i, *start_i;
-	if (totalNChars > 0) {
-		for (i = 0, start_i = INTEGER(mappedStart), width_i = INTEGER(mappedWidth);
-				i < numberOfAlignments; i++, start_i++, width_i++) {
-			*start_i = i * numberOfChars + 1;
-			*width_i = numberOfChars;
-		}
+	for (i = 0, start_i = INTEGER(mappedStart), width_i = INTEGER(mappedWidth);
+	     i < numberOfAlignments;
+	     i++, start_i++, width_i++)
+	{
+		*start_i = i * numberOfChars + 1;
+		*width_i = numberOfChars;
 	}
 	SEXP mappedStringTag;
 	PROTECT(mappedStringTag = NEW_RAW(totalNChars));
