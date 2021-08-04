@@ -25,7 +25,7 @@ static SEXP init_numeric_vector(int n, double val, int as_integer)
 static SEXP init_numeric_matrix(int nrow, int ncol, double val, int as_integer)
 {
 	SEXP ans;
-	int i, n;
+	R_xlen_t n, i;
 
 	n = nrow * ncol;
 	if (as_integer) {
@@ -196,7 +196,7 @@ static void update_int_oligo_freqs(int *mat, int mat_nrow,
 		{
 			offset = _shift_twobit_signature(teb, *c);
 			if (offset != NA_INTEGER)
-				mat[offset * mat_nrow]++;
+				mat[(R_xlen_t) offset * mat_nrow]++;
 		}
 	} else if (step < width) {
 		/* 1 < step < width */
@@ -207,7 +207,7 @@ static void update_int_oligo_freqs(int *mat, int mat_nrow,
 		{
 			offset = _shift_twobit_signature(teb, *c);
 			if (start % step == 0 && offset != NA_INTEGER)
-				mat[offset * mat_nrow]++;
+				mat[(R_xlen_t) offset * mat_nrow]++;
 		}
 	} else {
 		/* 1 <= width <= step */
@@ -217,7 +217,7 @@ static void update_int_oligo_freqs(int *mat, int mat_nrow,
 				_shift_twobit_signature(teb, *c);
 			offset = _shift_twobit_signature(teb, *c);
 			if (offset != NA_INTEGER)
-				mat[offset * mat_nrow]++;
+				mat[(R_xlen_t) offset * mat_nrow]++;
 		}
 	}
 	return;
@@ -239,7 +239,7 @@ static void update_double_oligo_freqs(double *mat, int mat_nrow,
 		{
 			offset = _shift_twobit_signature(teb, *c);
 			if (offset != NA_INTEGER)
-				mat[offset * mat_nrow] += 1.00;
+				mat[(R_xlen_t) offset * mat_nrow] += 1.00;
 		}
 	} else if (step < width) {
 		/* 1 < step < width */
@@ -250,7 +250,7 @@ static void update_double_oligo_freqs(double *mat, int mat_nrow,
 		{
 			offset = _shift_twobit_signature(teb, *c);
 			if (start % step == 0 && offset != NA_INTEGER)
-				mat[offset * mat_nrow] += 1.00;
+				mat[(R_xlen_t) offset * mat_nrow] += 1.00;
 		}
 	} else {
 		/* 1 <= width <= step */
@@ -260,7 +260,7 @@ static void update_double_oligo_freqs(double *mat, int mat_nrow,
 				_shift_twobit_signature(teb, *c);
 			offset = _shift_twobit_signature(teb, *c);
 			if (offset != NA_INTEGER)
-				mat[offset * mat_nrow] += 1.00;
+				mat[(R_xlen_t) offset * mat_nrow] += 1.00;
 		}
 	}
 	return;
