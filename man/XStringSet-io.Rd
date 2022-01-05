@@ -116,6 +116,14 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
     in the \code{qualities} metadata column of the returned \link{DNAStringSet}
     object. Note that by default the quality strings are ignored. This
     helps reduce memory footprint if the FASTQ file contains millions of reads.
+
+    Note that using \code{\link{readQualityScaledDNAStringSet}()} is the
+    preferred way to load a set of DNA sequences and their qualities from
+    a FASTQ file into Bioconductor. Its main advantage is that it will return
+    a \link{QualityScaledDNAStringSet} object instead of a \link{DNAStringSet}
+    object, which makes handling of the qualities more convenient and less
+    error prone. See "READ A FASTQ FILE AS A QualityScaledDNAStringSet OBJECT"
+    in the Examples section below for more information.
   }
   \item{seqtype}{
     A single string specifying the type of sequences contained in the
@@ -418,7 +426,7 @@ while (TRUE) {
 ## returned as a QualityScaledDNAStringSet instead of a DNAStringSet
 ## object. See ?readQualityScaledDNAStringSet for more information.
 
-## Note that readQualityScaledDNAStringSet() is a simple wrapper to
+## Note that readQualityScaledDNAStringSet() is a simple wrapper around
 ## readDNAStringSet() that does the following if the file contains
 ## "Phred quality scores" (which is the standard Sanger variant to
 ## assess reliability of a base call):

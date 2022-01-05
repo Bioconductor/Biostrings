@@ -47,6 +47,9 @@ setMethod("seqtype", "XStringSet",
 
 ### NOT an endomorphism in general! (Because it downgrades 'x' to a
 ### B/DNA/RNA/AAStringSet instance.)
+### Also, does NOT preserve the metadata or metadata columns.
+### For the 2 reasons above, seqtype(x) <- seqtype(x) is NOT guaranteed
+### to be a no-op!
 setReplaceMethod("seqtype", "XStringSet",
     function(x, value)
     {
@@ -319,10 +322,15 @@ setMethod("XStringSet", "XStringSet",
         ans <- narrow(x, start=start, end=end, width=width, use.names=use.names)
         ## `seqtype<-` must be called even when 'seqtype' is NULL
         ## because we want to enforce downgrade to a B/DNA/RNA/AAStringSet
-        ## instance
+        ## instance.
         if (is.null(seqtype))
             seqtype <- seqtype(x)
+        ## Downgrade to a B/DNA/RNA/AAStringSet **instance** and drop the
+        ## metadata and metadata columns.
         seqtype(ans) <- seqtype
+        if (!is.null(mcols(x)))
+            warning(wmsg("metadata columns on input ", class(x), " object ",
+                         "were dropped"))
         ans
     }
 )
