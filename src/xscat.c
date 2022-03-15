@@ -3,7 +3,7 @@
 #include "IRanges_interface.h"
 #include "S4Vectors_interface.h"
 
-#include <S.h> /* for Salloc() */
+#define Salloc(n,t) (t*)S_alloc(n, sizeof(t))  /* from old <S.h> */
 
 /*
  * --- .Call ENTRY POINT ---

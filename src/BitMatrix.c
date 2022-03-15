@@ -6,12 +6,12 @@
  ****************************************************************************/
 #include "Biostrings.h"
 #include "S4Vectors_interface.h"
-#include <S.h> /* for Salloc() */
 
 #include <stdio.h>
 #include <limits.h> /* for CHAR_BIT and ULONG_MAX */
 #include <stdlib.h> /* for div() */
 
+#define Salloc(n,t) (t*)S_alloc(n, sizeof(t))  /* from old <S.h> */
 
 #define BITMATBYROW_NCOL (sizeof(int) * CHAR_BIT)
 

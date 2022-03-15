@@ -6,10 +6,11 @@
  ****************************************************************************/
 #include "Biostrings.h"
 #include "S4Vectors_interface.h"
-#include <S.h> /* for Salloc() */
 
 #include <limits.h> /* for ULONG_MAX */
 #include <time.h> /* for clock() and CLOCKS_PER_SEC */
+
+#define Salloc(n,t) (t*)S_alloc(n, sizeof(t))  /* from old <S.h> */
 
 
 /****************************************************************************

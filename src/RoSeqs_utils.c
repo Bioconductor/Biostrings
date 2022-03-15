@@ -4,7 +4,8 @@
  ****************************************************************************/
 #include "Biostrings.h"
 #include "IRanges_interface.h"
-#include <S.h> /* for Salloc() */
+
+#define Salloc(n,t) (t*)S_alloc(n, sizeof(t))  /* from old <S.h> */
 
 RoSeqs _alloc_RoSeqs(int nelt)
 {
