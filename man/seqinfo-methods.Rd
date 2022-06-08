@@ -4,7 +4,7 @@
 \alias{seqinfo,DNAStringSet-method}
 \alias{seqinfo<-,DNAStringSet-method}
 
-\title{seqinfo method for DNAStringSet objects}
+\title{seqinfo() method for DNAStringSet objects}
 
 \description{
     \code{\link[GenomeInfoDb]{seqinfo}} methods for extracting the
