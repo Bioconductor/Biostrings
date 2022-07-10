@@ -1,7 +1,10 @@
 ---
 title: "MultipleAlignment Objects"
-author: "Marc Carlson, Bioconductor Core Team"
-institute: "Fred Hutchinson Cancer Research Center,Seattle, WA"
+author: 
+- | 
+  Marc Carlson, Bioconductor Core Team\
+  Fred Hutchinson Cancer Research Center\
+  Seattle, WA
 clean: false
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
