@@ -214,5 +214,6 @@ All of the output in this vignette was produced under the following conditions:
 
 ```{r sessinfo}
 sessionInfo()
+
 ```
 
