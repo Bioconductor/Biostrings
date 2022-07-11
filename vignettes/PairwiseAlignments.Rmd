@@ -1,0 +1,930 @@
+---
+title: "Biostrings Quick Overview"
+author:
+- |
+  Patrick Aboyoun\
+  Gentleman Lab\
+  Fred Hutchinson Cancer Research Center\
+  Seattle, WA
+clean: false
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    toc: yes
+    df_print: paged
+    number_sections: yes
+---
+
+# Introduction
+
+In this document we illustrate how to perform pairwise sequence alignments using the `Biostrings` package through the use of the `pairwiseAlignment` function. This function aligns a set of `pattern` strings to a `subject` string in a global, local, or overlap (ends-free) fashion with or without affine gaps using either a fixed or quality-based substitution scoring scheme. This function's computation time is proportional to the product of the two string lengths being aligned.
+
+# Pairwise Sequence Alignment Problems
+
+The (Needleman-Wunsch) global, the (Smith-Waterman) local, and (ends-free) overlap pairwise sequence alignment problems are described as follows. Let string $S_i$ have $n_i$ characters $c_{(i,j)}$ with $j \in {1, ..., n_i}$. A pairwise sequence alignment is a mapping of strings $S_1$ and $S_2$ to gapped substrings ${S'}_1$ and ${S'}_2$ that are defined by
+
+$S'_1 = g_{(1,a_1)}c_{(1,a_1)}...g_{(1,b_1)}c_{(1,b_1)}g_{(1,b_1+1)}$
+
+$S'_2 =  g_{(2,a_2)}c_{(2,a_2)} ...g_{(2,b_2)}c_{(2,b_2)}g_{(2,b_2+1)}$
+
+where 
+
+ai, bi ∈ {1, . . . , ni} with ai ≤ bi
+
+
+$a_i, b_i \in \{1,...,n_i\}$ with $a_i \leq b_i$ 
+
+
+$g_{(i,j)} = 0$ or more gaps at the specified position $j$ for aligned string $i$
+
+
+$length({S'}_1) = length({S'}_2)$
+
+Each of these pairwise sequence alignment problems is solved by maximizing the alignment *score*. An alignment score is determined by the type of pairwise sequence alignment (global, local, overlap), which sets the $[a_i, b_i]$ ranges for the substrings; the substitution scoring scheme, which sets the distance between aligned characters; and the gap penalties, which is divided into opening and extension components. The optimal pairwise sequence alignment is the pairwise sequence alignment with the largest score for the specified alignment type, substitution scoring scheme, and gap penalties. The pairwise sequence alignment types, substitution scoring schemes, and gap penalties influence alignment scores in the following manner:
+
+**Pairwise Sequence Alignment Types**:   
+
+The type of pairwise sequence alignment determines the substring ranges to apply the substitution scoring and gap penalty schemes. For the three primary  (global, local, overlap) and two derivative (subject overlap, pattern overlap) pairwise sequence alignment types, the resulting substring ranges are as follows:
+
+- Global - $[a_1, b_1] = [1, n_1]$ and $[a_2, b_2] = [1, n_2]$
+- Local - $[a_1, b_1]$ and $[a_2, b_2]$
+- Overlap - ${[a_1, b_1] = [a_1, n_1], [a_2, b_2] = [1, b_2]}$ or $\left\{[a_1, b_1] = [1, b_1], [a_2, b_2] = [a_2, n_2]\right\}$
+- Subject Overlap - $[a_1, b_1] = [1, n_1]$ and $[a_2, b_2]$
+- Pattern Overlap - } $[a_1, b_1]$ and $[a_2, b_2] = [1, n_2]$
+
+**Substitution Scoring Schemes**:  The substitution scoring scheme sets the values for the aligned character pairings within the substring ranges determined by the type of pairwise sequence alignment. This scoring scheme can be fixed for character  pairings or quality-dependent for character pairings. (Characters that align  with a gap are penalized according to the "Gap Penalty" framework.)
+
+Fixed substitution scoring - Fixed substitution scoring schemes associate each aligned character pairing with a value. These schemes are very common and include awarding one value for a match and another for a mismatch, Point Accepted Mutation (PAM) matrices, and Block Substitution Matrix (BLOSUM) matrices.
+
+Quality-based substitution scoring - Quality-based substitution scoring schemes derive the value for the aligned character pairing based on the probabilities of character recording errors \cite{Malde:2008}.
+
+
+Let $\epsilon_i$ be the probability of a character recording error. Assuming independence within and between recordings and a uniform background frequency of the different characters, the combined error  probability of a mismatch when the underlying characters do match is $\epsilon_c = \epsilon_1 + \epsilon_2 - (n/(n-1)) * \epsilon_1 * \epsilon_2$, where $n$ is the number of characters in the underlying alphabet (e.g. in DNA and RNA, $n = 4$). Using $\epsilon_c$, the substitution score is given by $b * \log_2(\gamma_{(x,y)} * (1 - \epsilon_c) * n + (1 - \gamma_{(x,y)}) * \epsilon_c * (n/(n-1)))$, where $b$ is the bit-scaling for the scoring and $\gamma_{(x,y)}$ is the probability that characters $x$ and $y$ represents the same underlying letters (e.g. using IUPAC, $\gamma_{(A,A)} = 1$ and $\gamma_{(A,N)} = 1/4$).
+
+**Gap Penalties**: Gap penalties are the values associated with the gaps within the substring ranges determined by the type of pairwise sequence alignment. These penalties
+  are divided into *gap opening* and *gap extension* components, where the gap opening penalty is the cost for adding a new gap and the gap extension penalty is the incremental cost incurred along the length of the gap. A *constant gap penalty* occurs when there is a cost associated with opening a gap, but no cost for the length of a gap (i.e. gap extension
+  is zero). A *linear gap penalty* occurs when there is no cost associated for opening a gap (i.e. gap opening is zero), but there is a cost for the length of the gap. An *affine gap penalty* occurs when both the gap opening and gap extension have a non-zero associated cost.
+  
+# Main Pairwise Sequence Alignment Function
+
+The `pairwiseAlignment` function solves the pairwise sequence alignment problems mentioned above. It aligns one or more strings specified in the `pattern` argument with a single string specified in the `subject` argument.
+
+```{r options,echo=FALSE, message=FALSE,warning=FALSE}
+options(width=72)
+``` 
+```{r main1}
+library(Biostrings)
+pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede")
+```
+
+The type of pairwise sequence alignment is set by specifying the `type`
+argument to be one of *"global"*, *"local"*, *"overlap"*, *"global-local"*, and *"local-global"*.
+
+```{r main2}
+pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
+                  type = "local")
+```
+
+The gap penalties are regulated by the `gapOpening` and `gapExtension` arguments.
+
+```{r main3}
+pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
+                  gapOpening = 0, gapExtension = 1)
+```
+
+The substitution scoring scheme is set using three arguments, two of which are quality-based related (`patternQuality`, `subjectQuality`) and one is fixed substitution related (`substitutionMatrix`). When the substitution scores are fixed by character pairing, the
+`substituionMatrix` argument takes a matrix with the appropriate alphabets as dimension names. The `nucleotideSubstitutionMatrix` function tranlates simple match and mismatch scores to the full spectrum of IUPAC nucleotide codes.
+
+```{r main4}
+submat <-
+  matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
+diag(submat) <- 0
+pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
+                  substitutionMatrix = submat,
+                  gapOpening = 0, gapExtension = 1)
+```
+
+When the substitution scores are quality-based, the `patternQuality` and `subjectQuality` arguments represent the equivalent of $[x-99]$ numeric quality values for the respective strings, and the optional `fuzzyMatrix` argument represents how the closely two characters match on a $[0,1]$ scale. The `patternQuality` and `subjectQuality` arguments accept quality measures in either a `PhredQuality`, `SolexaQuality`, or `IlluminaQuality` scaling. For
+`PhredQuality` and `IlluminaQuality` measures $Q \in [0, 99]$, the probability of an error in the base read is given by $10^{-Q/10}$ and for `SolexaQuality` measures $Q \in [-5, 99]$,
+they are given by $1 - 1/(1 + 10^{-Q/10})$. The `qualitySubstitutionMatrices` function maps the `patternQuality` and `subjectQuality` scores to match and mismatch penalties. These three arguments will be demonstrated in later sections. 
+
+The final argument, `scoreOnly`, to the `pairwiseAlignment` function accepts a logical value to specify whether or not to return just the pairwise sequence alignment score. If `scoreOnly` is `FALSE`, the pairwise alignment with the maximum alignment score is returned. If more than one pairwise alignment has the maximum alignment score exists, the first
+alignment along the subject is returned. If there are multiple pairwise alignments with the maximum alignment score at the chosen subject location, then at each location along the alignment mismatches are given preference to insertions/deletions. For example, *pattern: [1] ATTA; subject: [1] AT-A* is chosen above *pattern: [1] ATTA; subject: [1] A-TA* if they both have the maximum alignment score.
+
+```{r main5}
+submat <-
+  matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
+diag(submat) <- 0
+pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
+                  substitutionMatrix = submat,
+                  gapOpening = 0, gapExtension = 1, scoreOnly = TRUE)
+```
+
+## Exercise 1
+
+1. Using `pairwiseAlignment`, fit the global, local, and overlap pairwise sequence alignment of the strings `"syzygy"` and `"zyzzyx"` using the default settings.
+
+2. Do any of the alignments change if the `gapExtension` argument is set to `r -Inf`?
+
+[Answers provided in section 1](#sec:Answers1).
+
+# Pairwise Sequence Alignment Classes
+
+Following the design principles of Bioconductor and R, the pairwise sequence alignment functionality in the `Biostrings` package keeps the end user close to their data through the use of five specialty classes: `PairwiseAlignments`, `PairwiseAlignmentsSingleSubject`,
+`PairwiseAlignmentsSingleSubjectSummary`, `AlignedXStringSet`, and `QualityAlignedXStringSet`. The `PairwiseAlignmentsSingleSubject` class inherits from the `PairwiseAlignments` class and they both hold the results of a fit from the `pairwiseAlignment` function, with the former class being used to represent all patterns aligning to a single subject and the latter being used to represent elementwise alignments between a set of patterns and a set of subjects.
+
+```{r classes1}
+pa1 <- pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede")
+class(pa1)
+```
+
+and the `pairwiseAlignmentSummary` function holds the results of a summarized pairwise sequence alignment.
+
+```{r classes2}
+summary(pa1)
+class(summary(pa1))
+```
+
+The `AlignedXStringSet` and `QualityAlignedXStringSet` classes hold the "gapped" ${S'}_i$ substrings with the former class holding the results when the pairwise sequence alignment is performed with a fixed substitution scoring scheme and the latter class a quality-based scoring scheme.
+
+```{r classes3}
+class(pattern(pa1))
+submat <-
+  matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
+diag(submat) <- 0
+pa2 <-
+  pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
+                    substitutionMatrix = submat,
+                    gapOpening = 0, gapExtension = 1)
+class(pattern(pa2))
+```
+
+## Exercise 2
+
+1. What is the primary benefit of formal summary classes like `PairwiseAlignmentsSingleSubjectSummary` and `summary.lm` to end users?
+
+[Answer provided in section 2](#sec:Answers2)
+
+# Pairwise Sequence Alignment Helper Functions
+
+[Tables helperfuns1](#helperfuns1), and [table:alignfuns](#alignfuns) show functions that interact with objects of class `PairwiseAlignments`, `PairwiseAlignmentsSingleSubject`, and
+`AlignedXStringSet`. These functions should be used in preference to direct slot extraction from the alignment objects.
+
+Function            |        Description 
+--------------------|------------------------------------
+`[`                 |       Extracts the specified elements of the alignment object
+`alphabet`        | Extracts the allowable characters in the original strings
+`compareStrings`  | Creates character string mashups of the alignments 
+`deletion`        | Extracts the locations of the gaps inserted into the pattern for the alignments
+`length`          | Extracts the number of patterns aligned 
+`mismatchTable`   | Creates a table for the mismatching positions 
+`nchar`           | Computes the length of "gapped" substrings 
+`nedit`           | Computes the Levenshtein edit distance of the alignments
+`indel`           |Extracts the locations of the insertion \& deletion gaps in the alignments `insertion`       | Extracts the locations of the gaps inserted into the subject for the alignments 
+`nindel`          | Computes the number of insertions \& deletions in the alignments 
+`nmatch`          | Computes the number of matching characters in the alignments 
+`nmismatch`       | Computes the number of mismatching characters in the alignments 
+`pattern`, `subject` |  Extracts the aligned pattern/subject 
+`pid`             | Computes the percent sequence identity 
+`rep`             | Replicates the elements of the alignment object 
+`score`           | Extracts the pairwise sequence alignment scores 
+`type`            | Extracts the type of pairwise sequence alignment 
+
+<a name="helperfuns1"></a> **Table 1**: Functions for `PairwiseAlignments` and `PairwiseAlignmentsSingleSubject` objects.
+
+
+
+
+Function          |  Description 
+------------------|--------------------------------------------
+`aligned`         | Creates an `XStringSet` containing either "filled-with-gaps" or degapped aligned strings 
+`as.character`    | Creates a character vector version of `aligned`
+`as.matrix`       | Creates an "exploded" character matrix version of `aligned` 
+`consensusMatrix` | Computes a consensus matrix for the alignments 
+`consensusString` | Creates the string based on a 50\% + 1 vote from the consensus matrix
+`coverage`        | Computes the alignment coverage along the subject 
+`mismatchSummary` | Summarizes the information of the `mismatchTable` 
+`summary`         | Summarizes a pairwise sequence alignment
+`toString`        | Creates a concatenated string version of `aligned`
+`Views`           | Creates an `XStringViews` representing the aligned region along the subject 
+-------------------------------------------------------------------------------------------
+<a name="helperfuns2"></a> **Table 2**: Additional functions for `PairwiseAlignmentsSingleSubject` objects.
+
+
+The `score`, `nedit`, `nmatch`, `nmismatch`, and `nchar` functions return numeric vectors
+containing information on the pairwise sequence alignment score, number of matches, number of mismatches, and number of aligned characters respectively.
+
+```{r helper1}
+submat <-
+  matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
+diag(submat) <- 0
+pa2 <-
+  pairwiseAlignment(pattern = c("succeed", "precede"), subject = "supersede",
+                    substitutionMatrix = submat,
+                    gapOpening = 0, gapExtension = 1)
+score(pa2)
+nedit(pa2)
+nmatch(pa2)
+nmismatch(pa2)
+nchar(pa2)
+aligned(pa2)
+as.character(pa2)
+as.matrix(pa2)
+consensusMatrix(pa2)
+```
+
+The `summary`, `mismatchTable`, and `mismatchSummary` functions return various summaries of the pairwise sequence alignments.
+
+```{r helper2}
+summary(pa2)
+mismatchTable(pa2)
+mismatchSummary(pa2)
+```
+
+
+Function                    | Description
+----------------------------|----------------------------------------------------------
+`[`               | Extracts the specified elements of the alignment object 
+`aligned`, `unaligned` | Extracts the aligned/unaligned strings 
+`alphabet`        | Extracts the allowable characters in the original strings 
+`as.character`, `toString` | Converts the alignments to character strings 
+`coverage`        | Computes the alignment coverage 
+`end`             | Extracts the ending index of the aligned range 
+`indel`           | Extracts the insertion/deletion locations 
+`length`          | Extracts the number of patterns aligned
+`mismatch`        | Extracts the position of the mismatches
+`mismatchSummary` | Summarizes the information of the `mismatchTable`
+`mismatchTable`   | Creates a table for the mismatching positions
+`nchar`           | Computes the length of "gapped" substrings
+`nindel`          | Computes the number of insertions/deletions in the alignments
+`nmismatch`       |Computes the number of mismatching characters in the alignments
+`rep`             | Replicates the elements of the alignment object
+`start`           | Extracts the starting index of the aligned range
+`toString`        | Creates a concatenated string containing the alignments
+`width`           | Extracts the width of the aligned range
+
+<a name="alignfuns"></a>**Table 3**: Functions for `AlignedXString` and `QualityAlignedXString` objects.
+
+
+The `pattern` and `subject` functions extract the aligned pattern and subject objects for further analysis. Most of the actions that can be performed on `PairwiseAlignments` objects can also be performed on `AlignedXStringSet` and `QualityAlignedXStringSet` objects as
+well as operations including `start`, `end`, and `width` that extracts the start, end, and width of the alignment ranges.
+
+```{r helper3}
+class(pattern(pa2))
+aligned(pattern(pa2))
+nindel(pattern(pa2))
+start(subject(pa2))
+end(subject(pa2))
+```
+
+## Exercise 3
+
+For the overlap pairwise sequence alignment of the strings `"syzygy"` and `"zyzzyx"` with the `pairwiseAlignment` default settings, perform the following operations:
+
+1. Use `nmatch` and `nmismath` to extract the number of matches and mismatches respectively.
+
+2. Use the `compareStrings` function to get the symbolic representation of the alignment.
+3. Use the `as.character` function to the get the character string versions of the alignments.
+4. Use the `pattern` function to extract the aligned pattern and apply the `mismatch` function to it to find the locations of the mismatches.
+5. Use the `subject` function to extract the aligned subject and apply the `aligned` function to it to get the aligned strings. 
+
+[Answers provided in section 3](#sec:Answers3)
+
+# Edit Distances
+
+One of the earliest uses of pairwise sequence alignment is in the area of text analysis. In 1965 Vladimir Levenshtein considered a metric, now called the  *Levenshtein edit distance*, that measures the similarity between two strings. This distance metric is equivalent to the negative of the score of a pairwise sequence alignment with a match cost of 0, a mismatch cost of -1, a gap opening penalty of 0, and a gap extension penalty of 1. 
+
+The `stringDist` uses the internals of the `pairwiseAlignment` function to calculate the Levenshtein edit distance matrix for a set of strings.  There is also an implementation of approximate string matching using Levenshtein edit distance in the `agrep` (approximate grep) function of the `base` R package. As the following example shows, it is possible to replicate the `agrep` function using the `pairwiseAlignment` function. Since the `agrep` function is
+vectorized in `x` rather than `pattern`, these arguments are flipped in the call to `pairwiseAlignment`.
+
+
+```{r editdist1}
+agrepBioC <-
+function(pattern, x, ignore.case = FALSE, value = FALSE, max.distance = 0.1)
+{
+  if (!is.character(pattern)) pattern <- as.character(pattern)
+  if (!is.character(x)) x <- as.character(x)
+  if (max.distance < 1)
+    max.distance <- ceiling(max.distance / nchar(pattern))
+  characters <- unique(unlist(strsplit(c(pattern, x), "", fixed = TRUE)))
+  if (ignore.case)
+    substitutionMatrix <-
+      outer(tolower(characters), tolower(characters), function(x,y) -as.numeric(x!=y))
+  else
+    substitutionMatrix <-
+      outer(characters, characters, function(x,y) -as.numeric(x!=y))
+  dimnames(substitutionMatrix) <- list(characters, characters)
+  distance <-
+    - pairwiseAlignment(pattern = x, subject = pattern,
+                        substitutionMatrix = substitutionMatrix,
+                        type = "local-global",
+                        gapOpening = 0, gapExtension = 1,
+                        scoreOnly = TRUE)
+  whichClose <- which(distance <= max.distance)
+  if (value)
+    whichClose <- x[whichClose]
+  whichClose
+}
+cbind(base = agrep("laysy", c("1 lazy", "1", "1 LAZY"), max = 2, value = TRUE),
+      bioc = agrepBioC("laysy", c("1 lazy", "1", "1 LAZY"), max = 2, value = TRUE))
+cbind(base = agrep("laysy", c("1 lazy", "1", "1 LAZY"), max = 2, ignore.case = TRUE),
+      bioc = agrepBioC("laysy", c("1 lazy", "1", "1 LAZY"), max = 2, ignore.case = TRUE))
+```
+
+## Exercise 4
+
+1. Use the `pairwiseAlignment` function to find the Levenshtein edit distance between `"syzygy"` and `r "zyzzyx"`.
+
+2. Use the `stringDist` function to find the Levenshtein edit distance for the vector
+`c("zyzzyx", "syzygy", "succeed", "precede", "supersede")`.
+
+[Answers provided in section 4](#sec:Answers4)
+
+# Application:  Using Evolutionary Models in Protein Alignments
+
+When proteins are believed to descend from a common ancestor, evolutionary models can be used as a guide in pairwise sequence alignments. The two most common families evolutionary models of proteins used in pairwise sequence alignments are Point Accepted Mutation (PAM) matrices, which are based on explicit evolutionary models, and Block Substitution Matrix (BLOSUM) matrices, which are based on data-derived evolution models. The `Biostrings` package contains 5 PAM and 5 BLOSUM matrices (`PAM30` `PAM40`, `PAM70`, `PAM120`, `PAM250`, `BLOSUM45`, `BLOSUM50`, `BLOSUM62`, `BLOSUM80`, and `BLOSUM100`) that can be used in the `substitutionMatrix` argument to the `pairwiseAlignment` function. Here is an example pairwise sequence alignment of amino acids from Durbin, Eddy et al being fit by the `pairwiseAlignment` function using the `BLOSUM50` matrix:
+
+```{r lkblo}
+data(BLOSUM50)
+BLOSUM50[1:4,1:4]
+nwdemo <- 
+  pairwiseAlignment(AAString("PAWHEAE"), AAString("HEAGAWGHEE"), substitutionMatrix = BLOSUM50,
+                    gapOpening = 0, gapExtension = 8)
+nwdemo
+compareStrings(nwdemo)
+pid(nwdemo)
+```
+
+## Exercise 5
+
+1. Repeat the alignment exercise above using `BLOSUM62`, a gap opening penalty of 12, and a gap extension penalty of 4. 
+
+2. Explore to find out what caused the alignment to change. [Answers provided in section 5](#sec:Answers5)
+
+
+# Application:  Removing Adapters from Sequence Reads
+
+Finding and removing uninteresting experiment process-related fragments like adapters is a common problem in genetic sequencing, and pairwise sequence alignment is well-suited to address this issue. When adapters are used to anchor or extend a sequence during the experiment process, they either intentionally or unintentionally become sequenced during the read process. The following code simulates what sequences with adapter fragments at either
+end could look like during an experiment.
+
+```{r adapter1}
+simulateReads <-
+function(N, adapter, experiment, substitutionRate = 0.01, gapRate = 0.001) {
+  chars <- strsplit(as.character(adapter), "")[[1]]
+  sapply(seq_len(N), function(i, experiment, substitutionRate, gapRate) {
+    width <- experiment[["width"]][i]
+    side <- experiment[["side"]][i]
+    randomLetters <-
+      function(n) sample(DNA_ALPHABET[1:4], n, replace = TRUE) 
+    randomLettersWithEmpty <-
+      function(n)
+      sample(c("", DNA_ALPHABET[1:4]), n, replace = TRUE,
+             prob = c(1 - gapRate, rep(gapRate/4, 4)))
+    nChars <- length(chars)
+    value <-
+      paste(ifelse(rbinom(nChars,1,substitutionRate), randomLetters(nChars), chars),
+            randomLettersWithEmpty(nChars),
+            sep = "", collapse = "")
+    if (side)
+      value <-
+        paste(c(randomLetters(36 - width), substring(value, 1, width)),
+                sep = "", collapse = "")
+    else
+      value <-
+        paste(c(substring(value, 37 - width, 36), randomLetters(36 - width)),
+                sep = "", collapse = "")
+    value
+  }, experiment = experiment, substitutionRate = substitutionRate, gapRate = gapRate)
+}
+adapter <- DNAString("GATCGGAAGAGCTCGTATGCCGTCTTCTGCTTGAAA")
+set.seed(123)
+N <- 1000
+experiment <-
+  list(side = rbinom(N, 1, 0.5), width = sample(0:36, N, replace = TRUE))
+table(experiment[["side"]], experiment[["width"]])
+adapterStrings <-
+  simulateReads(N, adapter, experiment, substitutionRate = 0.01, gapRate = 0.001)
+adapterStrings <- DNAStringSet(adapterStrings)
+```
+
+These simulated strings above have 0 to 36 characters from the adapters attached to either end. We can use completely random strings as a baseline for any pairwise sequence alignment methodology we develop to remove the adapter characters.
+
+```{r adapter2}
+M <- 5000
+randomStrings <-
+  apply(matrix(sample(DNA_ALPHABET[1:4], 36 * M, replace = TRUE),
+               nrow = M), 1, paste, collapse = "")
+randomStrings <- DNAStringSet(randomStrings)
+```
+
+Since edit distances are easy to explain, it serves as a good place to start for developing a adapter removal methodology. Unfortunately given that it is based on a global alignment, it only is useful for filtering out sequences that are derived primarily from the adapter.
+
+```{r adapter3}
+## Method 1:  Use edit distance with an FDR of 1e-03
+submat1 <- nucleotideSubstitutionMatrix(match = 0, mismatch = -1, baseOnly = TRUE)
+randomScores1 <-
+  pairwiseAlignment(randomStrings, adapter, substitutionMatrix = submat1,
+                    gapOpening = 0, gapExtension = 1, scoreOnly = TRUE)
+quantile(randomScores1, seq(0.99, 1, by = 0.001))
+adapterAligns1 <-
+  pairwiseAlignment(adapterStrings, adapter, substitutionMatrix = submat1,
+                    gapOpening = 0, gapExtension = 1)
+table(score(adapterAligns1) > quantile(randomScores1, 0.999), experiment[["width"]])
+```
+
+One improvement to removing adapters is to look at consecutive matches anywhere within the sequence. This is more versatile than the edit distance method, but it requires a relatively large number of consecutive matches and is susceptible to issues related to error related substitutions and insertions/deletions.
+
+```{r adapter4}
+## Method 2:  Use consecutive matches anywhere in string with an FDR of 1e-03
+submat2 <- nucleotideSubstitutionMatrix(match = 1, mismatch = -Inf, baseOnly = TRUE)
+randomScores2 <-
+  pairwiseAlignment(randomStrings, adapter, substitutionMatrix = submat2,
+                    type = "local", gapOpening = 0, gapExtension = Inf,
+                    scoreOnly = TRUE)
+quantile(randomScores2, seq(0.99, 1, by = 0.001))
+adapterAligns2 <-
+  pairwiseAlignment(adapterStrings, adapter, substitutionMatrix = submat2,
+                    type = "local", gapOpening = 0, gapExtension = Inf)
+table(score(adapterAligns2) > quantile(randomScores2, 0.999), experiment[["width"]])
+# Determine if the correct end was chosen
+table(start(pattern(adapterAligns2)) > 37 - end(pattern(adapterAligns2)),
+      experiment[["side"]])
+```
+
+Limiting consecutive matches to the ends provides better results, but it doesn't resolve the issues related to substitutions and insertions/deletions errors.
+
+```{r adapter5}
+## Method 3:  Use consecutive matches on the ends with an FDR of 1e-03
+submat3 <- nucleotideSubstitutionMatrix(match = 1, mismatch = -Inf, baseOnly = TRUE)
+randomScores3 <-
+  pairwiseAlignment(randomStrings, adapter, substitutionMatrix = submat3,
+                    type = "overlap", gapOpening = 0, gapExtension = Inf,
+                    scoreOnly = TRUE)
+quantile(randomScores3, seq(0.99, 1, by = 0.001))
+adapterAligns3 <-
+  pairwiseAlignment(adapterStrings, adapter, substitutionMatrix = submat3,
+                    type = "overlap", gapOpening = 0, gapExtension = Inf)
+table(score(adapterAligns3) > quantile(randomScores3, 0.999), experiment[["width"]])
+# Determine if the correct end was chosen
+table(end(pattern(adapterAligns3)) == 36, experiment[["side"]])
+```
+
+Allowing for substitutions and insertions/deletions errors in the pairwise sequence alignments provides much better results for finding adapter fragments.
+
+```{r adapter6}
+## Method 4:  Allow mismatches and indels on the ends with an FDR of 1e-03
+randomScores4 <-
+  pairwiseAlignment(randomStrings, adapter, type = "overlap", scoreOnly = TRUE)
+quantile(randomScores4, seq(0.99, 1, by = 0.001))
+adapterAligns4 <-
+  pairwiseAlignment(adapterStrings, adapter, type = "overlap")
+table(score(adapterAligns4) > quantile(randomScores4, 0.999), experiment[["width"]])
+# Determine if the correct end was chosen
+table(end(pattern(adapterAligns4)) == 36, experiment[["side"]])
+```
+
+Using the results that allow for substitutions and insertions/deletions errors, the cleaned sequence fragments can be generated as follows:
+
+```{r adapter7}
+## Method 4 continued:  Remove adapter fragments
+fragmentFound <-
+  score(adapterAligns4) > quantile(randomScores4, 0.999)
+fragmentFoundAt1 <-
+  fragmentFound & (start(pattern(adapterAligns4)) == 1)
+fragmentFoundAt36 <-
+  fragmentFound & (end(pattern(adapterAligns4)) == 36)
+cleanedStrings <- as.character(adapterStrings)
+cleanedStrings[fragmentFoundAt1] <-
+  as.character(narrow(adapterStrings[fragmentFoundAt1], end = 36,
+         width = 36 - end(pattern(adapterAligns4[fragmentFoundAt1]))))
+cleanedStrings[fragmentFoundAt36] <-
+  as.character(narrow(adapterStrings[fragmentFoundAt36], start = 1,
+         width = start(pattern(adapterAligns4[fragmentFoundAt36])) - 1))
+cleanedStrings <- DNAStringSet(cleanedStrings)
+cleanedStrings
+```
+
+## Exercise 6
+
+1. Rerun the simulation time using the `simulateReads` function with a `substitutionRate` of 0.005 and `gapRate` of 0.0005. How do the different pairwise sequence alignment methods compare?
+
+2. (Advanced) Modify the `simulateReads` function to accept different equal length adapters on either side (left \& right) of the reads. How would the methods for trimming the reads change?
+
+[Answers provided in section 6](#sec:Answers6)
+
+# Application:  Quality Assurance in Sequencing Experiments
+
+Due to its flexibility, the `pairwiseAlignment` function is able to diagnose sequence matching-related issues that arise when `matchPDict` and its related functions don't find a match. This section contains an example involving a short read Solexa sequencing experiment 
+of bacteriophage $\phi$ X174 DNA produced by New England BioLabs (NEB). This experiment contains slightly less than 5000 unique short reads in `srPhiX174`, with quality measures in `quPhiX174`, and frequency for those short reads in `wtPhiX174`.
+
+In order to demonstrate how to find sequence differences in the target, these short reads will be compared against the bacteriophage $\phi$ X174 genome NC\_001422 from the GenBank database.
+
+```{r genome1}
+data(phiX174Phage)
+genBankPhage <- phiX174Phage[[1]]
+nchar(genBankPhage)
+data(srPhiX174)
+srPhiX174
+quPhiX174
+summary(wtPhiX174)
+fullShortReads <- rep(srPhiX174, wtPhiX174)
+srPDict <- PDict(fullShortReads)
+table(countPDict(srPDict, genBankPhage))
+```
+
+For these short reads, the `pairwiseAlignment` function finds that the small number of perfect matches is due to two locations on the bacteriophage $\phi$X174 genome.
+
+Unlike the `countPDict` function, the `pairwiseAlignment` function works off of the original strings, rather than `PDict` processed strings, and to be computationally efficient it is recommended that the unique sequences are supplied to the `pairwiseAlignment` function, and the frequencies of those sequences are supplied to the `weight` argument of functions like `summary`, `mismatchSummary`, and `coverage`. For the purposes of this exercise, a substring of the GenBank bacteriophage $\phi$ X174 genome is supplied to the `subject` argument of the `pairwiseAlignment` function to reduce the computation time.
+
+```{r genome2}
+genBankSubstring <- substring(genBankPhage, 2793-34, 2811+34)
+genBankAlign <-
+  pairwiseAlignment(srPhiX174, genBankSubstring,
+                    patternQuality = SolexaQuality(quPhiX174),
+                    subjectQuality = SolexaQuality(99L),
+                    type = "global-local")
+summary(genBankAlign, weight = wtPhiX174)
+revisedPhage <-
+  replaceLetterAt(genBankPhage, c(2793, 2811), "TT")
+table(countPDict(srPDict, revisedPhage))
+```
+
+The following plot shows the coverage of the aligned short reads along the substring of the bacteriophage $\phi$ X174 genome. Applying the `slice` function to the coverage shows the entire substring is covered by aligned short reads.
+
+```{r genome3, fig=TRUE}
+genBankCoverage <- coverage(genBankAlign, weight = wtPhiX174)
+plot((2793-34):(2811+34), as.integer(genBankCoverage), xlab = "Position", ylab = "Coverage",
+     type = "l")
+nchar(genBankSubstring)
+slice(genBankCoverage, lower = 1)
+```
+
+## Exercise 7
+
+1. Rerun the global-local alignment of the short reads against the entire genome. (This may take a few minutes.)
+2. Plot the coverage of these alignments and use the `slice` function to find the ranges of alignment. Are there any alignments outside of the substring region that was used above?
+
+3. Use the `reverseComplement` function on the bacteriophage $\phi$ X174 genome. Do any short reads have a higher alignment score on this new sequence than on the original sequence?
+
+[Answers provided in section 7](sec:Answers7)
+
+# Computation Profiling
+
+The `pairwiseAlignment` function uses a dynamic programming algorithm based on the Needleman-Wunsch and Smith-Waterman algorithms for global and local pairwise sequence alignments respectively. The algorithm consumes memory and computation time proportional to the product of the length of the two strings being aligned.
+
+```{r profiling1, fig=TRUE}
+N <- as.integer(seq(500, 5000, by = 500))
+timings <- rep(0, length(N))
+names(timings) <- as.character(N)
+for (i in seq_len(length(N))) {
+  string1 <- DNAString(paste(sample(DNA_ALPHABET[1:4], N[i], replace = TRUE), collapse = ""))
+  string2 <- DNAString(paste(sample(DNA_ALPHABET[1:4], N[i], replace = TRUE), collapse = ""))
+  timings[i] <- system.time(pairwiseAlignment(string1, string2, type = "global"))[["user.self"]]
+}
+timings
+coef(summary(lm(timings ~ poly(N, 2))))
+plot(N, timings, xlab = "String Size, Both Strings", ylab = "Timing (sec.)", type = "l",
+     main = "Global Pairwise Sequence Alignment Timings")
+```
+
+When a problem only requires the pairwise sequence alignment score, setting the `scoreOnly` argument to `TRUE` will more than halve the computation time.
+
+```{r profiling2}
+scoreOnlyTimings <- rep(0, length(N))
+names(scoreOnlyTimings) <- as.character(N)
+for (i in seq_len(length(N))) {
+  string1 <- DNAString(paste(sample(DNA_ALPHABET[1:4], N[i], replace = TRUE), collapse = ""))
+  string2 <- DNAString(paste(sample(DNA_ALPHABET[1:4], N[i], replace = TRUE), collapse = ""))
+  scoreOnlyTimings[i] <- system.time(pairwiseAlignment(string1, string2, type = "global", scoreOnly = TRUE))[["user.self"]]
+}
+scoreOnlyTimings
+round((timings - scoreOnlyTimings) / timings, 2)
+```
+
+## Exercise 8
+
+1. Rerun the first set of profiling code, but this time fix the number of characters in `string1` to 35 and have the number of characters in `string2` range from 5000, 50000, by increments of 5000. What is the computational order of this simulation exercise?
+
+2. Rerun the second set of profiling code using the simulations from the previous exercise with `scoreOnly` argument set to `TRUE`. Is is still twice as fast? 
+
+[Answers provided in section 8](#sec:Answers8)
+
+# Computing alignment consensus matrices
+
+The `consensusMatrix` function is provided for computing a consensus matrix for a set of equal-length strings assumed to be aligned. To illustrate, the following application assumes the ORF data to be aligned for the first 10 positions (patently false):
+
+```{r doal}
+file <- system.file("extdata", "someORF.fa", package="Biostrings")
+orf <- readDNAStringSet(file)
+orf
+orf10 <- DNAStringSet(orf, end=10)
+consensusMatrix(orf10, as.prob=TRUE, baseOnly=TRUE)
+```
+
+The information content as defined by Hertz and Stormo 1995 is computed as follows:
+
+```{r infco}
+informationContent <- function(Lmers) {
+ zlog <- function(x) ifelse(x==0,0,log(x))
+ co <- consensusMatrix(Lmers, as.prob=TRUE)
+ lets <- rownames(co)
+ fr <- alphabetFrequency(Lmers, collapse=TRUE)[lets]
+ fr <- fr / sum(fr)
+ sum(co*zlog(co/fr), na.rm=TRUE)
+}
+informationContent(orf10)
+```
+
+# Exercise Answers
+
+<a name="sec:Answers1"></a>
+## Exercise 1
+
+1. Using `pairwiseAlignment`, fit the global, local, and overlap pairwise sequence alignment of the strings `"syzygy"` and `"zyzzyx"` using the default settings.
+
+```{r ans1a}
+pairwiseAlignment("zyzzyx", "syzygy")
+pairwiseAlignment("zyzzyx", "syzygy", type = "local")
+pairwiseAlignment("zyzzyx", "syzygy", type = "overlap")
+```
+
+2. Do any of the alignments change if the `gapExtension` argument is set to `-Inf`? *Yes, the overlap pairwise sequence alignment changes.*
+
+
+```{r ans1b}
+pairwiseAlignment("zyzzyx", "syzygy", type = "overlap", gapExtension = Inf)
+```
+
+<a name="sec:Answers2"></a>
+## Exercise 2
+
+
+1. What is the primary benefit of formal summary classes like `PairwiseAlignmentsSingleSubjectSummary` and `summary.lm` to end users?
+
+*These classes allow the end user to extract the summary output for further operations.*
+
+```{r ans2a}
+ex2 <- summary(pairwiseAlignment("zyzzyx", "syzygy"))
+nmatch(ex2) / nmismatch(ex2)
+```
+
+## Exercise 3
+<a name="sec:Answers3"></a>
+
+For the overlap pairwise sequence alignment of the strings `"syzygy"` and `"zyzzyx"` with the `pairwiseAlignment` default settings, perform the following operations:
+
+```{r ans3}
+ex3 <- pairwiseAlignment("zyzzyx", "syzygy", type = "overlap")
+```
+
+1. Use `nmatch` and `nmismath` to extract the number of matches and mismatches respectively.
+
+```{r ans3a}
+nmatch(ex3)
+nmismatch(ex3)
+```
+
+2. Use the `compareStrings` function to get the symbolic representation of the alignment.
+
+```{r ans3b}
+compareStrings(ex3)
+```
+
+3. Use the `as.character` function to the get the character string versions of the alignments.
+
+```{r ans3c}
+as.character(ex3)
+```
+
+4. Use the `pattern` function to extract the aligned pattern and apply the `mismatch` function to it to find the locations of the mismatches.
+
+```{r ans3d}
+mismatch(pattern(ex3))
+```
+
+5. Use the `subject` function to extract the aligned subject and apply the `aligned` function to it to get the aligned strings.
+
+```{r ans3e}
+aligned(subject(ex3))
+```
+
+<a name="sec:Answers4"></a>
+## Exercise 4
+
+
+1. Use the `pairwiseAlignment` function to find the Levenshtein edit distance between `r "syzygy"` and `r "zyzzyx"`.
+
+```{r ans4a}
+submat <- matrix(-1, nrow = 26, ncol = 26, dimnames = list(letters, letters))
+diag(submat) <- 0
+- pairwiseAlignment("zyzzyx", "syzygy", substitutionMatrix = submat,
+                    gapOpening = 0, gapExtension = 1, scoreOnly = TRUE)
+```
+
+2. Use the `stringDist` function to find the Levenshtein edit distance for the vector `r c("zyzzyx", "syzygy", "succeed", "precede", "supersede")`.
+
+```{r ans4b}
+stringDist(c("zyzzyx", "syzygy", "succeed", "precede", "supersede"))
+```
+
+<a name="sec:Answers5"></a>
+## Exercise 5
+
+1. Repeat the alignment exercise above using `BLOSUM62`, a gap opening penalty of 12, and a gap extension penalty of 4.
+
+```{r ans5a}
+data(BLOSUM62)
+pairwiseAlignment(AAString("PAWHEAE"), AAString("HEAGAWGHEE"), substitutionMatrix = BLOSUM62,
+                  gapOpening = 12, gapExtension = 4)
+```
+
+2.  Explore to find out what caused the alignment to change. *The sift in gap penalties favored infrequent long gaps to frequent short ones.*
+
+<a name="sec:Answers6"></a>
+## Exercise 6
+
+
+1. Rerun the simulation time using the `simulateReads` function with a `substitutionRate` of 0.005 and `gapRate` of 0.0005. How do the different pairwise sequence alignment methods compare? *The different methods are much more comprobable when the error rates are lower.*
+
+```{r ans6a}
+adapter <- DNAString("GATCGGAAGAGCTCGTATGCCGTCTTCTGCTTGAAA")
+set.seed(123)
+N <- 1000
+experiment <-
+  list(side = rbinom(N, 1, 0.5), width = sample(0:36, N, replace = TRUE))
+table(experiment[["side"]], experiment[["width"]])
+ex6Strings <-
+  simulateReads(N, adapter, experiment, substitutionRate = 0.005, gapRate = 0.0005)
+ex6Strings <- DNAStringSet(ex6Strings)
+ex6Strings
+## Method 1:  Use edit distance with an FDR of 1e-03
+submat1 <- nucleotideSubstitutionMatrix(match = 0, mismatch = -1, baseOnly = TRUE)
+quantile(randomScores1, seq(0.99, 1, by = 0.001))
+ex6Aligns1 <-
+  pairwiseAlignment(ex6Strings, adapter, substitutionMatrix = submat1,
+                    gapOpening = 0, gapExtension = 1)
+table(score(ex6Aligns1) > quantile(randomScores1, 0.999), experiment[["width"]])
+## Method 2:  Use consecutive matches anywhere in string with an FDR of 1e-03
+submat2 <- nucleotideSubstitutionMatrix(match = 1, mismatch = -Inf, baseOnly = TRUE)
+quantile(randomScores2, seq(0.99, 1, by = 0.001))
+ex6Aligns2 <-
+  pairwiseAlignment(ex6Strings, adapter, substitutionMatrix = submat2,
+                    type = "local", gapOpening = 0, gapExtension = Inf)
+table(score(ex6Aligns2) > quantile(randomScores2, 0.999), experiment[["width"]])
+# Determine if the correct end was chosen
+table(start(pattern(ex6Aligns2)) > 37 - end(pattern(ex6Aligns2)),
+      experiment[["side"]])
+## Method 3:  Use consecutive matches on the ends with an FDR of 1e-03
+submat3 <- nucleotideSubstitutionMatrix(match = 1, mismatch = -Inf, baseOnly = TRUE)
+ex6Aligns3 <-
+  pairwiseAlignment(ex6Strings, adapter, substitutionMatrix = submat3,
+                    type = "overlap", gapOpening = 0, gapExtension = Inf)
+table(score(ex6Aligns3) > quantile(randomScores3, 0.999), experiment[["width"]])
+# Determine if the correct end was chosen
+table(end(pattern(ex6Aligns3)) == 36, experiment[["side"]])
+## Method 4:  Allow mismatches and indels on the ends with an FDR of 1e-03
+quantile(randomScores4, seq(0.99, 1, by = 0.001))
+ex6Aligns4 <- pairwiseAlignment(ex6Strings, adapter, type = "overlap")
+table(score(ex6Aligns4) > quantile(randomScores4, 0.999), experiment[["width"]])
+# Determine if the correct end was chosen
+table(end(pattern(ex6Aligns4)) == 36, experiment[["side"]])
+```
+
+2. (Advanced) Modify the `simulateReads` function to accept different equal length adapters on either side (left \& right) of the reads. How would the methods for trimming the reads change?
+
+```{r ans6b}
+simulateReads <-
+function(N, left, right = left, experiment, substitutionRate = 0.01, gapRate = 0.001) {
+  leftChars <- strsplit(as.character(left), "")[[1]]
+  rightChars <- strsplit(as.character(right), "")[[1]]
+  if (length(leftChars) != length(rightChars))
+    stop("left and right adapters must have the same number of characters")
+  nChars <- length(leftChars)
+  sapply(seq_len(N), function(i) {
+    width <- experiment[["width"]][i]
+    side <- experiment[["side"]][i]
+    randomLetters <-
+      function(n) sample(DNA_ALPHABET[1:4], n, replace = TRUE) 
+    randomLettersWithEmpty <-
+      function(n)
+      sample(c("", DNA_ALPHABET[1:4]), n, replace = TRUE,
+             prob = c(1 - gapRate, rep(gapRate/4, 4)))
+    if (side) {
+      value <-
+        paste(ifelse(rbinom(nChars,1,substitutionRate), randomLetters(nChars), rightChars),
+              randomLettersWithEmpty(nChars),
+              sep = "", collapse = "")
+      value <-
+        paste(c(randomLetters(36 - width), substring(value, 1, width)),
+                sep = "", collapse = "")
+    } else {
+      value <-
+        paste(ifelse(rbinom(nChars,1,substitutionRate), randomLetters(nChars), leftChars),
+              randomLettersWithEmpty(nChars),
+              sep = "", collapse = "")
+      value <-
+        paste(c(substring(value, 37 - width, 36), randomLetters(36 - width)),
+                sep = "", collapse = "")
+    }
+    value
+  })
+}
+leftAdapter <- adapter
+rightAdapter <- reverseComplement(adapter)
+ex6LeftRightStrings <- simulateReads(N, leftAdapter, rightAdapter, experiment)
+ex6LeftAligns4 <- 
+  pairwiseAlignment(ex6LeftRightStrings, leftAdapter, type = "overlap")
+ex6RightAligns4 <- 
+  pairwiseAlignment(ex6LeftRightStrings, rightAdapter, type = "overlap")
+scoreCutoff <- quantile(randomScores4, 0.999)
+leftAligned <-
+  start(pattern(ex6LeftAligns4)) == 1 & score(ex6LeftAligns4) > pmax(scoreCutoff, score(ex6RightAligns4))
+rightAligned <-
+  end(pattern(ex6RightAligns4)) == 36 & score(ex6RightAligns4) > pmax(scoreCutoff, score(ex6LeftAligns4))
+table(leftAligned, rightAligned)
+table(leftAligned | rightAligned, experiment[["width"]])
+```
+
+## Exercise 7
+
+<a name="sec:Answers7"></a>
+
+1. Rerun the global-local alignment of the short reads against the entire genome. (This may take a few minutes.)
+
+```{r ans7a}
+genBankFullAlign <-
+  pairwiseAlignment(srPhiX174, genBankPhage,
+                    patternQuality = SolexaQuality(quPhiX174),
+                    subjectQuality = SolexaQuality(99L),
+                    type = "global-local")
+summary(genBankFullAlign, weight = wtPhiX174)
+```
+
+2. Plot the coverage of these alignments and use the `slice` function to find the ranges of alignment. Are there any alignments outside of the substring region that was used above? *Yes, there are some alignments outside of the specified substring region.*
+
+```{r ans7b}
+genBankFullCoverage <- coverage(genBankFullAlign, weight = wtPhiX174)
+plot(as.integer(genBankFullCoverage), xlab = "Position", ylab = "Coverage", type = "l")
+slice(genBankFullCoverage, lower = 1)
+```
+
+3. Use the `reverseComplement` function on the bacteriophage $\phi$ X174 genome. Do any short reads have a higher alignment score on this new sequence than on the original sequence? *Yes, there are some strings with a higher score on the new sequence.*
+
+```{r ans7c}
+genBankFullAlignRevComp <-
+  pairwiseAlignment(srPhiX174, reverseComplement(genBankPhage),
+                    patternQuality = SolexaQuality(quPhiX174),
+                    subjectQuality = SolexaQuality(99L),
+                    type = "global-local")
+table(score(genBankFullAlignRevComp) > score(genBankFullAlign))
+```
+
+## Exercise 8
+<a name="sec:Answers8"></a>
+
+1. Rerun the first set of profiling code, but this time fix the number of characters in `string1` to 35 and have the number of characters in `string2` range from 5000, 50000, by increments of 5000. What is the computational order of this simulation exercise? *As expected, the growth in time is now linear.*
+
+```{r ans8a, fig=TRUE}
+N <- as.integer(seq(5000, 50000, by = 5000))
+newTimings <- rep(0, length(N))
+names(newTimings) <- as.character(N)
+for (i in seq_len(length(N))) {
+  string1 <- DNAString(paste(sample(DNA_ALPHABET[1:4], 35, replace = TRUE), collapse = ""))
+  string2 <- DNAString(paste(sample(DNA_ALPHABET[1:4], N[i], replace = TRUE), collapse = ""))
+  newTimings[i] <- system.time(pairwiseAlignment(string1, string2, type = "global"))[["user.self"]]
+}
+newTimings
+coef(summary(lm(newTimings ~ poly(N, 2))))
+plot(N, newTimings, xlab = "Larger String Size", ylab = "Timing (sec.)",
+     type = "l", main = "Global Pairwise Sequence Alignment Timings")
+```
+
+2. Rerun the second set of profiling code using the simulations from the previous exercise with `scoreOnly` argument set to `TRUE`. Is is still twice as fast? *Yes, it is still over twice as fast.*
+
+```{r ans8b}
+newScoreOnlyTimings <- rep(0, length(N))
+names(newScoreOnlyTimings) <- as.character(N)
+for (i in seq_len(length(N))) {
+  string1 <- DNAString(paste(sample(DNA_ALPHABET[1:4], 35, replace = TRUE), collapse = ""))
+  string2 <- DNAString(paste(sample(DNA_ALPHABET[1:4], N[i], replace = TRUE), collapse = ""))
+  newScoreOnlyTimings[i] <- system.time(pairwiseAlignment(string1, string2, type = "global", scoreOnly = TRUE))[["user.self"]]
+}
+newScoreOnlyTimings
+round((newTimings - newScoreOnlyTimings) / newTimings, 2)
+```
+
+# Session Information
+All of the output in this vignette was produced under the following conditions:
+
+```{r sessinfo}
+sessionInfo()
+```
+
+1. Durbin, R., Eddy, S., Krogh, A., and Mitchison G. Biological Sequence Analysis. Cambridge UP 1998, sec 2.3.
+2. Haubold, B. and Wiehe, T. Introduction to Computational Biology. Birkhauser Verlag 2006, Chapter 2.
+3. Malde, K. The effect of sequence quality on sequence alignment. Bioinformatics, 24(7):897-900, 2008.
+4. Needleman,S. and Wunsch,C. A general method applicable to the search for similarities in the  amino acid sequence of two proteins. Journal of Molecular Biology, 48, 443-453, 1970.
+5. Smith, H.; Hutchison, C.; Pfannkoch, C.; and Venter, C. Generating a synthetic genome by whole genome assembly: $\phi$X174 bacteriophage from synthetic oligonucleotides. Proceedings of the National Academy of Sciences, 100(26): 15440-15445, 2003.
+6. Smith,T.F. and Waterman,M.S. Identification of common molecular subsequences. Journal of Molecular Biology, 147, 195-197, 1981.
+
+
