@@ -1,0 +1,221 @@
+---
+title: "Biostrings Quick Overview"
+author:
+- |
+  Hervé Pagès\
+  Fred Hutchinson Cancer Research Center\
+  Seattle, WA
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+  toc: yes
+  df_print: paged
+  number_sections: yes
+---
+
+Most but not all functions defined in the [Biostrings]{.sans-serif}
+package are summarized here.
+
+::: center
+::: {#table:Low_level_manipulation}
+  **Function**                       **Description**
+  ---------------------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  `length`                           Return the number of sequences in an object.
+  `names`                            Return the names of the sequences in an object.
+  `[`                                Extract sequences from an object.
+  `head`, `tail`                     Extract the first or last sequences from an object.
+  `rev`                              Reverse the order of the sequences in an object.
+  `c`                                Combine in a single object the sequences from 2 or more objects.
+  `width`, `nchar`                   Return the sizes (i.e. number of letters) of all the sequences in an object.
+  `==`, `!=`                         Element-wise comparison of the sequences in 2 objects.
+  `match`, `%in%`                    Analog to `match` and `%in%` on character vectors.
+  `duplicated`, `unique`             Analog to `duplicated` and `unique` on character vectors.
+  `sort`, `order`                    Analog to `sort` and `order` on character vectors, except that the ordering of DNA or Amino Acid sequences doesn't depend on the locale.
+  `relist`, `split`, `extractList`   Analog to `relist` and `split` on character vectors, except that the result is a *DNAStringSetList* or *AAStringSetList* object. `extractList` is a generalization of `relist` and `split` that supports *arbitrary* groupings.
+
+  : **Low-level manipulation of *DNAStringSet* and *AAStringSet*
+  objects.**
+:::
+:::
+
+::: center
+::: {#table:Counting_tabulating}
++--------------------------------+------------------------------------+
+| **Function**                   | **Description**                    |
++:===============================+:===================================+
+| `alphabetFrequency`            | Tabulate the letters (all the      |
+|                                | letters in the alphabet for        |
+| `letterFrequency`              | `alphabetFrequency`, only the      |
+|                                | specified letters for              |
+|                                | `letterFrequency`) in a sequence   |
+|                                | or set of sequences.               |
++--------------------------------+------------------------------------+
+| `uniqueLetters`                | Extract the unique letters from a  |
+|                                | sequence or set of sequences.      |
++--------------------------------+------------------------------------+
+| `letterFrequencyInSlidingView` | Specialized version of             |
+|                                | `letterFrequency` that tallies the |
+|                                | requested letter frequencies for a |
+|                                | fixed-width view that is           |
+|                                | conceptually slid along the input  |
+|                                | sequence.                          |
++--------------------------------+------------------------------------+
+| `consensusMatrix`              | Computes the consensus matrix of a |
+|                                | set of sequences.                  |
++--------------------------------+------------------------------------+
+| `dinucleotideFrequency`        | Fast 2-mer, 3-mer, and k-mer       |
+|                                | counting for DNA or RNA.           |
+| `trinucleotideFrequency`       |                                    |
+|                                |                                    |
+| `oligonucleotideFrequency`     |                                    |
++--------------------------------+------------------------------------+
+| `nucleotideFrequencyAt`        | Tallies the short sequences formed |
+|                                | by extracting the nucleotides      |
+|                                | found at a set of fixed positions  |
+|                                | from each sequence of a set of DNA |
+|                                | or RNA sequences.                  |
++--------------------------------+------------------------------------+
+
+: **Counting / tabulating.**
+:::
+:::
+
+::: center
+::: {#table:Sequence_editing}
++------------------------------+--------------------------------------+
+| **Function**                 | **Description**                      |
++:=============================+:=====================================+
+| `reverse`                    | Compute the reverse, complement, or  |
+|                              | reverse-complement, of a set of DNA  |
+| `complement`                 | sequences.                           |
+|                              |                                      |
+| `reverseComplement`          |                                      |
++------------------------------+--------------------------------------+
+| `translate`                  | Translate a set of DNA sequences     |
+|                              | into a set of Amino Acid sequences.  |
++------------------------------+--------------------------------------+
+| `chartr`                     | Replace letters in a sequence or set |
+|                              | of sequences.                        |
+| `replaceAmbiguities`         |                                      |
++------------------------------+--------------------------------------+
+| `subseq`, `subseq<-`         | Extract/replace arbitrary substrings |
+|                              | from/in a string or set of strings.  |
+| `extractAt`, `replaceAt`     |                                      |
++------------------------------+--------------------------------------+
+| `replaceLetterAt`            | Replace the letters specified by a   |
+|                              | set of positions by new letters.     |
++------------------------------+--------------------------------------+
+| `padAndClip`, `stackStrings` | Pad and clip strings.                |
++------------------------------+--------------------------------------+
+| `strsplit`, `unstrsplit`     | `strsplit` splits the sequences in a |
+|                              | set of sequences according to a      |
+|                              | pattern. `unstrsplit` is the reverse |
+|                              | operation i.e. a fast implementation |
+|                              | of `sapply(x, paste0, collapse=sep)` |
+|                              | for collapsing the list elements of  |
+|                              | a *DNAStringSetList* or              |
+|                              | *AAStringSetList* object.            |
++------------------------------+--------------------------------------+
+
+: **Sequence transformation and editing.**
+:::
+:::
+
+::: center
+::: {#table:String_matching_alignments}
++---------------------+-----------------------------------------------+
+| **Function**        | **Description**                               |
++:====================+:==============================================+
+| `matchPattern`      | Find/count all the occurrences of a given     |
+|                     | pattern (typically short) in a reference      |
+| `countPattern`      | sequence (typically long). Support mismatches |
+|                     | and indels.                                   |
++---------------------+-----------------------------------------------+
+| `vmatchPattern`     | Find/count all the occurrences of a given     |
+|                     | pattern (typically short) in a set of         |
+| `vcountPattern`     | reference sequences. Support mismatches and   |
+|                     | indels.                                       |
++---------------------+-----------------------------------------------+
+| `matchPDict`        | Find/count all the occurrences of a set of    |
+|                     | patterns in a reference sequence.             |
+| `countPDict`        | (`whichPDict` only identifies which patterns  |
+|                     | in the set have at least one match.) Support  |
+| `whichPDict`        | a small number of mismatches.                 |
++---------------------+-----------------------------------------------+
+| `vmatchPDict`       | \[Note: `vmatchPDict` not implemented yet.\]  |
+|                     | Find/count all the occurrences of a set of    |
+| `vcountPDict`       | patterns in a set of reference sequences.     |
+|                     | (`whichPDict` only identifies for each        |
+| `vwhichPDict`       | reference sequence which patterns in the set  |
+|                     | have at least one match.) Support a small     |
+|                     | number of mismatches.                         |
++---------------------+-----------------------------------------------+
+| `pairwiseAlignment` | Solve (Needleman-Wunsch) global alignment,    |
+|                     | (Smith-Waterman) local alignment, and         |
+|                     | (ends-free) overlap alignment problems.       |
++---------------------+-----------------------------------------------+
+| `matchPWM`          | Find/count all the occurrences of a Position  |
+|                     | Weight Matrix in a reference sequence.        |
+| `countPWM`          |                                               |
++---------------------+-----------------------------------------------+
+| `trimLRPatterns`    | Trim left and/or right flanking patterns from |
+|                     | sequences.                                    |
++---------------------+-----------------------------------------------+
+| `matchLRPatterns`   | Find all paired matches in a reference        |
+|                     | sequence i.e. matches specified by a left and |
+|                     | a right pattern, and a maximum distance       |
+|                     | between them.                                 |
++---------------------+-----------------------------------------------+
+| `matchProbePair`    | Find all the amplicons that match a pair of   |
+|                     | probes in a reference sequence.               |
++---------------------+-----------------------------------------------+
+| `findPalindromes`   | Find palindromic regions in a sequence.       |
++---------------------+-----------------------------------------------+
+
+: **String matching / alignments.**
+:::
+:::
+
+::: center
+::: {#table:I_O_functions}
++----------------------------+----------------------------------------+
+| **Function**               | **Description**                        |
++:===========================+:=======================================+
+| `readBStringSet`           | Read ordinary/DNA/RNA/Amino Acid       |
+|                            | sequences from files (FASTA or FASTQ   |
+| `readDNAStringSet`         | format).                               |
+|                            |                                        |
+| `readRNAStringSet`         |                                        |
+|                            |                                        |
+| `readAAStringSet`          |                                        |
++----------------------------+----------------------------------------+
+| `writeXStringSet`          | Write sequences to a file (FASTA or    |
+|                            | FASTQ format).                         |
++----------------------------+----------------------------------------+
+| `writePairwiseAlignments`  | Write pairwise alignments (as produced |
+|                            | by `pairwiseAlignment`) to a file      |
+|                            | ("pair" format).                       |
++----------------------------+----------------------------------------+
+| `readDNAMultipleAlignment` | Read multiple alignments from a file   |
+|                            | (FASTA, "stockholm", or "clustal"      |
+| `readRNAMultipleAlignment` | format).                               |
+|                            |                                        |
+| `readAAMultipleAlignment`  |                                        |
++----------------------------+----------------------------------------+
+| `write.phylip`             | Write multiple alignments to a file    |
+|                            | (Phylip format).                       |
++----------------------------+----------------------------------------+
+
+: **I/O functions.**
+:::
+:::
+
+::: center
+::: {#table:Miscellaneous}
+  **Function**   **Description**
+  -------------- ------------------------------------------------------------------------------------------------------------------------------
+  `stringDist`   Computes the matrix of Levenshtein edit distances, or Hamming distances, or pairwise alignment scores, for a set of strings.
+
+  : **Miscellaneous.**
+:::
+:::
