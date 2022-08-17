@@ -3,14 +3,19 @@ title: Using oligonucleotide microarray reporter sequence information for prepro
 author: Wolfgang Huber and Robert Gentleman
 clean: false
 date: "`r format(Sys.time(), '%d %B, %Y')`"
+vignette: >
+  %\VignetteIndexEntry{Handling probe sequence information}
+  %\VignetteDepends{Biostrings, hgu95av2probe, hgu95av2cdf, affy, affydata}
+  %\VignetteKeywords{Expression Analysis}
+  %\VignettePackage{Biostrings}
 output:
-  html_document:
-    toc: yes
-    df_print: paged
+  BiocStyle::html_document:
     number_sections: yes
+    toc: yes
+    toc_depth: 4
 ---
 
-# Overview
+ # Overview
 
 This document presents some basic and simple tools for dealing with the oligonucleotide microarray reporter sequence information in the Bioconductor *probe* packages. This information is used, for example, in the `gcrma` package.
 
@@ -90,7 +95,7 @@ The sequence data in the *probe* packages is addressed by their $x$ and $y$--coo
 
 ```{r }
 library(affy)
-abseq = rep(as.character(NA), nc*nr) 
+abseq = rep(as.character(NA), nc*nr)
 ipm = with(hgu95av2probe, xy2indices(x, y, nc=nc))
 any(duplicated(ipm))  # just a sanity check
 abseq[ipm] = hgu95av2probe$sequence
@@ -114,7 +119,7 @@ abseq[imm] = as.character(mm)
 table(is.na(abseq))
 ```
 
-See [Figures matchprobes-bap](#matchprobes-bap) -- [matchprobes-p2p](#matchprobes-p2p) for some applications 
+See [Figures matchprobes-bap](#matchprobes-bap) -- [matchprobes-p2p](#matchprobes-p2p) for some applications
 of the probe sequence information to preprocessing and data quality related plots.
 
 # Some sequence related "preprocessing and quality" plots
@@ -179,7 +184,3 @@ dev.off()
 <img src="matchprobes-p2p.png" alt="matchprobes-p2p.png" style="width:100%">
 <figcaption align = "left"><b>Figure 3</b>: Scatterplot of PM vs MM intensities, colored by probe GC content.</figcaption>
 </figure>
-
-
-
-
