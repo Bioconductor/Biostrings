@@ -2,6 +2,7 @@
 \docType{class}
 
 % Classes:
+
 \alias{class:XStringSetList}
 \alias{XStringSetList-class}
 \alias{XStringSetList}
@@ -9,22 +10,41 @@
 \alias{class:BStringSetList}
 \alias{BStringSetList-class}
 \alias{BStringSetList}
+
 \alias{class:DNAStringSetList}
 \alias{DNAStringSetList-class}
 \alias{DNAStringSetList}
+
 \alias{class:RNAStringSetList}
 \alias{RNAStringSetList-class}
 \alias{RNAStringSetList}
+
 \alias{class:AAStringSetList}
 \alias{AAStringSetList-class}
 \alias{AAStringSetList}
 
 % Methods:
+
+\alias{relistToClass,XStringSet-method}
+
 \alias{seqtype,XStringSetList-method}
 \alias{seqtype<-,XStringSetList-method}
-\alias{nchar,XStringSetList-method}
 
 \alias{show,XStringSetList-method}
+\alias{showAsCell,XStringSetList-method}
+
+\alias{coerce,list,XStringSetList-method}
+\alias{coerce,List,XStringSetList-method}
+\alias{coerce,list,BStringSetList-method}
+\alias{coerce,List,BStringSetList-method}
+\alias{coerce,list,DNAStringSetList-method}
+\alias{coerce,List,DNAStringSetList-method}
+\alias{coerce,list,RNAStringSetList-method}
+\alias{coerce,List,RNAStringSetList-method}
+\alias{coerce,list,AAStringSetList-method}
+\alias{coerce,List,AAStringSetList-method}
+
+\alias{nchar,XStringSetList-method}
 
 
 \title{XStringSetList objects}
