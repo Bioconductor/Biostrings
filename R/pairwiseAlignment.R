@@ -13,24 +13,40 @@
 ### -------------------------------------------------------------------------
 
 
-nucleotideSubstitutionMatrix <- function(match = 1, mismatch = 0, baseOnly = FALSE, type = "DNA")
-{
+nucleotideSubstitutionMatrix <-
+function(match = 1, mismatch = 0, baseOnly = FALSE, type = "DNA", symmetric = TRUE) {
   "%safemult%" <- function(x, y) ifelse(is.infinite(x) & y == 0, 0, x * y)
   type <- match.arg(type, c("DNA", "RNA"))
-  if (!isSingleNumber(match) || !isSingleNumber(mismatch))
+  if (!isSingleNumber(match) || !isSingleNumber(mismatch)) {
     stop("'match' and 'mismatch' must be non-missing numbers")
-  if (baseOnly)
+  }
+  if (baseOnly) {
     letters <- IUPAC_CODE_MAP[DNA_BASES]
-  else
+  }
+  else {
     letters <- IUPAC_CODE_MAP
-  if (type == "RNA")
+  }
+  if (type == "RNA") {
     names(letters) <- chartr("T", "U", names(letters))
+  }
   nLetters <- length(letters)
   splitLetters <- strsplit(letters,split="")
   submat <- matrix(0, nrow = nLetters, ncol = nLetters, dimnames = list(names(letters), names(letters)))
-  for(i in 1:nLetters)
-    for(j in i:nLetters)
-      submat[i,j] <- submat[j,i] <- mean(outer(splitLetters[[i]], splitLetters[[j]], "=="))
+  if (symmetric) {
+    for (i in 1:nLetters) {
+      for (j in i:nLetters) {
+        submat[i,j] <- submat[j,i] <- mean(outer(splitLetters[[i]], splitLetters[[j]], "=="))
+      }
+    }
+  }
+  else {
+    for (i in 1:nLetters) {
+      for (j in i:nLetters) {
+        submat[i,j] <- mean(outer(splitLetters[[i]], splitLetters[[j]], "%in%"))
+        submat[j,i] <- mean(outer(splitLetters[[j]], splitLetters[[i]], "%in%"))
+      }
+    }
+  }
   abs(match) * submat - abs(mismatch) %safemult% (1 - submat)
 }
 
