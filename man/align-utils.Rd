@@ -46,8 +46,11 @@ nedit(x) # also nmatch and nmismatch
 
 mismatchTable(x, shiftLeft=0L, shiftRight=0L, \dots)
 mismatchSummary(x, \dots)
+
 \S4method{coverage}{AlignedXStringSet0}(x, shift=0L, width=NULL, weight=1L)
+
 \S4method{coverage}{PairwiseAlignmentsSingleSubject}(x, shift=0L, width=NULL, weight=1L)
+
 compareStrings(pattern, subject)
 
 \S4method{consensusMatrix}{PairwiseAlignmentsSingleSubject}(x,
@@ -92,9 +95,12 @@ compareStrings(pattern, subject)
   \item{pattern, subject}{
     The strings to compare. Can be of type \code{character}, \code{XString},
     \code{XStringSet}, \code{AlignedXStringSet}, or, in the case of
-    \code{pattern}, \code{PairwiseAlignments}. If \code{pattern} is a
-    \code{PairwiseAlignments} object, then \code{subject} must be
-    missing.
+    \code{pattern}, \code{PairwiseAlignments}.
+
+    If the first argument of \code{compareStrings()} (\code{pattern})
+    is a \code{PairwiseAlignments} object, then the second argument
+    (\code{subject}) must be missing. In this case \code{compareStrings(x)}
+    is equivalent to \code{compareStrings(pattern(x), subject(x))}.
   }
   \item{as.prob}{
     If \code{TRUE} then probabilities are reported,
