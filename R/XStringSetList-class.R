@@ -198,7 +198,7 @@ setMethod("showAsCell", "XStringSetList",
 
 ### --- From ordinary list to XStringSetList ---
 ### Note that being able to coerce a length-one ordinary list to an
-### XStringSetList derivative will make [[<- work out-of-the-box on
+### XStringSetList derivative will automatically make [[<- work on
 ### XStringSetList derivatives.
 
 .from_list_to_XStringSetList <- function(from, seqtype=NULL)
