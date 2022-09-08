@@ -30,10 +30,12 @@ pairwiseAlignment(pattern, subject, \dots)
 }
 
 \arguments{
-  \item{pattern}{a character vector of any length, an \code{\link{XString}}, or
-    an \code{\link{XStringSet}} object.}
-  \item{subject}{a character vector of length 1, an \code{\link{XString}}, or
-    an \code{\link{XStringSet}} object of length 1.}
+  \item{pattern}{a character vector or \code{\link{XStringSet}} derivative
+    of any length, or an \code{\link{XString}} derivative.}
+  \item{subject}{a character vector or \code{\link{XStringSet}} derivative
+    of length 1, or an \code{\link{XString}} derivative,
+    or a character vector or \code{\link{XStringSet}} derivative
+    of the same length as \code{pattern}.}
   \item{patternQuality, subjectQuality}{objects of class
     \code{\link{XStringQuality}} representing the respective quality scores for
     \code{pattern} and \code{subject} that are used in a quality-based method
