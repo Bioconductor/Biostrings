@@ -140,16 +140,26 @@ K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics, 
                     substitutionMatrix = nucleotideSubstitutionMatrix(0, -1, TRUE),
                     gapOpening = 0, gapExtension = 1)
 
-  ## Align a sequence to a consensus using an asymmetric substitution matrix.
+  ## Align sequences using an asymmetric substitution matrix.
   ## The asymmetry of the matrix means that the query sequence
   ## is not penalized for ambiguous bases in the subject / consensus sequence.
+  ansm <- nucleotideSubstitutionMatrix(symmetric = FALSE)
+  ansm["M", c("A","C","G","T")]
+  #  A   C   G   T 
+  # 0.5 0.5 0.0 0.0 
+  ansm[c("A","C","G","T"), "M"]
+  # A C G T 
+  # 1 1 0 0 
+  ansm["M", "H"]
+  # 1
+  ansm["H", "M"]
+  # 0.6666667
+
   ## Due to this asymmetry, the order of the sequences is important.
   pairwiseAlignment(s1, s3,
-                    substitutionMatrix = nucleotideSubstitutionMatrix(symmetric = FALSE))
+                    substitutionMatrix = ansm)
   pairwiseAlignment(s3, s1,
-                    substitutionMatrix = nucleotideSubstitutionMatrix(symmetric = FALSE))
-
-  
+                    substitutionMatrix = ansm)
 
   ## Examine quality-based match and mismatch bit scores for DNA/RNA
   ## strings in pairwiseAlignment.
