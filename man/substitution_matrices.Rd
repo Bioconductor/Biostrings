@@ -34,7 +34,7 @@ data(PAM40)
 data(PAM70)
 data(PAM120)
 data(PAM250)
-nucleotideSubstitutionMatrix(match = 1, mismatch = 0, baseOnly = FALSE, type = "DNA")
+nucleotideSubstitutionMatrix(match = 1, mismatch = 0, baseOnly = FALSE, type = "DNA", symmetric = TRUE)
 qualitySubstitutionMatrices(fuzzyMatch = c(0, 1), alphabetLength = 4L, qualityClass = "PhredQuality", bitScale = 1)
 errorSubstitutionMatrices(errorProbability, fuzzyMatch = c(0, 1), alphabetLength = 4L, bitScale = 1)
 }
@@ -45,6 +45,8 @@ errorSubstitutionMatrices(errorProbability, fuzzyMatch = c(0, 1), alphabetLength
   \item{baseOnly}{\code{TRUE} or \code{FALSE}. If \code{TRUE}, only
     uses the letters in the "base" alphabet i.e. "A", "C", "G", "T".}
   \item{type}{either "DNA" or "RNA".}
+  \item{symmetric}{\code{TRUE} or \code{FALSE}. Default is \code{TRUE}. 
+    If \code{FALSE}, the resulting matrix will be asymmetric.}
   \item{fuzzyMatch}{a named or unnamed numeric vector representing the base
     match probability.}
   \item{errorProbability}{a named or unnamed numeric vector representing the error
@@ -112,7 +114,8 @@ errorSubstitutionMatrices(errorProbability, fuzzyMatch = c(0, 1), alphabetLength
 K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics, Feb 23, 2008.
 }
 
-\author{H. Pagès and P. Aboyoun}
+\author{H. Pagès and P. Aboyoun, with contribution from Albert Vill (support
+        for asymmetric matrices in \code{nucleotideSubstitutionMatrix()})}
 
 \seealso{
   \code{\link{pairwiseAlignment}},
@@ -129,11 +132,34 @@ K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics, 
     DNAString("ACTTCACCAGCTCCCTGGCGGTAAGTTGATCAAAGGAAACGCAAAGTTTTCAAG")
   s2 <-
     DNAString("GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")
+  s3 <-
+    DNAString("NCTTCRCCAGCTCCCTGGMGGTAAGTTGATCAAAGVAAACGCAAAGTTNTCAAG")
 
   ## Fit a global pairwise alignment using edit distance scoring
   pairwiseAlignment(s1, s2,
                     substitutionMatrix = nucleotideSubstitutionMatrix(0, -1, TRUE),
                     gapOpening = 0, gapExtension = 1)
+
+  ## Align sequences using an asymmetric substitution matrix.
+  ## The asymmetry of the matrix means that the query sequence
+  ## is not penalized for ambiguous bases in the subject / consensus sequence.
+  ansm <- nucleotideSubstitutionMatrix(symmetric = FALSE)
+  ansm["M", c("A","C","G","T")]
+  #  A   C   G   T 
+  # 0.5 0.5 0.0 0.0 
+  ansm[c("A","C","G","T"), "M"]
+  # A C G T 
+  # 1 1 0 0 
+  ansm["M", "H"]
+  # 1
+  ansm["H", "M"]
+  # 0.6666667
+
+  ## Due to this asymmetry, the order of the sequences is important.
+  pairwiseAlignment(s1, s3,
+                    substitutionMatrix = ansm)
+  pairwiseAlignment(s3, s1,
+                    substitutionMatrix = ansm)
 
   ## Examine quality-based match and mismatch bit scores for DNA/RNA
   ## strings in pairwiseAlignment.
