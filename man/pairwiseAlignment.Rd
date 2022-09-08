@@ -33,9 +33,8 @@ pairwiseAlignment(pattern, subject, \dots)
   \item{pattern}{a character vector or \code{\link{XStringSet}} derivative
     of any length, or an \code{\link{XString}} derivative.}
   \item{subject}{a character vector or \code{\link{XStringSet}} derivative
-    of length 1, or an \code{\link{XString}} derivative,
-    or a character vector or \code{\link{XStringSet}} derivative
-    of the same length as \code{pattern}.}
+    of length 1 or \code{length(pattern)}, or an \code{\link{XString}}
+    derivative.}
   \item{patternQuality, subjectQuality}{objects of class
     \code{\link{XStringQuality}} representing the respective quality scores for
     \code{pattern} and \code{subject} that are used in a quality-based method
