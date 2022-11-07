@@ -28,7 +28,7 @@ First, let us load the *Biostrings* package and some other packages we will use.
 devtools::load_all(".")
 ```
 
-```{r warning=FALSE, include=FALSE}
+```{r message=FALSE}
 library(Biostrings) 
 library(hgu95av2probe) 
 library(hgu95av2cdf) 
@@ -38,7 +38,7 @@ library(hgu95av2cdf)
 
 Help for the probe sequence data packages can be accessed through
 
-```{r include=FALSE}
+```{r message=FALSE}
 ?hgu95av2probe
 ```
 
