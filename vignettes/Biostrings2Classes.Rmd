@@ -1,6 +1,9 @@
 ---
 title: "The *Biostrings* 2 classes (work in progress)"
-author: "Hervé Pagès"
+author: 
+- name: "Hervé Pagès"
+- name: "Paul Villafuerte"
+  affiliation: "Vignette translation from Sweave to Rmarkdown / HTML"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 vignette: >
   %\VignetteIndexEntry{A short presentation of the basic classes defined in Biostrings 2}
@@ -17,7 +20,7 @@ editor_options:
   markdown: 
     wrap: 72
 ---
-
+  
 # Introduction
 
 This document briefly presents the new set of classes implemented in the
@@ -81,7 +84,7 @@ d[]
 b[length(b):1]
 ```
 
-Only *in bounds* positive numeric subscripts are supported
+Only *in bounds* positive numeric subscripts are supported.
 
 In fact the subsetting operator for *XString* objects is not efficient
 and one should always use the `subseq` method to extract a substring
@@ -103,8 +106,8 @@ toString(dd2)
 Note that `length(dd2)` is equivalent to `nchar(toString(dd2))` but the
 latter would be very inefficient on a big *DNAString* object.
 
-_**TODO: Make a generic of the substr() function to work with XString
-objects. It will be essentially doing toString(subseq()).**_
+_**[TODO: Make a generic of the substr() function to work with XString
+objects. It will be essentially doing toString(subseq()).]**_
 
 # The `==` binary operator for *XString* objects
 
