@@ -17,7 +17,7 @@ output:
     toc: yes
     toc_depth: 4
 editor_options: 
-  markdown: 
+  markdown:   
     wrap: 72
 ---
   
