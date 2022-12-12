@@ -4,6 +4,10 @@ author:
 - name: "Marc Carlson"
 - name: "Bioconductor Core Team"
 - name: "Fred Hutchinson Cancer Research Center, Seattle, WA"
+- name: "Beryl Kanali"
+  affiliation: "Vignette conversion from Sweave to Rmarkdown"
+
+
 
 date: "Edited: November 1, 2022; compiled: `r format(Sys.time(), '%d %B, %Y')`"
 
