@@ -25,7 +25,7 @@ Suggests: BSgenome (>= 1.13.14),
 	drosophila2probe, hgu95av2probe, hgu133aprobe,
 	GenomicFeatures (>= 1.3.14),
 	hgu95av2cdf, affy (>= 1.41.3), affydata (>= 1.11.5),
-	RUnit
+	RUnit, BiocStyle, knitr
 LazyLoad: yes
 Collate: 00datacache.R
 	utils.R
@@ -87,3 +87,4 @@ Collate: 00datacache.R
 	MultipleAlignment.R
 	matchprobes.R
 	zzz.R
+VignetteBuilder: knitr
