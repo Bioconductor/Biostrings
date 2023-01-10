@@ -1,15 +1,11 @@
 ---
-title: "**MultipleAlignment Objects**"
+title: "MultipleAlignment Objects"
 author: 
 - name: "Marc Carlson"
-- name: "Bioconductor Core Team"
-- name: "Fred Hutchinson Cancer Research Center, Seattle, WA"
+  affiliation: "Bioconductor Core Team, Fred Hutchinson Cancer Research Center, Seattle, WA"
 - name: "Beryl Kanali"
   affiliation: "Vignette conversion from Sweave to Rmarkdown"
-
-
-
-date: "Edited: November 1, 2022; compiled: `r format(Sys.time(), '%d %B, %Y')`"
+date: "Edited: November 1, 2022; Compiled: `r format(Sys.time(), '%d %B, %Y')`"
 
 vignette: >
   %\VignetteIndexEntry{Multiple Alignments}
@@ -29,8 +25,8 @@ editor_options:
 
 # Introduction
 
-The *DNAMultipleAlignment*, *RNAMultipleAlignment* and
-*AAMultipleAlignment* classes allow users to represent groups
+The `DNAMultipleAlignment`, `RNAMultipleAlignment` and
+`AAMultipleAlignment` classes allow users to represent groups
 of aligned DNA, RNA or amino acid sequences as a single object.  The
 frame of reference for aligned sequences is static, so manipulation of
 these objects is confined to be non-destructive.  In practice, this
@@ -42,11 +38,11 @@ alignment.
 
 # Creation and masking
 
-To create a *MultipleAlignment*, call the appropriate read
+To create a `MultipleAlignment`, call the appropriate read
 function to read in and parse the original alignment.  There are
 functions to read clustaW, Phylip and Stolkholm data formats.
 
-```{r objectCreation}
+```{r objectCreation, message=FALSE}
 library(Biostrings)
 origMAlign <-
   readDNAMultipleAlignment(filepath =
@@ -72,7 +68,7 @@ rownames(origMAlign) <- c("Human","Chimp","Cow","Mouse","Rat",
 origMAlign
 ```
 
-To see a more detailed version of your *MultipleAlignment*
+To see a more detailed version of your `MultipleAlignment`
 object, you can use the `detail` method, which will show
 the details of the alignment interleaved and without the rows and
 columns that you have masked out.
@@ -105,7 +101,7 @@ maskTest
 ``` 
 
 When setting a mask, you might want to specify the rows or columns to
-keep, rather than to hide.  To do that, use the *invert*
+keep, rather than to hide.  To do that, use the `invert`
 argument.  Taking the above example, we can set the exact same masks
 as before by specifying their inverse and using `invert=TRUE`.
 
@@ -120,17 +116,17 @@ maskTest
 
 In addition to being able to invert these masks, you can also choose
 the way in which the ranges you provide will be merged with any
-existing masks. The *append* argument allows you to specify
+existing masks. The `append` argument allows you to specify
 the way in which new mask ranges will interact with any existing
 masks.  By default, these masks will be the "union" of the new mask
 and any existing masks, but you can also specify that these masks be
 the mask that results from when you "intersect" the current mask and
 the new mask, or that the new mask simply "replace" the current mask.
-The *append* argument can be used in combination with the
-*invert* argument to make things even more interesting.  In
+The `append` argument can be used in combination with the
+`invert` argument to make things even more interesting.  In
 this case, the inversion of the mask will happen before it is combined
 with the existing mask.  For simplicity, I will only demonstrate this
-on *rowmask*, but it also works for *colmask*.  Before
+on `rowmask`, but it also works for `colmask`.  Before
 we begin, lets set the masks back to being NULL again.
 
 ```{r setup}
@@ -140,7 +136,7 @@ rowmask(maskTest) <- NULL
 ```
 
 Then we can do a series of examples, starting with the default which
-uses the "union" value for the *append* argument.
+uses the "union" value for the `append` argument.
 
 ```{r appendMask}
 ## Then we can demonstrate how the append argument works
@@ -160,7 +156,7 @@ rowmask(maskTest,append="union") <- IRanges(start=7,end=8)
 maskTest
 ```
 
-The function `maskMotif` works on *MultipleAlignment*
+The function `maskMotif` works on `MultipleAlignment`
 objects too, and takes the same arguments that it does
 elsewhere. `maskMotif` is useful for masking occurances of a
 string from columns where it is present in the consensus sequence.
@@ -172,8 +168,8 @@ colmask(tataMasked)
 
 `maskGaps` also operates on columns and will mask collumns
 based on the fraction of each column that contains gaps
-*min.fraction* along with the width of columns that contain
-this fraction of gaps *min.block.width*.
+`min.fraction` along with the width of columns that contain
+this fraction of gaps `min.block.width`.
 
 
 ```{r maskGaps}
@@ -181,8 +177,8 @@ autoMasked <- maskGaps(origMAlign, min.fraction=0.5, min.block.width=4)
 autoMasked
 ``` 
 
-Sometimes you may want to cast your *MultipleAlignment* to be a
-matrix for usage eslewhere.  *as.matrix* is supported for
+Sometimes you may want to cast your `MultipleAlignment` to be a
+matrix for usage eslewhere.  `as.matrix` is supported for
 these circumstances.  The ability to convert one object into another
 is not very unusual so why mention it?  Because when you cast your
 object, the masks WILL be considered so that the masked rows and
@@ -195,15 +191,12 @@ partial = as.matrix(autoMasked)
 dim(partial)
 ```
 
-One example of where you might want to use *as.matrix* is when
-using the *ape* package. For example if you needed to use the
-`dist.dna` function you would want to use *as.matrix*
+One example of where you might want to use `as.matrix` is when
+using the `r CRANpkg("ape")` package. For example if you needed to use the
+`dist.dna` function you would want to use `as.matrix`
 followed by `as.alignment` and then the
 `as.DNAbin` to create a `DNAbin` object for the
 `dist.dna`.
-
-
-
 
 # Analytic utilities
 
@@ -235,29 +228,28 @@ funky looking tree.
 ```{r cluster}
 sdist <- stringDist(as(origMAlign,"DNAStringSet"), method="hamming")
 clust <- hclust(sdist, method = "single")
-pdf(file="badTree.pdf")
+png(file="badTree.png")
 plot(clust)
 dev.off()
 ```
-```{r figure, fig=TRUE, eps=FALSE, fig.align = 'center', fig.cap='A tree produced by using strings with masked gaps'}
-knitr::include_graphics("badTree.pdf")
+```{r figure, echo=FALSE, fig=TRUE, eps=FALSE, fig.align = 'center', fig.cap='Funky tree produced by using unmasked strings'}
+knitr::include_graphics("badTree.png")
 ```
 But, if we use the gap-masked `DNAMultipleAlignment`, to
 remove the long uninformative regions, and then make our plot, we can
 see the real relationships.
 
-%could also have just done <<cluster2, fig=TRUE>>=
 ```{r cluster2}
 sdist <- stringDist(as(autoMasked,"DNAStringSet"), method="hamming")
 clust <- hclust(sdist, method = "single")
-pdf(file="goodTree.pdf")
+png(file="goodTree.png")
 plot(clust)
 dev.off()
 fourgroups <- cutree(clust, 4)
 fourgroups
 ```
-```{r figure1, fig=TRUE, eps=FALSE, width=0.6,fig.align = 'center', height=5, fig.cap='A tree produced by using unmasked strings'}
-knitr::include_graphics("goodTree.pdf")
+```{r figure1, echo=FALSE, fig=TRUE, eps=FALSE, width=0.6,fig.align = 'center', height=5, fig.cap='A tree produced by using strings with masked gaps'}
+knitr::include_graphics("goodTree.png")
 ```
 
 In the "good" plot, the Salmon sequence is once again the most distant
@@ -274,8 +266,8 @@ similarity of the conserved regions.
 # Exporting to file
 
 One possible export option is to write to fasta files
-If you need to write your *MultipleAlignment* object out as a fasta
-file, you can cast it to a *DNAStringSet* and then write
+If you need to write your `MultipleAlignment` object out as a fasta
+file, you can cast it to a `DNAStringSet` and then write
 it out as a fasta file like so:
 
 ```{r fastaExample, eval=FALSE}
