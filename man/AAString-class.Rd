@@ -93,6 +93,12 @@ AA_PROTEINOGENIC  # first 22 letters only
   }
 }
 
+\section{Display}{
+  The letters in an AAString object are colored when 
+  displayed by the \code{show()} method. Set global option 
+  \code{Biostrings.coloring} to FALSE to turn off this coloring.
+}
+
 \author{H. Pagès}
 
 \seealso{

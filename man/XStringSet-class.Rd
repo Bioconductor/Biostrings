@@ -313,9 +313,10 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
 }
 
 \section{Display}{
-  The letters in a DNAStringSet or RNAStringSet object are colored
-  when displayed by the \code{show()} method. Set global option
-  \code{Biostrings.coloring} to FALSE to turn off this coloring.
+  The letters in a DNAStringSet, RNAStringSet, or AAStringSet 
+  object are colored when displayed by the \code{show()} 
+  method. Set global option \code{Biostrings.coloring} to 
+  FALSE to turn off this coloring.
 }
 
 \author{H. Pagès}
