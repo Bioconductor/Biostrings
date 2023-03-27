@@ -57,62 +57,64 @@ make_DNA_AND_RNA_COLORED_LETTERS <- function()
         names(ans) <- x_names
     ans
 }
+
 ### Return a named character vector where all the names are single letters.
 ## Colors amino acids by similarity
 ## Colors groupins by 
 ##  https://www.jalview.org/help/html/colourSchemes/zappo.html
+### Called in .onLoad() to initialize AA_COLORED_LETTERS.
 make_AA_COLORED_LETTERS <- function(x){
-  whiter <- make_style(rgb(1, 1, 1))
-  dark_grey_bg <- make_style(rgb(0.5,0.5,0.5), bg=TRUE)
+    whiter <- make_style(rgb(1, 1, 1))
+    dark_grey_bg <- make_style(rgb(0.5,0.5,0.5), bg=TRUE)
+    
+    ## All the IUPAC ambiguity letters minus X.
+    dark_grey_bg_letters <- c("U","O","B","J","Z")
+                               
+    cp <- c("#fbf8cc", "#ffcfd2", "#cfbaf0",
+            "#a3c4f3", "#8eecf5", "#b9fbc0", "#f1c0e8")
   
-  ## All the IUPAC ambiguity letters minus X.
-  dark_grey_bg_letters <- c("U","O","B","J","Z")
-                             
-  cp <- c("#fbf8cc", "#ffcfd2", "#cfbaf0",
-          "#a3c4f3", "#8eecf5", "#b9fbc0", "#f1c0e8")
-  
-  c(
-    # Cysteine
-    C=make_style(cp[1], bg=TRUE)(black("C")),
-    
-    # Aliphatic/hydrophobic
-    A=make_style(cp[2], bg=TRUE)(black("A")),
-    V=make_style(cp[2], bg=TRUE)(black("V")),
-    M=make_style(cp[2], bg=TRUE)(black("M")), 
-    L=make_style(cp[2], bg=TRUE)(black("L")), 
-    I=make_style(cp[2], bg=TRUE)(black("I")),
-    
-    # Conformationally Special
-    P=make_style(cp[3], bg=TRUE)(black("P")),
-    G=make_style(cp[3], bg=TRUE)(black("G")), 
-    
-    # Positive
-    K=make_style(cp[4], bg=TRUE)(black("K")),
-    R=make_style(cp[4], bg=TRUE)(black("R")),
-    H=make_style(cp[4], bg=TRUE)(black("H")),
-    
-    # Hydrophilic
-    N=make_style(cp[5], bg=TRUE)(black("N")),
-    T=make_style(cp[5], bg=TRUE)(black("T")),
-    Q=make_style(cp[5], bg=TRUE)(black("Q")),
-    S=make_style(cp[5], bg=TRUE)(black("S")),
-    
-    # Aromatic
-    F=make_style(cp[6], bg=TRUE)(black("F")),
-    Y=make_style(cp[6], bg=TRUE)(black("Y")),
-    W=make_style(cp[6], bg=TRUE)(black("W")),
-    
-    # Negative
-    E=make_style(cp[7], bg=TRUE)(black("E")),
-    D=make_style(cp[7], bg=TRUE)(black("D")),
-    
-    # Ambiguity
-    setNames(sprintf(dark_grey_bg(whiter("%s")), dark_grey_bg_letters),
-             dark_grey_bg_letters),
-    
-    # Any code
-    X=make_style("grey", bg=TRUE)(whiter("X"))
-  )
+    c(
+        # Cysteine
+        C=make_style(cp[1], bg=TRUE)(black("C")),
+        
+        # Aliphatic/hydrophobic
+        A=make_style(cp[2], bg=TRUE)(black("A")),
+        V=make_style(cp[2], bg=TRUE)(black("V")),
+        M=make_style(cp[2], bg=TRUE)(black("M")), 
+        L=make_style(cp[2], bg=TRUE)(black("L")), 
+        I=make_style(cp[2], bg=TRUE)(black("I")),
+        
+        # Conformationally Special
+        P=make_style(cp[3], bg=TRUE)(black("P")),
+        G=make_style(cp[3], bg=TRUE)(black("G")), 
+        
+        # Positive
+        K=make_style(cp[4], bg=TRUE)(black("K")),
+        R=make_style(cp[4], bg=TRUE)(black("R")),
+        H=make_style(cp[4], bg=TRUE)(black("H")),
+        
+        # Hydrophilic
+        N=make_style(cp[5], bg=TRUE)(black("N")),
+        T=make_style(cp[5], bg=TRUE)(black("T")),
+        Q=make_style(cp[5], bg=TRUE)(black("Q")),
+        S=make_style(cp[5], bg=TRUE)(black("S")),
+        
+        # Aromatic
+        F=make_style(cp[6], bg=TRUE)(black("F")),
+        Y=make_style(cp[6], bg=TRUE)(black("Y")),
+        W=make_style(cp[6], bg=TRUE)(black("W")),
+        
+        # Negative
+        E=make_style(cp[7], bg=TRUE)(black("E")),
+        D=make_style(cp[7], bg=TRUE)(black("D")),
+        
+        # Ambiguity
+        setNames(sprintf(dark_grey_bg(whiter("%s")), dark_grey_bg_letters),
+                 dark_grey_bg_letters),
+        
+        # Any code
+        X=make_style("grey", bg=TRUE)(whiter("X"))
+    )
 }
 
 ### 'x' must be a character vector.
@@ -141,4 +143,3 @@ add_colors <- function(x) UseMethod("add_colors")
 add_colors.default <- identity
 add_colors.DNA <- add_colors.RNA <- .add_dna_and_rna_colors
 add_colors.AA <- .add_aa_colors
-
