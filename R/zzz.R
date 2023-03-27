@@ -9,6 +9,7 @@
           RNA_STRING_CODEC@enc_lkup, RNA_STRING_CODEC@dec_lkup,
           PACKAGE=pkgname)
     DNA_AND_RNA_COLORED_LETTERS <<- make_DNA_AND_RNA_COLORED_LETTERS()
+    AA_COLORED_LETTERS <<- make_AA_COLORED_LETTERS()
     option_name <- "Biostrings.coloring"
     if (!(option_name %in% names(.Options)))
         options(setNames(list(TRUE), option_name))
