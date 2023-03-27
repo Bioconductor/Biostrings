@@ -30,10 +30,11 @@ pairwiseAlignment(pattern, subject, \dots)
 }
 
 \arguments{
-  \item{pattern}{a character vector of any length, an \code{\link{XString}}, or
-    an \code{\link{XStringSet}} object.}
-  \item{subject}{a character vector of length 1, an \code{\link{XString}}, or
-    an \code{\link{XStringSet}} object of length 1.}
+  \item{pattern}{a character vector or \code{\link{XStringSet}} derivative
+    of any length, or an \code{\link{XString}} derivative.}
+  \item{subject}{a character vector or \code{\link{XStringSet}} derivative
+    of length 1 or \code{length(pattern)}, or an \code{\link{XString}}
+    derivative.}
   \item{patternQuality, subjectQuality}{objects of class
     \code{\link{XStringQuality}} representing the respective quality scores for
     \code{pattern} and \code{subject} that are used in a quality-based method
@@ -98,11 +99,21 @@ if \code{pattern = "AGTA"} and \code{subject = "AACTAACTA"}, then the alignment
 alignment score.
 }
 \value{
-If \code{scoreOnly == FALSE}, an instance of class
-\code{\link{PairwiseAlignments}} or
-\code{\link{PairwiseAlignmentsSingleSubject}} is returned.
-If \code{scoreOnly == TRUE}, a numeric vector containing the scores for the
-optimal pairwise alignments is returned.
+If \code{scoreOnly == FALSE} (the default), the function returns a
+\code{\link{PairwiseAlignmentsSingleSubject}} object (if a single subject
+was supplied) or a \code{\link{PairwiseAlignments}} object (if more
+than one subject was supplied). In both cases, the returned object
+contains N \emph{optimal pairwise alignments} where N is the number of
+supplied patterns, that is, N = \code{length(pattern)} if \code{pattern}
+is a character vector or \code{\link{XStringSet}} derivative, or N = 1 if
+it's an \code{\link{XString}} derivative. If more than one subject
+was supplied, the alignments in the returned \code{\link{PairwiseAlignments}}
+object are obtained by aligning \code{pattern[[1]]} to \code{subject[[1]]},
+\code{pattern[[2]]} to \code{subject[[2]]}, \code{pattern[[3]]} to
+\code{subject[[3]]}, etc...
+
+If \code{scoreOnly == TRUE}, a numeric vector containing the scores for
+the N \emph{optimal pairwise alignments} is returned.
 }
 \references{
 R. Durbin, S. Eddy, A. Krogh, G. Mitchison, Biological Sequence Analysis, Cambridge UP 1998, sec 2.3.

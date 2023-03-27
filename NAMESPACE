@@ -7,12 +7,12 @@ importFrom(graphics, axis, legend, lines, par, plot.new, plot.window, title)
 importFrom(stats, chisq.test, complete.cases, diffinv, pchisq, setNames)
 
 importFrom(crayon, make_style, black)
-importFrom(GenomeInfoDb, seqinfo, "seqinfo<-", Seqinfo, seqlengths)
 
 import(BiocGenerics)
 import(S4Vectors)
 import(IRanges)
 import(XVector)
+import(GenomeInfoDb)
 
 
 ### ==========================================================================

@@ -53,19 +53,16 @@ setClass("AAStringSetList",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Going from XStringSet to XStringSetList with extractList() and family.
+### Link XStringSet subclasses to corresponding XStringSetList subclasses
+###
+### Used by splitAsList() and family (e.g. relist(), extractList(), etc...)
+### to infer the class of the output when the input is an XStringSet
+### derivative.
 ###
 
 setMethod("relistToClass", "XStringSet",
     function(x) paste0(seqtype(x), "StringSetList")
 )
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessor-like methods.
-###
-
-setMethod("nchar", "XStringSetList", IRanges:::nchar_CompressedList)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -102,7 +99,7 @@ setMethod("nchar", "XStringSetList", IRanges:::nchar_CompressedList)
     unlisted_ans <- XStringSet(seqtype, unlisted_x)
     ans <- relist(unlisted_ans, x)
     ## relist() puts the names back but not the metadata columns.
-    mcols(ans) <- mcols(x)
+    mcols(ans) <- mcols(x, use.names=FALSE)
     ans
 }
 
@@ -146,7 +143,7 @@ setReplaceMethod("seqtype", "XStringSetList",
         seqtype(unlisted_ans) <- value
         ans <- relist(unlisted_ans, x)
         ## relist() puts the names back but not the metadata columns.
-        mcols(ans) <- mcols(x)
+        mcols(ans) <- mcols(x, use.names=FALSE)
         ans
     }
 )
@@ -170,7 +167,7 @@ AAStringSetList <- function(..., use.names=TRUE)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "show" method.
+### Display
 ###
 
 setMethod("show", "XStringSetList",
@@ -184,4 +181,93 @@ setMethod("show", "XStringSetList",
 setMethod("showAsCell", "XStringSetList",
      function(object) showAsCell(CharacterList(object))
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Coercion from list-like object to XStringSetList
+###
+
+### Try to turn an arbitrary **list-like** object into an ordinary list of
+### XStringSet objects.
+.as_list_of_XStringSet <- function(from, seqtype=NULL)
+{
+    prefix <- if (is.null(seqtype)) "X" else seqtype
+    Class <- paste0(prefix, "StringSet")
+    lapply(from, as, Class, strict=FALSE)
+}
+
+### --- From ordinary list to XStringSetList ---
+### Note that being able to coerce a length-one ordinary list to an
+### XStringSetList derivative will automatically make [[<- work on
+### XStringSetList derivatives.
+
+.from_list_to_XStringSetList <- function(from, seqtype=NULL)
+{
+    x <- .as_list_of_XStringSet(from, seqtype=seqtype)
+    if (is.null(seqtype)) {
+        if (length(x) != 0L) {
+            seqtype <- seqtype(x[[1L]])
+        } else {
+            seqtype <- "B"
+        }
+    }
+    ans_class <- paste0(seqtype, "StringSetList")
+    IRanges:::new_CompressedList_from_list(ans_class, x)
+}
+
+### --- From List derivative to XStringSetList ---
+
+.from_List_to_XStringSetList <- function(from, seqtype=NULL)
+{
+    if (is(from, "XStringSet")) {
+        ## Perform a "dumb split".
+        if (!is.null(seqtype))
+            seqtype(from) <- seqtype
+        ## We call IRanges:::from_Vector_to_CompressedList() to perform
+        ## the "dumb split". This is **very** efficient!
+        return(IRanges:::from_Vector_to_CompressedList(from))
+    }
+
+    x <- .as_list_of_XStringSet(from, seqtype=seqtype)
+    if (is.null(seqtype)) {
+        if (length(x) != 0L) {
+            seqtype <- seqtype(x[[1L]])
+        } else {
+            seqtype <- try(seqtype(from), silent=TRUE)
+            if (inherits(seqtype, "try-error"))
+                seqtype <- "B"
+        }
+    }
+    ans_class <- paste0(seqtype, "StringSetList")
+    IRanges:::new_CompressedList_from_list(ans_class, x,
+                                 metadata=metadata(from),
+                                 mcols=mcols(from, use.names=FALSE))
+}
+
+### --- Actually set the coercion methods (10 methods) ---
+
+.set_coercions_to_XStringSetList <- function(seqtype=NULL)
+{
+    prefix <- if (is.null(seqtype)) "X" else seqtype
+    to <- paste0(prefix, "StringSetList")
+    setAs("list", to,
+        function(from) .from_list_to_XStringSetList(from, seqtype)
+    )
+    setAs("List", to,
+        function(from) .from_List_to_XStringSetList(from, seqtype)
+    )
+}
+
+.set_coercions_to_XStringSetList()
+.set_coercions_to_XStringSetList("B")
+.set_coercions_to_XStringSetList("DNA")
+.set_coercions_to_XStringSetList("RNA")
+.set_coercions_to_XStringSetList("AA")
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Other methods
+###
+
+setMethod("nchar", "XStringSetList", IRanges:::nchar_CompressedList)
 
