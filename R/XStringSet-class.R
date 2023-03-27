@@ -485,10 +485,10 @@ setAs("ANY", "XStringSet",
 .XStringSet.show_frame <- function(x, half_nrow=5L)
 {
     if (is.null(head_nrow <- getOption("showHeadLines")))
-        head_nrow <- half_nrow 
+        head_nrow <- half_nrow
     if (is.null(tail_nrow <- getOption("showTailLines")))
         tail_nrow <- half_nrow
- 
+
     lx <- length(x)
     iW <- nchar(as.character(lx)) + 2 # 2 for the brackets
     ncharMax <- max(nchar(x))
@@ -524,7 +524,7 @@ setMethod("show", "XStringSet",
 )
 
 setMethod("showAsCell", "XStringSet",
-    function(object) 
+    function(object)
         vapply(object, toSeqSnippet, character(1), width=23L)
 )
 

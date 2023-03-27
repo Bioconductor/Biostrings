@@ -180,10 +180,10 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
 
       Note that this is similar to what \code{\link{substr}} does on a
       character vector. However there are some noticeable differences:
-      
+
       (1) the arguments are \code{start} and \code{stop} for
       \code{\link{substr}};
-      
+
       (2) the SEW interface (start/end/width) interface of \code{subseq}
       is richer (e.g. support for negative start or end values);
       and (3) \code{subseq} checks that the specified start/end/width values
@@ -196,16 +196,16 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
       Same as \code{subseq}. The only differences are: (1) \code{narrow}
       has a \code{use.names} argument; and (2) all the things \code{narrow}
       and \code{subseq} work on
-      (\link[IRanges]{IRanges}, XStringSet or 
+      (\link[IRanges]{IRanges}, XStringSet or
       \link{XStringViews} objects for \code{narrow},
       \link[XVector]{XVector} or XStringSet objects for
       \code{subseq}). But they both work and do the same thing on an
-      XStringSet object. 
+      XStringSet object.
     }
     \item{}{
       \code{threebands(x, start=NA, end=NA, width=NA)}:
       Like the method for \link[IRanges]{IRanges}
-      objects, the 
+      objects, the
       \code{threebands} methods for character vectors and XStringSet
       objects extend the capability of \code{narrow} by returning the 3
       set of subsequences (the left, middle and right subsequences)
@@ -304,8 +304,8 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
       \code{show(x)}:
       By default the \code{show} method displays 5 head and 5 tail
       lines. The number of lines can be altered by setting the global
-      options \code{showHeadLines} and \code{showTailLines}. If the 
-      object length is less than the sum of the options, the full object 
+      options \code{showHeadLines} and \code{showTailLines}. If the
+      object length is less than the sum of the options, the full object
       is displayed. These options affect GRanges, GAlignments, IRanges,
       and XStringSet objects.
     }
@@ -313,10 +313,10 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
 }
 
 \section{Display}{
-  The letters in a DNAStringSet, RNAStringSet, or AAStringSet 
-  object are colored when displayed by the \code{show()} 
-  method. Set global option \code{Biostrings.coloring} to 
-  FALSE to turn off this coloring.
+  The letters in a DNAStringSet, RNAStringSet, or AAStringSet
+  object are colored when displayed by the \code{show()} method.
+  Set global option \code{Biostrings.coloring} to FALSE to turn off
+  this coloring.
 }
 
 \author{H. Pagès}

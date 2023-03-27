@@ -59,9 +59,9 @@ make_DNA_AND_RNA_COLORED_LETTERS <- function()
 }
 
 ### Return a named character vector where all the names are single letters.
-## Colors amino acids by similarity
-## Colors groupins by 
-##  https://www.jalview.org/help/html/colourSchemes/zappo.html
+### Colors amino acids by similarity
+### Colors groupins by
+###   https://www.jalview.org/help/html/colourSchemes/zappo.html
 ### Called in .onLoad() to initialize AA_COLORED_LETTERS.
 make_AA_COLORED_LETTERS <- function(x){
     whiter <- make_style(rgb(1, 1, 1))
@@ -80,13 +80,13 @@ make_AA_COLORED_LETTERS <- function(x){
         # Aliphatic/hydrophobic
         A=make_style(cp[2], bg=TRUE)(black("A")),
         V=make_style(cp[2], bg=TRUE)(black("V")),
-        M=make_style(cp[2], bg=TRUE)(black("M")), 
-        L=make_style(cp[2], bg=TRUE)(black("L")), 
+        M=make_style(cp[2], bg=TRUE)(black("M")),
+        L=make_style(cp[2], bg=TRUE)(black("L")),
         I=make_style(cp[2], bg=TRUE)(black("I")),
 
         # Conformationally Special
         P=make_style(cp[3], bg=TRUE)(black("P")),
-        G=make_style(cp[3], bg=TRUE)(black("G")), 
+        G=make_style(cp[3], bg=TRUE)(black("G")),
 
         # Positive
         K=make_style(cp[4], bg=TRUE)(black("K")),

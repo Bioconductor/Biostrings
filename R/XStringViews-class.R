@@ -251,7 +251,7 @@ XStringViews.show_vframe <- function(x)
         } else {
             if (nhead > 0L)
                 for (i in seq_len(nhead))
-                    XStringViews.show_vframe_line(x, i, iW, startW, endW, 
+                    XStringViews.show_vframe_line(x, i, iW, startW, endW,
                                                   widthW)
             cat("  ",
                 format("...", width=iW, justify="right"),
@@ -264,7 +264,7 @@ XStringViews.show_vframe <- function(x)
                 " ...\n", sep="")
             if (ntail > 0L)
                 for (i in (x_len-ntail+1L):x_len)
-                    XStringViews.show_vframe_line(x, i, iW, startW, endW, 
+                    XStringViews.show_vframe_line(x, i, iW, startW, endW,
                                                   widthW)
         }
     }
