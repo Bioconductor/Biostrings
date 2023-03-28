@@ -249,7 +249,7 @@ setMethod("XString", "AsIs",
     function(seqtype, x, start=NA, end=NA, width=NA)
     {
         if (!is.character(x))
-            stop("unsuported input type")
+            stop("unsupported input type")
         class(x) <- "character" # keeps the names (unlike as.character())
         XString(seqtype, x, start=start, end=end, width=width)
     }
