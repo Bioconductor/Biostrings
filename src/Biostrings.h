@@ -84,7 +84,6 @@ char _AAencode(char c);
 
 char _AAdecode(char code);
 
-
 void _copy_CHARSXP_to_Chars_holder(
 	Chars_holder *dest,
 	SEXP src,
