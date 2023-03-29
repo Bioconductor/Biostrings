@@ -201,25 +201,26 @@ getRNAComplementLookup <- function()
 
 ### AAStrings don't need to support DNA/RNA or complementation,
 ### so the code to generate the codec can be a lot simpler
-AA_LOOKUP_CODES <- c(A=1L, R=2L, N=3L, D=4L,
-                        C=5L, Q=6L, E=7L, G=8L,
-                        H=9L, I=10L, L=11L, K=12L,
-                        M=13L, F=14L, P=15L, S=16L,
-                        T=17L, W=18L, Y=19L, V=20L,
-                        U=21L, O=22L,
-                        B=23L, J=24L, Z=25L, X=26L,
-                        `*`=27L, `-`=28L, `+`=29L, `.`=30L)
+AAcodes <- function(baseOnly)
+{
+    if (!isTRUEorFALSE(baseOnly))
+        stop("'baseOnly' must be TRUE or FALSE")
+    letters <- AA_ALPHABET
+    if (baseOnly)
+        letters <- head(letters, n=20L)
+    setNames(.letterAsByteVal(letters), letters)
+}
 
 ### AA codec.
 .XStringCodec.AA <- function(codes)
 {
     letters <- names(codes)
     extra_letters <- setdiff(tolower(letters), letters)
-    extra_codes <- codes[toupper(extra_letters)]
+    extra_codes <- .letterAsByteVal(toupper(extra_letters))
     new("XStringCodec", letters, codes, extra_letters, extra_codes)
 }
 
-AAcodes <- function(baseOnly) AA_LOOKUP_CODES[seq_len(ifelse(baseOnly, 20, 30))]
+AA_LOOKUP_CODES <- AAcodes(FALSE)
 AA_STRING_CODEC <- .XStringCodec.AA(AA_LOOKUP_CODES)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
