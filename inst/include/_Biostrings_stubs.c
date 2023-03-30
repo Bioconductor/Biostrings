@@ -51,6 +51,16 @@ DEFINE_CCALLABLE_STUB(char, RNAdecode,
 	(     code)
 )
 
+DEFINE_CCALLABLE_STUB(char, AAencode,
+	(char c),
+	(     c)
+)
+
+DEFINE_CCALLABLE_STUB(char, AAdecode,
+	(char code),
+	(     code)
+)
+
 /*
  * Stubs for callables defined in XStringSet_class.c
  */
