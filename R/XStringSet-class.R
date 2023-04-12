@@ -624,6 +624,8 @@ setMethod("updateObject", "XStringSet",
     }
 )
 
+### Update AAStringSet objects created before AA_ALPHABET was enforced
+### for AAString objects
 setMethod("updateObject", "AAStringSet",
     function(object, ..., verbose=FALSE)
     {

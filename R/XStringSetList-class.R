@@ -271,6 +271,13 @@ setMethod("showAsCell", "XStringSetList",
 
 setMethod("nchar", "XStringSetList", IRanges:::nchar_CompressedList)
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### updateObject()
+###
+
+### Update AAStringSetList objects created before AA_ALPHABET was enforced
+### for AAString objects
 setMethod("updateObject", "AAStringSetList",
           function(object, ..., verbose=FALSE)
           {
