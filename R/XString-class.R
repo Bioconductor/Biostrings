@@ -481,3 +481,19 @@ setMethod("updateObject", "XString",
     }
 )
 
+setMethod("updateObject", "AAString",
+    function(object, ..., verbose=FALSE)
+    {
+        codec <- xscodec(AAString())
+        class(object) <- "BString"
+        mapping <- vapply(uniqueLetters(object), utf8ToInt, integer(1L))
+        missingVals <- is.na(codec@enc_lkup[mapping+1L])
+        if(any(missingVals)){
+            errorChars <- paste(names(mapping)[which(missingVals)],
+                                collapse=', ')
+            stop("Cannot decode, AAString contains invalid character(s): ",
+                  errorChars)
+        }
+        AAString(object)
+    }
+)

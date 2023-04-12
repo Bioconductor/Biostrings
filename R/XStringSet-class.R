@@ -624,3 +624,13 @@ setMethod("updateObject", "XStringSet",
     }
 )
 
+setMethod("updateObject", "AAStringSet",
+    function(object, ..., verbose=FALSE)
+    {
+        for(i in seq_along(object)){
+            object[[i]] <- updateObject(object[[i]])
+        }
+        object
+    }
+)
+

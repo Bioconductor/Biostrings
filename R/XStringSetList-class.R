@@ -271,3 +271,13 @@ setMethod("showAsCell", "XStringSetList",
 
 setMethod("nchar", "XStringSetList", IRanges:::nchar_CompressedList)
 
+setMethod("updateObject", "AAStringSetList",
+          function(object, ..., verbose=FALSE)
+          {
+              lst <- as.list(object)
+              for(i in seq_along(lst)){
+                  lst[[i]] <- updateObject(lst[[i]])
+              }
+              AAStringSetList(lst)
+          }
+)
