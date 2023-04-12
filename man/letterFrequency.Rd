@@ -92,7 +92,7 @@ consensusMatrix(x, as.prob=FALSE, shift=0L, width=NULL, ...)
 \S4method{consensusString}{matrix}(x, ambiguityMap="?", threshold=0.5)
 \S4method{consensusString}{DNAStringSet}(x, ambiguityMap=IUPAC_CODE_MAP,
              threshold=0.25, shift=0L, width=NULL)
-\S4method{consensusString}{RNAStringSet}(x, 
+\S4method{consensusString}{RNAStringSet}(x,
              ambiguityMap=
              structure(as.character(RNAStringSet(DNAStringSet(IUPAC_CODE_MAP))),
                        names=
@@ -210,7 +210,7 @@ consensusMatrix(x, as.prob=FALSE, shift=0L, width=NULL, ...)
     those sequences have been shifted (see the \code{shift} argument above).
     This ensures that any wider consensus matrix would be a "padded with zeros"
     version of the matrix returned when \code{width=NULL}.
-    
+
     The length of the returned sequence for the \code{consensusString}
     method for \link{XStringSet} objects.
   }
@@ -255,10 +255,12 @@ consensusMatrix(x, as.prob=FALSE, shift=0L, width=NULL, ...)
   \link{XStringSet} or \link{XStringViews} object, then it returns
   an integer matrix with \code{length(x)} rows where the
   \code{i}-th row contains the frequencies for \code{x[[i]]}.
-  If \code{x} is a DNA or RNA input, then the returned vector is named
+  If \code{x} is a DNA, RNA, or AA input, then the returned vector is named
   with the letters in the alphabet. If the \code{baseOnly} argument is
-  \code{TRUE}, then the returned vector has only 5 elements: 4 elements
-  corresponding to the 4 nucleotides + the 'other' element.
+  \code{TRUE}, then the returned vector has only 5 elements for DNA/RNA input
+  (4 elements corresponding to the 4 nucleotides + the 'other' element) and
+  21 elements for AA input (20 elements corresponding to the 20 base amino acids
+  + the 'other' element).
 
   \code{letterFrequency} returns, similarly, an integer vector or matrix,
   but restricted and/or collated according to \code{letters} and \code{OR}.
@@ -270,7 +272,8 @@ consensusMatrix(x, as.prob=FALSE, shift=0L, width=NULL, ...)
 
   \code{hasOnlyBaseLetters} returns \code{TRUE} or \code{FALSE} indicating
   whether or not \code{x} contains only base letters (i.e. As, Cs, Gs and Ts
-  for DNA input and As, Cs, Gs and Us for RNA input).
+  for DNA input, As, Cs, Gs and Us for RNA input, or any of the 20 standard
+  amino acids for AA input).
 
   \code{uniqueLetters} returns a vector of 1-letter or empty strings. The empty
   string is used to represent the nul character if \code{x} happens to contain
@@ -391,8 +394,8 @@ consensusString(sort(probes)[1:5], ambiguityMap = "N", threshold = 0.5)
 ## Consensus involving ambiguity letters in the input strings
 consensusString(DNAStringSet(c("NNNN","ACTG")))
 consensusString(DNAStringSet(c("AANN","ACTG")))
-consensusString(DNAStringSet(c("ACAG","ACAR"))) 
-consensusString(DNAStringSet(c("ACAG","ACAR", "ACAG"))) 
+consensusString(DNAStringSet(c("ACAG","ACAR")))
+consensusString(DNAStringSet(c("ACAG","ACAR", "ACAG")))
 
 ## ---------------------------------------------------------------------
 ## C. RELATIONSHIP BETWEEN consensusMatrix() AND coverage()

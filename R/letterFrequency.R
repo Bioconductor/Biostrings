@@ -279,6 +279,11 @@ setMethod("hasOnlyBaseLetters", "RNAString",
     function(x) hasOnlyBaseLetters(DNAString(x))
 )
 
+setMethod("hasOnlyBaseLetters", "AAString",
+    function(x)
+        alphabetFrequency(x, baseOnly=TRUE)[["other"]] == 0L
+)
+
 setMethod("hasOnlyBaseLetters", "DNAStringSet",
     function(x)
         alphabetFrequency(x, collapse=TRUE, baseOnly=TRUE)[["other"]] == 0L
@@ -286,6 +291,11 @@ setMethod("hasOnlyBaseLetters", "DNAStringSet",
 
 setMethod("hasOnlyBaseLetters", "RNAStringSet",
     function(x) hasOnlyBaseLetters(DNAStringSet(x))
+)
+
+setMethod("hasOnlyBaseLetters", "AAStringSet",
+    function(x)
+        alphabetFrequency(x, collapse=TRUE, baseOnly=TRUE)[["other"]] == 0L
 )
 
 setMethod("hasOnlyBaseLetters", "XStringViews",
