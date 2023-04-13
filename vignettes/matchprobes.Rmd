@@ -53,7 +53,7 @@ library(hgu95av2cdf)
 
 Help for the probe sequence data packages can be accessed through
 
-```{r hgu95av2probe,message=FALSE}
+```{r hgu95av2probe,eval=FALSE}
 ?hgu95av2probe
 ```
 
@@ -84,7 +84,7 @@ Let us look at some basic operations on the sequences.
 DNA sequences can be reversed and/or complemented with the `reverse`,
 `complement` and `reverseComplement` functions.
 
-```{r reverseComplement,message=FALSE}
+```{r reverseComplement,eval=FALSE}
 ?reverseComplement
 ```
 
@@ -171,7 +171,7 @@ abseq[imm] = as.character(mm)
 table(is.na(abseq))
 ```
 
-See Figures \@ref(fig:barplot)-\@ref(fig:plot) for some applications of
+See Figures \@ref(fig:bap)-\@ref(fig:p2p) for some applications of
 the probe sequence information to preprocessing and data quality related plots.
 
 # Some sequence related "preprocessing and quality" plots
@@ -196,7 +196,7 @@ colores = rainbow(nlevels(GC))
 
 And let us create an *AffyBatch* object.
 
-```{r barplot, fig.cap="Distribution of probe GC content. The height of each bar corresponds to the number of probeswith the corresponding GC content."}
+```{r bap, fig.cap="Distribution of probe GC content. The height of each bar corresponds to the number of probes with the corresponding GC content."}
 library(affydata)
 f <- system.file("extracelfiles", "CL2001032020AA.cel", package="affydata")
 pd <- new("AnnotatedDataFrame", data=data.frame(fromFile=I(f), row.names="f"))
@@ -204,15 +204,14 @@ abatch <- read.affybatch(filenames=f, compress=TRUE, phenoData=pd)
 barplot(table(GC), col=colores, xlab="GC", ylab="number")
 ```
 
-```{r boxplot, fig.cap="Boxplots of log~2~ intensity stratifed by probe GC content."}
+```{r bxp, fig.cap="Boxplots of log~2~ intensity stratifed by probe GC content."}
 boxplot(log2(exprs(abatch)[,1]) ~ GC, outline=FALSE,
-  col=colores, , xlab="GC", ylab=expression(log[2]~intensity))
+        col=colores, , xlab="GC", ylab=expression(log[2]~intensity))
 ```
 
-```{r plot, warning=FALSE,fig.cap="Scatterplot of PM vs MM intensities, colored by probe GC content."}
-png("matchprobes-p2p.png", width=900, height=480)
-plot(exprs(abatch)[ipm,1], exprs(abatch)[imm,1], asp=1, pch=".", log="xy",xlab="PM", ylab="MM",
-     col=colores[GC[ipm]])
+```{r p2p, fig.cap="Scatterplot of PM vs MM intensities, colored by probe GC content."}
+plot(exprs(abatch)[ipm,1], exprs(abatch)[imm,1], asp=1, pch=".", log="xy",
+     xlab="PM", ylab="MM", col=colores[GC[ipm]])
 abline(a=0, b=1, col="#404040", lty=3)
 ```
 
