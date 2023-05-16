@@ -7,7 +7,7 @@ biocViews: SequenceMatching, Alignment, Sequencing, Genetics,
 	DataImport, DataRepresentation, Infrastructure
 URL: https://bioconductor.org/packages/Biostrings
 BugReports: https://github.com/Bioconductor/Biostrings/issues
-Version: 2.68.0
+Version: 2.68.1
 License: Artistic-2.0
 Encoding: UTF-8
 Authors@R: c(
@@ -24,7 +24,7 @@ Authors@R: c(
 	person("Valerie", "Obenchain", role="ctb"),
 	person("Marcel", "Ramos", role="ctb"),
 	person("Albert", "Vill", role="ctb"),
-	person("Eric", "Wright", role="ctb"))
+	person("Erik", "Wright", role="ctb"))
 Depends: R (>= 4.0.0), methods, BiocGenerics (>= 0.37.0),
 	S4Vectors (>= 0.27.12), IRanges (>= 2.31.2), XVector (>= 0.37.1),
 	GenomeInfoDb
