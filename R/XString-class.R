@@ -474,10 +474,11 @@ setMethod("updateObject", "XString",
         ans_shared <- new("SharedRaw")
         ans_shared@xp <- xdata@xp
         ans_shared@.link_to_cached_object=xdata@.link_to_cached_object
-        new(class(object),
+        new2(class(object),
             shared=ans_shared,
             offset=object@offset,
-            length=object@length)
+            length=object@length,
+            check=FALSE)
     }
 )
 
@@ -485,6 +486,9 @@ setMethod("updateObject", "XString",
 setMethod("updateObject", "AAString",
     function(object, ..., verbose=FALSE)
     {
+        # Start by calling general XString update function
+        object <- callNextMethod()
+
         codec <- xscodec(AAString())
         class(object) <- "BString"
         mapping <- vapply(uniqueLetters(object), utf8ToInt, integer(1L))
