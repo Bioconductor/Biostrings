@@ -15,7 +15,7 @@ following six naturally occurring versions of the bacteriophage \eqn{\phi} X174
 genome cited in Smith et al.:
 
 \describe{
-  \item{Genbank:}{The version of the genome from GenBank (NC\_001422.1, GI:9626372).}
+  \item{Genbank:}{The version of the genome from GenBank (NC_001422.1, GI:9626372).}
   \item{RF70s:}{A preparation of \eqn{\phi} X double-stranded replicative form (RF) of DNA
     by Clyde A. Hutchison III from the late 1970s.}
   \item{SS78:}{A preparation of \eqn{\phi} X virion single-stranded DNA from 1978.}

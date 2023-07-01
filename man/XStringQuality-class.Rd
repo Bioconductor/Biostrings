@@ -83,7 +83,7 @@ IlluminaQuality(x)
 
   \code{PhredQuality} objects store characters that are interpreted as
   [0 - 99] quality measures by subtracting 33 from their ASCII decimal
-  representation (e.g. ! = 0, " = 1, \# = 2, ...). Quality measures q
+  representation (e.g. ! = 0, " = 1, # = 2, ...). Quality measures q
   encode probabilities as \code{-10 * log10(p)}.
 
   \code{SolexaQuality} objects store characters that are interpreted as
