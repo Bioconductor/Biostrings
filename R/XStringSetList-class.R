@@ -270,4 +270,3 @@ setMethod("showAsCell", "XStringSetList",
 ###
 
 setMethod("nchar", "XStringSetList", IRanges:::nchar_CompressedList)
-

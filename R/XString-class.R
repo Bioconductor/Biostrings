@@ -249,7 +249,7 @@ setMethod("XString", "AsIs",
     function(seqtype, x, start=NA, end=NA, width=NA)
     {
         if (!is.character(x))
-            stop("unsuported input type")
+            stop("unsupported input type")
         class(x) <- "character" # keeps the names (unlike as.character())
         XString(seqtype, x, start=start, end=end, width=width)
     }
@@ -474,10 +474,31 @@ setMethod("updateObject", "XString",
         ans_shared <- new("SharedRaw")
         ans_shared@xp <- xdata@xp
         ans_shared@.link_to_cached_object=xdata@.link_to_cached_object
-        new(class(object),
+        new2(class(object),
             shared=ans_shared,
             offset=object@offset,
-            length=object@length)
+            length=object@length,
+            check=FALSE)
     }
 )
 
+### Update AAString objects created before AA_ALPHABET was enforced
+setMethod("updateObject", "AAString",
+    function(object, ..., verbose=FALSE)
+    {
+        # Start by calling general XString update function
+        object <- callNextMethod()
+
+        codec <- xscodec(AAString())
+        class(object) <- "BString"
+        mapping <- vapply(uniqueLetters(object), utf8ToInt, integer(1L))
+        missingVals <- is.na(codec@enc_lkup[mapping+1L])
+        if(any(missingVals)){
+            errorChars <- paste(names(mapping)[which(missingVals)],
+                                collapse=', ')
+            stop("Cannot decode, AAString contains invalid character(s): ",
+                  errorChars)
+        }
+        AAString(object)
+    }
+)

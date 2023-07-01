@@ -128,6 +128,10 @@ char RNAencode(char c);
 
 char RNAdecode(char code);
 
+char AAencode(char c);
+
+char AAdecode(char code);
+
 /*
  * Low-level manipulation of XStringSet objects.
  * (see XStringSet_class.c)

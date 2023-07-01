@@ -624,3 +624,31 @@ setMethod("updateObject", "XStringSet",
     }
 )
 
+### Helper method to update general XStringSet objects efficiently
+.updateObject_XStringSet <- function(object, ..., verbose=FALSE){
+    baseclass <- xsbaseclass(object)
+    ### Update SharedRaw elements directly
+    ### Significantly fewer SharedRaw objects than XStrings,
+    ### So as long as we don't modify the order of the letters
+    ### this will be significantly faster
+    for(i in seq_along(object@pool)){
+        shared <- object@pool[[i]] # SharedRaw object
+        xs <- new2(baseclass, shared=shared, length=length(shared), check=FALSE)
+        xs <- updateObject(xs, verbose=verbose)
+        object@pool[[i]] <- xs@shared
+    }
+    object
+}
+
+### Update AAStringSet objects created before AA_ALPHABET was enforced
+### for AAString objects
+setMethod("updateObject", "AAStringSet",
+    function(object, ..., verbose=FALSE)
+    {
+        # Start by calling general XStringSet update function
+        object <- callNextMethod()
+        object <- compact(object)
+        .updateObject_XStringSet(object, ..., verbose=verbose)
+    }
+)
+
