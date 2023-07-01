@@ -29,12 +29,10 @@
   \code{x} is an XStringPartialMatches object.
 
   \describe{
-    \item{}{
-      \code{subpatterns(x)}:
+    \item{\code{subpatterns(x)}:}{
       Not ready yet.
     }
-    \item{}{
-      \code{pattern(x)}:
+    \item{\code{pattern(x)}:}{
       Not ready yet.
     }
   }
@@ -46,8 +44,7 @@
   and \code{i} can be a numeric or logical vector.
 
   \describe{
-    \item{}{
-      \code{x[i]}:
+    \item{\code{x[i]}:}{
       Return a new XStringPartialMatches object made of the selected views.
       \code{i} can be a numeric vector, a logical vector, \code{NULL} or missing.
       The returned object has the same subject as \code{x}.

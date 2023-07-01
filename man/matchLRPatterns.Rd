@@ -117,4 +117,3 @@ matchLRPatterns("AA", "TT", 7, subject) # 4 matches
 }
 
 \keyword{methods}
-

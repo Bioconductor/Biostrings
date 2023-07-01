@@ -84,59 +84,46 @@
   \code{x} is a \code{AlignedXStringSet} or \code{QualityAlignedXStringSet} object.
 
   \describe{
-    \item{}{
-      \code{unaligned(x)}:
+    \item{\code{unaligned(x)}:}{
       The original string.
     }
-    \item{}{
-      \code{aligned(x, degap = FALSE)}:
+    \item{\code{aligned(x, degap = FALSE)}:}{
       If \code{degap = FALSE}, the "filled-with-gaps subsequence" representing
       the aligned substring. If \code{degap = TRUE}, the "gap-less subsequence"
       representing the aligned substring.
     }
-    \item{}{
-      \code{ranges(x)}: The bounds of the aligned substring.
+    \item{\code{ranges(x)}:}{ The bounds of the aligned substring.
     }
-    \item{}{
-      \code{start(x)}:
+    \item{\code{start(x)}:}{
       The start of the aligned substring.
     }
-    \item{}{
-      \code{end(x)}:
+    \item{\code{end(x)}:}{
       The end of the aligned substring.
     }
-    \item{}{
-      \code{width(x)}:
+    \item{\code{width(x)}:}{
       The width of the aligned substring, ignoring gaps.
     }
-    \item{}{
-      \code{indel(x)}:
+    \item{\code{indel(x)}:}{
       The positions, in the form of an \code{IRanges} object, of the insertions or
       deletions (depending on what \code{x} represents).
     }
-    \item{}{
-      \code{nindel(x)}:
+    \item{\code{nindel(x)}:}{
       A two-column matrix containing the length and sum of the widths for each of
       the elements returned by \code{indel}.
     }
-    \item{}{
-      \code{length(x)}:
+    \item{\code{length(x)}:}{
       The length of the \code{aligned(x)}.
     }
-    \item{}{
-      \code{nchar(x)}:
+    \item{\code{nchar(x)}:}{
       The nchar of the \code{aligned(x)}.
     }
-    \item{}{
-      \code{alphabet(x)}:
+    \item{\code{alphabet(x)}:}{
       Equivalent to \code{alphabet(unaligned(x))}.
     }
-    \item{}{
-      \code{as.character(x)}:
+    \item{\code{as.character(x)}:}{
       Converts \code{aligned(x)} to a character vector.
     }
-    \item{}{
-      \code{toString(x)}:
+    \item{\code{toString(x)}:}{
       Equivalent to \code{toString(as.character(x))}.
     }
   }
@@ -144,13 +131,11 @@
 
 \section{Subsetting methods}{
   \describe{
-    \item{}{
-      \code{x[i]}:
+    \item{\code{x[i]}:}{
       Returns a new \code{AlignedXStringSet} or \code{QualityAlignedXStringSet}
       object made of the selected elements.
     }
-    \item{}{
-      \code{rep(x, times)}:
+    \item{\code{rep(x, times)}:}{
       Returns a new \code{AlignedXStringSet} or \code{QualityAlignedXStringSet}
       object made of the repeated elements.
     }

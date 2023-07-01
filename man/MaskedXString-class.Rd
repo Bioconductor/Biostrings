@@ -110,18 +110,15 @@
   a \link[IRanges:MaskCollection-class]{MaskCollection} object.
 
   \describe{
-    \item{}{
-      \code{unmasked(x)}:
+    \item{\code{unmasked(x)}:}{
       Turns \code{x} into an \link{XString} object by dropping the masks.
     }
-    \item{}{
-      \code{masks(x)}:
+    \item{\code{masks(x)}:}{
       Turns \code{x} into a
     \link[IRanges:MaskCollection-class]{MaskCollection} object by 
       dropping the sequence.
     }
-    \item{}{
-      \code{masks(x) <- y}:
+    \item{\code{masks(x) <- y}:}{
       If \code{x} is an \link{XString} object and \code{y} is \code{NULL},
       then this doesn't do anything.
 
@@ -138,13 +135,11 @@
       this replaces the masks currently on top of \code{x} by the masks
       in \code{y}. 
     }
-    \item{}{
-      \code{alphabet(x)}:
+    \item{\code{alphabet(x)}:}{
       Equivalent to \code{alphabet(unmasked(x))}.
       See \code{?\link{alphabet}} for more information.
     }
-    \item{}{
-      \code{length(x)}:
+    \item{\code{length(x)}:}{
       Equivalent to \code{length(unmasked(x))}.
       See
       \code{?`\link[Biostrings:XString-class]{length,XString-method}`}
@@ -157,17 +152,14 @@
   In the code snippets below, \code{x} is a MaskedXString object.
 
   \describe{
-    \item{}{
-      \code{maskedwidth(x)}:
+    \item{\code{maskedwidth(x)}:}{
       Get the number of masked letters in \code{x}. A letter is considered
       masked iff it's masked by at least one active mask.
     }
-    \item{}{
-      \code{maskedratio(x)}:
+    \item{\code{maskedratio(x)}:}{
       Equivalent to \code{maskedwidth(x) / length(x)}.
     }
-    \item{}{
-      \code{nchar(x)}:
+    \item{\code{nchar(x)}:}{
       Equivalent to \code{length(x) - maskedwidth(x)}.
     }
   }
@@ -177,8 +169,7 @@
   In the code snippets below, \code{x} is a MaskedXString object.
 
   \describe{
-    \item{}{
-      \code{as(x, "Views")}:
+    \item{\code{as(x, "Views")}:}{
       Turns \code{x} into a \link[IRanges]{Views} object where the
       views are the unmasked regions of the original sequence
       ("unmasked" means not masked by at least one active mask).
@@ -190,13 +181,11 @@
   In the code snippets below, \code{x} is a MaskedXString object.
 
   \describe{
-    \item{}{
-      \code{collapse(x)}:
+    \item{\code{collapse(x)}:}{
       Collapses the set of masks in \code{x} into a single mask made of
       all active masks.
     }
-    \item{}{
-      \code{gaps(x)}:
+    \item{\code{gaps(x)}:}{
       Reverses all the masks i.e. each mask is replaced by a mask
       where previously unmasked regions are now masked and
       previously masked regions are now unmasked.

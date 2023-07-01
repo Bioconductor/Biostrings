@@ -103,13 +103,11 @@ IlluminaQuality(x)
   In the code snippets below, \code{x} is an XStringQuality object.
 
   \describe{
-    \item{}{
-      \code{alphabet(x)}: Valid letters in this quality score; not all
+    \item{\code{alphabet(x)}:}{ Valid letters in this quality score; not all
       letters are encountered in actual sequencing runs.
     }
 
-    \item{}{
-      \code{encoding(x)}: Map between letters and their corresponding
+    \item{\code{encoding(x)}:}{ Map between letters and their corresponding
       integer encoding. Use \code{as.integer} and \code{as.numeric} to
       coerce objects to their integer and probability representations.
     }

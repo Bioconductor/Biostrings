@@ -46,26 +46,21 @@
   In the code snippets below, \code{x} is an MIndex object.
 
   \describe{
-    \item{}{
-      \code{length(x)}:
+    \item{\code{length(x)}:}{
       The number of patterns that matches are stored for.
     }
-    \item{}{
-      \code{names(x)}:
+    \item{\code{names(x)}:}{
       The names of the patterns that matches are stored for.
     }
-    \item{}{
-      \code{startIndex(x)}:
+    \item{\code{startIndex(x)}:}{
       A list containing the starting positions of the matches
       for each pattern.
     }
-    \item{}{
-      \code{endIndex(x)}:
+    \item{\code{endIndex(x)}:}{
       A list containing the ending positions of the matches
       for each pattern.
     }
-    \item{}{
-      \code{elementNROWS(x)}:
+    \item{\code{elementNROWS(x)}:}{
       An integer vector containing the number of matches
       for each pattern.
     }
@@ -76,8 +71,7 @@
   In the code snippets below, \code{x} is an MIndex object.
 
   \describe{
-    \item{}{
-      \code{x[[i]]}:
+    \item{\code{x[[i]]}:}{
       Extract the matches for the i-th pattern as an
     \link[IRanges:IRanges-class]{IRanges} object. 
     }
@@ -88,8 +82,7 @@
   In the code snippets below, \code{x} is an MIndex object.
 
   \describe{
-    \item{}{
-      \code{as(x, "CompressedIRangesList")}:
+    \item{\code{as(x, "CompressedIRangesList")}:}{
       Turns \code{x} into an
     \link[IRanges]{CompressedIRangesList} object. 
       This coercion changes \code{x} from one
@@ -107,14 +100,12 @@
   containing the sequence in which the matches were found.
 
   \describe{
-    \item{}{
-      \code{unlist(x, recursive=TRUE, use.names=TRUE)}:
+    \item{\code{unlist(x, recursive=TRUE, use.names=TRUE)}:}{
       Return all the matches in a single
     \link[IRanges:IRanges-class]{IRanges} object. 
       \code{recursive} and \code{use.names} are ignored.
     }
-    \item{}{
-      \code{extractAllMatches(subject, mindex)}:
+    \item{\code{extractAllMatches(subject, mindex)}:}{
       Return all the matches in a single \link{XStringViews} object.
     }
   }

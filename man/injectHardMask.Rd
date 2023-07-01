@@ -55,8 +55,7 @@ injectHardMask(x, letter="+")
 
   Some important differences between "soft" and "hard" masking:
   \describe{
-    \item{}{
-      \code{injectHardMask} creates a (modified) copy of the original
+    \item{\code{injectHardMask}:}{ creates a (modified) copy of the original
       sequence. Using "soft masking" does not.
     }
     \item{}{
