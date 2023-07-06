@@ -24,21 +24,21 @@ editor_options:
 # Introduction
 
 This document briefly presents the new set of classes implemented in the
-*Biostrings* 2 package. Like the *Biostrings* 1 classes (found in
-*Biostrings* v 1.4.x), they were designed to make manipulation of big
+`r Biocpkg('Biostrings')` 2 package. Like the `r Biocpkg('Biostrings')` 
+1 classes (found in `r Biocpkg('Biostrings')` v 1.4.x), they were designed to make manipulation of big
 strings (like DNA or RNA sequences) easy and fast. This is achieved by
-keeping the 3 following ideas from the *Biostrings* 1 package: (1) use R
+keeping the 3 following ideas from the `r Biocpkg('Biostrings')` 1 package: (1) use R
 external pointers to store the string data, (2) use bit patterns to
 encode the string data, (3) provide the user with a convenient class of
 objects where each instance can store a set of views *on the same* big
 string (these views being typicallythe matches returned by a search
 algorithm).
 
-However, there is a flaw in the *BioString* class design that prevents
+However, there is a flaw in the `r Biocpkg('Biostring')` class design that prevents
 the search algorithms to return correct information about the matches
 (i.e. the views) that they found. The new classes address this issue by
-replacing the *BioString* class (implemented in *Biostrings* 1) by 2 new
-classes: (1) the *XString* class used to represent a *single* string,
+replacing the `r Biocpkg('Biostrings')` class (implemented in `r Biocpkg('Biostrings')` 1) by 2 new
+classes: (1) the `*XString* class used to represent a *single* string,
 and (2) the *XStringViews* class used to represent a set of views *on
 the same* *XString* object, and by introducing new implementations and 
 new interfaces for these 2 classes.
@@ -185,7 +185,7 @@ Note that, when `start` and `end` are numeric vectors and `i` is a
 `subseq(b, start[i], end[i])`.
 
 Subsetting also works with negative or logical values with the expected
-semantic (the same as for R built-in vectors):
+semantic (the same as for $R$ built-in vectors):
 
 ```{r c7}
 v4[-3]
@@ -232,7 +232,7 @@ v12 == DNAString("TAA")
 ```
 
 To display all the views in `v12` that are equals to a given view, you
-can type R cuties like:
+can type $R$ cuties like:
 
 ```{r e2}
 v12[v12 == v12[4]]
