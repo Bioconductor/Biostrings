@@ -19,4 +19,3 @@ data(yeastSEQCHR1)
 nchar(yeastSEQCHR1)
 }
 \keyword{datasets}
-

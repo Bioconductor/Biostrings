@@ -11,7 +11,7 @@
 ###   "B"       | general purpose string(s) | bytes 0-255  | no
 ###   "DNA"     | DNA sequence(s)           | DNA_ALPHABET | yes
 ###   "RNA"     | RNA sequence(s)           | RNA_ALPHABET | yes
-###   "AA"      | amino acid sequence(s)    | AA_ALPHABET  | no
+###   "AA"      | amino acid sequence(s)    | AA_ALPHABET  | yes
 ###
 ### seqtype() returns that sequence type. For example 'seqtype(AAString())'
 ### returns "AA".
@@ -25,7 +25,7 @@
 ### string containers: XString (single sequence), XStringSet (multiple
 ### sequences), XStringViews (multiple sequences) and MaskedXString (single
 ### sequence).
-###   
+###
 
 ### Exported.
 setGeneric("seqtype", function(x) standardGeneric("seqtype"))
@@ -35,11 +35,10 @@ setGeneric("seqtype<-", signature="x",
     function(x, value) standardGeneric("seqtype<-")
 )
 
-
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Helper functions for which the returned value depends on 'seqtype(x)',
 ### not on what particular data are in 'x'. Not exported.
-### 
+###
 
 xsbaseclass <- function(x) paste(seqtype(x), "String", sep="")
 
@@ -56,6 +55,7 @@ setMethod("xscodes", "ANY",
         switch(seqtype,
                DNA=DNAcodes(baseOnly),
                RNA=RNAcodes(baseOnly),
+               AA=AAcodes(baseOnly),
                0:255
         )
     }
@@ -66,6 +66,7 @@ xscodec <- function(x)
     switch(seqtype(x),
         DNA=DNA_STRING_CODEC,
         RNA=RNA_STRING_CODEC,
+        AA=AA_STRING_CODEC,
         NULL
     )
 }
@@ -109,18 +110,22 @@ get_seqtype_conversion_lookup <- function(from_seqtype, to_seqtype)
     if (!compatible_seqtypes(from_seqtype, to_seqtype))
         stop("incompatible sequence types \"",
              from_seqtype, "\" and \"", to_seqtype, "\"")
-    from_nucleo <- from_seqtype %in% c("DNA", "RNA")
-    to_nucleo <- to_seqtype %in% c("DNA", "RNA")
+    from_nucleo <- from_seqtype %in% c("DNA", "RNA", "AA")
+    to_nucleo <- to_seqtype %in% c("DNA", "RNA", "AA")
     if (from_nucleo == to_nucleo)
         return(NULL)
     if (to_seqtype == "DNA")
         return(DNA_STRING_CODEC@enc_lkup)
     if (to_seqtype == "RNA")
         return(RNA_STRING_CODEC@enc_lkup)
+    if (to_seqtype == "AA")
+        return(AA_STRING_CODEC@enc_lkup)
     if (from_seqtype == "DNA")
         return(DNA_STRING_CODEC@dec_lkup)
     if (from_seqtype == "RNA")
         return(RNA_STRING_CODEC@dec_lkup)
+    if (from_seqtype == "AA")
+        return(AA_STRING_CODEC@dec_lkup)
     stop("Biostrings internal error, please report") # should never happen
 }
 
@@ -155,4 +160,3 @@ setMethod("alphabet", "ANY",
         )
     }
 )
-

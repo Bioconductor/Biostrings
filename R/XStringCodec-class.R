@@ -153,7 +153,6 @@ RNA_ALPHABET <- names(RNA_CODES)
 DNA_BASES <- names(DNAcodes(TRUE))
 RNA_BASES <- names(RNAcodes(TRUE))
 
-
 ### DNA and RNA codecs.
 .XStringCodec.DNAorRNA <- function(codes)
 {
@@ -165,7 +164,6 @@ RNA_BASES <- names(RNAcodes(TRUE))
 
 DNA_STRING_CODEC <- .XStringCodec.DNAorRNA(DNA_CODES)
 RNA_STRING_CODEC <- .XStringCodec.DNAorRNA(RNA_CODES)
-
 
 ### Return the lookup table that transforms a DNA sequence into its
 ### complementary sequence.
@@ -195,6 +193,33 @@ getRNAComplementLookup <- function()
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The AA alphabet and codec.
+###
+
+### AAStrings don't need to support DNA/RNA or complementation,
+### so the code to generate the codec can be a lot simpler.
+AAcodes <- function(baseOnly)
+{
+    if (!isTRUEorFALSE(baseOnly))
+        stop("'baseOnly' must be TRUE or FALSE")
+    letters <- AA_ALPHABET
+    if (baseOnly)
+        letters <- head(letters, n=20L)
+    setNames(.letterAsByteVal(letters), letters)
+}
+
+### AA codec.
+.XStringCodec.AA <- function(codes)
+{
+    letters <- names(codes)
+    extra_letters <- setdiff(tolower(letters), letters)
+    extra_codes <- .letterAsByteVal(toupper(extra_letters))
+    new("XStringCodec", letters, codes, extra_letters, extra_codes)
+}
+
+AA_CODES <- AAcodes(FALSE)
+AA_STRING_CODEC <- .XStringCodec.AA(AA_CODES)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Add extra codecs below...
-
-

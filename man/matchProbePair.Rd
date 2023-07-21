@@ -50,10 +50,10 @@ matchProbePair(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=
   The \code{matchProbePair} function does the following: (1) find all
   the "plus hits" i.e. the Fprobe and Rprobe matches on the "plus" strand,
   (2) find all the "minus hits" i.e. the Fprobe and Rprobe matches on the
-  "minus" strand and (3) from the set of all (plus\_hit, minus\_hit) pairs,
-  extract and return the subset of "reduced matches" i.e. the (plus\_hit, minus\_hit)
-  pairs such that (a) plus\_hit <= minus\_hit and (b) there are no hits (plus
-  or minus) between plus\_hit and minus\_hit.
+  "minus" strand and (3) from the set of all (plus_hit, minus_hit) pairs,
+  extract and return the subset of "reduced matches" i.e. the (plus_hit,
+  minus_hit) pairs such that (a) plus_hit <= minus_hit and (b) there are
+  no hits (plus or minus) between plus_hit and minus_hit.
   This set of "reduced matches" is the set of "theoretical amplicons".
 }
 
@@ -91,4 +91,3 @@ matchProbePair(Fprobe, Rprobe, subject) # 9 "theoretical amplicons"
 }
 
 \keyword{methods}
-

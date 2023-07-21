@@ -7,17 +7,30 @@ biocViews: SequenceMatching, Alignment, Sequencing, Genetics,
 	DataImport, DataRepresentation, Infrastructure
 URL: https://bioconductor.org/packages/Biostrings
 BugReports: https://github.com/Bioconductor/Biostrings/issues
-Version: 2.67.0
+Version: 2.69.2
 License: Artistic-2.0
 Encoding: UTF-8
 Authors@R: c(
-	person("H.", "Pagès", role=c("aut", "cre"),
+	person("Hervé", "Pagès", role=c("aut", "cre"),
 		email="hpages.on.github@gmail.com"),
-	person("P.", "Aboyoun", role="aut"),
-	person("R.", "Gentleman", role="aut"),
-	person("S.", "DebRoy", role="aut"),
-	person("B.", "Kanali", role="ctb",
-	  	comment="Converted 'MultipleAlignments' vignette from Sweave to RMarkdown."))
+	person("Patrick", "Aboyoun", role="aut"),
+	person("Robert", "Gentleman", role="aut"),
+	person("Saikat", "DebRoy", role="aut"),
+	person("Vince", "Carey", role="ctb"),
+	person("Nicolas", "Delhomme", role="ctb"),
+	person("Felix", "Ernst", role="ctb"),
+	person("Haleema", "Khan", role="ctb",
+	       comment="Converted 'matchprobes' vignette from Sweave to RMarkdown"),
+	person("Aidan", "Lakshman", role="ctb"),
+	person("Kieran", "O'Neill", role="ctb"),
+	person("Valerie", "Obenchain", role="ctb"),
+	person("Marcel", "Ramos", role="ctb"),
+	person("Albert", "Vill", role="ctb"),
+	person("Jen", "Wokaty", role="ctb",
+	       comment="Converted 'matchprobes' vignette from Sweave to RMarkdown"),
+	person("Erik", "Wright", role="ctb"),
+  person("B.", "Kanali", role="ctb",
+	       comment="Converted 'MultipleAlignments' vignette from Sweave to RMarkdown."))
 Depends: R (>= 4.0.0), methods, BiocGenerics (>= 0.37.0),
 	S4Vectors (>= 0.27.12), IRanges (>= 2.31.2), XVector (>= 0.37.1),
 	GenomeInfoDb
@@ -32,9 +45,8 @@ Suggests: BSgenome (>= 1.13.14),
 	drosophila2probe, hgu95av2probe, hgu133aprobe,
 	GenomicFeatures (>= 1.3.14),
 	hgu95av2cdf, affy (>= 1.41.3), affydata (>= 1.11.5),
-	RUnit,
-	Biocstyle,
-	knitr
+	RUnit, BiocStyle, knitr
+VignetteBuilder: knitr
 LazyLoad: yes
 Collate: 00datacache.R
 	utils.R

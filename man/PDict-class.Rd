@@ -238,37 +238,30 @@ PDict(x, max.mismatch=NA, tb.start=NA, tb.end=NA, tb.width=NA,
   \code{x} is a PDict object.
 
   \describe{
-    \item{}{
-      \code{length(x)}:
+    \item{\code{length(x)}:}{
       The number of patterns in \code{x}.
     }
-    \item{}{
-      \code{width(x)}:
+    \item{\code{width(x)}:}{
       A vector of non-negative integers containing the number
       of letters for each pattern in \code{x}.
     }
-    \item{}{
-      \code{names(x)}:
+    \item{\code{names(x)}:}{
       The names of the patterns in \code{x}.
     }
-    \item{}{
-      \code{head(x)}:
+    \item{\code{head(x)}:}{
       The head of \code{x} or \code{NULL} if \code{x} has no head.
     }
-    \item{}{
-      \code{tb(x)}:
+    \item{\code{tb(x)}:}{
       The Trusted Band defined on \code{x}.
     }
-    \item{}{
-      \code{tb.width(x)}:
+    \item{\code{tb.width(x)}:}{
       The width of the Trusted Band defined on \code{x}.
       Note that, unlike \code{width(tb(x))}, this is a single integer.
       And because the Trusted Band has a constant width, \code{tb.width(x)}
       is in fact equivalent to \code{unique(width(tb(x)))},
       or to \code{width(tb(x))[1]}.
     }
-    \item{}{
-      \code{tail(x)}:
+    \item{\code{tail(x)}:}{
       The tail of \code{x} or \code{NULL} if \code{x} has no tail.
     }
   }
@@ -279,8 +272,7 @@ PDict(x, max.mismatch=NA, tb.start=NA, tb.end=NA, tb.width=NA,
   \code{x} is a PDict object.
 
   \describe{
-    \item{}{
-      \code{x[[i]]}:
+    \item{\code{x[[i]]}:}{
       Extract the i-th pattern from \code{x} as a \link{DNAString} object.
     }
   }
@@ -291,12 +283,10 @@ PDict(x, max.mismatch=NA, tb.start=NA, tb.end=NA, tb.width=NA,
   \code{x} is a PDict object.
 
   \describe{
-    \item{}{
-      \code{duplicated(x)}:
+    \item{\code{duplicated(x)}:}{
       [TODO]
     }
-    \item{}{
-      \code{patternFrequency(x)}:
+    \item{\code{patternFrequency(x)}:}{
       [TODO]
     }
   }

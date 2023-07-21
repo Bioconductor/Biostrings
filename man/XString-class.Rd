@@ -91,8 +91,7 @@
   or an XString object.
 
   \describe{
-    \item{}{
-      \code{BString(x="", start=1, nchar=NA)}:
+    \item{\code{BString(x="", start=1, nchar=NA)}:}{
       Tries to convert \code{x} into a BString object by reading
       \code{nchar} letters starting at position \code{start} in \code{x}.
     }
@@ -103,14 +102,12 @@
   In the code snippets below, \code{x} is an XString object.
 
   \describe{
-    \item{}{
-      \code{alphabet(x)}:
+    \item{\code{alphabet(x)}:}{
       \code{NULL} for a \code{BString} object.
       See the corresponding man pages when \code{x} is a 
       \link{DNAString}, \link{RNAString} or \link{AAString} object.
     }
-    \item{}{
-      \code{length(x)} or \code{nchar(x)}:
+    \item{\code{length(x)}:}{ or \code{nchar(x)}:
       Get the length of an XString object, i.e., its number of letters.
     }
   }
@@ -120,12 +117,10 @@
   In the code snippets below, \code{x} is an XString object.
 
   \describe{
-    \item{}{
-      \code{as.character(x)}:
+    \item{\code{as.character(x)}:}{
       Converts \code{x} to a character string.
     }
-    \item{}{
-      \code{toString(x)}:
+    \item{\code{toString(x)}:}{
       Equivalent to \code{as.character(x)}.
     }
   }
@@ -135,8 +130,7 @@
   In the code snippets below, \code{x} is an XString object.
 
   \describe{
-    \item{}{
-      \code{x[i]}:
+    \item{\code{x[i]}:}{
       Return a new XString object made of the selected letters (subscript
       \code{i} must be an NA-free numeric vector specifying the positions of
       the letters to select).
@@ -153,8 +147,7 @@
   In the code snippets below, \code{e1} and \code{e2} are XString objects.
 
   \describe{
-    \item{}{
-      \code{e1 == e2}:
+    \item{\code{e1 == e2}:}{
       \code{TRUE} if \code{e1} is equal to \code{e2}.
       \code{FALSE} otherwise.
 
@@ -167,8 +160,7 @@
       Comparison between a BString object and a character string
       is also supported (see examples below).
     }
-    \item{}{
-      \code{e1 != e2}:
+    \item{\code{e1 != e2}:}{
       Equivalent to \code{!(e1 == e2)}.
     }
   }

@@ -108,27 +108,22 @@ writeQualityScaledXStringSet(x, filepath, append=FALSE,
   QualityScaledXStringSet object):
 
   \describe{
-    \item{}{
-      \code{length(x)}:
+    \item{\code{length(x)}:}{
       The number of sequences in \code{x}.
     }
-    \item{}{
-      \code{width(x)}:
+    \item{\code{width(x)}:}{
       A vector of non-negative integers containing the number
       of letters for each element in \code{x}.
     }
-    \item{}{
-      \code{nchar(x)}:
+    \item{\code{nchar(x)}:}{
       The same as \code{width(x)}.
     }
-    \item{}{
-      \code{names(x)}:
+    \item{\code{names(x)}:}{
       \code{NULL} or a character vector of the same length as \code{x}
       containing a short user-provided description or comment for each
       element in \code{x}.
     }
-    \item{}{
-      \code{quality(x)}:
+    \item{\code{quality(x)}:}{
       The quality of the strings.
     }
   }
@@ -140,8 +135,7 @@ writeQualityScaledXStringSet(x, filepath, append=FALSE,
   and \code{i} should be an index specifying the elements to extract.
 
   \describe{
-    \item{}{
-      \code{x[i]}:
+    \item{\code{x[i]}:}{
       Return a new QualityScaledXStringSet object made of the selected elements.
     }
   }
@@ -211,4 +205,3 @@ stopifnot(identical(readLines(outfile3a), readLines(outfile3b)))
 
 \keyword{methods}
 \keyword{classes}
-

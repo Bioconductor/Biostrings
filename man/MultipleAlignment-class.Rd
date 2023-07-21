@@ -154,19 +154,16 @@ write.phylip(x, filepath)
   In the code snippets below, \code{x} is a MultipleAlignment object.
 
   \describe{
-    \item{}{
-      \code{unmasked(x)}:
+    \item{\code{unmasked(x)}:}{
       The underlying \link{XStringSet} object containing the multiple
       sequence alignment.
     }
-    \item{}{
-      \code{rownames(x)}:
+    \item{\code{rownames(x)}:}{
       \code{NULL} or a character vector of the same length as \code{x}
       containing a short user-provided description or comment for each
       sequence in \code{x}.
     }
-    \item{}{
-      \code{rowmask(x)}, \code{rowmask(x, append, invert) <- value}:
+    \item{\code{rowmask(x)}, \code{rowmask(x, append, invert) <- value}:}{
       Gets and sets the \link{NormalIRanges} object representing the
       masked rows in \code{x}. The \code{append} argument takes
       \code{union}, \code{replace} or \code{intersect} to indicate how
@@ -176,8 +173,7 @@ write.phylip(x, filepath)
       can be of any class that is coercible to a \link{NormalIRanges}
       via the \code{as} function.
     }
-    \item{}{
-      \code{colmask(x)}, \code{colmask(x, append, invert) <- value}:
+    \item{\code{colmask(x)}, \code{colmask(x, append, invert) <- value}:}{
       Gets and sets the \link{NormalIRanges} object representing the
       masked columns in \code{x}. The \code{append} argument takes
       \code{union}, \code{replace} or \code{intersect} to indicate how
@@ -187,8 +183,7 @@ write.phylip(x, filepath)
       can be of any class that is coercible to a \link{NormalIRanges}
       via the \code{as} function.
     }
-    \item{}{
-      \code{maskMotif(x, motif, min.block.width=1, ...)}:
+    \item{\code{maskMotif(x, motif, min.block.width=1, ...)}:}{
       Returns a MultipleAlignment object with a modified column mask
       based upon motifs found in the consensus string where the consensus
       string keeps all the columns but drops the masked rows.
@@ -198,8 +193,7 @@ write.phylip(x, filepath)
         \item{...}{Additional arguments for \code{matchPattern}.}
       }
     }
-    \item{}{
-      \code{maskGaps(x, min.fraction, min.block.width)}:
+    \item{\code{maskGaps(x, min.fraction, min.block.width)}:}{
       Returns a MultipleAlignment object with a modified column mask
       based upon gaps in the columns. In particular, this mask is defined
       by \code{min.block.width} or more consecutive columns that have
@@ -214,41 +208,32 @@ write.phylip(x, filepath)
           \code{min.fraction} (default is \code{4}).}
       }
     }
-    \item{}{
-      \code{nrow(x)}:
+    \item{\code{nrow(x)}:}{
       Returns the number of sequences aligned in \code{x}.
     }
-    \item{}{
-      \code{ncol(x)}:
+    \item{\code{ncol(x)}:}{
       Returns the number of characters for each alignment in \code{x}.
     }
-    \item{}{
-      \code{dim(x)}:
+    \item{\code{dim(x)}:}{
       Equivalent to \code{c(nrow(x), ncol(x))}.
     }
-    \item{}{
-      \code{maskednrow(x)}:
+    \item{\code{maskednrow(x)}:}{
       Returns the number of masked aligned sequences in \code{x}.
     }
-    \item{}{
-      \code{maskedncol(x)}:
+    \item{\code{maskedncol(x)}:}{
       Returns the number of masked aligned characters in \code{x}.
     }
-    \item{}{
-      \code{maskeddim(x)}:
+    \item{\code{maskeddim(x)}:}{
       Equivalent to \code{c(maskednrow(x), maskedncol(x))}.
     }
-    \item{}{
-      \code{maskedratio(x)}:
+    \item{\code{maskedratio(x)}:}{
       Equivalent to \code{maskeddim(x) / dim(x)}.
     }
-    \item{}{
-      \code{nchar(x)}:
+    \item{\code{nchar(x)}:}{
       Returns the number of unmasked aligned characters in \code{x},
       i.e. \code{ncol(x) - maskedncol(x)}.
     }
-    \item{}{
-      \code{alphabet(x)}:
+    \item{\code{alphabet(x)}:}{
       Equivalent to \code{alphabet(unmasked(x))}.
     }
   }
@@ -258,22 +243,19 @@ write.phylip(x, filepath)
   In the code snippets below, \code{x} is a MultipleAlignment object.
 
   \describe{
-    \item{}{
-      \code{as(from, "DNAStringSet")}, \code{as(from, "RNAStringSet")},
-      \code{as(from, "AAStringSet")}, \code{as(from, "BStringSet")}:
+    \item{\code{as(from, "DNAStringSet")}, \code{as(from, "RNAStringSet")},
+      \code{as(from, "AAStringSet")}, \code{as(from, "BStringSet")}:}{
       Creates an instance of the specified \link{XStringSet} object subtype
       that contains the unmasked regions of the multiple sequence alignment
       in \code{x}.
     }
-    \item{}{
-      \code{as.character(x, use.names)}:
+    \item{\code{as.character(x, use.names)}:}{
       Convert \code{x} to a character vector containing the unmasked
       regions of the multiple sequence alignment. \code{use.names}
       controls whether or not \code{rownames(x)} should be used to set
       the names of the returned vector (default is \code{TRUE}).
     }
-    \item{}{
-      \code{as.matrix(x, use.names)}:
+    \item{\code{as.matrix(x, use.names)}:}{
       Returns a character matrix containing the "exploded" representation
       of the unmasked regions of the multiple sequence alignment.
       \code{use.names} controls whether or not \code{rownames(x)} should
@@ -287,8 +269,7 @@ write.phylip(x, filepath)
   In the code snippets below, x is a MultipleAlignment object.
 
   \describe{
-    \item{}{
-      \code{consensusMatrix(x, as.prob, baseOnly)}:
+    \item{\code{consensusMatrix(x, as.prob, baseOnly)}:}{
       Creates an integer matrix containing the column frequencies of
       the underlying alphabet with masked columns being represented
       with \code{NA} values. If \code{as.prob} is \code{TRUE}, then
@@ -296,30 +277,26 @@ write.phylip(x, filepath)
       default). If \code{baseOnly} is \code{TRUE}, then the non-base
       letters are collapsed into an \code{"other"} category.
     }
-    \item{}{
-      \code{consensusString(x, ...)}:
+    \item{\code{consensusString(x, ...)}:}{
       Creates a consensus string for \code{x} with the symbol \code{"#"}
       representing a masked column. See \code{\link{consensusString}}
       for details on the arguments.
     }
-    \item{}{
-      \code{consensusViews(x, ...)}:
+    \item{\code{consensusViews(x, ...)}:}{
       Similar to the \code{consensusString} method. It returns a 
       \link{XStringViews} on the consensus string containing subsequence
       contigs of non-masked columns. Unlike the \code{consensusString}
       method, the masked columns in the underlying string contain a
       consensus value rather than the \code{"#"} symbol.
     }
-    \item{}{
-      \code{alphabetFrequency(x, as.prob, collapse)}:
+    \item{\code{alphabetFrequency(x, as.prob, collapse)}:}{
       Creates an integer matrix containing the row frequencies of
       the underlying alphabet. If \code{as.prob} is \code{TRUE}, then
       probabilities are reported, otherwise counts are reported (the
       default). If \code{collapse} is \code{TRUE}, then returns the
       overall frequency instead of the frequency by row.
     }
-    \item{}{
-      \code{detail(x, invertColMask, hideMaskedCols)}: Allows for a full
+    \item{\code{detail(x, invertColMask, hideMaskedCols)}:}{ Allows for a full
       pager driven display of the object so that masked cols and rows
       can be removed and the entire sequence can be visually
       inspected. If \code{hideMaskedCols} is set to it's default value

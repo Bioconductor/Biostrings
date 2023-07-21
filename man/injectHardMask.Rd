@@ -54,24 +54,21 @@ injectHardMask(x, letter="+")
   call this kind of masking "hard masking".
 
   Some important differences between "soft" and "hard" masking:
-  \describe{
-    \item{}{
-      \code{injectHardMask} creates a (modified) copy of the original
-      sequence. Using "soft masking" does not.
-    }
-    \item{}{
-      A function that is "mask aware" like \code{alphabetFrequency} or
-      \code{matchPattern} will really skip the masked regions
-      when "soft masking" is used i.e. they will not walk thru the
-      regions that are under active masks. This might lead to some
-      speed improvements when a high percentage of the original sequence
-      is masked.
-      With "hard masking", the entire sequence is walked thru.
-    }
-    \item{}{
-      Matches cannot span over masked regions with "soft masking".
-      With "hard masking" they can.
-    }
+
+  \itemize{
+    \item \code{injectHardMask} creates a (modified) copy of the original
+          sequence. Using "soft masking" does not.
+
+    \item A function that is "mask aware" like \code{alphabetFrequency} or
+          \code{matchPattern} will really skip the masked regions
+          when "soft masking" is used i.e. they will not walk thru the
+          regions that are under active masks. This might lead to some
+          speed improvements when a high percentage of the original sequence
+          is masked.
+          With "hard masking", the entire sequence is walked thru.
+
+    \item Matches cannot span over masked regions with "soft masking".
+          With "hard masking" they can.
   }
 }
 

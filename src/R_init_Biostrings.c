@@ -29,6 +29,7 @@ static const R_CallMethodDef callMethods[] = {
 /* XString_class.c */
 	CALLMETHOD_DEF(init_DNAlkups, 2),
 	CALLMETHOD_DEF(init_RNAlkups, 2),
+	CALLMETHOD_DEF(init_AAlkups, 2),
 	CALLMETHOD_DEF(new_XString_from_CHARACTER, 5),
 
 /* XStringSet_class.c */
@@ -173,6 +174,8 @@ void R_init_Biostrings(DllInfo *info)
 	REGISTER_CCALLABLE(_DNAdecode);
 	REGISTER_CCALLABLE(_RNAencode);
 	REGISTER_CCALLABLE(_RNAdecode);
+	REGISTER_CCALLABLE(_AAencode);
+	REGISTER_CCALLABLE(_AAdecode);
 
 /* XStringSet_class.c */
 	REGISTER_CCALLABLE(_get_XStringSet_length);

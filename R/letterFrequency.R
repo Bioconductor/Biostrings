@@ -131,14 +131,13 @@
     ans
 }
 
-.XString.amino_acid_frequency <- function(x, as.prob)
+.XString.amino_acid_frequency <- function(x, as.prob, baseOnly)
 {
     if (!isTRUEorFALSE(as.prob))
         stop("'as.prob' must be TRUE or FALSE")
-    codes <- as.integer(AAString(paste0(AA_ALPHABET, collapse="")))
-    names(codes) <- AA_ALPHABET    
+    codes <- xscodes(x, baseOnly=baseOnly)
     ans <- .Call2("XString_letter_frequency",
-                 x, codes, TRUE,
+                 x, codes, baseOnly,
                  PACKAGE="Biostrings")
     if (as.prob)
         ans <- ans / nchar(x) # nchar(x) is sum(ans) but faster
@@ -180,15 +179,14 @@
     ans
 }
 
-.XStringSet.amino_acid_frequency <- function(x, as.prob, collapse)
+.XStringSet.amino_acid_frequency <- function(x, as.prob, collapse, baseOnly)
 {
     if (!isTRUEorFALSE(as.prob))
         stop("'as.prob' must be TRUE or FALSE")
     collapse <- .normargCollapse(collapse)
-    codes <- as.integer(AAString(paste0(AA_ALPHABET, collapse="")))
-    names(codes) <- AA_ALPHABET
+    codes <- xscodes(x, baseOnly=baseOnly)
     ans <- .Call2("XStringSet_letter_frequency",
-                 x, collapse, codes, TRUE,
+                 x, collapse, codes, baseOnly,
                  PACKAGE="Biostrings")
     if (as.prob) {
         if (collapse)
@@ -219,8 +217,8 @@ setMethod("alphabetFrequency", "RNAString",
 )
 
 setMethod("alphabetFrequency", "AAString",
-    function(x, as.prob=FALSE)
-        .XString.amino_acid_frequency(x, as.prob)
+    function(x, as.prob=FALSE, baseOnly=FALSE)
+        .XString.amino_acid_frequency(x, as.prob, baseOnly)
 )
 
 setMethod("alphabetFrequency", "XStringSet",
@@ -239,8 +237,8 @@ setMethod("alphabetFrequency", "RNAStringSet",
 )
 
 setMethod("alphabetFrequency", "AAStringSet",
-    function(x, as.prob=FALSE, collapse=FALSE)
-        .XStringSet.amino_acid_frequency(x, as.prob, collapse)
+    function(x, as.prob=FALSE, collapse=FALSE, baseOnly=FALSE)
+        .XStringSet.amino_acid_frequency(x, as.prob, collapse, baseOnly)
 )
 
 ### library(drosophila2probe)
@@ -281,6 +279,11 @@ setMethod("hasOnlyBaseLetters", "RNAString",
     function(x) hasOnlyBaseLetters(DNAString(x))
 )
 
+setMethod("hasOnlyBaseLetters", "AAString",
+    function(x)
+        alphabetFrequency(x, baseOnly=TRUE)[["other"]] == 0L
+)
+
 setMethod("hasOnlyBaseLetters", "DNAStringSet",
     function(x)
         alphabetFrequency(x, collapse=TRUE, baseOnly=TRUE)[["other"]] == 0L
@@ -288,6 +291,11 @@ setMethod("hasOnlyBaseLetters", "DNAStringSet",
 
 setMethod("hasOnlyBaseLetters", "RNAStringSet",
     function(x) hasOnlyBaseLetters(DNAStringSet(x))
+)
+
+setMethod("hasOnlyBaseLetters", "AAStringSet",
+    function(x)
+        alphabetFrequency(x, collapse=TRUE, baseOnly=TRUE)[["other"]] == 0L
 )
 
 setMethod("hasOnlyBaseLetters", "XStringViews",
