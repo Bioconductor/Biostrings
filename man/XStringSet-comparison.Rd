@@ -52,8 +52,7 @@
   \code{x} and \code{y} are \link{XStringSet} objects.
 
   \describe{
-    \item{}{
-      \code{pcompare(x, y)}:
+    \item{\code{pcompare(x, y)}:}{
       Performs element-wise (aka "parallel") comparison of \code{x} and
       \code{y}, that is, returns an integer vector where the i-th element
       is less than, equal to, or greater than zero if the i-th element in
@@ -63,9 +62,8 @@
       is recycled to the length of the longest (the standard recycling rules
       apply).
     }
-    \item{}{
-      \code{x == y}, \code{x != y}, \code{x <= y}, \code{x >= y},
-      \code{x < y}, \code{x > y}:
+    \item{\code{x == y}, \code{x != y}, \code{x <= y}, \code{x >= y},
+      \code{x < y}, \code{x > y}:}{
       Equivalent to \code{pcompare(x, y) == 0}, \code{pcompare(x, y) != 0},
       \code{pcompare(x, y) <= 0}, \code{pcompare(x, y) >= 0},
       \code{pcompare(x, y) < 0}, and \code{pcompare(x, y) > 0}, respectively.
@@ -77,23 +75,19 @@
   In the code snippets below, \code{x} is an \link{XStringSet} object.
 
   \describe{
-    \item{}{
-      \code{is.unsorted(x, strictly=FALSE)}:
+    \item{\code{is.unsorted(x, strictly=FALSE)}:}{
       Return a logical values specifying if \code{x} is unsorted. The
       \code{strictly} argument takes logical value indicating if the check
       should be for _strictly_ increasing values.
     }
-    \item{}{
-      \code{order(x, decreasing=FALSE)}:
+    \item{\code{order(x, decreasing=FALSE)}:}{
       Return a permutation which rearranges \code{x} into ascending or
       descending order.
     }
-    \item{}{
-      \code{rank(x, ties.method=c("first", "min"))}:
+    \item{\code{rank(x, ties.method=c("first", "min"))}:}{
       Rank \code{x} in ascending order.
     }
-    \item{}{
-      \code{sort(x, decreasing=FALSE)}:
+    \item{\code{sort(x, decreasing=FALSE)}:}{
       Sort \code{x} into ascending or descending order.
     }
   }
@@ -103,12 +97,10 @@
   In the code snippets below, \code{x} is an \link{XStringSet} object.
 
   \describe{
-    \item{}{
-      \code{duplicated(x)}:
+    \item{\code{duplicated(x)}:}{
       Return a logical vector whose elements denotes duplicates in \code{x}.
     }
-    \item{}{
-      \code{unique(x)}:
+    \item{\code{unique(x)}:}{
       Return the subset of \code{x} made of its unique elements.
     }
   }
@@ -119,13 +111,11 @@
   \code{x} and \code{table} are \link{XStringSet} objects.
 
   \describe{
-    \item{}{
-      \code{match(x, table, nomatch=NA_integer_)}:
+    \item{\code{match(x, table, nomatch=NA_integer_)}:}{
       Returns an integer vector containing the first positions of an identical
       match in \code{table} for the elements in \code{x}.
     }
-    \item{}{
-      \code{x \%in\% table}:
+    \item{\code{x \%in\% table}:}{
       Returns a logical vector indicating which elements in \code{x} match
       identically with an element in \code{table}.
     }
@@ -138,11 +128,9 @@
   (these methods exist for compatibility).
 
   \describe{
-    \item{}{
-      \code{is.na(x)}: Returns \code{FALSE} for every element.
+    \item{\code{is.na(x)}:}{ Returns \code{FALSE} for every element.
     }
-    \item{}{
-      \code{anyNA(x)}: Returns \code{FALSE}.
+    \item{\code{anyNA(x)}:}{ Returns \code{FALSE}.
     }
   }
 }

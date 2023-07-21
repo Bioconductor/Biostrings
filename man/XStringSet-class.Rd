@@ -113,14 +113,11 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
   (with no NAs), or an XStringSet (or \link{XStringViews}) object,
   then the 3 following transformations are equivalent:
   \describe{
-    \item{}{
-      \code{BStringSet(x, start=mystart, end=myend, width=mywidth)}
+    \item{\code{BStringSet(x, start=mystart, end=myend, width=mywidth)}:}{
     }
-    \item{}{
-      \code{subseq(BStringSet(x), start=mystart, end=myend, width=mywidth)}
+    \item{\code{subseq(BStringSet(x), start=mystart, end=myend, width=mywidth)}:}{
     }
-    \item{}{
-      \code{BStringSet(subseq(x, start=mystart, end=myend, width=mywidth))}
+    \item{\code{BStringSet(subseq(x, start=mystart, end=myend, width=mywidth))}:}{
     }
   }
   Note that, besides being more convenient, the first form is also more
@@ -132,19 +129,16 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
   \code{x} is an XStringSet object.
 
   \describe{
-    \item{}{
-      \code{length(x)}:
+    \item{\code{length(x)}:}{
       The number of sequences in \code{x}.
     }
-    \item{}{
-      \code{width(x)}:
+    \item{\code{width(x)}:}{
       A vector of non-negative integers containing the number
       of letters for each element in \code{x}.
       Note that \code{width(x)} is also defined for a character vector
       with no NAs and is equivalent to \code{nchar(x, type="bytes")}.
     }
-    \item{}{
-      \code{names(x)}:
+    \item{\code{names(x)}:}{
       \code{NULL} or a character vector of the same length as \code{x}
       containing a short user-provided description or comment for each
       element in \code{x}.
@@ -153,15 +147,13 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
       As a general recommendation, the user should never try to modify
       an object by accessing its slots directly.
     }
-    \item{}{
-      \code{alphabet(x)}:
+    \item{\code{alphabet(x)}:}{
       Return \code{NULL}, \code{\link{DNA_ALPHABET}},
       \code{\link{RNA_ALPHABET}} or \code{\link{AA_ALPHABET}} depending on
       whether \code{x} is a BStringSet, DNAStringSet, RNAStringSet or
       AAStringSet object.
     }
-    \item{}{
-      \code{nchar(x)}:
+    \item{\code{nchar(x)}:}{
       The same as \code{width(x)}.
     }
   }
@@ -173,8 +165,7 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
   or an XStringSet (or \link{XStringViews}) object.
 
   \describe{
-    \item{}{
-      \code{subseq(x, start=NA, end=NA, width=NA)}:
+    \item{\code{subseq(x, start=NA, end=NA, width=NA)}:}{
       Applies \code{subseq} on each element in \code{x}.
       See \code{?\link[XVector]{subseq}} for the details.
 
@@ -191,8 +182,7 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
       they define "out of limits" subsequences or subsequences with a
       negative width.
     }
-    \item{}{
-      \code{narrow(x, start=NA, end=NA, width=NA, use.names=TRUE)}:
+    \item{\code{narrow(x, start=NA, end=NA, width=NA, use.names=TRUE)}:}{
       Same as \code{subseq}. The only differences are: (1) \code{narrow}
       has a \code{use.names} argument; and (2) all the things \code{narrow}
       and \code{subseq} work on
@@ -202,8 +192,7 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
       \code{subseq}). But they both work and do the same thing on an
       XStringSet object.
     }
-    \item{}{
-      \code{threebands(x, start=NA, end=NA, width=NA)}:
+    \item{\code{threebands(x, start=NA, end=NA, width=NA)}:}{
       Like the method for \link[IRanges]{IRanges}
       objects, the
       \code{threebands} methods for character vectors and XStringSet
@@ -213,8 +202,7 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
       See \code{?\link[IRanges]{threebands}} in the
       \pkg{IRanges} package for the details.
     }
-    \item{}{
-      \code{subseq(x, start=NA, end=NA, width=NA) <- value}:
+    \item{\code{subseq(x, start=NA, end=NA, width=NA) <- value}:}{
       A vectorized version of the \code{\link[XVector]{subseq<-}}
       method for \link[XVector]{XVector} objects.
       See \code{?`\link[XVector]{subseq<-}`} for the details.
@@ -228,16 +216,13 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
   and \code{i} should be an index specifying the elements to extract.
 
   \describe{
-    \item{}{
-      \code{x[i]}:
+    \item{\code{x[i]}:}{
       Return a new XStringSet object made of the selected elements.
     }
-    \item{}{
-      \code{x[[i]]}:
+    \item{\code{x[[i]]}:}{
       Extract the i-th \code{\link{XString}} object from \code{x}.
     }
-    \item{}{
-      \code{append(x, values, after=length(x))}:
+    \item{\code{append(x, values, after=length(x))}:}{
       Add sequences in \code{values} to \code{x}.
     }
   }
@@ -248,20 +233,16 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
   \code{x} and \code{y} are XStringSet objects.
 
   \describe{
-    \item{}{
-      \code{union(x, y)}:
+    \item{\code{union(x, y)}:}{
       Union of \code{x} and \code{y}.
     }
-    \item{}{
-      \code{intersect(x, y)}:
+    \item{\code{intersect(x, y)}:}{
       Intersection of \code{x} and \code{y}.
     }
-    \item{}{
-      \code{setdiff(x, y)}:
+    \item{\code{setdiff(x, y)}:}{
       Asymmetric set difference of \code{x} and \code{y}.
     }
-    \item{}{
-     \code{setequal(x, y)}:
+    \item{\code{setequal(x, y)}:}{
       Set equality of \code{x} to \code{y}.
     }
   }
@@ -272,36 +253,30 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
   \code{x} is an XStringSet object.
 
   \describe{
-    \item{}{
-      \code{unlist(x)}:
+    \item{\code{unlist(x)}:}{
       Turns \code{x} into an \link{XString} object by combining the
       sequences in \code{x} together.
       Fast equivalent to \code{do.call(c, as.list(x))}.
     }
-    \item{}{
-      \code{as.character(x, use.names=TRUE)}:
+    \item{\code{as.character(x, use.names=TRUE)}:}{
       Converts \code{x} to a character vector of the same length as \code{x}.
       The \code{use.names} argument controls whether or not \code{names(x)}
       should be propagated to the names of the returned vector.
     }
-    \item{}{
-      \code{as.factor(x)}:
+    \item{\code{as.factor(x)}:}{
       Converts \code{x} to a factor, via \code{as.character(x)}.
     }
-    \item{}{
-      \code{as.matrix(x, use.names=TRUE)}:
+    \item{\code{as.matrix(x, use.names=TRUE)}:}{
       Returns a character matrix containing the "exploded" representation of
       the strings. Can only be used on an XStringSet object with
       equal-width strings.
       The \code{use.names} argument controls whether or not \code{names(x)}
       should be propagated to the row names of the returned matrix.
     }
-    \item{}{
-      \code{toString(x)}:
+    \item{\code{toString(x)}:}{
       Equivalent to \code{toString(as.character(x))}.
     }
-    \item{}{
-      \code{show(x)}:
+    \item{\code{show(x)}:}{
       By default the \code{show} method displays 5 head and 5 tail
       lines. The number of lines can be altered by setting the global
       options \code{showHeadLines} and \code{showTailLines}. If the

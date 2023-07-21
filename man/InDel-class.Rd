@@ -29,12 +29,10 @@
   \code{x} is a \code{InDel} object.
 
   \describe{
-    \item{}{
-      \code{insertion(x)}:
+    \item{\code{insertion(x)}:}{
       The insertion information.
     }
-    \item{}{
-      \code{deletion(x)}:
+    \item{\code{deletion(x)}:}{
       The deletion information.
     }
   }

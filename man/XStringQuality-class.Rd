@@ -83,7 +83,7 @@ IlluminaQuality(x)
 
   \code{PhredQuality} objects store characters that are interpreted as
   [0 - 99] quality measures by subtracting 33 from their ASCII decimal
-  representation (e.g. ! = 0, " = 1, \# = 2, ...). Quality measures q
+  representation (e.g. ! = 0, " = 1, # = 2, ...). Quality measures q
   encode probabilities as \code{-10 * log10(p)}.
 
   \code{SolexaQuality} objects store characters that are interpreted as
@@ -103,13 +103,11 @@ IlluminaQuality(x)
   In the code snippets below, \code{x} is an XStringQuality object.
 
   \describe{
-    \item{}{
-      \code{alphabet(x)}: Valid letters in this quality score; not all
+    \item{\code{alphabet(x)}:}{ Valid letters in this quality score; not all
       letters are encountered in actual sequencing runs.
     }
 
-    \item{}{
-      \code{encoding(x)}: Map between letters and their corresponding
+    \item{\code{encoding(x)}:}{ Map between letters and their corresponding
       integer encoding. Use \code{as.integer} and \code{as.numeric} to
       coerce objects to their integer and probability representations.
     }

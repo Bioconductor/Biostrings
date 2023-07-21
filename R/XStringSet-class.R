@@ -358,7 +358,7 @@ setMethod("XStringSet", "AsIs",
     function(seqtype, x, start=NA, end=NA, width=NA, use.names=TRUE)
     {
         if (!is.character(x))
-            stop("unsuported input type")
+            stop("unsupported input type")
         class(x) <- "character" # keeps the names (unlike as.character())
 	.charToXStringSet(seqtype, x, start, end, width, use.names)
     }
@@ -621,6 +621,50 @@ setMethod("updateObject", "XStringSet",
         ans_ranges <- updateObject(object@ranges)
         names(ans_ranges) <- names(object)
         extractList(ans_xvector, ans_ranges)
+    }
+)
+
+### Update the elements in XStringSet object but without using the naive
+### approach that consists in calling updateObject() on each of them, which
+### would be very inefficient for objects that contain more than a few hundred
+### sequences. More generally speaking, using the following idiom:
+###
+###     for (i in seq_along(object))
+###         object[[i]] <- someTransformation(object[[i]])
+###
+### for element-wise transformation of an XStringSet object should be avoided
+### at all cost! It is **much** more efficient to apply the transformation
+### to the SharedRaw objects stored in 'object@pool', because the number of
+### SharedRaw objects is typically **very** small compared to the length of
+### the XStringSet object. This is typically thousand of times faster than
+### the naive approach. However, note that this trick only works if the
+### tranformation operates on the individual letters without moving them
+### around, which is the case for updateObject().
+.updateObject_XStringSet <- function(object, ..., verbose=FALSE)
+{
+    baseclass <- xsbaseclass(object)
+    ## Update SharedRaw elements directly (significantly fewer SharedRaw
+    ## objects than XStrings).
+    for (i in seq_along(object@pool)) {
+        shared <- object@pool[[i]] # SharedRaw object
+        ## Turn SharedRaw object into an XString object.
+        xs <- new2(baseclass, shared=shared, length=length(shared), check=FALSE)
+        ## Update XString object.
+        xs <- updateObject(xs, ..., verbose=verbose)
+        object@pool[[i]] <- xs@shared
+    }
+    object
+}
+
+### Update AAStringSet objects created before AA_ALPHABET was enforced
+### for AAString objects
+setMethod("updateObject", "AAStringSet",
+    function(object, ..., verbose=FALSE)
+    {
+        ## Start by calling the updateObject() method for XStringSet objects.
+        object <- callNextMethod()
+        object <- compact(object)
+        .updateObject_XStringSet(object, ..., verbose=verbose)
     }
 )
 

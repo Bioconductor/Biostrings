@@ -137,9 +137,8 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
       \item \code{"RNA"} for RNA sequences i.e. only letters in
             \code{\link{RNA_ALPHABET}} (case ignored) are valid
             one-letter sequence codes.
-      \item \code{"AA"} for Amino Acid sequences. Currently treated as
-            \code{"B"} but this will change in the near future i.e. only
-            letters in \code{\link{AA_ALPHABET}} (case ignored) will be
+      \item \code{"AA"} for Amino Acid sequences i.e. only
+            letters in \code{\link{AA_ALPHABET}} (case ignored) are
             valid one-letter sequence codes.
     }
     Invalid one-letter sequence codes are ignored with a warning.
@@ -192,7 +191,7 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
   \item{save.dups}{
     \code{TRUE} or \code{FALSE}.
     If \code{TRUE} then the \code{\link[IRanges:Grouping-class]{Dups}}
-    object describing 
+    object describing
     how duplicated elements in \code{x} are related to each other is
     saved too. For advanced users only.
   }
@@ -210,7 +209,7 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
   load sequences from an input file (or multiple input files) into an
   \link{XStringSet} object. When multiple input files are specified,
   all must have the same format (i.e. FASTA or FASTQ) and files with
-  different compression types can be mixed with non-compressed files. 
+  different compression types can be mixed with non-compressed files.
   The files are read in the order they were specified and the sequences
   are stored in the returned object in the order they were read.
 

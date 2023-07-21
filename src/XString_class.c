@@ -14,7 +14,8 @@
  */
 
 static ByteTrTable DNA_enc_byte2code, DNA_dec_byte2code,
-		   RNA_enc_byte2code, RNA_dec_byte2code;
+		   RNA_enc_byte2code, RNA_dec_byte2code,
+		   AA_enc_byte2code, AA_dec_byte2code;
 
 const ByteTrTable *get_enc_byte2code(const char *classname)
 {
@@ -94,6 +95,36 @@ char _RNAdecode(char code)
 	return (char) c;
 }
 
+
+/* --- .Call ENTRY POINT --- */
+SEXP init_AAlkups(SEXP enc_lkup, SEXP dec_lkup)
+{
+	_init_ByteTrTable_with_lkup(&AA_enc_byte2code, enc_lkup);
+	_init_ByteTrTable_with_lkup(&AA_dec_byte2code, dec_lkup);
+	return R_NilValue;
+}
+
+char _AAencode(char c)
+{
+	int code;
+
+	code = AA_enc_byte2code.byte2code[(unsigned char) c];
+	if (code == NA_INTEGER)
+		error("_AAencode(): invalid AAString "
+		      "input character: '%c' (byte value %d)", c, (int) c);
+	return code;
+}
+
+char _AAdecode(char code)
+{
+	int c;
+
+	c = AA_dec_byte2code.byte2code[(unsigned char) code];
+	if (c == NA_INTEGER)
+		error("_AAdecode(): invalid AAString "
+		      "internal code: %d", (int) code);
+	return (char) c;
+}
 
 /****************************************************************************
  * From CHARACTER to XString and vice-versa.
