@@ -34,9 +34,15 @@ data(PAM40)
 data(PAM70)
 data(PAM120)
 data(PAM250)
-nucleotideSubstitutionMatrix(match = 1, mismatch = 0, baseOnly = FALSE, type = "DNA")
-qualitySubstitutionMatrices(fuzzyMatch = c(0, 1), alphabetLength = 4L, qualityClass = "PhredQuality", bitScale = 1)
-errorSubstitutionMatrices(errorProbability, fuzzyMatch = c(0, 1), alphabetLength = 4L, bitScale = 1)
+
+nucleotideSubstitutionMatrix(match=1, mismatch=0, baseOnly=FALSE,
+                             type="DNA", symmetric=TRUE)
+
+qualitySubstitutionMatrices(fuzzyMatch=c(0, 1), alphabetLength=4L,
+                            qualityClass="PhredQuality", bitScale=1)
+
+errorSubstitutionMatrices(errorProbability, fuzzyMatch=c(0, 1),
+                          alphabetLength=4L, bitScale=1)
 }
 
 \arguments{
@@ -45,10 +51,12 @@ errorSubstitutionMatrices(errorProbability, fuzzyMatch = c(0, 1), alphabetLength
   \item{baseOnly}{\code{TRUE} or \code{FALSE}. If \code{TRUE}, only
     uses the letters in the "base" alphabet i.e. "A", "C", "G", "T".}
   \item{type}{either "DNA" or "RNA".}
+  \item{symmetric}{\code{TRUE} or \code{FALSE}. Default is \code{TRUE}. 
+    If \code{FALSE}, the resulting matrix will be asymmetric.}
   \item{fuzzyMatch}{a named or unnamed numeric vector representing the base
     match probability.}
-  \item{errorProbability}{a named or unnamed numeric vector representing the error
-    probability.}
+  \item{errorProbability}{a named or unnamed numeric vector representing
+    the error probability.}
   \item{alphabetLength}{an integer representing the number of letters
     in the underlying string alphabet. For DNA and RNA, this would be 4L.
     For Amino Acids, this could be 20L.}
@@ -63,8 +71,8 @@ errorSubstitutionMatrices(errorProbability, fuzzyMatch = c(0, 1), alphabetLength
   coefficients, whose row and column names are identical and unique: each
   name is a single letter representing a nucleotide or an amino acid.
 
-  \code{nucleotideSubstitutionMatrix} produces a substitution matrix for all IUPAC
-  nucleic acid codes based upon match and mismatch parameters.
+  \code{nucleotideSubstitutionMatrix} produces a substitution matrix for
+  all IUPAC nucleic acid codes based upon match and mismatch parameters.
 
   \code{errorSubstitutionMatrices} produces a two element list of numeric
   square symmetric matrices, one for matches and one for mismatches.
@@ -112,7 +120,8 @@ errorSubstitutionMatrices(errorProbability, fuzzyMatch = c(0, 1), alphabetLength
 K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics, Feb 23, 2008.
 }
 
-\author{H. Pagès and P. Aboyoun}
+\author{H. Pagès and P. Aboyoun, with contribution from Albert Vill (support
+        for asymmetric matrices in \code{nucleotideSubstitutionMatrix()})}
 
 \seealso{
   \code{\link{pairwiseAlignment}},
@@ -125,52 +134,74 @@ K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics, 
 }
 
 \examples{
-  s1 <- 
-    DNAString("ACTTCACCAGCTCCCTGGCGGTAAGTTGATCAAAGGAAACGCAAAGTTTTCAAG")
-  s2 <-
-    DNAString("GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")
+s1 <- DNAString("ACTTCACCAGCTCCCTGGCGGTAAGTTGATCAAAGGAAACGCAAAGTTTTCAAG")
+s2 <- DNAString("GTTTCACTACTTCCTTTCGGGTAAGTAAATATATAAATATATAAAAATATAATTTTCATC")
+s3 <- DNAString("NCTTCRCCAGCTCCCTGGMGGTAAGTTGATCAAAGVAAACGCAAAGTTNTCAAG")
 
-  ## Fit a global pairwise alignment using edit distance scoring
-  pairwiseAlignment(s1, s2,
-                    substitutionMatrix = nucleotideSubstitutionMatrix(0, -1, TRUE),
-                    gapOpening = 0, gapExtension = 1)
+## Fit a global pairwise alignment using edit distance scoring:
+nsm <- nucleotideSubstitutionMatrix(0, -1, TRUE)
+pairwiseAlignment(s1, s2, substitutionMatrix=nsm,
+                          gapOpening=0, gapExtension=1)
 
-  ## Examine quality-based match and mismatch bit scores for DNA/RNA
-  ## strings in pairwiseAlignment.
-  ## By default patternQuality and subjectQuality are PhredQuality(22L).
-  qualityMatrices <- qualitySubstitutionMatrices()
-  qualityMatrices["22", "22", "1"]
-  qualityMatrices["22", "22", "0"]
+## Align sequences using an asymmetric substitution matrix.
+## The asymmetry of the matrix means that the query sequence is not
+## penalized for ambiguous bases in the subject / consensus sequence:
+ansm <- nucleotideSubstitutionMatrix(symmetric=FALSE)
+ansm["M", c("A","C","G","T")]
+#   A   C   G   T 
+# 0.5 0.5 0.0 0.0 
+ansm[c("A","C","G","T"), "M"]
+# A C G T 
+# 1 1 0 0 
+ansm["M", "H"]
+# 1
+ansm["H", "M"]
+# 0.6666667
 
-  pairwiseAlignment(s1, s2)
+## Due to this asymmetry, the order of the sequences is important:
+pairwiseAlignment(s1, s3, substitutionMatrix=ansm)
+pairwiseAlignment(s3, s1, substitutionMatrix=ansm)
 
-  ## Get the substitution scores when the error probability is 0.1
-  subscores <- errorSubstitutionMatrices(errorProbability = 0.1)
-  submat <- matrix(subscores[,,"0"], 4, 4)
-  diag(submat) <- subscores[,,"1"]
-  dimnames(submat) <- list(DNA_ALPHABET[1:4], DNA_ALPHABET[1:4])
-  submat
-  pairwiseAlignment(s1, s2, substitutionMatrix = submat)
+## Examine quality-based match and mismatch bit scores for DNA/RNA
+## strings in pairwiseAlignment. By default patternQuality and
+## subjectQuality are PhredQuality(22L):
+qualityMatrices <- qualitySubstitutionMatrices()
+qualityMatrices["22", "22", "1"]
+qualityMatrices["22", "22", "0"]
 
-  ## Align two amino acid sequences with the BLOSUM62 matrix
-  aa1 <- AAString("HXBLVYMGCHFDCXVBEHIKQZ")
-  aa2 <- AAString("QRNYMYCFQCISGNEYKQN")
-  pairwiseAlignment(aa1, aa2, substitutionMatrix = "BLOSUM62", gapOpening = 3, gapExtension = 1)
+pairwiseAlignment(s1, s2)
 
-  ## See how the gap penalty influences the alignment
-  pairwiseAlignment(aa1, aa2, substitutionMatrix = "BLOSUM62", gapOpening = 6, gapExtension = 2)
+## Get the substitution scores when the error probability is 0.1:
+subscores <- errorSubstitutionMatrices(errorProbability=0.1)
+submat <- matrix(subscores[ , , "0"], 4, 4)
+diag(submat) <- subscores[ , , "1"]
+dimnames(submat) <- list(DNA_ALPHABET[1:4], DNA_ALPHABET[1:4])
+submat
+pairwiseAlignment(s1, s2, substitutionMatrix=submat)
 
-  ## See how the substitution matrix influences the alignment
-  pairwiseAlignment(aa1, aa2, substitutionMatrix = "BLOSUM50", gapOpening = 3, gapExtension = 1)
+## Align two amino acid sequences with the BLOSUM62 matrix:
+aa1 <- AAString("HXBLVYMGCHFDCXVBEHIKQZ")
+aa2 <- AAString("QRNYMYCFQCISGNEYKQN")
+pairwiseAlignment(aa1, aa2, substitutionMatrix="BLOSUM62",
+                            gapOpening=3, gapExtension=1)
 
-  if (interactive()) {
-    ## Compare our BLOSUM62 with BLOSUM62 from ftp://ftp.ncbi.nih.gov/blast/matrices/
-    data(BLOSUM62)
-    BLOSUM62["Q", "Z"]
-    file <- "ftp://ftp.ncbi.nih.gov/blast/matrices/BLOSUM62"
-    b62 <- as.matrix(read.table(file, check.names=FALSE))
-    b62["Q", "Z"]
-  }
+## See how the gap penalty influences the alignment:
+pairwiseAlignment(aa1, aa2, substitutionMatrix="BLOSUM62",
+                            gapOpening=6, gapExtension=2)
+
+## See how the substitution matrix influences the alignment:
+pairwiseAlignment(aa1, aa2, substitutionMatrix="BLOSUM50",
+                            gapOpening=3, gapExtension=1)
+
+if (interactive()) {
+  ## Compare our BLOSUM62 with BLOSUM62 from
+  ## ftp://ftp.ncbi.nih.gov/blast/matrices/:
+  data(BLOSUM62)
+  BLOSUM62["Q", "Z"]
+  file <- "ftp://ftp.ncbi.nih.gov/blast/matrices/BLOSUM62"
+  b62 <- as.matrix(read.table(file, check.names=FALSE))
+  b62["Q", "Z"]
+}
 }
 
 \keyword{utilities}

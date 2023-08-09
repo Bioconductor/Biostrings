@@ -71,8 +71,7 @@ AA_PROTEINOGENIC  # first 22 letters only
   or a \link{BString} object.
 
   \describe{
-    \item{}{
-      \code{AAString(x="", start=1, nchar=NA)}:
+    \item{\code{AAString(x="", start=1, nchar=NA)}:}{
       Tries to convert \code{x} into an AAString object by reading
       \code{nchar} letters starting at position \code{start} in \code{x}.
     }
@@ -83,14 +82,19 @@ AA_PROTEINOGENIC  # first 22 letters only
   In the code snippet below, \code{x} is an \link{AAString} object.
 
   \describe{
-    \item{}{
-      \code{alphabet(x)}:
+    \item{\code{alphabet(x)}:}{
       If \code{x} is an AAString object, then return the Amino Acid
       alphabet (see above).
       See the corresponding man pages when \code{x} is a
       \link{BString}, \link{DNAString} or \link{RNAString} object.
     }
   }
+}
+
+\section{Display}{
+  The letters in an AAString object are colored when displayed by the
+  \code{show()} method. Set global option \code{Biostrings.coloring}
+  to FALSE to turn off this coloring.
 }
 
 \author{H. Pagès}
@@ -103,10 +107,10 @@ AA_PROTEINOGENIC  # first 22 letters only
 }
 
 \examples{
-  AA_ALPHABET
-  a <- AAString("MARKSLEMSIR*")
-  length(a)
-  alphabet(a)
+AA_ALPHABET
+a <- AAString("MARKSLEMSIR*")
+length(a)
+alphabet(a)
 }
 
 \keyword{methods}

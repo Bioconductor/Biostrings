@@ -70,8 +70,7 @@
 
 \section{Constructor}{
   \describe{
-    \item{}{
-      \code{Views(subject, start=NULL, end=NULL, width=NULL, names=NULL)}:
+    \item{\code{Views(subject, start=NULL, end=NULL, width=NULL, names=NULL)}:}{
       See \code{?\link[IRanges:Views-class]{Views}} in the IRanges
       package for the details.
     }
@@ -84,8 +83,7 @@
   for XStringViews objects:
 
   \describe{
-    \item{}{
-      \code{nchar(x)}:
+    \item{\code{nchar(x)}:}{
       A vector of non-negative integers containing the number
       of letters in each view.
       Values in \code{nchar(x)} coincide with values in \code{width(x)}
@@ -100,8 +98,7 @@
   and \code{i} can be a numeric or logical vector.
 
   \describe{
-    \item{}{
-      \code{e1 == e2}:
+    \item{\code{e1 == e2}:}{
       A vector of logicals indicating the result of the view by
       view comparison. The views in the shorter of the two XStringViews
       object being compared are recycled as necessary.
@@ -115,12 +112,10 @@
       object with a BString subject and a character vector is supported (see
       examples below).
     }
-    \item{}{
-      \code{e1 != e2}:
+    \item{\code{e1 != e2}:}{
       Equivalent to \code{!(e1 == e2)}.
     }
-    \item{}{
-      \code{as.character(x, use.names=TRUE, check.limits=TRUE)}:
+    \item{\code{as.character(x, use.names=TRUE, check.limits=TRUE)}:}{
       Converts \code{x} to a character vector of the same length as \code{x}.
       The \code{use.names} argument controls whether or not \code{names(x)}
       should be propagated to the names of the returned vector.
@@ -133,16 +128,14 @@
 	...)}}{
       Equivalent of \code{as.data.frame(as.character(x))}.
     }
-    \item{}{
-      \code{as.matrix(x, use.names=TRUE)}:
+    \item{\code{as.matrix(x, use.names=TRUE)}:}{
       Returns a character matrix containing the "exploded" representation
       of the views. Can only be used on an XStringViews object with
       equal-width views.
       The \code{use.names} argument controls whether or not \code{names(x)}
       should be propagated to the row names of the returned matrix.
     }
-    \item{}{
-      \code{toString(x)}:
+    \item{\code{toString(x)}:}{
       Equivalent to \code{toString(as.character(x))}.
     }
   }

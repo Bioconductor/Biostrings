@@ -54,8 +54,7 @@
   a \link{BString} object or an \link{RNAString} object.
 
   \describe{
-    \item{}{
-      \code{DNAString(x="", start=1, nchar=NA)}:
+    \item{\code{DNAString(x="", start=1, nchar=NA)}:}{
       Tries to convert \code{x} into a DNAString object by reading
       \code{nchar} letters starting at position \code{start} in \code{x}.
     }
@@ -66,8 +65,7 @@
   In the code snippet below, \code{x} is a DNAString object.
 
   \describe{
-    \item{}{
-      \code{alphabet(x, baseOnly=FALSE)}:
+    \item{\code{alphabet(x, baseOnly=FALSE)}:}{
       If \code{x} is a DNAString object, then return the DNA
       alphabet (see above).
       See the corresponding man pages when \code{x} is a

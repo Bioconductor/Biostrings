@@ -151,20 +151,17 @@
   \code{x} is a \code{PairwiseAlignments} object, except otherwise noted.
 
   \describe{
-    \item{}{
-      \code{alignedPattern(x), alignedSubject(x)}:
+    \item{\code{alignedPattern(x), alignedSubject(x)}:}{
       Extract the aligned patterns or subjects as an \code{XStringSet} object.
       The 2 objects returned by \code{alignedPattern(x)} and
       \code{alignedSubject(x)} are guaranteed to have the same
       shape (i.e. same \code{length()} and \code{width()}).
     }
-    \item{}{
-      \code{pattern(x), subject(x)}:
+    \item{\code{pattern(x), subject(x)}:}{
       Extract the aligned patterns or subjects as an \code{AlignedXStringSet0}
       object.
     }
-    \item{}{
-      \code{summary(object, ...)}:
+    \item{\code{summary(object, ...)}:}{
       Generates a summary for the \code{PairwiseAlignments} object.
     }
   }
@@ -174,19 +171,16 @@
   \code{x} is a \code{PairwiseAlignments} object, except otherwise noted.
 
   \describe{
-    \item{}{
-      \code{alphabet(x)}:
+    \item{\code{alphabet(x)}:}{
       Equivalent to \code{alphabet(unaligned(subject(x)))}.
     }
-    \item{}{
-      \code{length(x)}:
+    \item{\code{length(x)}:}{
       The common length of \code{alignedPattern(x)} and
       \code{alignedSubject(x)}.
       There is a method for \code{PairwiseAlignmentsSingleSubjectSummary}
       as well.
     }
-    \item{}{
-      \code{type(x)}:
+    \item{\code{type(x)}:}{
       The type of the alignment (\code{"global"}, \code{"local"},
       \code{"overlap"}, \code{"global-local"}, or \code{"local-global"}).
       There is a method for \code{PairwiseAlignmentsSingleSubjectSummary} as well.
@@ -199,8 +193,7 @@
   otherwise noted.
 
   \describe{
-    \item{}{
-      \code{aligned(x, degap = FALSE, gapCode="-", endgapCode="-")}:
+    \item{\code{aligned(x, degap = FALSE, gapCode="-", endgapCode="-")}:}{
       If \code{degap = FALSE}, "align" the alignments by returning an
       \code{XStringSet} object containing the aligned patterns without
       insertions. If \code{degap = TRUE}, returns
@@ -208,16 +201,13 @@
       The \code{gapCode} and \code{endgapCode} arguments denote the code in the
       appropriate \code{\link{alphabet}} to use for the internal and end gaps.
     }
-    \item{}{
-      \code{as.character(x)}:
+    \item{\code{as.character(x)}:}{
       Equivalent to \code{as.character(alignedPattern(x))}.
     }
-    \item{}{
-      \code{as.matrix(x)}:
+    \item{\code{as.matrix(x)}:}{
       Returns an "exploded" character matrix representation of \code{aligned(x)}.
     }
-    \item{}{
-      \code{toString(x)}:
+    \item{\code{toString(x)}:}{
       Equivalent to \code{toString(as.character(x))}.
     }
   }
@@ -227,22 +217,18 @@
   \code{x} is a \code{PairwiseAlignmentsSingleSubject} object, except otherwise noted.
 
   \describe{
-    \item{}{
-      \code{consensusMatrix(x, as.prob=FALSE, baseOnly=FALSE, gapCode="-",
-        endgapCode="-")}
+    \item{\code{consensusMatrix(x, as.prob=FALSE, baseOnly=FALSE, gapCode="-",
+        endgapCode="-")}:}{
       See `\link{consensusMatrix}` for more information.
     }
-    \item{}{
-      \code{consensusString(x)}
+    \item{\code{consensusString(x)}:}{
       See `\link{consensusString}` for more information.
     }
-    \item{}{
-      \code{coverage(x, shift=0L, width=NULL, weight=1L)}
+    \item{\code{coverage(x, shift=0L, width=NULL, weight=1L)}:}{
       See `\link{coverage,PairwiseAlignmentsSingleSubject-method}` for more
       information.
     }
-    \item{}{
-      \code{Views(subject, start=NULL, end=NULL, width=NULL, names=NULL)}:
+    \item{\code{Views(subject, start=NULL, end=NULL, width=NULL, names=NULL)}:}{
       The \code{XStringViews} object that represents the pairwise alignments
       along \code{unaligned(subject(subject))}. The \code{start} and \code{end}
       arguments must be either \code{NULL}/\code{NA} or an integer vector
@@ -255,34 +241,28 @@
   \code{x} is a \code{PairwiseAlignments} object, except otherwise noted.
 
   \describe{
-    \item{}{
-      \code{nchar(x)}:
+    \item{\code{nchar(x)}:}{
       The nchar of the \code{aligned(pattern(x))} and \code{aligned(subject(x))}.
       There is a method for \code{PairwiseAlignmentsSingleSubjectSummary} as well.
     }
-    \item{}{
-      \code{insertion(x)}:
+    \item{\code{insertion(x)}:}{
       An \code{\link[IRanges:IRangesList-class]{CompressedIRangesList}}
       object containing the locations of the insertions from the perspective
       of the \code{pattern}.
     }
-    \item{}{
-      \code{deletion(x)}:
+    \item{\code{deletion(x)}:}{
       An \code{\link[IRanges:IRangesList-class]{CompressedIRangesList}}
       object containing the locations of the deletions from the perspective
       of the \code{pattern}.
     }
-    \item{}{
-      \code{indel(x)}:
+    \item{\code{indel(x)}:}{
       An \code{InDel} object containing the locations of the insertions and
       deletions from the perspective of the \code{pattern}.
     }
-    \item{}{
-      \code{nindel(x)}:
+    \item{\code{nindel(x)}:}{
       An \code{InDel} object containing the number of insertions and deletions.
     }
-    \item{}{
-      \code{score(x)}:
+    \item{\code{score(x)}:}{
       The score of the alignment.
       There is a method for \code{PairwiseAlignmentsSingleSubjectSummary}
       as well.
@@ -292,13 +272,11 @@
 
 \section{Subsetting methods}{
   \describe{
-    \item{}{
-      \code{x[i]}:
+    \item{\code{x[i]}:}{
       Returns a new \code{PairwiseAlignments} object made of the selected
       elements.
     }
-    \item{}{
-      \code{rep(x, times)}:
+    \item{\code{rep(x, times)}:}{
       Returns a new \code{PairwiseAlignments} object made of the repeated
       elements.
     }

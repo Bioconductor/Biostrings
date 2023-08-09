@@ -1,0 +1,220 @@
+---
+title: "Using oligonucleotide microarray reporter sequence information
+  for preprocessing and quality assessment"
+author:
+- name: Wolfgang Huber
+- name: Robert Gentleman
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+package: Biostrings
+vignette: >
+  %\VignetteIndexEntry{Handling probe sequence information}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteDepends{Biostrings, hgu95av2probe, hgu95av2cdf, affy, affydata}
+  %\VignetteKeywords{Expression Analysis}
+  %\VignettePackage{Biostrings}
+output:
+  BiocStyle::html_document
+fig_caption: true
+---
+
+# Overview
+
+This document presents some basic and simple tools for dealing with the
+oligonucleotide microarray reporter sequence information in the Bioconductor
+*probe* packages. This information is used, for example, in the
+`r Biocpkg("gcrma")` package.
+
+*Probe* packages are a convenient way for distributing and storing the probe
+sequences (and related information) of a given chip.
+
+As an example, the package `r Biocpkg("hgu95av2probe")` provides microarray
+reporter sequences for Affymetrix' *HgU95a version 2* genechip, and for almost
+all major Affymetrix genechips, the corresponding packages can be downloaded
+from the Bioconductor website. If you have the reporter sequence information of
+a particular chip, you can also create such a package yourself. This is
+described in the makeProbePackage vignette of the `r Biocpkg("AnnotationForge")`
+package.
+
+This document assumes some basic familiarity with R and with the design of the
+*AffyBatch* class in the `r Biocpkg("affy")` package, Bioconductor's basic
+container for Affymetrix genechip data.
+
+First, let us load the `r Biocpkg("Biostrings")` package and some other packages
+we will use.
+
+```{r loadPackages,message=FALSE,warning=FALSE}
+library(Biostrings) 
+library(hgu95av2probe) 
+library(hgu95av2cdf) 
+```
+
+# Using probe packages
+
+Help for the probe sequence data packages can be accessed through
+
+```{r hgu95av2probe,eval=FALSE}
+?hgu95av2probe
+```
+
+One of the issues that you have to deal with is that the *probe* packages do not
+provide the reporter sequences of all the features present in an *AffyBatch*.
+Some sequences are missing, some are implied; in particular, the data structure
+in the *probe* packages does not explicitly contain the sequences of the
+mismatch probes, since they are implied by the perfect match probes. Also, some
+other features, typically harboring control probes or empty, do not have
+sequences. This is the choice that Affymetrix made when they made files with
+probe sequences available, and we followed it.
+
+Practically, this means that the vector of probe sequences in a *probe* package
+does not align 1:1 with the rows of the corresponding *AffyBatch*; you need to
+keep track of this mapping, and some tools for this are provided and explained
+below (see Section [2.2](#subsec.relating)). It also means that some functions from the
+`r Biocpkg("affy")` package, such as `pm`, cannot be used when the sequences of
+the probes corresponding to their result are needed; since `pm` reports the
+intensities, but not the identity of the probes it has selected, yet the latter
+would be needed to retrieve their sequences.
+
+## Basic functions
+
+Let us look at some basic operations on the sequences.
+
+### Reverse and complementary sequence
+
+DNA sequences can be reversed and/or complemented with the `reverse`,
+`complement` and `reverseComplement` functions.
+
+```{r reverseComplement,eval=FALSE}
+?reverseComplement
+```
+
+### Matching sets of probes against each other
+
+```{r MatchingSetsofProbesAgasintEachOther}
+pm <- DNAStringSet(hgu95av2probe) 
+dict <- pm[3801:4000]
+pdict <- PDict(dict)
+m <- vcountPDict(pdict, pm)
+dim(m) 
+table(rowSums(m))
+which(rowSums(m) == 3)
+ii <- which(m[77, ] != 0)
+pm[ii]
+```
+
+### Base content
+
+The base content (number of occurrence of each character) of the sequences can
+be computed with the function `alphabetFrequency`.
+
+```{r alphabetFrequency}
+bcpm <- alphabetFrequency(pm, baseOnly=TRUE)
+head(bcpm) 
+alphabetFrequency(pm, baseOnly=TRUE, collapse=TRUE)
+```
+
+## Relating to the features of an *AffyBatch* {#subsec.relating}
+
+```{r hgu95av2dimncol}
+nc = hgu95av2dim$NCOL
+nc
+```
+
+```{r hgu95av2dimnrow}
+nr = hgu95av2dim$NROW
+nr
+```
+
+Each column of an *AffyBatch* corresponds to an array, each row to a certain
+probe on the arrays. The probes are stored in a way that is related to their
+geometrical position on the array. For example, the *hgu95av2* array is
+geometrically arranged into `r nc` columns and `r nr` rows. We call the column
+and row indices the `x`- and `y`-coordinates, respectively. This results in
+`r nc` ⨉ `r nr` = `r format(nc*nr, scientific=FALSE)` probes of the *AffyBatch*;
+we also call them indices. To convert between `x`-and `y`-coordinates and
+indices, you can use the functions `xy2indices` and `indices2xy` from the
+`r Biocpkg("affy")` package.
+
+The sequence data in the *probe* packages is addressed by their `x` and
+`y`-coordinates. Let us construct a vector `abseq` that aligns with the indices
+of an *hgu95av2* *AffyBatch* and fill in the sequences:
+
+```{r abseq}
+library(affy) 
+abseq = rep(as.character(NA), nc*nr) 
+ipm = with(hgu95av2probe, xy2indices(x, y, nc=nc)) 
+any(duplicated(ipm)) # just a sanity check 
+abseq[ipm] = hgu95av2probe$sequence
+table(is.na(abseq))
+```
+
+The mismatch sequences are not explicitly stored in the probe packages. They are
+implied by the match sequences, by flipping the middle base. This can be done
+with the `pm2mm` function defined below. For Affymetrix GeneChips the length of
+the probe sequences is 25, and since we start counting at 1, the middle position
+is 13.
+
+```{r pm2mm}
+mm <- pm
+subseq(mm, start=13, width=1) <- complement(subseq(mm, start=13, width=1))
+cat(as.character(pm[[1]]), as.character(mm[[1]]), sep="\n")
+```
+
+We compute `imm`, the indices of the mismatch probes, by noting that each
+mismatch has the same `x`-coordinate as its associated perfect match, while its
+`y`-coordinate is increased by 1.
+
+```{r imm}
+imm = with(hgu95av2probe, xy2indices(x, y+1, nc=nc))
+intersect(ipm, imm) # just a sanity check
+abseq[imm] = as.character(mm)
+table(is.na(abseq))
+```
+
+See Figures \@ref(fig:bap)-\@ref(fig:p2p) for some applications of
+the probe sequence information to preprocessing and data quality related plots.
+
+# Some sequence related "preprocessing and quality" plots
+
+The function `alphabetFrequency` counts the number of occurrences of each of the
+four bases A, C, G, T in each probe sequence.
+
+```{r alphabetFrequency2}
+freqs <- alphabetFrequency(DNAStringSet(abseq[!is.na(abseq)]), baseOnly=TRUE)
+bc <- matrix(nrow=length(abseq), ncol=5)
+colnames(bc) <- colnames(freqs)
+bc[!is.na(abseq), ] <- freqs
+head(na.omit(bc))
+```
+
+Let us define an ordered factor variable for GC content:
+
+```{r gc}
+GC = ordered(bc[,"G"] + bc[,"C"])
+colores = rainbow(nlevels(GC))
+```
+
+And let us create an *AffyBatch* object.
+
+```{r bap, fig.cap="Distribution of probe GC content. The height of each bar corresponds to the number of probes with the corresponding GC content."}
+library(affydata)
+f <- system.file("extracelfiles", "CL2001032020AA.cel", package="affydata")
+pd <- new("AnnotatedDataFrame", data=data.frame(fromFile=I(f), row.names="f"))
+abatch <- read.affybatch(filenames=f, compress=TRUE, phenoData=pd)
+barplot(table(GC), col=colores, xlab="GC", ylab="number")
+```
+
+```{r bxp, fig.cap="Boxplots of log~2~ intensity stratifed by probe GC content."}
+boxplot(log2(exprs(abatch)[,1]) ~ GC, outline=FALSE,
+        col=colores, , xlab="GC", ylab=expression(log[2]~intensity))
+```
+
+```{r p2p, fig.cap="Scatterplot of PM vs MM intensities, colored by probe GC content."}
+plot(exprs(abatch)[ipm,1], exprs(abatch)[imm,1], asp=1, pch=".", log="xy",
+     xlab="PM", ylab="MM", col=colores[GC[ipm]])
+abline(a=0, b=1, col="#404040", lty=3)
+```
+
+```{r devoff,include=FALSE}
+dev.off()
+```

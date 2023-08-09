@@ -62,8 +62,8 @@ matchLRPatterns(Lpattern, Rpattern, max.gaplength, subject,
 
     With \code{Lfixed=FALSE}, ambiguities (i.e. letters from the IUPAC
     Extended Genetic Alphabet (see \code{\link{IUPAC_CODE_MAP}}) that
-    are not from the base alphabet) in the left pattern \_and\_ in the
-    subject are interpreted as wildcards i.e. they match any letter
+    are not from the base alphabet) in the left pattern \emph{and} in
+    the subject are interpreted as wildcards i.e. they match any letter
     that they stand for.
 
     \code{Lfixed} can also be a character vector, a subset of
@@ -117,4 +117,3 @@ matchLRPatterns("AA", "TT", 7, subject) # 4 matches
 }
 
 \keyword{methods}
-
