@@ -10,7 +10,9 @@
 #include <math.h>  /* for llround */
 
 
-#define IOBUF_SIZE 20002
+#define IOBUF_SIZE 200002
+static char iobuf[IOBUF_SIZE];
+
 static char errmsg_buf[200];
 
 static int has_prefix(const char *s, const char *prefix)
@@ -240,7 +242,6 @@ static const char *parse_FASTA_file(SEXP filexp,
 {
 	int lineno, EOL_in_buf, EOL_in_prev_buf, ret_code, nbyte_in,
 	    FASTA_desc_markup_length, dont_load, is_comment, is_desc;
-	char buf[IOBUF_SIZE];
 	Chars_holder data;
 	long long int prev_offset;
 
@@ -252,7 +253,7 @@ static const char *parse_FASTA_file(SEXP filexp,
 		if (EOL_in_buf)
 			lineno++;
 		EOL_in_prev_buf = EOL_in_buf;
-		ret_code = filexp_gets(filexp, buf, IOBUF_SIZE, &EOL_in_buf);
+		ret_code = filexp_gets(filexp, iobuf, IOBUF_SIZE, &EOL_in_buf);
 		if (ret_code == 0)
 			break;
 		if (ret_code == -1) {
@@ -262,8 +263,9 @@ static const char *parse_FASTA_file(SEXP filexp,
 			return errmsg_buf;
 		}
 		if (EOL_in_buf) {
-			nbyte_in = strlen(buf);
-			data.length = delete_trailing_LF_or_CRLF(buf, nbyte_in);
+			nbyte_in = strlen(iobuf);
+			data.length =
+				delete_trailing_LF_or_CRLF(iobuf, nbyte_in);
 		} else {
 			data.length = nbyte_in = IOBUF_SIZE - 1;
 		}
@@ -271,18 +273,18 @@ static const char *parse_FASTA_file(SEXP filexp,
 		*offset += nbyte_in;
 		if (seek_first_rec) {
 			if (EOL_in_prev_buf
-			 && has_prefix(buf, FASTA_desc_markup)) {
+			 && has_prefix(iobuf, FASTA_desc_markup)) {
 				seek_first_rec = 0;
 			} else {
 				continue;
 			}
 		}
-		data.ptr = buf;
+		data.ptr = iobuf;
 		if (EOL_in_prev_buf) {
 			if (data.length == 0)
 				continue;  // we ignore empty lines
-			is_comment = has_prefix(buf, FASTA_comment_markup);
-			is_desc = has_prefix(buf, FASTA_desc_markup);
+			is_comment = has_prefix(iobuf, FASTA_comment_markup);
+			is_desc = has_prefix(iobuf, FASTA_desc_markup);
 			if (!EOL_in_buf && (is_comment || is_desc)) {
 				snprintf(errmsg_buf, sizeof(errmsg_buf),
 					 "cannot read line %d, "
@@ -292,7 +294,7 @@ static const char *parse_FASTA_file(SEXP filexp,
 			if (is_comment)
 				continue;  // we ignore comment lines
 		}
-		buf[data.length] = '\0';
+		iobuf[data.length] = '\0';
 		if (EOL_in_prev_buf && is_desc) {
 			if (nrec >= 0 && *recno >= skip + nrec) {
 				/* Calls to filexp_seek() are costly on
@@ -627,7 +629,6 @@ SEXP write_XStringSet_to_fasta(SEXP x, SEXP filexp_list, SEXP width, SEXP lkup)
 	const int *lkup0;
 	SEXP filexp, x_names, desc;
 	Chars_holder X_elt;
-	char buf[IOBUF_SIZE];
 
 	X = _hold_XStringSet(x);
 	x_length = _get_length_from_XStringSet_holder(&X);
@@ -635,7 +636,7 @@ SEXP write_XStringSet_to_fasta(SEXP x, SEXP filexp_list, SEXP width, SEXP lkup)
 	width0 = INTEGER(width)[0];
 	if (width0 >= IOBUF_SIZE)
 		error("'width' must be <= %d", IOBUF_SIZE - 1);
-	buf[width0] = 0;
+	iobuf[width0] = 0;
 	if (lkup == R_NilValue) {
 		lkup0 = NULL;
 		lkup_len = 0;
@@ -661,11 +662,11 @@ SEXP write_XStringSet_to_fasta(SEXP x, SEXP filexp_list, SEXP width, SEXP lkup)
 			dest_nbytes = j2 - j1;
 			j2--;
 			Ocopy_bytes_from_i1i2_with_lkup(j1, j2,
-				buf, dest_nbytes,
+				iobuf, dest_nbytes,
 				X_elt.ptr, X_elt.length,
 				lkup0, lkup_len);
-			buf[dest_nbytes] = 0;
-			filexp_puts(filexp, buf);
+			iobuf[dest_nbytes] = 0;
+			filexp_puts(filexp, iobuf);
 			filexp_puts(filexp, "\n");
 		}
 	}

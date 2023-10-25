@@ -9,6 +9,8 @@
 
 
 #define IOBUF_SIZE 20002
+static char iobuf[IOBUF_SIZE];
+
 static char errmsg_buf[200];
 
 static int has_prefix(const char *s, const char *prefix)
@@ -307,7 +309,6 @@ static const char *parse_FASTQ_file(SEXP filexp,
 	int lineno, EOL_in_buf, EOL_in_prev_buf, ret_code, nbyte_in,
 	    FASTQ_line1_markup_length, FASTQ_line3_markup_length,
 	    lineinrecno, dont_load;
-	char buf[IOBUF_SIZE];
 	Chars_holder data;
 	long long int prev_offset;
 	const char *errmsg;
@@ -321,7 +322,7 @@ static const char *parse_FASTQ_file(SEXP filexp,
 		if (EOL_in_buf)
 			lineno++;
 		EOL_in_prev_buf = EOL_in_buf;
-		ret_code = filexp_gets(filexp, buf, IOBUF_SIZE, &EOL_in_buf);
+		ret_code = filexp_gets(filexp, iobuf, IOBUF_SIZE, &EOL_in_buf);
 		if (ret_code == 0)
 			break;
 		if (ret_code == -1) {
@@ -331,8 +332,9 @@ static const char *parse_FASTQ_file(SEXP filexp,
 			return errmsg_buf;
 		}
 		if (EOL_in_buf) {
-			nbyte_in = strlen(buf);
-			data.length = delete_trailing_LF_or_CRLF(buf, nbyte_in);
+			nbyte_in = strlen(iobuf);
+			data.length =
+				delete_trailing_LF_or_CRLF(iobuf, nbyte_in);
 		} else {
 			data.length = nbyte_in = IOBUF_SIZE - 1;
 		}
@@ -340,13 +342,13 @@ static const char *parse_FASTQ_file(SEXP filexp,
 		*offset += nbyte_in;
 		if (seek_first_rec) {
 			if (EOL_in_prev_buf
-			 && has_prefix(buf, FASTQ_line1_markup)) {
+			 && has_prefix(iobuf, FASTQ_line1_markup)) {
 				seek_first_rec = 0;
 			} else {
 				continue;
 			}
 		}
-		data.ptr = buf;
+		data.ptr = iobuf;
 		if (EOL_in_prev_buf) {
 			if (data.length == 0)
 				continue;  // we ignore empty lines
@@ -360,7 +362,7 @@ static const char *parse_FASTQ_file(SEXP filexp,
 				 "line is too long", lineno);
 			return errmsg_buf;
 		}
-		buf[data.length] = '\0';
+		iobuf[data.length] = '\0';
 		errmsg = NULL;
 		switch (lineinrecno) {
 		    case 1:
@@ -375,7 +377,7 @@ static const char *parse_FASTQ_file(SEXP filexp,
 				*offset = prev_offset;
 				return NULL;
 			}
-			if (!has_prefix(buf, FASTQ_line1_markup)) {
+			if (!has_prefix(iobuf, FASTQ_line1_markup)) {
 				snprintf(errmsg_buf, sizeof(errmsg_buf),
 				    "\"%s\" expected at beginning of line %d",
 				    FASTQ_line1_markup, lineno);
@@ -397,7 +399,7 @@ static const char *parse_FASTQ_file(SEXP filexp,
 				errmsg = loader->append_seq_hook(loader, &data);
 			break;
 		    case 3:
-			if (!has_prefix(buf, FASTQ_line3_markup)) {
+			if (!has_prefix(iobuf, FASTQ_line3_markup)) {
 				snprintf(errmsg_buf, sizeof(errmsg_buf),
 				    "\"%s\" expected at beginning of line %d",
 				    FASTQ_line3_markup, lineno);
@@ -652,7 +654,6 @@ SEXP write_XStringSet_to_fastq(SEXP x, SEXP filexp_list,
 	SEXP filexp, x_names, q_names;
 	const char *id;
 	Chars_holder X_elt;
-	char buf[IOBUF_SIZE];
 
 	X = _hold_XStringSet(x);
 	x_length = _get_length_from_XStringSet_holder(&X);
@@ -677,12 +678,12 @@ SEXP write_XStringSet_to_fastq(SEXP x, SEXP filexp_list,
 		id = get_FASTQ_rec_id(x_names, q_names, i);
 		X_elt = _get_elt_from_XStringSet_holder(&X, i);
 		Ocopy_bytes_from_i1i2_with_lkup(0, X_elt.length - 1,
-			buf, X_elt.length,
+			iobuf, X_elt.length,
 			X_elt.ptr, X_elt.length,
 			lkup0, lkup_len);
-		buf[X_elt.length] = 0;
+		iobuf[X_elt.length] = 0;
 		write_FASTQ_id(filexp, FASTQ_line1_markup, id);
-		write_FASTQ_seq(filexp, buf);
+		write_FASTQ_seq(filexp, iobuf);
 		write_FASTQ_id(filexp, FASTQ_line3_markup, id);
 		if (qualities != R_NilValue) {
 			write_FASTQ_qual(filexp, X_elt.length, &Q, i);
