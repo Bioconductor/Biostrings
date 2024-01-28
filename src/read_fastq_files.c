@@ -8,7 +8,7 @@
 #include "S4Vectors_interface.h"
 
 
-#define IOBUF_SIZE 20002
+#define IOBUF_SIZE 200001
 static char iobuf[IOBUF_SIZE];
 
 static char errmsg_buf[200];
@@ -677,6 +677,11 @@ SEXP write_XStringSet_to_fastq(SEXP x, SEXP filexp_list,
 	for (i = 0; i < x_length; i++) {
 		id = get_FASTQ_rec_id(x_names, q_names, i);
 		X_elt = _get_elt_from_XStringSet_holder(&X, i);
+		if (X_elt.length >= IOBUF_SIZE)
+			error("XStringSet object (or derivative) to "
+			      "write 'x' cannot contain strings\n  longer "
+			      "than %d ('x[[%d]]' has %d characters)",
+			      IOBUF_SIZE - 1, i + 1, X_elt.length);
 		Ocopy_bytes_from_i1i2_with_lkup(0, X_elt.length - 1,
 			iobuf, X_elt.length,
 			X_elt.ptr, X_elt.length,
