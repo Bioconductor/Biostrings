@@ -18,6 +18,10 @@ output:
 fig_caption: true
 ---
 
+```{r setup,include=FALSE}
+library(BiocStyle)
+```
+
 # Overview
 
 This document presents some basic and simple tools for dealing with the
