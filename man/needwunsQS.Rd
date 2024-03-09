@@ -7,7 +7,7 @@
 \alias{needwunsQS,XString,XString-method}
 \alias{print.needwunsQS}
 
-\title{(Deprecated) Needleman-Wunsch Global Alignment}
+\title{(Defunct) Needleman-Wunsch Global Alignment}
 \description{Simple gap implementation of Needleman-Wunsch global alignment algorithm.}
 \usage{
 needwunsQS(s1, s2, substmat, gappen = 8)
@@ -19,8 +19,7 @@ needwunsQS(s1, s2, substmat, gappen = 8)
 }
 \details{
 Follows specification of Durbin, Eddy, Krogh, Mitchison (1998).
-This function has been deprecated and is being replaced by
-\code{pairwiseAlignment}.
+This function is now defunct. Please use \code{pairwiseAlignment} instead.
 }
 \value{
 An instance of class \code{"PairwiseAlignments"}.
@@ -35,8 +34,8 @@ Biological Sequence Analysis, Cambridge UP 1998, sec 2.3.}
 }
 \examples{
 \dontrun{
-  ## This function has been deprecated
-  ## Use 'pairwiseAlignment' instead.
+  ## This function is now defunct.
+  ## Please use 'pairwiseAlignment' instead.
 
   ## nucleotide alignment
   mat <- matrix(-5L, nrow = 4, ncol = 4)
