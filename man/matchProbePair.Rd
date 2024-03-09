@@ -19,7 +19,9 @@
 }
 
 \usage{
-matchProbePair(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=FALSE)
+matchProbePair(Fprobe, Rprobe, subject,
+               algorithm="auto", logfile=NULL,
+               verbose=FALSE, ...)
 }
 
 \arguments{
@@ -44,6 +46,9 @@ matchProbePair(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=
   \item{verbose}{
     \code{TRUE} or \code{FALSE}.
   }
+  \item{...}{
+    Additional arguments passed to \code{\link{matchPattern}}.
+  }
 }
 
 \details{
@@ -55,6 +60,10 @@ matchProbePair(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=
   minus_hit) pairs such that (a) plus_hit <= minus_hit and (b) there are
   no hits (plus or minus) between plus_hit and minus_hit.
   This set of "reduced matches" is the set of "theoretical amplicons".
+
+  Additional arguments can be passed to \code{matchPattern} via the
+  \code{...} argument. This supports matching to ambiguity codes. See
+  \code{\link{matchPattern}} for more information on supported arguments.
 }
 
 \value{

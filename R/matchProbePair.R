@@ -74,26 +74,28 @@ reduceProbePairMatches <- function(start, end)
 
 setGeneric("matchProbePair", signature="subject",
     function(Fprobe, Rprobe, subject, algorithm="auto",
-             logfile=NULL, verbose=FALSE)
+             logfile=NULL, verbose=FALSE, ...)
         standardGeneric("matchProbePair")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
-setMethod("matchProbePair", "DNAString", 
+setMethod("matchProbePair", "DNAString",
     function(Fprobe, Rprobe, subject, algorithm="auto",
-             logfile=NULL, verbose=FALSE)
+             logfile=NULL, verbose=FALSE, ...)
     {
         ## This won't copy the data if Fprobe and Rprobe are already DNAString objects
         F <- DNAString(Fprobe)
         R <- DNAString(Rprobe)
 
         ## F and R hits on the + strand
-        Fp_hits <- start(matchPattern(F, subject, algorithm=algorithm))
-        Rp_hits <- start(matchPattern(R, subject, algorithm=algorithm))
+        Fp_hits <- start(matchPattern(F, subject, algorithm=algorithm, ...))
+        Rp_hits <- start(matchPattern(R, subject, algorithm=algorithm, ...))
 
         ## F and R hits on the - strand
-        Fm_hits <- end(matchPattern(reverseComplement(F), subject, algorithm=algorithm))
-        Rm_hits <- end(matchPattern(reverseComplement(R), subject, algorithm=algorithm))
+        Fm_hits <- end(matchPattern(reverseComplement(F),
+                                    subject, algorithm=algorithm, ...))
+        Rm_hits <- end(matchPattern(reverseComplement(R),
+                                    subject, algorithm=algorithm, ...))
 
         if (verbose) {
             cat("Fp_hits:", Fp_hits, "  Rp_hits:", Rp_hits,
@@ -123,12 +125,12 @@ setMethod("matchProbePair", "DNAString",
 ### guaranteed though is when 'isNormal(subject)' is TRUE (i.e. 'subject' is
 ### a normal XStringViews object).
 setMethod("matchProbePair", "XStringViews",
-    function(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=FALSE)
+    function(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=FALSE, ...)
     {
         ans_start <- ans_width <- integer(0)
         for (i in seq_len(length(subject))) {
             pm <- matchProbePair(Fprobe, Rprobe, subject[[i]],
-                                 algorithm=algorithm, logfile=logfile, verbose=verbose)
+                                 algorithm=algorithm, logfile=logfile, verbose=verbose, ...)
             offset <- start(subject)[i] - 1L
             ans_start <- c(ans_start, offset + start(pm))
             ans_width <- c(ans_width, width(pm))
@@ -138,8 +140,8 @@ setMethod("matchProbePair", "XStringViews",
 )
 
 setMethod("matchProbePair", "MaskedDNAString",
-    function(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=FALSE)
+    function(Fprobe, Rprobe, subject, algorithm="auto", logfile=NULL, verbose=FALSE, ...)
         matchProbePair(Fprobe, Rprobe, toXStringViewsOrXString(subject),
-                       algorithm=algorithm, logfile=logfile, verbose=verbose)
+                       algorithm=algorithm, logfile=logfile, verbose=verbose, ...)
 )
 
