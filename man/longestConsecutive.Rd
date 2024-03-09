@@ -1,6 +1,6 @@
 \name{longestConsecutive}
 \alias{longestConsecutive}
-\title{Obtain the length of the longest substring containing
+\title{(Deprecated) Obtain the length of the longest substring containing
   only 'letter'}
 \description{
   This function accepts a character vector and computes the length of the
@@ -14,6 +14,8 @@ longestConsecutive(seq, letter)
   \item{letter}{Character vector of length 1, containing one single character.}
 }
 \details{
+  This function has been deprecated and won't be replaced.
+
   The elements of \code{x} can be in upper case, lower case
   or mixed. NAs are handled.
 }
@@ -25,7 +27,9 @@ longestConsecutive(seq, letter)
 \author{W. Huber}
 
 \examples{
+\dontrun{
  v = c("AAACTGTGFG", "GGGAATT", "CCAAAAAAAAAATT")
  longestConsecutive(v, "A")
+}
 }
 \keyword{manip}

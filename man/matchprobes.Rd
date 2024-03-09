@@ -1,7 +1,7 @@
 \name{matchprobes}
 \alias{matchprobes}
-\title{A function to match a query sequence to the sequences of a set of
-  probes.}
+\title{(Deprecated) A function to match a query sequence to the sequences
+  of a set of probes.}
 \description{
   The \code{query} sequence, a character string (probably representing
   a transcript of interest), is scanned for the presence of exact
@@ -12,8 +12,9 @@
   the actual matching algorithm is of time complexity \code{length(query)}
   times \code{length(records)}!
 
-  See \code{\link{matchPattern}}, \code{\link{vmatchPattern}} and
-  \code{\link{matchPDict}} for more efficient sequence matching functions.
+  This function is now deprecated. See \code{\link{matchPattern}},
+  \code{\link{vmatchPattern}} and \code{\link{matchPDict}} for more
+  efficient sequence matching functions.
 }
 \usage{
 matchprobes(query, records, probepos=FALSE)
@@ -50,11 +51,12 @@ matchprobes(query, records, probepos=FALSE)
 \seealso{\code{\link{matchPattern}}, \code{\link{vmatchPattern}}, \code{\link{matchPDict}}}
 
 \examples{
-  if(require("hgu95av2probe")){
-    data("hgu95av2probe")
-    seq <- hgu95av2probe$sequence[1:20]
-    target <- paste(seq, collapse="")
-    matchprobes(target, seq, probepos=TRUE)
-  }
+\dontrun{
+library(hgu95av2probe)
+data("hgu95av2probe")
+seq <- hgu95av2probe$sequence[1:20]
+target <- paste(seq, collapse="")
+matchprobes(target, seq, probepos=TRUE)
+}
 }
 \keyword{manip}

@@ -1,3 +1,6 @@
+FIXME list
+----------
+
 - pairwiseAlignment() is broken on BString objects:
 
     pairwiseAlignment(BString("xxYYxx"), BString("YY"))
@@ -30,20 +33,20 @@
 
   This 2nd alignment looks correct now.
 
+
 Some R problems that maybe worth reporting
 ------------------------------------------
 
 - Loading a serialized XStringViews object without prior loading the Biostrings
-  package seems to have problems: the object loads, but, when I try to display
-  it, then nothing is printed and the prompt doesn't come back either (unless I
-  CTRL C).
-
-- rowSums() and colSums() should return integer vectors when applied on
-  an integer matrix.
+  package seems to have problems: the object loads, but then calling show()
+  on the object dispatches on the show() method for List objects (defined in
+  S4Vectors) instead of the method for XStringViews objects.
 
 
-Immediate TODO list
--------------------
+TODO list
+---------
+
+- Get rid of all 'R CMD check' warnings.
 
 BASIC CONTAINERS
 
@@ -81,8 +84,6 @@ BASIC CONTAINERS
   can be replaced by:
     if (is(x@subject, "NucleotideString")) ...
   Etc...
-
-C-LEVEL FACILITIES
 
 UTILITIES
 
@@ -259,28 +260,6 @@ STRING MATCHING
       Maq (http://maq.sourceforge.net/)
       MUMmer (http://mummer.sourceforge.net/)
 
-STRING ALIGNMENT
-
-MISCELLANEOUS
-
-- Port DNASuffixArray() and related functions from Biostrings 1.
-
-- Robert wants the dependencies to be reduced to 1 BSgenome pkg only (not 2),
-  or, even better, to 0 BSgenome pkg. The examples would then use a single
-  sequence stored in the data folder.
-
-- Remove the Biostrings 1 subdir. But first compare NAMESPACE + list of aliases
-  in Rd files from Biostrings 1 and 2 make sure no important feature has been
-  lost.
-
-- Update the CHANGES file.
-
-
-2.21 series (BioC 2.9)
-----------------------
-
-- Deprecate old matchprobes functions: matchprobes(), longestConsecutive().
-
 
 Long term TODO list
 -------------------
@@ -298,39 +277,16 @@ Long term TODO list
   the value of match.call(), so that one knows what parameters were supplied
   for a given matching task.
 
-- Merge ~rgentlem/tmp/EMBOSS-3.0.0/emboss/matcher.c (Huang & Miller
-  alignment algo) into Biostrings.
-
-- An old Robert request: "have a look at GeneR, and see if there are
-  any other packages that do sequence matching, and describe, in one page or
-  so, what the differences are between the packages (also some notion of speed
-  and size, how well do they work on different inputs)".
-
 - Extend pairwiseAlignment to return the set of maximum alignments, rather
   than just one element from that set.
-
-- Why doesn't sapply or lapply work for an XStringViews object (it didn't
-  work either for BioString objects). Isn't it enough that these objects
-  are subsettable?
 
 - Restore the test units.
 
 - Fix pb with length(x) <- 2 screwing up x if it's an XString or XStringViews
-  object (prevent people of doing this by defining the replacement version
-  of the length method and issuing an error).
+  object (prevent people from doing this by defining a length() setter that
+  retuns an error).
 
 - Still have to think about it (Robert suggestion): make [[ work on "out
   of limits" views with a warning (we keep issuing an error only when the
   view is all blank).
-
-- Start adding suffix tree capabilities: maybe merge SuffixTree package from
-  Robert?
-
-
-
-Unsorted incoming TODO items
-----------------------------
-
-- Unify the way to get strings length (strlen() in R, length or width
-   with Biostrings data structures. -Laurent
 
