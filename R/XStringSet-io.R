@@ -32,6 +32,7 @@
 
 .is_filexp_list <- function(filepath)
 {
+    ## We only check the first list element.
     is.list(filepath) && length(filepath) != 0L &&
                          is(filepath[[1L]], "externalptr")
 }
@@ -57,6 +58,7 @@ fasta.index <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
                         seqtype="B")
 {
     filexp_list <- open_input_files(filepath)
+    on.exit(.close_filexp_list(filexp_list))
     nrec <- .normarg_nrec(nrec)
     skip <- .normarg_skip(skip)
     if (!isTRUEorFALSE(seek.first.rec))
@@ -165,6 +167,7 @@ fasta.seqlengths <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
     used_fileno <- as.integer(names(nrec_list))
     used_filepath <- filepath[match(used_fileno, fileno)]
     filexp_list <- open_input_files(used_filepath)
+    on.exit(.close_filexp_list(filexp_list))
 
     ## Prepare 'seqlengths'.
     seqlengths <- ssorted_fai[ , "seqlength"]
@@ -225,6 +228,7 @@ fasta.seqlengths <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE,
 fastq.seqlengths <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
 {
     filexp_list <- open_input_files(filepath)
+    on.exit(.close_filexp_list(filexp_list))
     nrec <- .normarg_nrec(nrec)
     skip <- .normarg_skip(skip)
     if (!isTRUEorFALSE(seek.first.rec))
@@ -248,6 +252,7 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
                                         with.qualities)
 {
     filexp_list <- open_input_files(filepath)
+    on.exit(.close_filexp_list(filexp_list))
     nrec <- .normarg_nrec(nrec)
     skip <- .normarg_skip(skip)
     if (!isTRUEorFALSE(seek.first.rec))
@@ -286,8 +291,10 @@ fastq.geometry <- function(filepath, nrec=-1L, skip=0L, seek.first.rec=FALSE)
 
     ## Read FASTQ.
     if (format == "fastq") {
-        if (!.is_filexp_list(filepath))
+        if (!.is_filexp_list(filepath)) {
             filepath <- open_input_files(filepath)
+            on.exit(.close_filexp_list(filepath))
+        }
         ans <- .read_fastq_files(filepath,
                                  nrec, skip, seek.first.rec,
                                  use.names, elementType, lkup,
@@ -394,14 +401,14 @@ writeXStringSet <- function(x, filepath, append=FALSE,
     format <- match.arg(tolower(format), c("fasta", "fastq"))
     filexp_list <- XVector:::open_output_file(filepath, append,
                                               compress, compression_level)
+    on.exit(.close_filexp_list(filexp_list))
     res <- try(switch(format,
                    "fasta"=.write_XStringSet_to_fasta(x, filexp_list, ...),
                    "fastq"=.write_XStringSet_to_fastq(x, filexp_list, ...)
                ),
                silent=FALSE)
-    .close_filexp_list(filexp_list)
     if (is(res, "try-error") && !append) {
-        ## Get the expamded path and remove the file.
+        ## Get the expanded path and remove the file.
         expath <- attr(filexp_list[[1L]], "expath")
         if (!file.remove(expath))
             warning(wmsg("cannot remove file '", expath, "'"))
