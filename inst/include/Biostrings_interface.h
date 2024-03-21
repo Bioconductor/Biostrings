@@ -139,6 +139,8 @@ char AAdecode(char code);
 
 int get_XStringSet_length(SEXP x);
 
+SEXP get_XStringSet_width(SEXP x);
+
 XStringSet_holder hold_XStringSet(SEXP x);
 
 int get_length_from_XStringSet_holder(const XStringSet_holder *x_holder);
