@@ -52,19 +52,69 @@ BASIC CONTAINERS
   though: this would require a huge amount of memory and there are other ways
   to retrieve these locations on user demand so maybe it's not worth it.
 
-UTILITIES
+BASIC OPERATIONS
 
-- Replace current quick and dirty (and very inefficient) implementation of set
-  operations on XStringSet objects ("union", "intersect", "setdiff" and
-  "setequal") by something more efficient.
+- Several problems with comparison operators (==, !=, <=, >=, < and >)
+  when at least one of the two operands is an XString derivative.
+  Issue https://github.com/Bioconductor/Biostrings/issues/51 is just the
+  tip of the iceberg :-(
+  For example:
+
+    > DNAString("A") != "A"
+    Error: C stack usage  7969796 is too close to the limit
+
+    > DNAString("A") <= "A"
+    Error: C stack usage  7969828 is too close to the limit
+
+    > DNAString("A") >= "A"
+    Error in order(...) : unimplemented type 'list' in 'orderVector1'
+
+    > DNAString("A") < "A"
+    Error in order(...) : unimplemented type 'list' in 'orderVector1'
+
+    > DNAString("A") > "A"
+    Error: C stack usage  7969796 is too close to the limit
+
+    > DNAString("AAA") == "AAA"
+    Error in FUN(X[[i]], ...) :
+      coercion of character object to DNAString didn't preserve its length
+
+    > DNAString("AAA") <= "AAA"
+    Error in FUN(X[[i]], ...) :
+      coercion of character object to DNAString didn't preserve its length
+
+    > BString("AAA") <= "AAA"
+    Error in FUN(X[[i]], ...) :
+      coercion of character object to BString didn't preserve its length
+
+    > DNAString("A") > DNAString("A")
+    Error: C stack usage  7969796 is too close to the limit
+
+    > DNAString("C") > DNA_ALPHABET
+    Error in .charToXString(seqtype, x, start, end, width) :
+      input must be a single non-NA string
+
+    etc...
+
+  All of these should work and behave the same way as when replacing the
+  XString derivative with a character vector of length 1.
+  There will be many 'x <op> y' cases to test:
+    o 'x' is a B/DNA/RNA/AAString and 'y' is a character vector of
+      arbitrary length;
+    o 'x' is a character vector of arbitrary length and 'y' is a
+      B/DNA/RNA/AAString;
+    o both 'x' and 'y' are XString derivatives of the same type or not;
+    o <op> is any of the 6 comparison operators.
+  So there's a little bit of a combinatorial explosion here but we should
+  be able to come up with a solid set of unit tests that will cover it all.
+
+UTILITIES
 
 - Move lcprefix()/lcsuffix() out of pmatchPattern.R to a file of their own.
   (This stuff needs to belong to the UTILITIES component of the package, not
   to the STRING ALIGNMENT component.)
 
 - Add patternFrequency() methods for XStringSet and XStringViews objects.
-
-- Fix <=, >=, < and > operators between XString objects.
 
 - Maybe add a new generic that combines a subject and an IRanges (or
   IRanges-like) object to return an XStringViews object. The IRanges-like
@@ -87,15 +137,6 @@ STRING MATCHING
   another match pair are returned (the assumption here is that those are
   the most relevant match pairs). Also, should L/R match pairs where the
   left and right matches overlap be accepted?
-
-- Add a Biostrings.Rnw vignette with a short overview of the string
-  matching/aligning capabilities and a "how to choose the right string
-  matching/aligning function" diagram.
-
-- Maybe add a no.match.length argument to gregexpr2() that is FALSE by
-  default so gregexpr(pattern, text, fixed=TRUE) is more interchangeable
-  with gregexpr2(pattern, text) and use no.match.length=TRUE in matchPattern's
-  internal code.
 
 - When algo="auto", use "naive_inexact" instead of "shift-or" when max.mismatch
   is high (e.g. >= 8, finding the exact cut-value requires some testing).
@@ -189,55 +230,17 @@ STRING MATCHING
 
   o Make reverseComplement() work on a PDict object.
 
-  o Compare with other software for fast alignment and assembly:
-      Vmatch (http://www.vmatch.de/)
-      Maq (http://maq.sourceforge.net/)
-      MUMmer (http://mummer.sourceforge.net/)
+- Maybe add a Biostrings.Rnw vignette with a short overview of the string
+  matching/aligning capabilities and a "how to choose the right string
+  matching/aligning function" diagram.
 
-PAIRWISE ALIGNMENTS
--------------------
+LOW PRIORITY
+------------
 
-- Move pairwiseAlignment() and all related stuff to separate pairwiseAlignment
-  package.
-
-- pairwiseAlignment() is broken on BString objects:
-
-    pairwiseAlignment(BString("xxYYxx"), BString("YY"))
-    # Global PairwiseAlignmentsSingleSubject (1 of 1)
-    # pattern: xxYYxx
-    # subject: --YY--
-    # score: -34.03641
-    pairwiseAlignment(BString("YYYYYY"), BString("YY"))
-    # Global PairwiseAlignmentsSingleSubject (1 of 1)
-    # pattern: --YYYYYY
-    # subject: YY------
-    # score: -52
-
-  This 2nd alignment deosn't look like the best one.
-
-  Furthermore, aligning the 2 patterns above with a single call to
-  pairwiseAlignment() gives a different alignment for the 2nd pattern:
-
-    pa <- pairwiseAlignment(BStringSet(c("xxYYxx", "YYYYYY")), BString("YY"))
-    pa[1]
-    # Global PairwiseAlignmentsSingleSubject (1 of 1)
-    # pattern: xxYYxx
-    # subject: --YY--
-    # score: -34.03641
-    pa[2]
-    # Global PairwiseAlignmentsSingleSubject (1 of 1)
-    # pattern: YYYYYY
-    # subject: Y----Y
-    # score: -24.03641
-
-  This 2nd alignment looks correct now.
-
-- Extend pairwiseAlignment to return the set of maximum alignments, rather
-  than just one element from that set.
-
-
-Long term TODO list
--------------------
+- Maybe add a no.match.length argument to gregexpr2() that is FALSE by
+  default so gregexpr(pattern, text, fixed=TRUE) is more interchangeable
+  with gregexpr2(pattern, text) and use no.match.length=TRUE in matchPattern's
+  internal code.
 
 - Look at apse.c in R/src/main for Levenshtein. It's coming from
     http://search.cpan.org/dist/String-Approx/
