@@ -28,9 +28,14 @@ BASIC CONTAINERS
     o DNA/RNA/AAStringSet(x, start=c(1,5), end=c(3,7)) when x is a single
       string (character or XString). The result should be a DNA/RNA/AAStringSet
       object of the length of 'start' (or 'end').
-    o Make sure that DNA/RNA/AAStringSet(x) does the absolute minimum amount
-      of work when x is already a DNA/RNA/AAStringSet _instance_ (i.e.
-      when class(x) == "DNAStringSet" or "RNAStringSet" or "AAStringSet").
+    o Low priority: Make sure that DNA/RNA/AAStringSet(x) takes the shortest
+      possible path to return 'x' when 'x' is already a DNA/RNA/AAStringSet
+      _instance_ (i.e. when class(x) == "DNAStringSet" or "RNAStringSet"
+      or "AAStringSet"). Right now it seems that it goes thru some unnecessary
+      operations. Does it slow it down in a significant way though? I don't
+      know and some benchmarking would be nice to have. It's just not a
+      satisfying situation from a theoretical point of view when a no-op
+      wastes CPU cycles in performing pointless calculations.
 
 - Maybe define a DNAorRNA virtual class (or NucleotideString) that would be
   the common parent of the DNAString and RNAString classes. Advantage of this
