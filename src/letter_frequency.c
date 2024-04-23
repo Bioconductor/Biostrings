@@ -534,7 +534,7 @@ SEXP XString_letterFrequencyInSlidingView(SEXP x, SEXP view_width,
 	if (colmap != R_NilValue) {
 		if (LENGTH(single_codes) != LENGTH(colmap))
 			error("Biostrings internal error in "
-			      "XString_letterFrequencyInSlidingView(): ",
+			      "XString_letterFrequencyInSlidingView(): "
 			      "lengths of 'single_codes' and 'colmap' differ");
 		ans_width = 0;
 		colmap0 = INTEGER(colmap);
@@ -587,7 +587,7 @@ SEXP XStringSet_letterFrequency(SEXP x, SEXP single_codes, SEXP colmap,
 	if (colmap != R_NilValue) {
 		if (LENGTH(single_codes) != LENGTH(colmap))
 			error("Biostrings internal error in "
-			      "XStringSet_letterFrequency(): ",
+			      "XStringSet_letterFrequency(): "
 			      "lengths of 'single_codes' and 'colmap' differ");
 		ans_width = 0;
 		colmap0 = INTEGER(colmap);
@@ -953,7 +953,7 @@ SEXP XStringSet_two_way_letter_frequency(SEXP x, SEXP y, SEXP collapse,
                                          SEXP x_codes, SEXP y_codes,
                                          SEXP with_other)
 {
-  SEXP ans, ans_dimnames;
+  SEXP ans;
   int x_width, y_width, x_length, *ans_mat, i, x_pos;
   XStringSet_holder x_holder, y_holder;
   Chars_holder x_elt, y_elt;

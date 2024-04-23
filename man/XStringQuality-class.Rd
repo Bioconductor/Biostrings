@@ -118,8 +118,8 @@ IlluminaQuality(x)
 \author{P. Aboyoun}
 
 \seealso{
-  \code{\link{pairwiseAlignment}},
-  \link{PairwiseAlignments-class},
+  \code{\link[pwalign]{pairwiseAlignment}} and
+  \link[pwalign]{PairwiseAlignments-class} in the \pkg{pwalign} package,
   \link{DNAString-class},
   \link{BStringSet-class}
 }

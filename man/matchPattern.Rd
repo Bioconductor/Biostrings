@@ -147,22 +147,27 @@ vcountPattern(pattern, subject,
   Use \code{\link{matchPDict}} if you need to match a (big) set of patterns
   against a reference sequence.
 
-  Use \code{\link{pairwiseAlignment}} if you need to solve a (Needleman-Wunsch)
-  global alignment, a (Smith-Waterman) local alignment, or an (ends-free)
-  overlap alignment problem.
+  Use \code{\link[pwalign]{pairwiseAlignment}} from the \pkg{pwalign}
+  package if you need to solve a (Needleman-Wunsch) global alignment,
+  a (Smith-Waterman) local alignment, or an (ends-free) overlap alignment
+  problem.
 }
 
 \seealso{
-  \link{lowlevel-matching},
-  \code{\link{matchPDict}},
-  \code{\link{pairwiseAlignment}},
-  \code{\link{mismatch}},
-  \code{\link{matchLRPatterns}},
-  \code{\link{matchProbePair}},
-  \code{\link{maskMotif}},
-  \code{\link{alphabetFrequency}},
-  \link{XStringViews-class},
-  \link{MIndex-class}
+  \itemize{
+    \item \link{lowlevel-matching}
+    \item \code{\link{matchPDict}}
+    \item \code{\link{pairwiseAlignment}}
+    \item \code{\link{mismatch}}
+    \item \code{\link{matchLRPatterns}}
+    \item \code{\link{matchProbePair}}
+    \item \code{\link{maskMotif}}
+    \item \code{\link{alphabetFrequency}}
+    \item \link{XStringViews} class
+    \item \link{MIndex} class
+    \item \code{\link[pwalign]{pairwiseAlignment}} in the \pkg{pwalign}
+          package
+  }
 }
 
 \examples{
@@ -247,8 +252,9 @@ system.time(m1b <- matchPattern(pattern1, subject, max.mismatch=2,
                                 with.indels=TRUE))
 m1b
 
-## pairwiseAlignment() returns the (first) best match only:
+## pwalign::pairwiseAlignment() returns the (first) best match only:
 if (interactive()) {
+  library(pwalign)
   mat <- nucleotideSubstitutionMatrix(match=1, mismatch=0, baseOnly=TRUE)
   ## Note that this call to pairwiseAlignment() will need to
   ## allocate 733.5 Mb of memory (i.e. length(pattern) * length(subject)

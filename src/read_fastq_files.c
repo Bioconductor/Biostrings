@@ -91,7 +91,7 @@ typedef struct seqlen_fastq_loader_ext {
 	IntAE *seqlength_buf;
 } SEQLEN_FASTQloaderExt;
 
-static SEQLEN_FASTQloaderExt new_SEQLEN_FASTQloaderExt()
+static SEQLEN_FASTQloaderExt new_SEQLEN_FASTQloaderExt(void)
 {
 	SEQLEN_FASTQloaderExt loader_ext;
 
@@ -162,11 +162,11 @@ static FASTQloader new_FASTQloader_with_SEQLEN_ext(SEXP lkup,
 typedef struct fastq_loader_ext {
 	CharAEAE *seqid_buf;
 	XVectorList_holder seq_holder;
-	int nseq;
 	Chars_holder seq_elt_holder;
+	int nseq;
 	XVectorList_holder qual_holder;
-	int nqual;
 	Chars_holder qual_elt_holder;
+	int nqual;
 } FASTQloaderExt;
 
 static FASTQloaderExt new_FASTQloaderExt(SEXP sequences, SEXP qualities)
@@ -176,10 +176,10 @@ static FASTQloaderExt new_FASTQloaderExt(SEXP sequences, SEXP qualities)
 	loader_ext.seqid_buf =
 		new_CharAEAE(_get_XStringSet_length(sequences), 0);
 	loader_ext.seq_holder = hold_XVectorList(sequences);
-	loader_ext.nseq = -1;
+	loader_ext.nseq = 0;
 	if (qualities != R_NilValue) {
 		loader_ext.qual_holder = hold_XVectorList(qualities);
-		loader_ext.nqual = -1;
+		loader_ext.nqual = 0;
 	}
 	return loader_ext;
 }
@@ -204,11 +204,11 @@ static void FASTQ_new_empty_seq_hook(FASTQloader *loader)
 
 	loader_ext = loader->ext;
 	seq_elt_holder = &(loader_ext->seq_elt_holder);
-	loader_ext->nseq++;
 	*seq_elt_holder = get_elt_from_XRawList_holder(
 					&(loader_ext->seq_holder),
 					loader_ext->nseq);
 	seq_elt_holder->length = 0;
+	loader_ext->nseq++;
 	return;
 }
 
@@ -241,11 +241,11 @@ static void FASTQ_new_empty_qual_hook(FASTQloader *loader)
 
 	loader_ext = loader->ext;
 	qual_elt_holder = &(loader_ext->qual_elt_holder);
-	loader_ext->nqual++;
 	*qual_elt_holder = get_elt_from_XRawList_holder(
 					&(loader_ext->qual_holder),
 					loader_ext->nqual);
 	qual_elt_holder->length = 0;
+	loader_ext->nqual++;
 	return;
 }
 

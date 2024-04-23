@@ -144,17 +144,17 @@ DEFINE_NOVALUE_CCALLABLE_STUB(report_match,
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(drop_reported_matches,
-	(),
+	(void),
 	()
 )
 
 DEFINE_CCALLABLE_STUB(int, get_match_count,
-	(),
+	(void),
 	()
 )
 
 DEFINE_CCALLABLE_STUB(SEXP, reported_matches_asSEXP,
-	(),
+	(void),
 	()
 )
 

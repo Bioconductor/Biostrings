@@ -123,7 +123,7 @@ void _report_ppdup(int poffset, int P_id)
 	return;
 }
 
-SEXP _get_ppdups_buf_asINTEGER()
+SEXP _get_ppdups_buf_asINTEGER(void)
 {
 	return new_INTEGER_from_IntAE(ppdups_buf);
 }

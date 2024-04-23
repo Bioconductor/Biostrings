@@ -386,7 +386,8 @@ consensusString(autoMasked)
 consensusViews(autoMasked)
 
 ## cluster the masked alignments
-sdist <- stringDist(as(autoMasked,"DNAStringSet"), method="hamming")
+library(pwalign)
+sdist <- pwalign::stringDist(as(autoMasked,"DNAStringSet"), method="hamming")
 clust <- hclust(sdist, method = "single")
 plot(clust)
 fourgroups <- cutree(clust, 4)

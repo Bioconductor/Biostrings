@@ -123,7 +123,7 @@ static void init_ppP_seq(const Chars_holder *P, int walk_backward)
  *   (e) VSGSshift(P[0], 0) = shift0
  */
 
-static void init_ppP_j0shift0()
+static void init_ppP_j0shift0(void)
 {
 	int j0, shift0, length, j;
 
@@ -198,7 +198,7 @@ static int get_VSGSshift(char c, int j)
 	return VSGS_SHIFT(c, j) = shift;
 }
 
-static void init_ppP_VSGSshift_table()
+static void init_ppP_VSGSshift_table(void)
 {
 	int u, j;
 	char c;
@@ -321,7 +321,7 @@ static int get_MWshift(int j1, int j2)
 	return MWSHIFT(j1, j2) = shift;
 }
 
-static void init_ppP_MWshift_table()
+static void init_ppP_MWshift_table(void)
 {
 	int j1, j2 = 1;
 

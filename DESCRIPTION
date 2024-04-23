@@ -7,7 +7,7 @@ biocViews: SequenceMatching, Alignment, Sequencing, Genetics,
 	DataImport, DataRepresentation, Infrastructure
 URL: https://bioconductor.org/packages/Biostrings
 BugReports: https://github.com/Bioconductor/Biostrings/issues
-Version: 2.71.5
+Version: 2.71.6
 License: Artistic-2.0
 Encoding: UTF-8
 Authors@R: c(
@@ -35,7 +35,7 @@ Depends: R (>= 4.0.0), methods, BiocGenerics (>= 0.37.0),
 Imports: methods, utils, grDevices, graphics, stats, crayon
 LinkingTo: S4Vectors, IRanges, XVector
 Enhances: Rmpi
-Suggests: BSgenome (>= 1.13.14),
+Suggests: pwalign, BSgenome (>= 1.13.14),
 	BSgenome.Celegans.UCSC.ce2 (>= 1.3.11),
 	BSgenome.Dmelanogaster.UCSC.dm3 (>= 1.3.11),
 	BSgenome.Hsapiens.UCSC.hg18,
@@ -45,8 +45,7 @@ Suggests: BSgenome (>= 1.13.14),
 	RUnit, BiocStyle, knitr
 VignetteBuilder: knitr
 LazyLoad: yes
-Collate: 00datacache.R
-	utils.R
+Collate: utils.R
 	IUPAC_CODE_MAP.R
 	AMINO_ACID_CODE.R
 	GENETIC_CODE.R
@@ -92,16 +91,9 @@ Collate: 00datacache.R
 	XStringPartialMatches-class.R
 	XStringQuality-class.R
 	QualityScaledXStringSet.R
-	InDel-class.R
-	AlignedXStringSet-class.R
-	PairwiseAlignments-class.R
-	PairwiseAlignmentsSingleSubject-class.R
-	PairwiseAlignments-io.R
-	align-utils.R
 	pmatchPattern.R
-	pairwiseAlignment.R
-	stringDist.R
 	needwunsQS.R
 	MultipleAlignment.R
 	matchprobes.R
+	moved_to_pwalign.R
 	zzz.R

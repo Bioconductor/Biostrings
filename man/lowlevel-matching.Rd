@@ -254,7 +254,7 @@ which.isMatchingEndingAt(pattern, subject, ending.at=1,
   \code{\link{trimLRPatterns}},
   \code{\link{IUPAC_CODE_MAP}},
   \link{XString-class},
-  \link{align-utils}
+  \link[pwalign]{align-utils} in the \pkg{pwalign} package
 }
 
 \examples{

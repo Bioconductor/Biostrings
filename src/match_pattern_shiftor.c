@@ -86,7 +86,7 @@ int shiftor_maxbits = sizeof(ShiftOrWord_t) * CHAR_BIT;
 
 /****************************************************************************/
 
-SEXP bits_per_long()
+SEXP bits_per_long(void)
 {
 	SEXP ans;
 

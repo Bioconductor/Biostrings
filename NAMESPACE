@@ -295,15 +295,7 @@ exportMethods(
 ###   XStringPartialMatches-class.R
 ###   XStringQuality-class.R
 ###   QualityScaledXStringSet.R
-###   InDel-class.R
-###   AlignedXStringSet-class.R
-###   PairwiseAlignments-class.R
-###   PairwiseAlignmentsSingleSubject-class.R
-###   PairwiseAlignments-io.R
-###   align-utils.R
 ###   pmatchPattern.R
-###   pairwiseAlignment.R
-###   stringDist.R
 ###   needwunsQS.R
 ###   MultipleAlignment.R
 
@@ -313,11 +305,6 @@ exportClasses(
     QualityScaledXStringSet,
     QualityScaledBStringSet, QualityScaledDNAStringSet,
     QualityScaledRNAStringSet, QualityScaledAAStringSet,
-    InDel,
-    AlignedXStringSet0, AlignedXStringSet, QualityAlignedXStringSet,
-    PairwiseAlignments,
-    PairwiseAlignmentsSingleSubject,
-    PairwiseAlignmentsSingleSubjectSummary,
     MultipleAlignment,
     DNAMultipleAlignment, RNAMultipleAlignment, AAMultipleAlignment
 )
@@ -336,37 +323,8 @@ export(
     QualityScaledRNAStringSet, QualityScaledAAStringSet,
     readQualityScaledDNAStringSet, writeQualityScaledXStringSet,
 
-    ## InDel-class.R:
-    insertion, deletion,
-
-    ## AlignedXStringSet-class.R:
-    unaligned, aligned, indel, nindel,
-
-    ## PairwiseAlignments-class.R:
-    PairwiseAlignments, alignedPattern, alignedSubject, pid,
-
-    ## PairwiseAlignmentsSingleSubject-class.R:
-    PairwiseAlignmentsSingleSubject,
-
-    ## PairwiseAlignments-io.R:
-    writePairwiseAlignments,
-
-    ## align-utils.R:
-    nedit,
-    mismatchTable, mismatchSummary,
-    compareStrings,
-
     ## pmatchPattern.R:
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,
-
-    ## pairwiseAlignment.R:
-    nucleotideSubstitutionMatrix,
-    errorSubstitutionMatrices,
-    qualitySubstitutionMatrices,
-    pairwiseAlignment,
-
-    ## stringDist.R:
-    stringDist,
 
     ## MultipleAlignment.R:
     DNAMultipleAlignment,
@@ -395,17 +353,9 @@ exportMethods(
     Views,
     subpatterns, pattern,
     quality, encoding,
-    insertion, deletion,
     parallel_slot_names,
-    unaligned, aligned, indel, nindel,
     parallelVectorNames,
-    subject, type, alignedPattern, alignedSubject, score, pid,
-    PairwiseAlignments, PairwiseAlignmentsSingleSubject,
-    mismatch, nmatch, nmismatch, nedit,
-    mismatchTable, mismatchSummary, coverage,
-    compareStrings,
     lcprefix, lcsuffix, pmatchPattern, lcsubstr,
-    pairwiseAlignment, stringDist,
     nchar, names, "names<-", "[[", windows,
     consensusMatrix, consensusString,
     alphabetFrequency, as.list,
@@ -414,10 +364,7 @@ exportMethods(
     colmask, "colmask<-",
     maskGaps,
     maskednrow, maskedncol, maskeddim,
-    consensusViews,
-
-    ## Old stuff (Deprecated or Defunct):
-    needwunsQS
+    consensusViews
 )
 
 
@@ -430,5 +377,28 @@ exportMethods(
 export(
     longestConsecutive,
     matchprobes
+)
+
+
+### ==========================================================================
+### STUFF THAT HAS MOVED TO THE pwalign PACKAGE
+### --------------------------------------------------------------------------
+
+export(
+    writePairwiseAlignments,
+    nucleotideSubstitutionMatrix,
+    errorSubstitutionMatrices,
+    qualitySubstitutionMatrices,
+
+    insertion, deletion,
+    unaligned, aligned, indel, nindel,
+    PairwiseAlignments, alignedPattern, alignedSubject,
+    PairwiseAlignmentsSingleSubject,
+    nedit,
+    mismatchTable, mismatchSummary,
+    compareStrings,
+    pid,
+    pairwiseAlignment,
+    stringDist
 )
 

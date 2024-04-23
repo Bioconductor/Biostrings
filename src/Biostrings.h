@@ -506,13 +506,13 @@ void _set_match_shift(int shift);
 
 void _report_match(int start, int width);
 
-void _drop_reported_matches();
+void _drop_reported_matches(void);
 
-int _get_match_count();
+int _get_match_count(void);
 
-SEXP _reported_matches_asSEXP();
+SEXP _reported_matches_asSEXP(void);
 
-MatchBuf *_get_internal_match_buf();
+MatchBuf *_get_internal_match_buf(void);
 
 
 /* MIndex_class.c */
@@ -549,7 +549,7 @@ SEXP ByPos_MIndex_combine(SEXP ends_listlist);
 
 /* lowlevel_matching.c */
 
-void _init_bytewise_match_tables();
+void _init_bytewise_match_tables(void);
 
 const BytewiseOpTable *_select_bytewise_match_table(int fixedP, int fixedS);
 
@@ -622,7 +622,7 @@ int _match_pattern_boyermoore(
 
 /* match_pattern_shiftor.c */
 
-SEXP bits_per_long();
+SEXP bits_per_long(void);
 
 void _match_pattern_shiftor(
 	const Chars_holder *P,
@@ -850,7 +850,7 @@ void _report_ppdup(
 	int P_id
 );
 
-SEXP _get_ppdups_buf_asINTEGER();
+SEXP _get_ppdups_buf_asINTEGER(void);
 
 
 /* match_pdict_utils.c */
@@ -960,9 +960,9 @@ SEXP _IntegerBAB_addblock(
 
 /* match_pdict_ACtree2.c */
 
-SEXP ACtree2_nodebuf_max_nblock();
+SEXP ACtree2_nodebuf_max_nblock(void);
 
-SEXP ACtree2_nodeextbuf_max_nblock();
+SEXP ACtree2_nodeextbuf_max_nblock(void);
 
 SEXP ACtree2_nnodes(SEXP pptb);
 
@@ -1084,38 +1084,6 @@ SEXP vmatch_XStringSet_XStringSet(
 );
 
 
-/* align_utils.c */
-
-SEXP PairwiseAlignments_nmatch(
-	SEXP nchar,
-	SEXP nmismatch,
-	SEXP ninsertion,
-	SEXP ndeletion
-);
-
-SEXP AlignedXStringSet_nchar(SEXP alignedXStringSet);
-
-SEXP AlignedXStringSet_align_aligned(
-	SEXP alignedXStringSet,
-	SEXP gapCode
-);
-
-SEXP PairwiseAlignmentsSingleSubject_align_aligned(
-	SEXP alignment,
-	SEXP gapCode,
-	SEXP endgapCode
-);
-
-SEXP align_compareStrings(
-	SEXP patternStrings,
-	SEXP subjectStrings,
-	SEXP maxNChar,
-	SEXP insertionCode,
-	SEXP deletionCode,
-	SEXP mismatchCode
-);
-
-
 /* pmatchPattern.c */
 
 SEXP lcprefix(
@@ -1134,54 +1102,6 @@ SEXP lcsuffix(
 	SEXP s2_xp,
 	SEXP s2_offset,
 	SEXP s2_length
-);
-
-
-/* align_pairwiseAlignment.c */
-
-SEXP XStringSet_align_pairwiseAlignment(
-	SEXP pattern,
-	SEXP subject,
-	SEXP type,
-	SEXP typeCode,
-	SEXP scoreOnly,
-	SEXP gapOpening,
-	SEXP gapExtension,
-	SEXP useQuality,
-	SEXP substitutionArray,
-	SEXP substitutionArrayDim,
-	SEXP substitutionLookupTable,
-	SEXP fuzzyMatrix,
-	SEXP fuzzyMatrixDim,
-	SEXP fuzzyLookupTable
-);
-
-SEXP XStringSet_align_distance(
-	SEXP string,
-	SEXP type,
-	SEXP typeCode,
-	SEXP gapOpening,
-	SEXP gapExtension,
-	SEXP useQuality,
-	SEXP substitutionArray,
-	SEXP substitutionArrayDim,
-	SEXP substitutionLookupTable,
-	SEXP fuzzyMatrix,
-	SEXP fuzzyMatrixDim,
-	SEXP fuzzyLookupTable
-);
-
-
-/* align_needwunsQS.c */
-
-SEXP align_needwunsQS(
-	SEXP s1,
-	SEXP s2,
-	SEXP mat,
-	SEXP mat_nrow,
-	SEXP lkup,
-	SEXP gap_cost,
-	SEXP gap_code
 );
 
 

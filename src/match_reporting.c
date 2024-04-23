@@ -46,7 +46,7 @@ MatchBuf _new_MatchBuf(int ms_code, int nPSpair)
 	 && ms_code != MATCHES_AS_STARTS
 	 && ms_code != MATCHES_AS_ENDS
 	 && ms_code != MATCHES_AS_RANGES)
-		error("Biostrings internal error in _new_MatchBuf(): ",
+		error("Biostrings internal error in _new_MatchBuf(): "
 		      "%d: unsupported match storing code", ms_code);
 	count_only = ms_code == MATCHES_AS_WHICH ||
 		     ms_code == MATCHES_AS_COUNTS;
@@ -294,18 +294,18 @@ void _report_match(int start, int width)
 }
 
 /* Drops reported matches for all PSpairs! */
-void _drop_reported_matches()
+void _drop_reported_matches(void)
 {
 	_MatchBuf_flush(&internal_match_buf);
 	return;
 }
 
-int _get_match_count()
+int _get_match_count(void)
 {
 	return internal_match_buf.match_counts->elts[active_PSpair_id];
 }
 
-SEXP _reported_matches_asSEXP()
+SEXP _reported_matches_asSEXP(void)
 {
 	SEXP start, width, ans;
 
@@ -330,7 +330,7 @@ SEXP _reported_matches_asSEXP()
 	return R_NilValue;
 }
 
-MatchBuf *_get_internal_match_buf()
+MatchBuf *_get_internal_match_buf(void)
 {
 	return &internal_match_buf;
 }

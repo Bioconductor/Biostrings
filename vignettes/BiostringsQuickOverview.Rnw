@@ -277,24 +277,5 @@ are summarized here.
 \label{table:I_O_functions}
 \end{table}
 
-
-%-----------------------------------------------------------------------------
-
-\begin{table}[ht]
-\begin{center}
-\begin{tabular}{p{2.5in}|p{4in}}
-{\bf Function} & {\bf Description} \\
-\hline
-\Rfunction{stringDist} &
-    Computes the matrix of Levenshtein edit distances, or Hamming distances,
-    or pairwise alignment scores, for a set of strings. \\
-\hline
-\end{tabular}
-\end{center}
-\caption{\bf Miscellaneous.}
-\label{table:Miscellaneous}
-\end{table}
-
-
 \end{document}
 

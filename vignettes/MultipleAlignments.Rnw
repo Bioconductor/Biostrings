@@ -246,7 +246,8 @@ clustering the unmasked \Robject{DNAMultipleAlignment} will draw a
 funky looking tree.  
 
 <<cluster>>=
-sdist <- stringDist(as(origMAlign,"DNAStringSet"), method="hamming")
+library(pwalign)
+sdist <- pwalign::stringDist(as(origMAlign,"DNAStringSet"), method="hamming")
 clust <- hclust(sdist, method = "single")
 pdf(file="badTree.pdf")
 plot(clust)
@@ -266,7 +267,7 @@ see the real relationships.
 
 %% could also have just done <<cluster2, fig=TRUE>>=
 <<cluster2>>=
-sdist <- stringDist(as(autoMasked,"DNAStringSet"), method="hamming")
+sdist <- pwalign::stringDist(as(autoMasked,"DNAStringSet"), method="hamming")
 clust <- hclust(sdist, method = "single")
 pdf(file="goodTree.pdf")
 plot(clust)

@@ -214,7 +214,7 @@ static ACnode *get_node_from_buf(ACnodeBuf *buf, unsigned int nid)
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP ACtree2_nodebuf_max_nblock()
+SEXP ACtree2_nodebuf_max_nblock(void)
 {
 	return ScalarInteger(ACNODEBUF_MAX_NBLOCK);
 }
@@ -317,7 +317,7 @@ static ACnodeext *get_nodeext_from_buf(ACnodeextBuf *buf, unsigned int eid)
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP ACtree2_nodeextbuf_max_nblock()
+SEXP ACtree2_nodeextbuf_max_nblock(void)
 {
 	return ScalarInteger(ACNODEEXTBUF_MAX_NBLOCK);
 }
@@ -729,7 +729,7 @@ SEXP ACtree2_summary(SEXP pptb)
 			nleaves++;
 	}
 	for (nlink = 0; nlink < MAX_CHILDREN_PER_NODE+2; nlink++)
-		Rprintf("| - %u nodes (%.2f%) with %d links\n",
+		Rprintf("| - %u nodes (%.2f%%) with %d links\n",
 			nlink_table[nlink],
 			100.00 * nlink_table[nlink] / nnodes,
 			nlink);

@@ -133,23 +133,9 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(vmatch_PDict3Parts_XStringSet, 11),
 	CALLMETHOD_DEF(vmatch_XStringSet_XStringSet, 11),
 
-/* align_utils.c */
-	CALLMETHOD_DEF(PairwiseAlignments_nmatch, 4),
-	CALLMETHOD_DEF(AlignedXStringSet_nchar, 1),
-	CALLMETHOD_DEF(AlignedXStringSet_align_aligned, 2),
-	CALLMETHOD_DEF(PairwiseAlignmentsSingleSubject_align_aligned, 3),
-	CALLMETHOD_DEF(align_compareStrings, 6),
-
 /* pmatchPattern.c */
 	CALLMETHOD_DEF(lcprefix, 6),
 	CALLMETHOD_DEF(lcsuffix, 6),
-
-/* align_pairwiseAlignment.c */
-	CALLMETHOD_DEF(XStringSet_align_pairwiseAlignment, 14),
-	CALLMETHOD_DEF(XStringSet_align_distance, 12),
-
-/* align_needwunsQS.c */
-	CALLMETHOD_DEF(align_needwunsQS, 7),
 
 /* strutils.c (belonged originally to old matchprobes package) */
 	CALLMETHOD_DEF(MP_longestConsecutive, 2),

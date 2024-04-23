@@ -47,7 +47,7 @@ SEXP MP_longestConsecutive(SEXP x, SEXP letter)
     error("'letter' must be a character variable of length 1.");
   pc = CHAR(STRING_ELT(letter, 0));
   if(strlen(pc)!=1) {
-      error("'letter' must contain exactly one character but contains %d.", 
+      error("'letter' must contain exactly one character but contains %lu.",
           strlen(pc));
   }
   c = *pc;

@@ -23,7 +23,7 @@ static BytewiseOpTable fixedPfixedS_match_table,
 		       nonfixedPfixedS_match_table,
 		       nonfixedPnonfixedS_match_table;
 
-void _init_bytewise_match_tables()
+void _init_bytewise_match_tables(void)
 {
 	int i, j;
 	unsigned char *val1, *val2, *val3, *val4, x, y;

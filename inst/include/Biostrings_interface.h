@@ -189,11 +189,11 @@ void set_match_shift(int shift);
 
 void report_match(int start, int width);
 
-void drop_reported_matches();
+void drop_reported_matches(void);
 
-int get_match_count();
+int get_match_count(void);
 
-SEXP reported_matches_asSEXP();
+SEXP reported_matches_asSEXP(void);
 
 
 /*

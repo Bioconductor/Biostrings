@@ -85,7 +85,7 @@ nmismatch(pattern, x, fixed=TRUE)
   \link{XStringViews-class},
   \link{MIndex-class},
   \link[IRanges]{coverage},
-  \link{align-utils}
+  \link[pwalign]{align-utils} in the \pkg{pwalign} package
 }
 
 \examples{

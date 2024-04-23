@@ -92,7 +92,7 @@ typedef struct index_fasta_loader_ext {
 	IntAE *seqlength_buf;
 } INDEX_FASTAloaderExt;
 
-static INDEX_FASTAloaderExt new_INDEX_FASTAloaderExt()
+static INDEX_FASTAloaderExt new_INDEX_FASTAloaderExt(void)
 {
 	INDEX_FASTAloaderExt loader_ext;
 
@@ -175,8 +175,8 @@ static FASTAloader new_FASTAloader_with_INDEX_ext(int load_descs, SEXP lkup,
 
 typedef struct fasta_loader_ext {
 	XVectorList_holder seq_holder;
-	int nseq;
 	Chars_holder seq_elt_holder;
+	int nseq;
 } FASTAloaderExt;
 
 static FASTAloaderExt new_FASTAloaderExt(SEXP sequences)
@@ -184,7 +184,9 @@ static FASTAloaderExt new_FASTAloaderExt(SEXP sequences)
 	FASTAloaderExt loader_ext;
 
 	loader_ext.seq_holder = hold_XVectorList(sequences);
-	loader_ext.nseq = -1;
+	loader_ext.seq_elt_holder.ptr = NULL;  // only for -Wuninitialized
+	loader_ext.seq_elt_holder.length = 0;  // only for -Wuninitialized
+	loader_ext.nseq = 0;
 	return loader_ext;
 }
 
@@ -195,11 +197,11 @@ static void FASTA_new_empty_seq_hook(FASTAloader *loader)
 
 	loader_ext = loader->ext;
 	seq_elt_holder = &(loader_ext->seq_elt_holder);
-	loader_ext->nseq++;
 	*seq_elt_holder = get_elt_from_XRawList_holder(
 					&(loader_ext->seq_holder),
 					loader_ext->nseq);
 	seq_elt_holder->length = 0;
+	loader_ext->nseq++;
 	return;
 }
 
