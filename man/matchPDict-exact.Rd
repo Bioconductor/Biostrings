@@ -275,14 +275,15 @@ max(cov3R)
 mean(cov3R)
 sum(cov3R != 0) / length(cov3R)      # Only 2.44\% of chr3R is covered.
 if (interactive()) {
+  library(graphics)
   plotCoverage <- function(cx, start, end)
   {
-    plot.new()
-    plot.window(c(start, end), c(0, 20))
-    axis(1)
-    axis(2)
-    axis(4)
-    lines(start:end, cx[start:end], type="l")
+    graphics::plot.new()
+    graphics::plot.window(c(start, end), c(0, 20))
+    graphics::axis(1)
+    graphics::axis(2)
+    graphics::axis(4)
+    graphics::lines(start:end, cx[start:end], type="l")
   }
   plotCoverage(cov3R, 27600000, 27900000)
 }
