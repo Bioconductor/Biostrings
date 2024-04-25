@@ -13,7 +13,7 @@
 
 .call_fun_in_pwalign <- function(fun, ...)
 {
-    .load_package_gracefully("pwalign", "Starting with BioC 3.19, ",
+    .load_package_gracefully("pwalign", "starting with BioC 3.19, ",
                              "calling ", fun, "()")
     msg <- c(fun, "() has moved to the pwalign package. Please ",
              "call pwalign::", fun, "() to get rid of this warning.")
