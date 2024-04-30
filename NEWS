@@ -1,3 +1,66 @@
+VERSION 2.72.0
+--------------
+
+NEW FEATURES
+
+    o Increase size of IO buffer from 20001 to 200000 in read_fasta_files.c
+      and read_fastq_files.c. With this change readDNAStringSet() and family
+      support FASTA/FASTQ files with lines up to 200000 characters.
+      See https://github.com/Bioconductor/Biostrings/issues/59
+
+    o Add get_XStringSet_width() to Biostrings C interface.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o pairwiseAlignment() and related have moved to the new pwalign package.
+      List of functions that are now implemented in pwalign:
+        - pairwiseAlignment
+        - PairwiseAlignments
+        - PairwiseAlignmentsSingleSubject
+        - writePairwiseAlignments
+        - alignedPattern
+        - alignedSubject
+        - insertion
+        - deletion
+        - unaligned
+        - aligned
+        - indel
+        - nindel
+        - nedit
+        - pid
+        - mismatchTable
+        - mismatchSummary
+        - compareStrings
+        - stringDist
+        - nucleotideSubstitutionMatrix
+        - errorSubstitutionMatrices
+        - qualitySubstitutionMatrices
+      Note that they are still temporarily defined in Biostrings but now
+      they just call the corresponding function in pwalign. Since this is a
+      temporary redirect, the user also gets a warning that tells them to use
+      the fully qualified name (e.g. pwalign::pairwiseAlignment()) to call
+      the function.
+
+    o The BLOSUM and PAM scoring matrices have also moved to the new pwalign
+      package. List of scoring matrices that are now located in pwalign:
+      BLOSUM45, BLOSUM50, BLOSUM62, BLOSUM80, BLOSUM100, PAM30, PAM40, PAM70,
+      PAM120, PAM250.
+
+DEPRECATED AND DEFUNCT
+
+    o Deprecate matchprobes() and longestConsecutive().
+
+    o needwunsQS() is now defunct (after being deprecated for 15+ years).
+
+BUG FIXES
+
+    o Detect buffer overflow in writeXStringSet() and raise error instead
+      of crash. See https://github.com/Bioconductor/Biostrings/issues/20
+
+    o Make sure read*StringSet() closes all input file handles when done.
+      See https://support.bioconductor.org/p/9157031/
+
+
 VERSION 2.70.0
 --------------
 
