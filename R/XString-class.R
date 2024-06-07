@@ -143,16 +143,31 @@ setMethod("extract_character_from_XString_by_ranges", "XString",
 setMethod("extract_character_from_XString_by_ranges", "BString",
     function(x, start, width, collapse=FALSE)
     {
-        ## This is a little hacky -- ideally we'd have a codec object
-        ## not sure if that's possible with multi-byte characters
-        ## We also are going to need to support multiple substrings
+        ## This is a little hacky -- working with 0s is challenging
+        ## due to how extract_character_from_XRaw_by_ranges works
+        ## instead we double map to correctly place zeros
         if(getOption("Biostrings.showRaw")){
-            ## Get strings
+            ## Get strings, map 0 -> 1 and all others to themselves
             ss <- XVector:::extract_character_from_XRaw_by_ranges(x, start, width,
                                                         collapse=collapse,
-                                                        lkup=1:256)
-            ## convert to unicode representation
-            vapply(ss, \(x) paste(parse(text=paste0("'\\U28",charToRaw(x),"'")), collapse=''), character(1L))
+                                                        lkup=c(1L,1:255))
+            ## Run a second time, mapping 0 -> 0x0F and all others to 0xF0
+            ss_onlyzero <- XVector:::extract_character_from_XRaw_by_ranges(x, start, width,
+                                                        collapse=collapse,
+                                                        lkup=c(0x0FL,rep(0xF0L, 255)))
+
+            ## Convert to unicode representation
+            ## for loop because collapse=FALSE could return an object w length > 1
+            bitmask <- as.raw(0x0FL)
+            for(i in seq_along(ss)){
+                ## this makes ss_onlyzero map 0 -> 0, n -> 0xFF for n!=0
+                ## so then ss & ss_onlyzero = 0 if (ss[i]) == 0 else ss[i]
+                tmp <- charToRaw(ss[i]) & xor(charToRaw(ss_onlyzero[i]), bitmask)
+
+                ## then we convert the values to the corresponding unicode
+                ss[i] <- paste(parse(text=paste0("'\\U28", tmp, "'")), collapse='')
+            }
+            ss
         } else {
             ## Run XString Method
             callNextMethod()
