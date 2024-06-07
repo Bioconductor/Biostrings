@@ -268,3 +268,7 @@ LOW PRIORITY
   of limits" views with a warning (we keep issuing an error only when the
   view is all blank).
 
+- Point raised in https://github.com/Bioconductor/Biostrings/issues/93 about 
+  having a sequence to letter conversion for AAStrings (e.g., MetThyGly -> MTG).
+  Seems to be relatively low interest, but maybe it could be implemeneted as
+  a helper function in the future.
