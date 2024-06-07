@@ -139,6 +139,27 @@ setMethod("extract_character_from_XString_by_ranges", "XString",
     }
 )
 
+### Extended Raw String method.
+setMethod("extract_character_from_XString_by_ranges", "BString",
+    function(x, start, width, collapse=FALSE)
+    {
+        ## This is a little hacky -- ideally we'd have a codec object
+        ## not sure if that's possible with multi-byte characters
+        ## We also are going to need to support multiple substrings
+        if(getOption("Biostrings.showRaw")){
+            ## Get strings
+            ss <- XVector:::extract_character_from_XRaw_by_ranges(x, start, width,
+                                                        collapse=collapse,
+                                                        lkup=1:256)
+            ## convert to unicode representation
+            vapply(ss, \(x) paste(parse(text=paste0("'\\U28",charToRaw(x),"'")), collapse=''), character(1L))
+        } else {
+            ## Run XString Method
+            callNextMethod()
+        }
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### make_XString_from_string()
