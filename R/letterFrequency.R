@@ -795,7 +795,8 @@ setMethod("consensusMatrix", "XStringSet",
             removeUnused <- FALSE
         }
         if(length(x) == 0){
-            ans <- matrix(ifelse(as.prob, 0, 0L), nrow=0, ncol=ifelse(removeUnused, 0, length(codes)))
+            ans <- matrix(ifelse(as.prob, 0, 0L), nrow=0,
+                          ncol=ifelse(removeUnused, 0, length(codes)))
             if(!removeUnused) colnames(ans) <- names(codes)
         } else {
             ans <- .Call2("XStringSet_consensus_matrix",
