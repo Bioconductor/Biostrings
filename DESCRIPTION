@@ -21,6 +21,8 @@ Authors@R: c(
 	person("Felix", "Ernst", role="ctb"),
 	person("Wolfgang", "Huber", role="ctb",
 	       comment="'matchprobes' vignette"),
+	person("Beryl", "Kanali", role="ctb",
+	       comment="Converted 'MultipleAlignments' vignette from Sweave to RMarkdown"),
 	person("Haleema", "Khan", role="ctb",
 	       comment="Converted 'matchprobes' vignette from Sweave to RMarkdown"),
 	person("Aidan", "Lakshman", role="ctb"),
