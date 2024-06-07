@@ -187,7 +187,7 @@ readQualityScaledDNAStringSet <- function(filepath,
                           use.names, with.qualities=TRUE)
     qualities <- mcols(x)[ , "qualities"]
     ## Clear out the qualities parameter from the DNAStringSet,
-    ## since it gets passed into the QualityScaledXStringSet
+    ## since it gets passed into the QualityScaledDNAStringSet
     ## constructor via quals anyway
     ## (otherwise we get a warning that doesn't make sense)
     mcols(x)[,"qualities"] <- NULL
