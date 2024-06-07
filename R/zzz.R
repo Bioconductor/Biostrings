@@ -16,6 +16,10 @@
     option_name <- "Biostrings.coloring"
     if (!(option_name %in% names(.Options)))
         options(setNames(list(TRUE), option_name))
+
+    option_name <- "Biostrings.showRaw"
+    if (!(option_name %in% names(.Options)))
+        options(setNames(list(FALSE), option_name))
 }
 
 .onUnload <- function(libpath)
