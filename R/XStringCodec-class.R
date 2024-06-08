@@ -220,41 +220,5 @@ AAcodes <- function(baseOnly)
 AA_CODES <- AAcodes(FALSE)
 AA_STRING_CODEC <- .XStringCodec.AA(AA_CODES)
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### RawString codec, for showing BStrings with values in 0-255
-###
-
-RAWcodes <- function(baseOnly){
-    # baseOnly argument kept for consistency with other similar XCodes() functions
-    if (!isTRUEorFALSE(baseOnly))
-        stop("'baseOnly' must be TRUE or FALSE")
-    letters <- 0:255
-    letterMap <- 0:255
-
-    # Non-printable characters can map to space
-    # non-printable: 0-31, 127, 160, 173
-    # unused: 129, 141, 143-144, 157
-    #non_printable <- c(seq_len(32), 127, 129, 141, 143, 144, 160, 157, 173)
-    non_printable <- c(seq_len(32), seq(128,256))
-    letterMap[non_printable] <- 32L
-
-    setNames(letters, intToUtf8(letterMap, multiple=TRUE))
-}
-
-.XStringCodec.Raw <- function(codes){
-    letters <- names(codes)
-    x <- new("XStringCodec", letters[33:127], codes[33:127])
-
-    # codec should only be used for show, not for encoding
-    x@enc_lkup <- 0:255
-    x@dec_lkup <- c(x@dec_lkup, rep(NA, 129))
-    x@dec_lkup[is.na(x@dec_lkup)] <- 32L
-    x
-}
-
-RAW_CODES <- RAWcodes(FALSE)
-RAW_STRING_CODEC <- .XStringCodec.Raw(RAW_CODES)
-
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Add extra codecs below...
