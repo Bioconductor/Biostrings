@@ -220,5 +220,6 @@ AAcodes <- function(baseOnly)
 AA_CODES <- AAcodes(FALSE)
 AA_STRING_CODEC <- .XStringCodec.AA(AA_CODES)
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Add extra codecs below...
