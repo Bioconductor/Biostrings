@@ -159,7 +159,8 @@ setMethod("extract_character_from_XString_by_ranges", "BString",
                                                         lkup=lkup)
         ## replace all undisplayable characters
         for(i in seq_along(xs))
-            xs[i] <- paste(BSTRING_RAW_LOOKUP[as.integer(charToRaw(xs[i]))+1L], collapse='')
+            xs[i] <- paste(BSTRING_RAW_LOOKUP[as.integer(charToRaw(xs[i]))+1L],
+                            collapse='')
         xs
     }
 )
@@ -179,7 +180,8 @@ setMethod("extract_character_from_XString_by_positions", "BString",
                                                         lkup=lkup)
         ## replace all undisplayable characters
         for(i in seq_along(xs))
-            xs[i] <- paste(BSTRING_RAW_LOOKUP[as.integer(charToRaw(xs[i]))+1L], collapse='')
+            xs[i] <- paste(BSTRING_RAW_LOOKUP[as.integer(charToRaw(xs[i]))+1L],
+                            collapse='')
         xs
     }
 )

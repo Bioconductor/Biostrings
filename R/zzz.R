@@ -31,7 +31,8 @@
     if(encoding_details$`UTF-8`){
       # braille is nice if supported
       # allows for char comparisons after as.character() comparisons
-      bstring_lookup[invalid_chars] <- as.character(parse(text=paste0("'\\U28", as.raw(95:255), "'")))
+      bstring_lookup[invalid_chars] <-
+        as.character(parse(text=paste0("'\\U28", as.raw(95:255), "'")))
     } else if (encoding_details$MBCS){
       # use multibyte question mark if supported
       compact_unknown <- rawToChar(as.raw(c(0xef, 0xbf, 0xbd)))
