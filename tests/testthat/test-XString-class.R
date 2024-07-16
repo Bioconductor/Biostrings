@@ -131,13 +131,50 @@ test_that("equality methods work as advertised", {
 	## DNA <-> RNA comparison
 	expect_equal(DNAString(dnastr) == RNAString(rnastr), TRUE)
 
-	## AA <-> B comparison
+	## other B comparisons
 	expect_equal(AAString(aastr) == BString(aastr), TRUE)
 	expect_equal(AAString(aastr) != BString(bstr), TRUE)
+	expect_equal(bstr == BString(bstr), TRUE)
 
 	## invalid comparisons
 	expect_error(DNAString(dnastr) == AAString(aastr), 'comparison between a "DNAString" instance and a "AAString" instance is not supported')
 	expect_error(DNAString(dnastr) == BString(bstr), 'comparison between a "DNAString" instance and a "BString" instance is not supported')
 	expect_error(RNAString(rnastr) == AAString(aastr), 'comparison between a "RNAString" instance and a "AAString" instance is not supported')
 	expect_error(RNAString(rnastr) == BString(bstr), 'comparison between a "RNAString" instance and a "BString" instance is not supported')
+})
+
+test_that("output works correctly", {
+	s <- paste(rep("A", 100L), collapse='')
+	expect_output(show(DNAString(s)), "100-letter DNAString object\\nseq: .+\\.\\.\\..+$", width=80)
+	expect_output(show(RNAString(s)), "100-letter RNAString object\\nseq: .+\\.\\.\\..+$", width=80)
+	expect_output(show(AAString(s)), "100-letter AAString object\\nseq: .+\\.\\.\\..+$", width=80)
+	expect_output(show(BString(s)), "100-letter BString object\\nseq: A{36}\\.\\.\\.A{36}$", width=80)
+
+	# width of sequence is 5 less than that of 'width'
+	expect_output(show(DNAString(s)), "100-letter DNAString object\\nseq: .+\\.\\.\\..+$", width=10)
+	expect_output(show(RNAString(s)), "100-letter RNAString object\\nseq: .+\\.\\.\\..+$", width=10)
+	expect_output(show(AAString(s)), "100-letter AAString object\\nseq: .+\\.\\.\\..+$", width=10)
+	expect_output(show(BString(s)), "100-letter BString object\\nseq: AA\\.\\.\\.AA$", width=10)
+})
+
+test_that("substr, substring methods work correctly", {
+	d <- DNAString(dnastr)
+	r <- RNAString(rnastr)
+	a <- AAString(aastr)
+	b <- BString(bstr)
+
+	expect_equal(as.character(substr(d, 1, 10)), substr(dnastr, 1, 10))
+	expect_equal(as.character(substr(r, 1, 10)), substr(rnastr, 1, 10))
+	expect_equal(as.character(substr(a, 1, 10)), substr(aastr, 1, 10))
+	expect_equal(as.character(substr(b, 1, 10)), substr(bstr, 1, 10))
+
+	expect_equal(as.character(substring(d, 5, 10)), substring(dnastr, 5, 10))
+	expect_equal(as.character(substring(r, 5, 10)), substring(rnastr, 5, 10))
+	expect_equal(as.character(substring(a, 5, 10)), substring(aastr, 5, 10))
+	expect_equal(as.character(substring(b, 5, 10)), substring(bstr, 5, 10))
+
+	expect_error(substring(d, 10, 5), "Invalid sequence coordinates")
+	expect_error(substring(r, 10, 5), "Invalid sequence coordinates")
+	expect_error(substring(a, 10, 5), "Invalid sequence coordinates")
+	expect_error(substring(b, 10, 5), "Invalid sequence coordinates")
 })
