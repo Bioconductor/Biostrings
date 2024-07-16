@@ -1,6 +1,3 @@
-library(Biostrings)
-library(testthat)
-
 dnastr <- paste(DNA_ALPHABET, collapse='')
 rnastr <- paste(RNA_ALPHABET, collapse='')
 aastr <- paste(AA_ALPHABET, collapse='')
