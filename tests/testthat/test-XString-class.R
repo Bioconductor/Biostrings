@@ -18,7 +18,7 @@ test_that("seqtype correctly infers types", {
 })
 
 
-test_that("character conversion works properly", {
+test_that("character, vector conversion works properly", {
 	expect_equal(as.character(DNAString(dnastr)), dnastr)
 	expect_equal(as.character(RNAString(rnastr)), rnastr)
 	expect_equal(as.character(AAString(aastr)), aastr)

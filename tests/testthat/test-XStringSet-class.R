@@ -70,7 +70,7 @@ test_that("width and nchar are correct", {
   expect_error(width(NA_character_), "NAs in 'x' are not supported")
 })
 
-test_that("concatenation and character conversion are correct", {
+test_that("concatenation and character/vector conversion are correct", {
   expect_s4_class(c(d,d), "DNAStringSet")
   expect_s4_class(c(r,r), "RNAStringSet")
   expect_s4_class(c(a,a), "AAStringSet")
@@ -90,4 +90,77 @@ test_that("concatenation and character conversion are correct", {
   expect_equal(as.character(rr), c(rnastr, rnastr))
   expect_equal(as.character(aa), c(aastr, aastr))
   expect_equal(as.character(bb), c(bstr, bstr))
+
+  expect_equal(as.vector(dd), c(dnastr, dnastr))
+  expect_equal(as.vector(rr), c(rnastr, rnastr))
+  expect_equal(as.vector(aa), c(aastr, aastr))
+  expect_equal(as.vector(bb), c(bstr, bstr))
+})
+
+test_that("matrix conversion is correct", {
+  dd <- c(d,d)
+  rr <- c(r,r)
+  aa <- c(a,a)
+  bb <- c(b,b)
+
+  md <- do.call(rbind, rep(strsplit(dnastr, ''), 2))
+  mr <- do.call(rbind, rep(strsplit(rnastr, ''), 2))
+  ma <- do.call(rbind, rep(strsplit(aastr, ''), 2))
+  mb <- do.call(rbind, rep(strsplit(bstr, ''), 2))
+
+
+  expect_equal(as.matrix(dd), md)
+  expect_equal(as.matrix(rr), mr)
+  expect_equal(as.matrix(aa), ma)
+  expect_equal(as.matrix(bb), mb)
+
+  md <- as.matrix(DNAStringSet(''))
+  mr <- as.matrix(RNAStringSet(''))
+  ma <- as.matrix(AAStringSet(''))
+  mb <- as.matrix(BStringSet(''))
+
+  m_base <- matrix('', nrow=1, ncol=0)
+  expect_equal(md, m_base)
+  expect_equal(mr, m_base)
+  expect_equal(ma, m_base)
+  expect_equal(mb, m_base)
+})
+
+test_that("factor conversion is correct", {
+  expect_equal(as.factor(d), as.factor(dnastr))
+  expect_equal(as.factor(r), as.factor(rnastr))
+  expect_equal(as.factor(a), as.factor(aastr))
+  expect_equal(as.factor(b), as.factor(bstr))
+})
+
+test_that("data.frame conversion is correct", {
+  expect_equal(as.data.frame(c(d,d)), data.frame(x=c(dnastr, dnastr)))
+  expect_equal(as.data.frame(c(r,r)), data.frame(x=c(rnastr, rnastr)))
+  expect_equal(as.data.frame(c(a,a)), data.frame(x=c(aastr, aastr)))
+  expect_equal(as.data.frame(c(b,b)), data.frame(x=c(bstr, bstr)))
+})
+
+test_that("toString conversion is correct", {
+  expect_equal(toString(c(d,d)), paste(dnastr, dnastr, sep=', '))
+  expect_equal(toString(c(r,r)), paste(rnastr, rnastr, sep=', '))
+  expect_equal(toString(c(a,a)), paste(aastr, aastr, sep=', '))
+  expect_equal(toString(c(b,b)), paste(bstr, bstr, sep=', '))
+})
+
+test_that("show methods output correctly", {
+  expect_output(show(c(d,d)), "^DNAStringSet object of length 2:\\n")
+  expect_output(show(c(r,r)), "^RNAStringSet object of length 2:\\n")
+  expect_output(show(c(a,a)), "^AAStringSet object of length 2:\\n")
+  expect_output(show(c(b,b)), "^BStringSet object of length 2:\\n")
+})
+
+test_that("showAsCell works correctly", {
+  d <- DNAStringSet(paste(rep(dnastr, 10), collapse=''))
+  r <- RNAStringSet(paste(rep(rnastr, 10), collapse=''))
+  a <- AAStringSet(paste(rep(aastr, 10), collapse=''))
+
+  expect_equal(nchar(showAsCell(d)), 23L)
+  expect_equal(nchar(showAsCell(r)), 23L)
+  expect_equal(nchar(showAsCell(a)), 23L)
+  expect_equal(nchar(showAsCell(b)), 23L)
 })
