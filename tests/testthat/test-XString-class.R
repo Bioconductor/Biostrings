@@ -174,4 +174,16 @@ test_that("substr, substring methods work correctly", {
 	expect_error(substring(r, 10, 5), "Invalid sequence coordinates")
 	expect_error(substring(a, 10, 5), "Invalid sequence coordinates")
 	expect_error(substring(b, 10, 5), "Invalid sequence coordinates")
+
+	# `[` dispatch
+	expect_equal(as.character(d[1:10]), substr(dnastr, 1, 10))
+	expect_equal(as.character(d[-1]), substr(dnastr, 2, nchar(dnastr)))
+})
+
+## Porting RUnit tests
+test_that("alphabet finds the correct values", {
+	expect_equal(DNAString(dnastr), strsplit(dnastr, '')[[1]])
+	expect_equal(RNAString(rnastr), strsplit(rnastr, '')[[1]])
+	expect_equal(AAString(aastr), strsplit(aastr, '')[[1]])
+	expect_equal(BString(bstr), NULL)
 })

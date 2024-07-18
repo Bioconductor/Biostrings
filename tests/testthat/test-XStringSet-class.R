@@ -8,10 +8,23 @@ r <- RNAStringSet(rnastr)
 a <- AAStringSet(aastr)
 b <- BStringSet(bstr)
 
-# d <- DNAString(dnastr)
-# r <- RNAString(rnastr)
-# a <- AAString(aastr)
-# b <- BString(bstr)
+## testing functions from old testing files
+### '.eltAddresses(x)' collects the addresses of the elements in 'x' (in
+### practice 'x' will be a list of external pointers or environments).
+.eltAddresses <- function(x) sapply(x, XVector:::address)
+
+### 'x' and 'y' must be XVectorList vectors.
+.haveIdenticalPools <- function(x, y)
+    identical(.eltAddresses(x@pool@xp_list), .eltAddresses(y@pool@xp_list))
+
+### 'x' must be an XVectorList vector.
+.poolEltLengths <- function(x)
+{
+    pool_len <- length(x@pool)
+    if (pool_len == 0L)
+        return(integer(0))
+    sapply(seq_len(pool_len), function(i) length(x@pool[[i]]))
+}
 
 test_that("seqtype correctly infers types", {
   expect_equal(seqtype(d), "DNA")
@@ -163,4 +176,81 @@ test_that("showAsCell works correctly", {
   expect_equal(nchar(showAsCell(r)), 23L)
   expect_equal(nchar(showAsCell(a)), 23L)
   expect_equal(nchar(showAsCell(b)), 23L)
+})
+
+## Porting RUnit tests
+test_that("short RUnit tests continue to pass", {
+  ## test_width_character
+  x <- safeExplode(rawToChar(as.raw(1:255)))
+  expect_equal(width(x), rep.int(1L, 255))
+
+  ## DNAStringSet internal elements ##
+  dna <- DNAStringSet(DNA_ALPHABET)
+
+  ## DNAStringSet_constructor
+  expect_equal(.poolEltLengths(dna), length(DNA_ALPHABET))
+
+  ## DNAStringSet_width
+  expect_equal(width(dna), width(DNA_ALPHABET))
+
+  ## DNAStringSet_unlist
+  expect_equal(as.character(unlist(dna)), dnastr)
+
+  ## DNAStringSet_showAsCell
+  expect_equal(showAsCell(DNAStringSet()), character(0L))
+  expect_equal(showAsCell(dna), DNA_ALPHABET)
+})
+
+test_that("RUnit test_DNAStringSet_subsetting", {
+  dna <- DNAStringSet(DNA_ALPHABET)
+  elementMetadata(dna) <- DataFrame(C1=dna)
+
+  dna0 <- dna[FALSE]
+  expect_equal(length(dna0), 0L)
+  ## Checking internal representation.
+  expect_equal(.poolEltLengths(dna0), integer(0))
+  expect_equal(.haveIdenticalPools(elementMetadata(dna0)$C1, dna0),
+                 TRUE)
+  expect_equal(elementMetadata(dna0)$C1@ranges, dna0@ranges)
+
+  idx <- rep.int((8:6)*2L, 100L)
+  dna300 <- dna[idx]
+  expect_equal(length(dna300), length(idx))
+  ## Checking internal representation.
+  expect_equal(.haveIdenticalPools(dna300, dna), TRUE)
+  expect_equal(.haveIdenticalPools(elementMetadata(dna300)$C1, dna300),
+                 TRUE)
+  expect_equal(elementMetadata(dna300)$C1@ranges, dna300@ranges)
+})
+
+test_that("RUnit test_DNAStringSet_combining", {
+  dna <- DNAStringSet(DNA_ALPHABET)
+  elementMetadata(dna) <- DataFrame(C1=dna)
+
+  dna2a <- c(dna, dna)
+  dna2b <- rep(dna, 2L)
+  expect_equal(dna2a, dna2b)
+
+  ## Checking internal representation.
+  expect_equal(.haveIdenticalPools(dna2a, dna), TRUE)
+  expect_equal(.haveIdenticalPools(dna2a, dna2b), TRUE)
+  expect_equal(.haveIdenticalPools(elementMetadata(dna2a)$C1, dna2a),
+                 TRUE)
+  expect_equal(elementMetadata(dna2a)$C1@ranges, dna2a@ranges)
+})
+
+test_that("RUnit test_DNAStringSet_compaction", {
+  dna <- DNAStringSet(DNA_ALPHABET)
+  elementMetadata(dna) <- DataFrame(C1=dna)
+
+  idx <- rep.int((8:6)*2L, 100L)
+  dna300 <- dna[idx]
+  compact_dna300 <- compact(dna300)
+  expect_equal(as.character(compact_dna300), as.character(dna300))
+  ## Checking internal representation.
+  expect_equal(.poolEltLengths(compact_dna300), 3L)
+  expect_equal(.poolEltLengths(elementMetadata(compact_dna300)$C1),
+                .poolEltLengths(compact_dna300))
+  expect_equal(elementMetadata(compact_dna300)$C1@ranges,
+                compact_dna300@ranges)
 })
