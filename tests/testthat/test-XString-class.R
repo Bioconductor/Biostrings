@@ -109,29 +109,29 @@ test_that("as.vector methods work correctly", {
 })
 
 test_that("equality methods work as advertised", {
-	expect_equal(DNAString(dnastr) == DNAString(dnastr), TRUE)
-	expect_equal(RNAString(rnastr) == RNAString(rnastr), TRUE)
-	expect_equal(AAString(aastr) == AAString(aastr), TRUE)
-	expect_equal(BString(bstr) == BString(bstr), TRUE)
+	expect_true(DNAString(dnastr) == DNAString(dnastr))
+	expect_true(RNAString(rnastr) == RNAString(rnastr))
+	expect_true(AAString(aastr) == AAString(aastr))
+	expect_true(BString(bstr) == BString(bstr))
 
-	expect_equal(DNAString(dnastr) == DNAString(substr(dnastr, 1, 7)), FALSE)
-	expect_equal(RNAString(rnastr) == RNAString(substr(rnastr, 1, 7)), FALSE)
-	expect_equal(AAString(aastr) == AAString(substr(aastr, 1, 7)), FALSE)
-	expect_equal(BString(bstr) == BString(substr(bstr, 1, 7)), FALSE)
+	expect_false(DNAString(dnastr) == DNAString(substr(dnastr, 1, 7)))
+	expect_false(RNAString(rnastr) == RNAString(substr(rnastr, 1, 7)))
+	expect_false(AAString(aastr) == AAString(substr(aastr, 1, 7)))
+	expect_false(BString(bstr) == BString(substr(bstr, 1, 7)))
 
-	expect_equal(DNAString(dnastr) != DNAString(substr(dnastr, 1, 7)), TRUE)
-	expect_equal(RNAString(rnastr) != RNAString(substr(rnastr, 1, 7)), TRUE)
-	expect_equal(AAString(aastr) != AAString(substr(aastr, 1, 7)), TRUE)
-	expect_equal(BString(bstr) != BString(substr(bstr, 1, 7)), TRUE)
+	expect_true(DNAString(dnastr) != DNAString(substr(dnastr, 1, 7)))
+	expect_true(RNAString(rnastr) != RNAString(substr(rnastr, 1, 7)))
+	expect_true(AAString(aastr) != AAString(substr(aastr, 1, 7)))
+	expect_true(BString(bstr) != BString(substr(bstr, 1, 7)))
 
 
 	## DNA <-> RNA comparison
-	expect_equal(DNAString(dnastr) == RNAString(rnastr), TRUE)
+	expect_true(DNAString(dnastr) == RNAString(rnastr))
 
 	## other B comparisons
-	expect_equal(AAString(aastr) == BString(aastr), TRUE)
-	expect_equal(AAString(aastr) != BString(bstr), TRUE)
-	expect_equal(bstr == BString(bstr), TRUE)
+	expect_true(AAString(aastr) == BString(aastr))
+	expect_true(AAString(aastr) != BString(bstr))
+	expect_true(bstr == BString(bstr))
 
 	## invalid comparisons
 	expect_error(DNAString(dnastr) == AAString(aastr), 'comparison between a "DNAString" instance and a "AAString" instance is not supported')

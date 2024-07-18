@@ -209,17 +209,15 @@ test_that("RUnit test_DNAStringSet_subsetting", {
   expect_equal(length(dna0), 0L)
   ## Checking internal representation.
   expect_equal(.poolEltLengths(dna0), integer(0))
-  expect_equal(.haveIdenticalPools(elementMetadata(dna0)$C1, dna0),
-                 TRUE)
+  expect_true(.haveIdenticalPools(elementMetadata(dna0)$C1, dna0))
   expect_equal(elementMetadata(dna0)$C1@ranges, dna0@ranges)
 
   idx <- rep.int((8:6)*2L, 100L)
   dna300 <- dna[idx]
   expect_equal(length(dna300), length(idx))
   ## Checking internal representation.
-  expect_equal(.haveIdenticalPools(dna300, dna), TRUE)
-  expect_equal(.haveIdenticalPools(elementMetadata(dna300)$C1, dna300),
-                 TRUE)
+  expect_true(.haveIdenticalPools(dna300, dna))
+  expect_true(.haveIdenticalPools(elementMetadata(dna300)$C1, dna300))
   expect_equal(elementMetadata(dna300)$C1@ranges, dna300@ranges)
 })
 
@@ -232,10 +230,9 @@ test_that("RUnit test_DNAStringSet_combining", {
   expect_equal(dna2a, dna2b)
 
   ## Checking internal representation.
-  expect_equal(.haveIdenticalPools(dna2a, dna), TRUE)
-  expect_equal(.haveIdenticalPools(dna2a, dna2b), TRUE)
-  expect_equal(.haveIdenticalPools(elementMetadata(dna2a)$C1, dna2a),
-                 TRUE)
+  expect_true(.haveIdenticalPools(dna2a, dna))
+  expect_true(.haveIdenticalPools(dna2a, dna2b))
+  expect_true(.haveIdenticalPools(elementMetadata(dna2a)$C1, dna2a))
   expect_equal(elementMetadata(dna2a)$C1@ranges, dna2a@ranges)
 })
 
