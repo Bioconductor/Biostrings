@@ -70,12 +70,60 @@ check_rw_strings_fasta <- function(XStringSetRFUN, XStringSetMAKEFUN, X_ALPH){
 	unlink(f)
 }
 
+check_rw_strings_serial <- function(XStringSetMAKEFUN, X_ALPH){
+	# setup
+	set.seed(345L)
+	NUM_STRINGS <- 10L
+	seq_lens <- sample(100L, NUM_STRINGS, replace=TRUE)
+	d <- tempdir()
+	f <- "example_xs"
+	outfile <- file.path(d, paste0(f, '.rda'))
+	if(file.exists(outfile)) unlink(outfile)
+
+	# make some test strings
+	strings <- character(NUM_STRINGS)
+	for(i in seq_len(NUM_STRINGS))
+		strings[i] <- paste(sample(X_ALPH, seq_lens[i], replace=TRUE), collapse='')
+
+	ss <- XStringSetMAKEFUN(strings)
+
+	expect_output(saveXStringSet(ss, f, dirpath=d, save.dups=FALSE), "Saving .+/example_xs.rda")
+	expect_true(file.exists(outfile))
+
+	if("example_xs" %in% ls()) rm("example_xs")
+	load(outfile)
+	expect_equal(as.character(example_xs), as.character(ss))
+	expect_true(all(example_xs == ss))
+	unlink(outfile)
+
+	# unsure how this is supposed to work
+	# expect_output(saveXStringSet(XStringSetMAKEFUN(rep(strings, 2)), f, dirpath=d, save.dups=TRUE), "Saving .+/example_xs.rda")
+
+	## testing standard save()
+	old_ss <- ss
+	save(ss, file=outfile)
+	expect_true(file.exists(outfile))
+	rm(ss)
+	load(outfile)
+	expect_equal(as.character(ss), as.character(old_ss))
+	expect_true(all(ss == old_ss))
+	unlink(outfile)
+}
+
 test_that("All XStringSets can be read/written to a FASTA", {
 	B_ALPHABET <- strsplit(rawToChar(as.raw(32:126)), '')[[1]]
 	check_rw_strings_fasta(readDNAStringSet, DNAStringSet, DNA_ALPHABET)
 	check_rw_strings_fasta(readRNAStringSet, RNAStringSet, RNA_ALPHABET)
 	check_rw_strings_fasta(readAAStringSet, AAStringSet, AA_ALPHABET)
 	check_rw_strings_fasta(readBStringSet, BStringSet, B_ALPHABET)
+})
+
+test_that("All XStringSets can be serialized and subseqeuntly read", {
+	B_ALPHABET <- strsplit(rawToChar(as.raw(32:126)), '')[[1]]
+	check_rw_strings_serial(DNAStringSet, DNA_ALPHABET)
+	check_rw_strings_serial(RNAStringSet, RNA_ALPHABET)
+	check_rw_strings_serial(AAStringSet, AA_ALPHABET)
+	check_rw_strings_serial(BStringSet, B_ALPHABET)
 })
 
 ## Previous RUnit testing
