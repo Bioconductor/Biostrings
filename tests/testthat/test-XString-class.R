@@ -186,4 +186,8 @@ test_that("alphabet finds the correct values", {
 	expect_equal(alphabet(RNAString(rnastr)), strsplit(rnastr, '')[[1]])
 	expect_equal(alphabet(AAString(aastr)), strsplit(aastr, '')[[1]])
 	expect_equal(alphabet(BString(bstr)), NULL)
+
+	expect_equal(alphabet(DNAString(), baseOnly=TRUE), DNA_BASES)
+	expect_equal(alphabet(RNAString(), baseOnly=TRUE), DNA_BASES)
+	expect_error(alphabet(DNAString(), baseOnly=1), "'baseOnly' must be TRUE or FALSE")
 })
