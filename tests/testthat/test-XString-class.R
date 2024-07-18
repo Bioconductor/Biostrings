@@ -182,8 +182,8 @@ test_that("substr, substring methods work correctly", {
 
 ## Porting RUnit tests
 test_that("alphabet finds the correct values", {
-	expect_equal(DNAString(dnastr), strsplit(dnastr, '')[[1]])
-	expect_equal(RNAString(rnastr), strsplit(rnastr, '')[[1]])
-	expect_equal(AAString(aastr), strsplit(aastr, '')[[1]])
-	expect_equal(BString(bstr), NULL)
+	expect_equal(alphabet(DNAString(dnastr)), strsplit(dnastr, '')[[1]])
+	expect_equal(alphabet(RNAString(rnastr)), strsplit(rnastr, '')[[1]])
+	expect_equal(alphabet(AAString(aastr)), strsplit(aastr, '')[[1]])
+	expect_equal(alphabet(BString(bstr)), NULL)
 })

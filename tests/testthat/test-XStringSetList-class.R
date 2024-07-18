@@ -111,6 +111,13 @@ all.equal.XStringSetList <- function(target, current, ...)
     expect_true(all.equal.XStringSetList(lst1[-c(2:3)], lst2[-1]))
 }
 
+.XStringSetList_from_list <- function(XStringSetFUN, XStringSetListFUN, XS_ALPHABET){
+    lst1 <- list(XStringSetFUN(XS_ALPHABET), XStringSetFUN(XS_ALPHABET))
+    lst2 <- XStringSetListFUN(XS_ALPHABET, XS_ALPHABET)
+
+    expect_true(all.equal.XStringSetList(XStringSetListFUN(lst1), lst2))
+}
+
 ## DNAStringSet
 test_that("XStringSetList constructor works correctly", {
     .XStringSetList_constructor(DNAStringSet, DNAStringSetList, DNA_ALPHABET)
@@ -143,4 +150,49 @@ test_that("XStringSetList subset works correctly", {
 test_that("XStringSetList showAsCell works correctly", {
     expect_equal(showAsCell(DNAStringSetList()), character(0L))
     expect_equal(showAsCell(DNAStringSetList(DNA_ALPHABET)), "A,C,G,...")
+})
+
+test_that("XStringSetList seqtype is correct", {
+    expect_equal(seqtype(DNAStringSetList()), "DNA")
+    expect_equal(seqtype(RNAStringSetList()), "RNA")
+    expect_equal(seqtype(AAStringSetList()), "AA")
+    expect_equal(seqtype(BStringSetList()), "B")
+
+    # downgrade sequences
+    x <- BStringSetList(DNA_ALPHABET)
+    seqtype(x) <- "DNA"
+    all.equal.XStringSetList(x, DNAStringSetList(DNA_ALPHABET))
+    seqtype(x) <- "RNA"
+    all.equal.XStringSetList(x, RNAStringSetList(RNA_ALPHABET))
+
+    x <- BStringSetList(AA_ALPHABET)
+    seqtype(x) <- "AA"
+    all.equal.XStringSetList(x, AAStringSetList(AA_ALPHABET))
+
+    # invalid conversions
+    x <- DNAStringSetList(DNA_ALPHABET)
+    expect_error({seqtype(x) <- "AA"}, 'incompatible sequence types "DNA" and "AA"')
+    seqtype(x) <- "RNA"
+    expect_error({seqtype(x) <- "AA"}, 'incompatible sequence types "RNA" and "AA"')
+})
+
+test_that("XStringSetLists show correctly", {
+    ## TODO: add some values in case printing only breaks on output
+    expect_output(show(DNAStringSetList(DNA_ALPHABET)), "DNAStringSetList of length 1\\n\\[\\[1\\]\\]")
+    expect_output(show(RNAStringSetList(RNA_ALPHABET)), "RNAStringSetList of length 1\\n\\[\\[1\\]\\]")
+    expect_output(show(AAStringSetList(AA_ALPHABET)), "AAStringSetList of length 1\\n\\[\\[1\\]\\]")
+    expect_output(show(BStringSetList(B_ALPHABET)), "BStringSetList of length 1\\n\\[\\[1\\]\\]")
+})
+
+test_that("XStringSetLists coerce from list correctly", {
+    .XStringSetList_from_list(DNAStringSet, DNAStringSetList, DNA_ALPHABET)
+    .XStringSetList_from_list(RNAStringSet, RNAStringSetList, RNA_ALPHABET)
+    .XStringSetList_from_list(AAStringSet, AAStringSetList, AA_ALPHABET)
+    .XStringSetList_from_list(BStringSet, BStringSetList, B_ALPHABET)
+})
+
+test_that("XStringSetList uses nchar correctly", {
+    dna <- DNAStringSetList(DNA_ALPHABET)
+    expect_s4_class(nchar(dna), "IntegerList")
+    expect_equal(unlist(nchar(dna)), rep(1L, length(DNA_ALPHABET)))
 })
