@@ -31,12 +31,13 @@ jobs:
       - name: Test coverage
         run: |
           library(covr)
-          options(covr.exclude_pattern="^[ ]*#+")
+          options(covr.exclude_pattern="^\\s*#+.*")
           cov <- covr::package_coverage(
             quiet = FALSE,
             clean = FALSE,
             install_path = file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package"),
-            function_exclusions = "^\\."
+            function_exclusions = "^\\.",
+            exclusions=c("R/AMINO_ACID_CODE.R", "R/GENETIC_CODE.R", "R/zzz.R", "R/IUPAC_CODE_MAP.R")
           )
           covr::to_cobertura(cov)
         shell: Rscript {0}
