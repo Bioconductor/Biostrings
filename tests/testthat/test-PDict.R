@@ -19,6 +19,7 @@ test_that("PDicts can be initialized happy path", {
 		expect_s4_class(PDict(codons, algorithm=algo), "TB_PDict")
 
 		p <- PDict(codons, algorithm=algo)
+		expect_output(show(p), "TB_PDict object of length 64 and width 3")
 
 		## checking threeparts internals
 		expect_s4_class(p@threeparts@pptb, algo)
@@ -55,22 +56,24 @@ test_that("PDicts can be initialized happy path", {
 		p <- PDict(strs, tb.start=2L, tb.width=2L, algorithm=algo)
 		expect_equal(as.character(tb(p)), rep("AT", l))
 		expect_equal(tb.width(p), 2L)
-		expect_equal(lengths(p@threeparts@head), rep(1L, l))
-		expect_identical(as.character(p@threeparts@head), DNA_ALPHABET)
-		expect_equal(lengths(p@threeparts@tail), rep(2L, l))
-		expect_identical(as.character(p@threeparts@tail), paste0(DNA_ALPHABET, "A"))
+		expect_equal(lengths(head(p)), rep(1L, l))
+		expect_identical(as.character(head(p)), DNA_ALPHABET)
+		expect_equal(lengths(tail(p)), rep(2L, l))
+		expect_identical(as.character(tail(p)), paste0(DNA_ALPHABET, "A"))
+		expect_equal(width(p@threeparts), rep(5L, l))
 
 		## variable width tail
 		strs[seq(1L,length(strs),2L)] <- paste0(strs[seq(1L,length(strs),2L)], "G")
 		p <- PDict(strs, tb.start=2L, tb.width=2L, algorithm=algo)
-		expect_equal(lengths(p@threeparts@head), rep(1L, l))
-		expect_identical(as.character(p@threeparts@head), DNA_ALPHABET)
-		expect_equal(lengths(p@threeparts@tail), rep(c(3L,2L), length.out=l))
+		expect_equal(lengths(head(p@threeparts)), rep(1L, l))
+		expect_identical(as.character(head(p@threeparts)), DNA_ALPHABET)
+		expect_equal(lengths(tail(p@threeparts)), rep(c(3L,2L), length.out=l))
 
 		## allowing small number of mismatches
 		pats <- apply(expand.grid(mkAllStrings(c("A","T"), 3L), mkAllStrings(c("G","C"), 3L)), 1, paste0, collapse='')
 		expect_s4_class(PDict(pats, max.mismatch=1L, algorithm=algo), "MTB_PDict")
 		p <- PDict(pats, max.mismatch=1L, algorithm=algo)
+		expect_output(show(p), "MTB_PDict object of length 64 and width 6")
 		expect_error(p@threeparts, 'no slot of name "threeparts"')
 		expect_equal(length(p@threeparts_list), 2L)
 		p1 <- p@threeparts_list[[1]]
@@ -81,6 +84,8 @@ test_that("PDicts can be initialized happy path", {
 		expect_equal(lengths(p2@head), rep(3L, 64L))
 		expect_equal(lengths(p2@tail), rep(0L, 64L))
 		expect_equal(as.character(p2@head), substr(pats,1,3))
+
+		expect_equal(length(as.list(p)), 2L)
 	}
 })
 
