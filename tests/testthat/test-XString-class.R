@@ -46,10 +46,10 @@ test_that("'letter' correctly extracts elements", {
 	expect_equal(letter(bstr, seq(nchar(bstr), 1)), rawToChar(rev(charToRaw(bstr))))
 
 	## TODO: Better error messages
-	expect_error(letter(DNAString(""), 10), "> length\\(x\\)")
-	expect_error(letter(RNAString(""), 10), "> length\\(x\\)")
-	expect_error(letter(AAString(""), 10), "> length\\(x\\)")
-	expect_error(letter(BString(""), 10), "> length\\(x\\)")
+	expect_error(letter(DNAString(""), 10), "out of bounds")
+	expect_error(letter(RNAString(""), 10), "out of bounds")
+	expect_error(letter(AAString(""), 10), "out of bounds")
+	expect_error(letter(BString(""), 10), "out of bounds")
 	expect_error(letter("", 10), "out of bounds")
 })
 
