@@ -37,7 +37,7 @@ jobs:
             quiet = FALSE,
             clean = FALSE,
             install_path = file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package"),
-            function_exclusions = "^\\.",
+            # function_exclusions = "^\\.", # excludes functions starting with .
             exclusions=c("R/AMINO_ACID_CODE.R", "R/GENETIC_CODE.R", "R/zzz.R", "R/IUPAC_CODE_MAP.R")
           )
           covr::to_cobertura(cov)
