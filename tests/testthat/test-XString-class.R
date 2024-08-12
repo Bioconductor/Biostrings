@@ -183,22 +183,52 @@ test_that("substr, substring methods work correctly", {
 test_that("reverse, complement, reverseComplement work correctly", {
 	## reverse tests
 	.revString <- function(s) paste(strsplit(s, '')[[1]][seq(nchar(s), 1L)], collapse='')
-	expect_equal(reverse(dnastr), .revString(dnastr))
-	expect_equal(as.character(reverse(DNAString(dnastr))), .revString(dnastr))
-	expect_equal(as.character(reverse(RNAString(rnastr))), .revString(rnastr))
-	expect_equal(as.character(reverse(AAString(aastr))), .revString(aastr))
-	expect_equal(as.character(reverse(BString(bstr))), .revString(bstr))
-
+	dna <- DNAString(dnastr)
+	rna <- RNAString(rnastr)
+	aaa <- AAString(aastr)
+	bbb <- BString(bstr)
 	d_comp <- "TGCAKYWSRMBDHVN-+."
 	r_comp <- "UGCAKYWSRMBDHVN-+."
-	expect_equal(as.character(complement(DNAString(dnastr))), d_comp)
-	expect_equal(as.character(complement(RNAString(rnastr))), r_comp)
-	expect_equal(as.character(reverseComplement(DNAString(dnastr))), .revString(d_comp))
-	expect_equal(as.character(reverseComplement(RNAString(rnastr))), .revString(r_comp))
+
+	## example Views on strings
+	d_v <- Views(dna, start=rep(1L,3L), end=rep(nchar(dnastr),3L))
+	mdna <- dna
+	mrna <- rna
+	m1 <- Mask(nchar(dnastr), start=c(2,7), end=c(3,10))
+	masks(mdna) <- masks(mrna) <- m1
+	md_comp <- strsplit(d_comp, '')[[1]]
+	mr_comp <- strsplit(r_comp, '')[[1]]
+	md_comp[c(2:3,7:10)] <- mr_comp[c(2:3,7:10)] <- "#"
+	md_comp <- paste(md_comp, collapse='')
+	mr_comp <- paste(mr_comp, collapse='')
+
+
+	## reverse method
+	expect_equal(reverse(dnastr), .revString(dnastr))
+	expect_equal(as.character(reverse(dna)), .revString(dnastr))
+	expect_equal(as.character(reverse(rna)), .revString(rnastr))
+	expect_equal(as.character(reverse(aaa)), .revString(aastr))
+	expect_equal(as.character(reverse(bbb)), .revString(bstr))
+	expect_equal(as.character(reverse(mdna)), .revString(as.character(mdna)))
+	expect_equal(as.character(reverse(mrna)), .revString(as.character(mrna)))
+
+	## complement method
+	expect_equal(as.character(complement(dna)), d_comp)
+	expect_equal(as.character(complement(rna)), r_comp)
 	expect_error(complement(AAString()), "unable to find an inherited method")
 	expect_error(complement(BString()), "unable to find an inherited method")
+	expect_equal(as.character(complement(d_v)), rep(d_comp, 3L))
+	expect_equal(as.character(complement(mdna)), md_comp)
+	expect_equal(as.character(complement(mrna)), mr_comp)
+
+	## reverseComplement method
+	expect_equal(as.character(reverseComplement(dna)), .revString(d_comp))
+	expect_equal(as.character(reverseComplement(rna)), .revString(r_comp))
 	expect_error(reverseComplement(AAString()), "unable to find an inherited method")
 	expect_error(reverseComplement(BString()), "unable to find an inherited method")
+	expect_equal(as.character(reverseComplement(d_v)), rep(.revString(d_comp), 3L))
+	expect_equal(as.character(reverseComplement(mdna)), .revString(md_comp))
+	expect_equal(as.character(reverseComplement(mrna)), .revString(mr_comp))
 })
 
 ## Porting RUnit tests
