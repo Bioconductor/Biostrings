@@ -180,6 +180,27 @@ test_that("substr, substring methods work correctly", {
 	expect_equal(as.character(d[-1]), substr(dnastr, 2, nchar(dnastr)))
 })
 
+test_that("reverse, complement, reverseComplement work correctly", {
+	## reverse tests
+	.revString <- function(s) paste(strsplit(s, '')[[1]][seq(nchar(s), 1L)], collapse='')
+	expect_equal(reverse(dnastr), .revString(dnastr))
+	expect_equal(as.character(reverse(DNAString(dnastr))), .revString(dnastr))
+	expect_equal(as.character(reverse(RNAString(rnastr))), .revString(rnastr))
+	expect_equal(as.character(reverse(AAString(aastr))), .revString(aastr))
+	expect_equal(as.character(reverse(BString(bstr))), .revString(bstr))
+
+	d_comp <- "TGCAKYWSRMBDHVN-+."
+	r_comp <- "UGCAKYWSRMBDHVN-+."
+	expect_equal(as.character(complement(DNAString(dnastr))), d_comp)
+	expect_equal(as.character(complement(RNAString(rnastr))), r_comp)
+	expect_equal(as.character(reverseComplement(DNAString(dnastr))), .revString(d_comp))
+	expect_equal(as.character(reverseComplement(RNAString(rnastr))), .revString(r_comp))
+	expect_error(complement(AAString()), "unable to find an inherited method")
+	expect_error(complement(BString()), "unable to find an inherited method")
+	expect_error(reverseComplement(AAString()), "unable to find an inherited method")
+	expect_error(reverseComplement(BString()), "unable to find an inherited method")
+})
+
 ## Porting RUnit tests
 test_that("alphabet finds the correct values", {
 	expect_equal(alphabet(DNAString(dnastr)), strsplit(dnastr, '')[[1]])
