@@ -12,11 +12,10 @@
 ## - *Views
 ## - as.character
 ## - subseq
-## - *toString
-## - *show
-## - *coercion between masked types
-## - *coercion between unmasked types (B <-> MaskedB)
-## - *coercion to MaskCollection, NormalIRanges, XStringViews
+## - toString
+## - coercion between masked types
+## - coercion between unmasked types (B <-> MaskedB)
+## - coercion to MaskCollection, NormalIRanges, XStringViews
 
 dna_c <- sample(DNA_BASES, 25L, replace=TRUE)
 rna_c <- sample(RNA_BASES, 25L, replace=TRUE)
@@ -48,7 +47,9 @@ test_that("masking coerces between XString and MaskedXString", {
 		tmp <- l[[i]]
 		masks(tmp) <- m1
 		## should convert to MaskedXString
-		expect_s4_class(tmp, paste0("Masked", seqtype(l[[i]]), "String"))
+		mseqclass <- paste0("Masked", seqtype(l[[i]]), "String")
+		expect_s4_class(tmp, mseqclass)
+		expect_s4_class(as(l[[i]], mseqclass), mseqclass)
 
 		## seqtype should stay the same
 		expect_equal(seqtype(tmp), seqtype(l[[i]]))
@@ -74,4 +75,41 @@ test_that("masking coerces between XString and MaskedXString", {
 		expect_equal(masks(tmp), m2)
 		expect_equal(unmasked(tmp), l[[i]])
 	}
+})
+
+test_that("coercion between masked types works correctly", {
+	rnam <- rna
+	dnam <- dna
+	aaam <- aaa
+	masks(dnam) <- masks(rnam) <- masks(aaam) <- m2
+
+	# test translation
+	udna <- strsplit(as.character(dnam), '')[[1]]
+	udna <- DNAString(paste(udna[udna!='#'], collapse=''))
+	expect_equal(as.character(translate(dnam)), as.character(translate(udna)))
+
+	# DNA <-> RNA conversion
+	expect_equal(as.character(unmasked(as(dnam, "MaskedRNAString"))), as.character(as(dna, "RNAString")))
+	expect_equal(as.character(unmasked(as(rnam, "MaskedRNAString"))), as.character(as(rna, "RNAString")))
+
+	expect_error(as(dnam, "MaskedAAString"), "incompatible sequence types")
+	expect_error(as(rnam, "MaskedAAString"), "incompatible sequence types")
+
+	# roundtrip X -> B -> X conversion
+	expect_equal(as(as(dnam, "MaskedBString"), "MaskedDNAString"), dnam)
+	expect_equal(as(as(rnam, "MaskedBString"), "MaskedRNAString"), rnam)
+	expect_equal(as(as(aaam, "MaskedBString"), "MaskedAAString"), aaam)
+
+	masks(dnam) <- m1
+	# MaskCollection conversion
+	expect_true(all(as(dnam, "MaskCollection") == m1))
+
+	# NormalIRanges conversion converts to the masked ranges
+	expect_equal(start(as(dnam, "NormalIRanges")), mask_starts)
+	expect_equal(end(as(dnam, "NormalIRanges")), mask_ends)
+
+	# Views conversion converts to unmasked ranges
+	exp_end <- c(mask_starts-1L, length(dnam))
+	exp_end <- unique(exp_end[exp_end>=1])
+	expect_equal(end(as(dnam, "Views")), exp_end)
 })

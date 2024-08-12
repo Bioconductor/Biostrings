@@ -87,7 +87,7 @@ test_that("PDict works for variable width lookup", {
                  tb.width=min(width(short_sequences))
                  )
   expect_equal(L, length(pdict))
-  expect_equal( (rep(W, L) - n_cut)[o], width(pdict))
+  expect_equal((rep(W, L) - n_cut)[o], width(pdict))
   expect_equal(NULL, head(pdict))
   shortest_seq_width <- min(width(dna_var_short))
   expect_equal(shortest_seq_width,
