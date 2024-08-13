@@ -1,12 +1,10 @@
 # Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
-  push:
-    branches: [main, master]
   pull_request:
     branches: [main, master]
 
-name: test-coverage
+name: test-coverage-nocodecov
 
 permissions: read-all
 
@@ -44,7 +42,7 @@ jobs:
             exclusions=c("R/AMINO_ACID_CODE.R", "R/GENETIC_CODE.R", "R/zzz.R", "R/IUPAC_CODE_MAP.R")
           )
            head_res <- covr::coverage_to_list(cov)
-           save(head_res, file='/oldres.RData')
+           save(head_res, file='./oldres.RData')
         shell: Rscript {0}
 
       - name: Checkout current ref
@@ -91,7 +89,7 @@ jobs:
           testthat_o <- system("find '${{ runner.temp }}/package' -name 'testthat.Rout*' -exec cat '{}' \;", intern=TRUE)
           out_msg <- paste0(out_msg, "\n<details>\n<summary>`testthat` Output</summary>\n```",
                             testthat_o, '\n```\n</details>')
-          cat(out_msg, file='/test_status.txt')
+          cat(out_msg, file='./test_status.txt')
 
       - name: Show testthat output
         if: always()
