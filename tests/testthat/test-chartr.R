@@ -35,4 +35,5 @@ test_that('replaceAmbiguities works as expected', {
 	bb <- BString(paste(LETTERS, collapse=''))
 	expect_error(replaceAmbiguities(aa), "only supported for DNA and RNA")
 	expect_error(replaceAmbiguities(bb), "only supported for DNA and RNA")
+	expect_error(replaceAmbiguities("test"), "only supported for DNA and RNA")
 })

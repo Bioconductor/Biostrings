@@ -49,8 +49,7 @@ setMethod("chartr", c(old="ANY", new="ANY", x="MaskedXString"),
 ### A simple wrapper to chartr().
 replaceAmbiguities <- function(x, new="N")
 {
-    seqtypex <- seqtype(x)
-    if(seqtypex != "DNA" && seqtypex != "RNA")
+    if(!is(x, "XString") || !(seqtype(x) %in% c("DNA", "RNA")))
       stop("replaceAmbiguities is only supported for DNA and RNA")
     if (!(isSingleString(new) && nchar(new) == 1L))
         stop("'new' must be a single letter")
