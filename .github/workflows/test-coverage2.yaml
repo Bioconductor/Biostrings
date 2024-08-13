@@ -1,14 +1,18 @@
 # Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
-  push:
-    branches: [main, master]
   pull_request:
     branches: [main, master]
 
-name: test-coverage
+name: test-coverage-nocodecov
 
-permissions: read-all
+permissions:
+  actions: read
+  checks: read
+  contents: read
+  deployments: read
+  packages: read
+  pull-requests: write
 
 jobs:
   test-coverage:
@@ -17,84 +21,152 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      - name: Checkout head ref
+      - name: Checkout current ref
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          path: ./new-state
+      - name: Try checkout on devel
+        id: devel-checkout
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          ref: devel
+          path: ./original-state
 
       - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
-
-      - uses: r-lib/actions/setup-r-dependencies@v2
+      
+      - name: setup dependencies for old state
+        uses: r-lib/actions/setup-r-dependencies@v2
         with:
+          working-directory: ./original-state
+          extra-packages: any::covr
+          needs: coverage
+
+      - name: setup dependencies for new state
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          working-directory: ./new-state
           extra-packages: any::covr
           needs: coverage
 
       - name: Test coverage on base branch
         run: |
           library(covr)
-          # exclude comments and lines with no content
-          options(covr.exclude_pattern=c("^\\s*#+.*", "^[ \t{}()]+$"))
+          # exclude lines with no content
+          # options(covr.exclude_pattern=c("^\\s*#+.*"))#c("^[ \t{}()]+$"))
+          # get results on old state
           cov <- covr::package_coverage(
+            path = "./original-state",
             quiet = FALSE,
             clean = FALSE,
             install_path = file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package"),
             function_exclusions = "^\\.",
-            exclusions=c("R/AMINO_ACID_CODE.R", "R/GENETIC_CODE.R", "R/zzz.R", "R/IUPAC_CODE_MAP.R")
+            line_exclusions=list("R/AMINO_ACID_CODE.R", "R/GENETIC_CODE.R", "R/zzz.R", "R/IUPAC_CODE_MAP.R")
           )
-           head_res <- covr::coverage_to_list(cov)
-           save(head_res, file='./oldres.RData')
-        shell: Rscript {0}
-
-      - name: Checkout current ref
-        uses: actions/checkout@v4
-
-      - name: Test coverage on new branch
-        run: |
-          library(covr)
-          # exclude comments and lines with no content
-          options(covr.exclude_pattern=c("^\\s*#+.*", "^[ \t{}()]+$"))
+          head_res <- covr::coverage_to_list(cov)
+          # get results on new state
           cov <- covr::package_coverage(
+            path = "./new-state",
             quiet = FALSE,
             clean = FALSE,
             install_path = file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package"),
             function_exclusions = "^\\.",
-            exclusions=c("R/AMINO_ACID_CODE.R", "R/GENETIC_CODE.R", "R/zzz.R", "R/IUPAC_CODE_MAP.R")
+            line_exclusions=list("R/AMINO_ACID_CODE.R", "R/GENETIC_CODE.R", "R/zzz.R", "R/IUPAC_CODE_MAP.R")
           )
           new_res <- covr::coverage_to_list(cov)
+
           ## compare difference
-          load('/oldres.RData')
           f_old <- head_res$filecoverage
           f_new <- new_res$filecoverage
           all_files <- union(names(f_old), names(f_new))
           file_changes <- rep(0, length(all_files))
           names(file_changes) <- all_files
-          file_changes[names(f_old)] <- -1*f_old
           file_changes[names(f_new)] <- file_changes[names(f_new)] + f_new
-          total_change <- new_res$totalcoverage - head_res$filecoverage
-          file_changes <- file_changes[file_changes!=0]
-          ## build the output message
-          n <- names(file_changes)
-          file_changes <- sprintf("%.02f", file_changes)
-          file_changes <- vapply(file_changes, \(x) ifelse(x<0, paste0(x, '%'), paste0("+", x, '%')), character(1L))
-          new_cov <- sprintf("%.02f%%", f_new[n])
-          out_msg <- paste0(n, ': ', new_cov, ' (', file_changes[], ')', collapse='\n')
-          out_msg <- paste0("# Testing Report\nTests Completed.\n\n",
-                            "**Total Coverage:** ", sprintf("%.02f%%", new_res$totalcoverage),
-                            ' (', ifelse(total_change<0, '', '+'), sprintf("%.02f%%", total_change)), ')\n',
-                            "<details>\n<summary>File Coverage</summary>\n```",
-                            out_msg,
-                            "\n```\n</details>"
+          final_cov <- file_changes
+          file_changes[names(f_old)] <- file_changes[names(f_old)] - f_old
+          total_change <- new_res$totalcoverage - head_res$totalcoverage
 
-          ## get testthat output as well
-          testthat_o <- system("find '${{ runner.temp }}/package' -name 'testthat.Rout*' -exec cat '{}' \;", intern=TRUE)
-          out_msg <- paste0(out_msg, "\n<details>\n<summary>`testthat` Output</summary>\n```",
-                            testthat_o, '\n```\n</details>')
-          cat(out_msg, file='./test_status.txt')
+          library(testthat)
+          library(Biostrings)
+          cat("Checking test results...\n")
+          res <- test_dir("./new-state/tests/testthat", stop_on_failure=FALSE, reporter="silent")
+          res <- as.data.frame(res)
+          test_report <- c(sum(res$failed), sum(res$warning), sum(res$skipped), sum(res$passed))
+          test_report <- paste(c("FAIL", "WARN", "SKIP", "PASS"), test_report, collapse=' | ')
+          test_report <- paste('[', test_report, ']')
+          ## build the output message
+          out_msg <- '# Testing Report\n\n'
+          out_msg <- paste0(out_msg, "## Unit Tests:\n\n")
+          out_msg <- paste0("```\n", test_report, '\n```\n\n')
+          out_msg <- paste0(out_msg, "## Negatively Impacted Files\n")
+          ## build warning message
+          n <- names(file_changes)
+          pos_neg <- which(file_changes < 0)
+          if(length(pos_neg) > 0){
+            pos_neg <- pos_neg[order(file_changes[pos_neg], decreasing=FALSE)]
+            warn_changes <- sprintf("%+.01f%%", file_changes)
+            header <- "| File name | Coverage | Change |\n | :----- | :-----: | :-----: |\n"
+            warn_tab <- paste0('| ', n[pos_neg], ' | ', final_cov[pos_neg], ' | ', unname(warn_changes[pos_neg]), ' |', collapse='\n')
+            warn_tab <- paste0(header, warn_tab)
+            out_msg <- paste0("The following files have lost coverage:\n", out_msg, warn_tab, '\n')
+          } else {
+            out_msg <- paste0(out_msg, "No negatively impacted files. Nice job!\n\n")
+          }
+
+          ## build extended diff table
+          p_Rfiles <- grepl("^R/", n)
+          n <- vapply(strsplit(n, '/'), .subset, character(1L), 2L)
+          all_diffs <- data.frame(filename=n,
+            coverage=sprintf("%.02f%%", final_cov),
+            change=sprintf("%+.01f%%", file_changes))
+          max_nchar <- max(nchar(all_diffs$filename))
+          all_diffs$filename <- sprintf(paste0("%", max_nchar, "s"), all_diffs$filename)
+          all_diffs$coverage <- sprintf("%7s", all_diffs$coverage)
+          all_diffs$change <- sprintf("%7s", all_diffs$change)
+          all_diffs$mark_char <- 1L
+          all_diffs$mark_char[file_changes > 0] <- 2L
+          all_diffs$mark_char[file_changes < 0] <- 3L
+          all_diffs$mark_char <- c(" ", "+", "-")[all_diffs$mark_char]
+
+          all_rows <- apply(all_diffs[c(4,1:3)], 1L, paste, collapse=' ')
+          w <- nchar(all_rows[1L])
+
+          title0 <- "Total Coverage"
+          n_padding <- (w - nchar(title0) - 4) / 2
+          title0 <- paste0("@@", paste(rep(' ', floor(n_padding)), collapse=''),
+            title0, paste(rep(' ', ceiling(n_padding)), collapse=''), "@@")
+          row0 <- paste(ifelse(total_change < 0, "-", ifelse(total_change>0, "+", " ")),
+                          sprintf(paste0("%", max_nchar, "s"), "Total Coverage"),
+                          sprintf("%7.02f", new_res$totalcoverage),
+                          sprintf("%+7.01f", total_change), "\n", collapse=' ')
+
+          title1 <- "R/... Files"
+          n_padding <- (w - nchar(title1) - 4) / 2
+          title1 <- paste0("@@", paste(rep(' ', floor(n_padding)), collapse=''),
+            title1, paste(rep(' ', ceiling(n_padding)), collapse=''), "@@")
+
+          title2 <- "src/... Files"
+          n_padding <- (w - nchar(title2) - 4) / 2
+          title2 <- paste0("@@", paste(rep(' ', floor(n_padding)), collapse=''),
+            title2, paste(rep(' ', ceiling(n_padding)), collapse=''), "@@")
+
+          spacer <- paste(rep('=', w), collapse='')
+          entries1 <- paste(all_rows[p_Rfiles], collapse='\n')
+          entries2 <- paste(all_rows[!p_Rfiles], collapse='\n')
+          diff_table <- paste(title0, spacer, row0, spacer, '\n',
+                              title1, spacer, entries1, spacer, '\n',
+                              title2, spacer, entries2, spacer, '\n',
+                              collapse='\n', sep='\n')
+          diff_table <- paste0("<details>\n<summary>Additional details and impacted files</summary>\n\n",
+                                "```diff\n", diff_table, '```\n\n</details>')
+          out_msg <- paste0(out_msg, diff_table, '\n')
+          cat(out_msg, file='./test_status.txt')        
+        shell: Rscript {0}
 
       - name: Show testthat output
-        if: always()
+        if: false
         run: |
           ## --------------------------------------------------------------------
           find '${{ runner.temp }}/package' -name 'testthat.Rout*' -exec cat '{}' \; || true
@@ -103,6 +175,7 @@ jobs:
       - name: Print comment to PR
         uses: thollander/actions-comment-pull-request@v2
         with:
+          GITHUB_TOKEN: ${{ env.GITHUB_PAT }}
           filePath: ./test_status.txt
           comment_tag: unit-test-results
 
