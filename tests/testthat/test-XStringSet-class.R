@@ -178,6 +178,28 @@ test_that("showAsCell works correctly", {
   expect_equal(nchar(showAsCell(b)), 23L)
 })
 
+test_that("comparison operators are correct", {
+  dna <- DNAStringSet(DNA_ALPHABET)
+  rna <- RNAStringSet(RNA_ALPHABET)
+  aaa <- AAStringSet(AA_ALPHABET)
+  bbb <- BStringSet(LETTERS)
+
+  expect_true(!any(is.na(dna)))
+  expect_true(!anyNA(dna))
+  expect_equal(match(dna, dna), seq_along(dna))
+  expect_equal(aaa[seq_len(26)] < bbb, AA_ALPHABET[seq_len(26L)] < LETTERS)
+
+  expect_equal(match(sort(aaa), bbb, nomatch=0), c(rep(0L, 4L), seq_len(26L)))
+  expect_true(all(dna == as.character(dna)))
+
+  expect_error(aaa == dna, "is not supported")
+  expect_error(aaa == rna, "is not supported")
+  expect_true(all(dna == BStringSet(DNA_ALPHABET)))
+  expect_true(all(rna == BStringSet(RNA_ALPHABET)))
+  expect_true(all(aaa == BStringSet(AA_ALPHABET)))
+  expect_equal(dna == NULL, logical(0L))
+})
+
 ## Porting RUnit tests
 test_that("short RUnit tests continue to pass", {
   ## test_width_character
