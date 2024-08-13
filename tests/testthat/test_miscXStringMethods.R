@@ -11,6 +11,9 @@ test_that("toComplex conversion works correctly", {
   ## GC content:
   baseValues2 <- c(A=0, C=1, G=1, T=0)
   expect_equal(sum(as.integer(toComplex(seq, baseValues2))), 8L)
+
+  expect_error(toComplex(seq, 1:4), "'baseValues' must have names")
+  expect_error(toComplex(seq, c(W=1,X=1,Y=1,Z=1)), "'baseValues' names must be valid DNA letters")
 })
 
 test_that("xscat concatenates all types correctly", {
