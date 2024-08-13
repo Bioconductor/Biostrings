@@ -110,6 +110,28 @@ test_that("vectorized PDict lookup works", {
   expect_error(vmatchPDict(pdict, dss), "vmatchPDict() is not ready yet", fixed=TRUE)
 })
 
+test_that("MIndex functionality works", {
+  ## set up an MIndex object
+  s <- mkAllStrings(c("A", "T"), 2L)
+  names(s) <- s
+  pd <- PDict(s)
+  d <- DNAString("ATTATTAATTAA")
+  m <- matchPDict(pd, d)
+  exp_match_starts <- list(c(7,11), c(1,4,8), c(3,6,10), c(2,5,9))
+  expect_equal(length(m), 2^2)
+  expect_equal(names(m), names(s))
+  expect_equal(startIndex(m), exp_match_starts)
+  expect_equal(endIndex(m), lapply(exp_match_starts, \(x) x+1L))
+  expect_equal(elementNROWS(m), c(2,3,3,3))
+  expect_equal(m[[1L]], IRanges(start=c(7,11), end=c(8,12)))
+  expect_s4_class(as(m, "CompressedIRangesList"), "CompressedIRangesList")
+  expect_equal(start(unlist(m)), unlist(exp_match_starts))
+  ux <- extractAllMatches(d, m)
+  exp_ux <- rep(s, times=c(2,3,3,3))
+  expect_equal(start(ux), unlist(exp_match_starts))
+  expect_equal(as.character(ux), exp_ux)
+})
+
 ### All old tests
 ## Helper functions ported from old tests
 randomDNASequences <- function(n, w)
@@ -200,4 +222,3 @@ test_that("matchPDict works for variable width lookup", {
     expect_equal(end(iro)[i], end(res[[i]]))  # mostly a sanity check
   }
 })
-
