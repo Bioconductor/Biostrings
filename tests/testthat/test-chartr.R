@@ -36,4 +36,7 @@ test_that('replaceAmbiguities works as expected', {
 	expect_error(replaceAmbiguities(aa), "only supported for DNA and RNA")
 	expect_error(replaceAmbiguities(bb), "only supported for DNA and RNA")
 	expect_error(replaceAmbiguities("test"), "only supported for DNA and RNA")
+
+	expect_true(all(replaceAmbiguities(DNAStringSet(list(dna1, dna1))) == DNAStringSet(list(dna2, dna2))))
+	expect_true(all(replaceAmbiguities(Views(dna1, start=c(1,4,7), width=3)) == Views(dna2, start=c(1,4,7), width=3)))
 })
