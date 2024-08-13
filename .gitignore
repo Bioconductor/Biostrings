@@ -8,3 +8,6 @@ src/*.so
 .RData
 .Rbuildignore
 .Rhistory
+*/*.gcov
+*/*.gcda
+*/*.gcno
