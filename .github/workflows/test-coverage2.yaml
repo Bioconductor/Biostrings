@@ -62,7 +62,7 @@ jobs:
           )
           new_res <- covr::coverage_to_list(cov)
           ## compare difference
-          load('/oldres.RData')
+          load('./oldres.RData')
           f_old <- head_res$filecoverage
           f_new <- new_res$filecoverage
           all_files <- union(names(f_old), names(f_new))
@@ -101,7 +101,7 @@ jobs:
       - name: Print comment to PR
         uses: thollander/actions-comment-pull-request@v2
         with:
-          filePath: /test_status.txt
+          filePath: ./test_status.txt
           comment_tag: unit-test-results
 
       - name: Upload test results
