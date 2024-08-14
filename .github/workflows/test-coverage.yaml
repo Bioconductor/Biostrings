@@ -6,13 +6,7 @@ on:
 
 name: test-coverage-nocodecov
 
-permissions:
-  actions: read
-  checks: read
-  contents: read
-  deployments: read
-  packages: read
-  pull-requests: write
+permissions: read-all
 
 jobs:
   test-coverage:
@@ -183,12 +177,15 @@ jobs:
           cat(out_msg, file='./test_status.txt')
         shell: Rscript {0}
 
-      - name: Print comment to PR
-        uses: thollander/actions-comment-pull-request@v2
-        with:
-          GITHUB_TOKEN: ${{ env.GITHUB_PAT }}
-          filePath: ./test_status.txt
-          comment_tag: unit-test-results
+      # - name: Print comment to PR
+      #   uses: thollander/actions-comment-pull-request@v2
+      #   with:
+      #     GITHUB_TOKEN: ${{ env.GITHUB_PAT }}
+      #     filePath: ./test_status.txt
+      #     comment_tag: unit-test-results
+
+      - name: Print results to check output
+        run: cat ./test_status.txt >> $GITHUB_STEP_SUMMARY
 
       - name: Upload test results
         if: failure()
