@@ -8,8 +8,8 @@ test_that("trimLRPatterns works correctly on supported input types", {
 	L <- "TTCTGCTTG"
   R <- "GATCGGAAG"
   DChr <- "TTCTGCTTGACGTGATCGGA"
-  DStr <- DNAString(subjectChr)
-  DSet <- DNAStringSet(c(subjectChr, subjectChr))
+  DStr <- DNAString(DChr)
+  DSet <- DNAStringSet(c(DChr, DChr))
 
   exp1 <- "ACGTGATCGGA"
   exp2 <- "TTCTGCTTGACGT"
