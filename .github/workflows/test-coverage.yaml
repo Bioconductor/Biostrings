@@ -54,8 +54,9 @@ jobs:
       - name: Test coverage on base branch
         run: |
           dirpath <- file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package")
-          dir.create(file.path(dirpath, "old-state"))
-          dir.create(file.path(dirpath, "new-state"))
+          dir.create(dirpath)
+          #dir.create(file.path(dirpath, "old-state"))
+          #dir.create(file.path(dirpath, "new-state"))
           library(covr)
           # exclude lines with no content
           options(covr.exclude_pattern=c("^[ \t{}()]+$"))
