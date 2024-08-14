@@ -150,7 +150,7 @@ jobs:
             title0, paste(rep(' ', ceiling(n_padding)), collapse=''), "@@")
           row0 <- paste(ifelse(total_change < 0, "-", ifelse(total_change>0, "+", " ")),
                           sprintf(paste0("%", max_nchar, "s"), "Total Coverage"),
-                          sprintf("%7.02f%%", new_res$totalcoverage),
+                          sprintf("%6.02f%%", new_res$totalcoverage),
                           sprintf("%+7.01f%%", total_change), "\n", collapse=' ')
 
           title1 <- "R/... Files"
@@ -167,8 +167,8 @@ jobs:
           entries1 <- paste(all_rows[p_Rfiles], collapse='\n')
           entries2 <- paste(all_rows[!p_Rfiles], collapse='\n')
           diff_table <- paste(title0, spacer, row0, spacer, '\n',
-                              title1, spacer, entries1, spacer, '\n',
-                              title2, spacer, entries2, spacer, '\n',
+                              title1, spacer, entries1, spacer,
+                              title2, spacer, entries2, spacer,
                               collapse='\n', sep='\n')
           diff_table <- paste0("<details>\n<summary>Additional details and impacted files</summary>\n\n",
                                 "```diff\n", diff_table, '```\n\n</details>')
