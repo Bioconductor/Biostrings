@@ -61,15 +61,16 @@ jobs:
           # exclude lines with no content
           options(covr.exclude_pattern=c("^[ \t{}()]+$"))
           # get results on old state
+          files_to_ignore <- list("R/AMINO_ACID_CODE.R", "R/GENETIC_CODE.R",
+                                  "R/zzz.R", "R/IUPAC_CODE_MAP.R",
+                                  "R/getSeq.R")
           cov <- covr::package_coverage(
             path = "./original-state",
             quiet = FALSE,
             clean = FALSE,
             install_path = file.path(dirpath, "old-state"),
             function_exclusions = "^\\.",
-            line_exclusions=list("R/AMINO_ACID_CODE.R", "R/GENETIC_CODE.R",
-                                  "R/zzz.R", "R/IUPAC_CODE_MAP.R",
-                                  "R/getSeq.R")
+            line_exclusions=files_to_ignore
           )
           head_res <- covr::coverage_to_list(cov)
           # get results on new state
@@ -79,9 +80,7 @@ jobs:
             clean = FALSE,
             install_path = file.path(dirpath, "new-state"),
             function_exclusions = "^\\.", # excludes functions starting with .
-            line_exclusions=list("R/AMINO_ACID_CODE.R", "R/GENETIC_CODE.R",
-                                  "R/zzz.R", "R/IUPAC_CODE_MAP.R",
-                                  "R/getSeq.R")
+            line_exclusions=files_to_ignore
           )
           new_res <- covr::coverage_to_list(cov)
 
@@ -113,6 +112,10 @@ jobs:
           ## build the output message
           out_msg <- '# Testing Report\n\n'
           out_msg <- paste0(out_msg, "## Test Results:\n\n")
+          out_msg <- paste0(out_msg, "Please note that test coverage is **not** an ",
+                            "end-all-be-all measure of robustness. Having test that ",
+                            "correctly cover intended use cases and potential errors ",
+                            "is significantly more important than maximizing coverage.\n\n")
           out_msg <- paste0(out_msg, "```\n", test_report, '\n```\n\n')
           out_msg <- paste0(out_msg, "## Negatively Impacted Files\n\n")
           ## build warning message
@@ -174,7 +177,7 @@ jobs:
                               title1, spacer, entries1, spacer,
                               title2, spacer, entries2, spacer,
                               collapse='\n', sep='\n')
-          diff_table <- paste0("<details>\n<summary>Additional details and impacted files</summary>\n\n",
+          diff_table <- paste0("<details>\n<summary>Additional Details and Impacted Files:</summary>\n\n",
                                 "```diff\n", diff_table, '\n\n```\n\n</details>')
           out_msg <- paste0(out_msg, diff_table, '\n')
           cat(out_msg, file='./test_status.txt')
