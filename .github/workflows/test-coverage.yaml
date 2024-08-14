@@ -108,8 +108,8 @@ jobs:
           test_report <- paste('Unit Tests: [', test_report, ']')
           ## build the output message
           out_msg <- '# Testing Report\n\n'
-          out_msg <- paste0(out_msg, "## Unit Tests:\n\n")
-          out_msg <- paste0("```\n", test_report, '\n```\n\n')
+          out_msg <- paste0(out_msg, "## Test Results:\n\n")
+          out_msg <- paste0(out_msg, "```\n", test_report, '\n```\n\n')
           out_msg <- paste0(out_msg, "## Negatively Impacted Files\n\n")
           ## build warning message
           n <- names(file_changes)
@@ -118,7 +118,8 @@ jobs:
             pos_neg <- pos_neg[order(file_changes[pos_neg], decreasing=FALSE)]
             warn_changes <- sprintf("%+.01f%%", file_changes)
             header <- "| File name | Coverage | Change |\n | :----- | :-----: | :-----: |\n"
-            warn_tab <- paste0('| ', n[pos_neg], ' | ', final_cov[pos_neg], ' | ', unname(warn_changes[pos_neg]), ' |', collapse='\n')
+            warn_tab <- paste0('| ', n[pos_neg], ' | ', sprintf("%0.02f%%", final_cov[pos_neg]), ' | ',
+                                unname(warn_changes[pos_neg]), ' |', collapse='\n')
             warn_tab <- paste0(header, warn_tab)
             out_msg <- paste0(out_msg, "The following files have lost coverage:\n", warn_tab, '\n')
           } else {
