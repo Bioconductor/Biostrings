@@ -107,7 +107,7 @@ jobs:
           out_msg <- '# Testing Report\n\n'
           out_msg <- paste0(out_msg, "## Test Results:\n\n")
           out_msg <- paste0(out_msg, "Please note that test coverage is **not** an ",
-                            "end-all-be-all measure of robustness. Having test that ",
+                            "end-all-be-all measure of robustness. Having tests that ",
                             "correctly cover intended use cases and potential errors ",
                             "is significantly more important than maximizing coverage.\n\n")
           out_msg <- paste0(out_msg, "```\n", test_report, '\n```\n\n')
@@ -174,22 +174,33 @@ jobs:
           diff_table <- paste0("<details>\n<summary>Additional Details and Impacted Files:</summary>\n\n",
                                 "```diff\n", diff_table, '\n\n```\n\n</details>')
           out_msg <- paste0(out_msg, diff_table, '\n')
-          cat(out_msg, file='./test_status.txt')
+          cat(out_msg, file='./test_status.md')
         shell: Rscript {0}
 
+      ## This is a better option than step summary, but requires
+      ## the "pull-request: write" permission, which I'd rather
+      ## not allow on a public repository
       # - name: Print comment to PR
       #   uses: thollander/actions-comment-pull-request@v2
       #   with:
       #     GITHUB_TOKEN: ${{ env.GITHUB_PAT }}
-      #     filePath: ./test_status.txt
+      #     filePath: ./test_status.md
       #     comment_tag: unit-test-results
 
       - name: Print results to check output
-        run: cat ./test_status.txt >> $GITHUB_STEP_SUMMARY
+        run: cat ./test_status.md >> $GITHUB_STEP_SUMMARY
 
-      - name: Upload test results
+      - name: Upload package on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-test-failures
           path: ${{ runner.temp }}/package
+
+      - name: Upload status on success
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-test-results
+          path: ./test_status.md
+
