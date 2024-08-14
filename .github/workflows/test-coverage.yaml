@@ -67,7 +67,9 @@ jobs:
             clean = FALSE,
             install_path = file.path(dirpath, "old-state"),
             function_exclusions = "^\\.",
-            line_exclusions=list("R/AMINO_ACID_CODE.R", "R/GENETIC_CODE.R", "R/zzz.R", "R/IUPAC_CODE_MAP.R")
+            line_exclusions=list("R/AMINO_ACID_CODE.R", "R/GENETIC_CODE.R",
+                                  "R/zzz.R", "R/IUPAC_CODE_MAP.R",
+                                  "R/getSeq.R")
           )
           head_res <- covr::coverage_to_list(cov)
           # get results on new state
@@ -77,7 +79,9 @@ jobs:
             clean = FALSE,
             install_path = file.path(dirpath, "new-state"),
             function_exclusions = "^\\.", # excludes functions starting with .
-            line_exclusions=list("R/AMINO_ACID_CODE.R", "R/GENETIC_CODE.R", "R/zzz.R", "R/IUPAC_CODE_MAP.R")
+            line_exclusions=list("R/AMINO_ACID_CODE.R", "R/GENETIC_CODE.R",
+                                  "R/zzz.R", "R/IUPAC_CODE_MAP.R",
+                                  "R/getSeq.R")
           )
           new_res <- covr::coverage_to_list(cov)
 

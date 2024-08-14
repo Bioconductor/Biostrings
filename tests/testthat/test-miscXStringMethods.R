@@ -2,6 +2,8 @@
 ## Currently includes:
 ## - toComplex
 ## - xscat
+## - strsplit, unstrsplit (for XStringSet, XStringSetList)
+## - N50
 
 test_that("toComplex conversion works correctly", {
 	seq <- DNAString("agtcagtcagtcagtc")
@@ -65,4 +67,45 @@ test_that("padAndClip, stackStrings have correct functionality", {
                remove.out.of.view.strings=TRUE)
   expect_equal(names(s2), paste0("seq", c(1,3,4)))
   expect_equal(unname(as.character(s2)), exp_out[c(1,3,4)])
+})
+
+test_that("Biostrings strsplit, unstrsplit methods work correctly", {
+  ds <- "ATGCATGC"
+  d1 <- DNAStringSet(ds)
+  d2 <- DNAStringSet("ATCATC")
+  d_spl <- DNAStringSet(c("AT", "CAT", "C"))
+
+  expect_true(all(strsplit(d1, "G") == d_spl))
+
+  expect_true(unstrsplit(strsplit(d1, "G")) == d2)
+
+  ## round trip identity
+  expect_true(unstrsplit(strsplit(d1, "G"), "G") == d1)
+
+  ## unstrsplit on a stringset should be a noop
+  expect_identical(unstrsplit(d1), d1)
+})
+
+test_that("N50 has correct behavior", {
+  set.seed(6L)
+  n_seq <- 20L
+  possible_len <- seq(100,10000)
+  lens <- sample(possible_len, n_seq)
+  many_seqs <- DNAStringSet(
+    vapply(seq_len(n_seq), \(i){
+      paste(sample(DNA_BASES, lens[i], replace=TRUE), collapse='')
+    }, character(1L))
+  )
+
+  ## N50 is calculated by:
+  ##  1. add sizes of contigs until half the total size is reached
+  all_widths <- sort(width(many_seqs), decreasing=TRUE)
+  total_width <- sum(all_widths)
+  cs <- cumsum(all_widths)
+  pos_first <- which.max(cs > total_width/2)
+
+  ##  2. take the size of the contig that was added last
+  N50_exp <- all_widths[pos_first]
+
+  expect_equal(N50(width(many_seqs)), N50_exp)
 })
