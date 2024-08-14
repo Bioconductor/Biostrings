@@ -61,7 +61,7 @@ jobs:
             path = "./original-state",
             quiet = FALSE,
             clean = FALSE,
-            install_path = file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package"),
+            install_path = file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package/old-state"),
             function_exclusions = "^\\.",
             line_exclusions=list("R/AMINO_ACID_CODE.R", "R/GENETIC_CODE.R", "R/zzz.R", "R/IUPAC_CODE_MAP.R")
           )
@@ -71,8 +71,8 @@ jobs:
             path = "./new-state",
             quiet = FALSE,
             clean = FALSE,
-            install_path = file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package"),
-            function_exclusions = "^\\.",
+            install_path = file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package/new-state"),
+            function_exclusions = "^\\.", # excludes functions starting with .
             line_exclusions=list("R/AMINO_ACID_CODE.R", "R/GENETIC_CODE.R", "R/zzz.R", "R/IUPAC_CODE_MAP.R")
           )
           new_res <- covr::coverage_to_list(cov)
@@ -106,7 +106,7 @@ jobs:
           out_msg <- '# Testing Report\n\n'
           out_msg <- paste0(out_msg, "## Unit Tests:\n\n")
           out_msg <- paste0("```\n", test_report, '\n```\n\n')
-          out_msg <- paste0(out_msg, "## Negatively Impacted Files\n")
+          out_msg <- paste0(out_msg, "## Negatively Impacted Files\n\n")
           ## build warning message
           n <- names(file_changes)
           pos_neg <- which(file_changes < 0)
@@ -116,7 +116,7 @@ jobs:
             header <- "| File name | Coverage | Change |\n | :----- | :-----: | :-----: |\n"
             warn_tab <- paste0('| ', n[pos_neg], ' | ', final_cov[pos_neg], ' | ', unname(warn_changes[pos_neg]), ' |', collapse='\n')
             warn_tab <- paste0(header, warn_tab)
-            out_msg <- paste0(out_msg, "The following files have lost coverage:\n", out_msg, warn_tab, '\n')
+            out_msg <- paste0(out_msg, "The following files have lost coverage:\n", warn_tab, '\n')
           } else {
             out_msg <- paste0(out_msg, "No negatively impacted files. Nice job!\n\n")
           }
