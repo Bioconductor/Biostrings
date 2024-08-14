@@ -53,6 +53,9 @@ jobs:
 
       - name: Test coverage on base branch
         run: |
+          dirpath <- file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package")
+          dir.create(file.path(dirpath, "old-state"))
+          dir.create(file.path(dirpath, "new-state"))
           library(covr)
           # exclude lines with no content
           options(covr.exclude_pattern=c("^[ \t{}()]+$"))
@@ -61,7 +64,7 @@ jobs:
             path = "./original-state",
             quiet = FALSE,
             clean = FALSE,
-            install_path = file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package/old-state"),
+            install_path = file.path(dirpath, "old-state"),
             function_exclusions = "^\\.",
             line_exclusions=list("R/AMINO_ACID_CODE.R", "R/GENETIC_CODE.R", "R/zzz.R", "R/IUPAC_CODE_MAP.R")
           )
@@ -71,7 +74,7 @@ jobs:
             path = "./new-state",
             quiet = FALSE,
             clean = FALSE,
-            install_path = file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package/new-state"),
+            install_path = file.path(dirpath, "new-state"),
             function_exclusions = "^\\.", # excludes functions starting with .
             line_exclusions=list("R/AMINO_ACID_CODE.R", "R/GENETIC_CODE.R", "R/zzz.R", "R/IUPAC_CODE_MAP.R")
           )
