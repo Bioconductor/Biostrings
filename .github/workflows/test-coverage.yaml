@@ -155,7 +155,7 @@ jobs:
           row0 <- paste(ifelse(total_change < 0, "-", ifelse(total_change>0, "+", " ")),
                           sprintf(paste0("%", max_nchar, "s"), "Total Coverage"),
                           sprintf("%6.02f%%", new_res$totalcoverage),
-                          sprintf("%+7.01f%%", total_change), "\n", collapse=' ')
+                          sprintf("%+6.01f%%", total_change), collapse=' ')
 
           title1 <- "R/... Files"
           n_padding <- (w - nchar(title1) - 4) / 2
@@ -170,12 +170,12 @@ jobs:
           spacer <- paste(rep('=', w), collapse='')
           entries1 <- paste(all_rows[p_Rfiles], collapse='\n')
           entries2 <- paste(all_rows[!p_Rfiles], collapse='\n')
-          diff_table <- paste(title0, spacer, row0, spacer, '\n',
+          diff_table <- paste(title0, spacer, '\n', row0, '\n', spacer,
                               title1, spacer, entries1, spacer,
                               title2, spacer, entries2, spacer,
                               collapse='\n', sep='\n')
           diff_table <- paste0("<details>\n<summary>Additional details and impacted files</summary>\n\n",
-                                "```diff\n", diff_table, '```\n\n</details>')
+                                "```diff\n", diff_table, '\n\n```\n\n</details>')
           out_msg <- paste0(out_msg, diff_table, '\n')
           cat(out_msg, file='./test_status.txt')
         shell: Rscript {0}
