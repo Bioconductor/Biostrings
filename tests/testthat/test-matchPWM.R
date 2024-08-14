@@ -22,5 +22,3 @@ test_that("PWMs can be initialized", {
 	expect_true(maxScore(p) == 1)
 	expect_true(minScore(p) == 0)
 })
-
-all.equal(colSums(p),rep(sum(p[,1L]), ncol(p)))
