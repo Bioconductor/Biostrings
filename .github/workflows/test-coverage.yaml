@@ -53,7 +53,7 @@ jobs:
           #dir.create(file.path(dirpath, "new-state"))
           ## first check unit tests
           cat("Checking test results...\n")
-          res <- test_local("./new-state", stop_on_failure=FALSE, reporter="silent")
+          res <- testthat::test_local("./new-state", stop_on_failure=FALSE, reporter="silent")
           res <- as.data.frame(res)
           test_report <- c(sum(res$failed), sum(res$warning), sum(res$skipped), sum(res$passed))
           shouldStop <- test_report[1] > 0
