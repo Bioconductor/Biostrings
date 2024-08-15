@@ -49,11 +49,10 @@ jobs:
         run: |
           dirpath <- file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package")
           dir.create(dirpath)
-          #dir.create(file.path(dirpath, "old-state"))
-          #dir.create(file.path(dirpath, "new-state"))
+
           ## first check unit tests
           cat("Checking test results...\n")
-          res <- testthat::test_local("./new-state", stop_on_failure=FALSE, reporter="silent")
+          res <- testthat::test_local("./new-state", stop_on_failure=FALSE)
           res <- as.data.frame(res)
           test_report <- c(sum(res$failed), sum(res$warning), sum(res$skipped), sum(res$passed))
           shouldStop <- test_report[1] > 0
@@ -69,23 +68,27 @@ jobs:
                             "correctly cover intended use cases and potential errors ",
                             "is significantly more important than maximizing coverage.\n\n")
           out_msg <- paste0(out_msg, "```\n", test_report, '\n```\n\n')
+
+          ## if any tests failed or threw warnings, report them
           if(shouldPrint){
             p_toprint <- which(res$failed + res$warning > 0)
             ptp <- res[p_toprint,]
-            failed_tests <- ptp[,c("context", "test", "warning", "failed")]
+            failed_tests <- ptp[,c("file", "test", "warning", "failed")]
             failed_tests <- apply(failed_tests, 1L, paste, collapse=" | ")
-            failed_tests <- paste("|", failed_tests, "|")
+            failed_tests <- paste("|", failed_tests, "| ")
             failed_tests <- paste(failed_tests, collapse='\n')
-            md_tab <- paste0("| Test Suite | Test Name | Warnings :warning: | Failures :x: |\n",
-                            "| :-----: | :-----: | :-----: | :-----: |\n",
+            md_tab <- paste0("| Test File :page_facing_up: | Test Name :id: | Warnings :warning: | Failures :x: | \n",
+                            "| :-----: | :-----: | :-----: | :-----: | \n",
                             failed_tests, "\n\n")
-            out_msg <- paste0(out_msg, "Warning/Failing Tests:\n\n", md_tab)
+            cat(md_tab, '\n')
+            out_msg <- paste0(out_msg, "### Warning/Failing Tests:\n\n", md_tab)
           }
           if(shouldStop){
             cat(out_msg, file='./test_status.md')
             stop("Some tests failed! Skipping coverage report.")
           }
 
+          ## if no tests failed, check coverage of old vs. new
           library(covr)
           # exclude lines with no content
           options(covr.exclude_pattern=c("^[ \t{}()]+$"))
@@ -113,7 +116,7 @@ jobs:
           )
           new_res <- covr::coverage_to_list(cov)
 
-          ## compare difference
+          ## compare difference in coverage
           f_old <- head_res$filecoverage
           f_new <- new_res$filecoverage
           cat("Old Coverage:\n")
@@ -218,7 +221,7 @@ jobs:
           path: ${{ runner.temp }}/package
 
       - name: Upload status on success
-        if: success()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-test-results
