@@ -52,7 +52,7 @@ jobs:
 
           ## first check unit tests
           cat("Checking test results...\n")
-          res <- testthat::test_local("./new-state", stop_on_failure=FALSE)
+          res <- testthat::test_local("./new-state", stop_on_failure=FALSE, reporter="check")
           res <- as.data.frame(res)
           test_report <- c(sum(res$failed), sum(res$warning), sum(res$skipped), sum(res$passed))
           shouldStop <- test_report[1] > 0
@@ -80,7 +80,6 @@ jobs:
             md_tab <- paste0("| Test File :page_facing_up: | Test Name :id: | Warnings :warning: | Failures :x: | \n",
                             "| :-----: | :-----: | :-----: | :-----: | \n",
                             failed_tests, "\n\n")
-            cat(md_tab, '\n')
             out_msg <- paste0(out_msg, "### Warning/Failing Tests:\n\n", md_tab)
           }
           if(shouldStop){
