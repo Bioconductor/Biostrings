@@ -72,11 +72,11 @@ jobs:
           if(shouldPrint){
             p_toprint <- which(res$failed + res$warning > 0)
             ptp <- res[p_toprint,]
-            failed_tests <- ptp[,c("context", "test", "warning :warning:", "failed :x:")]
+            failed_tests <- ptp[,c("context", "test", "warning", "failed")]
             failed_tests <- apply(failed_tests, 1L, paste, sep=" | ")
             failed_tests <- paste("|", failed_tests, "|")
             failed_tests <- paste(failed_tests, sep='\n')
-            md_tab <- paste0("| Test Suite | Test Name | Warnings | Failures |\n",
+            md_tab <- paste0("| Test Suite | Test Name | Warnings :warning: | Failures :x: |\n",
                             "| :-----: | :-----: | :-----: | :-----: |\n",
                             failed_tests, "\n\n")
             out_msg <- paste0(out_msg, "Warning/Failing Tests:\n\n", md_tab)
