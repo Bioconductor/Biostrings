@@ -33,9 +33,6 @@ test_that("trimLRPatterns works correctly on supported input types", {
   expect_true(trimLRPatterns(Lpattern=L, Rpattern = R, subject = DStr) == DNAString(exp3))
   expect_true(all(trimLRPatterns(Lpattern=L, Rpattern = R, subject = DSet) == DNAStringSet(rep(exp3, 2L))))
 
-  ## example failing test to test workflo
-  expect_true(FALSE)
-
   ## Mismatches on the flanks
 
   ## Allow for mismatches on the flanks
