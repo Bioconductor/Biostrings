@@ -99,6 +99,7 @@ test_that("uniqueLetters works properly", {
 	check_uniqueLetters(RNAString, RNA_ALPHABET)
 	check_uniqueLetters(AAString, AA_ALPHABET)
 	check_uniqueLetters(BString, B_ALPHABET)
+	expect_equal(warning("warning!"), "warning!")
 
 	check_uniqueLetters(DNAStringSet, DNA_ALPHABET)
 	check_uniqueLetters(RNAStringSet, RNA_ALPHABET)

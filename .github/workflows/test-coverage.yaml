@@ -57,6 +57,7 @@ jobs:
           res <- as.data.frame(res)
           test_report <- c(sum(res$failed), sum(res$warning), sum(res$skipped), sum(res$passed))
           shouldStop <- test_report[1] > 0
+          shouldPrint <- sum(test_report[1:2]) > 0
           test_report <- paste(c("FAIL", "WARN", "SKIP", "PASS"), test_report, collapse=' | ')
           test_report <- paste('Unit Tests: [', test_report, ']')
 
@@ -68,6 +69,18 @@ jobs:
                             "correctly cover intended use cases and potential errors ",
                             "is significantly more important than maximizing coverage.\n\n")
           out_msg <- paste0(out_msg, "```\n", test_report, '\n```\n\n')
+          if(shouldPrint){
+            p_toprint <- which(res$failed + res$warning > 0)
+            ptp <- res[p_toprint,]
+            failed_tests <- ptp[,c("context", "test", "warning :warning:", "failed :x:")]
+            failed_tests <- apply(failed_tests, 1L, paste, sep=" | ")
+            failed_tests <- paste("|", failed_tests, "|")
+            failed_tests <- paste(failed_tests, sep='\n')
+            md_tab <- paste0("| Test Suite | Test Name | Warnings | Failures |\n",
+                            "| :-----: | :-----: | :-----: | :-----: |\n",
+                            failed_tests, "\n\n")
+            out_msg <- paste0(out_msg, "Warning/Failing Tests:\n\n", md_tab)
+          }
           if(shouldStop){
             cat(out_msg, file='./test_status.md')
             stop("Some tests failed! Skipping coverage report.")
