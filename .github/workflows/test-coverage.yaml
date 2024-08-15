@@ -73,7 +73,7 @@ jobs:
             p_toprint <- which(res$failed + res$warning > 0)
             ptp <- res[p_toprint,]
             failed_tests <- ptp[,c("context", "test", "warning", "failed")]
-            failed_tests <- apply(failed_tests, 1L, paste, collapse=" | ", )
+            failed_tests <- apply(failed_tests, 1L, paste, collapse=" | ")
             failed_tests <- paste("|", failed_tests, "|")
             failed_tests <- paste(failed_tests, collapse='\n')
             md_tab <- paste0("| Test Suite | Test Name | Warnings :warning: | Failures :x: |\n",
