@@ -13,7 +13,7 @@ setMethod("letter", "character",
     function(x, i)
     {
         if (!is.numeric(i) || anyNA(i))
-            stop("'i' must be an NA-free numeric vector")
+            stop("subscript 'i' must be an NA-free numeric vector")
         if (length(x) == 0)
             return(character(0))
         if (length(i) == 0)
