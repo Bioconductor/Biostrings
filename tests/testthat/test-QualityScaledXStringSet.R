@@ -48,8 +48,7 @@ test_that("QualityScaledXStringSet I/O works properly", {
 
 			if(stype == "DNA"){
 				## only readQualityScaledDNAStringSet is currently defined
-				expect_warning(qss2 <- readQualityScaledDNAStringSet(tf, quality.scoring=quality_type),
-					"metadata columns on input DNAStringSet object were dropped")
+				qss2 <- readQualityScaledDNAStringSet(tf, quality.scoring=quality_type)
 
 				expect_equal(as.character(qss), as.character(qss2))
 				expect_equal(as.character(quality(qss)), as.character(quality(qss2)))
