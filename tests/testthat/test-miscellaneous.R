@@ -40,3 +40,7 @@ test_that("longestConsecutive still functions", {
 	expect_error(longestConsecutive(v, NA), "'letter' must be a character variable")
 	expect_error(longestConsecutive(NA, "A"), "'x' must be a string")
 })
+
+test_that("matchprobes is deprecated", {
+	expect_warning(matchprobes("A","A"), "matchprobes() is deprecated.", fixed=TRUE)
+})

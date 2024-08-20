@@ -3,7 +3,22 @@
 ## - palindromeArmLength()
 ## - palindromeLeftArm()
 ## - palindromeRightArm()
+##
+## TODOs: missing MaskedXString, XStringViews tests
 
+
+## new tests
+test_that("palindromeLeftArm and *RightArm identify the right arms", {
+  text4 <- BString("i45hgfe7d321c3b4a56789uvwWVU98765A4B3C123D7EFGH54I")
+  current <- findPalindromes(text4, min.armlength = 5, max.looplength = length(text4), max.mismatch = 3)
+  leftarm <- palindromeLeftArm(current)
+  expect_equal(start(leftarm), start(current))
+  expect_equal(width(leftarm), c(5,1,1,3,1,0))
+
+  rightarm <- palindromeRightArm(current)
+  expect_equal(end(rightarm), end(current))
+  expect_equal(width(rightarm), width(leftarm))
+})
 
 ## For now I'm just going to port the old tests
 test_that("findPalindromes works on BString objects", {
