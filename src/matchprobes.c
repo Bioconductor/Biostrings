@@ -94,7 +94,7 @@ void strstr_with_pmormm(const char* x, const char* y, Match* rv) {
     rv->type = 2;
   }
 
-  Free(scratch);
+  R_Free(scratch);
   return;
 }
 
@@ -156,7 +156,7 @@ SEXP MP_matchprobes(SEXP query, SEXP records,
   PROTECT(rvmatch = allocVector(VECSXP, nrqu));
 
   /* allocate memory for the match buffer */
-  mbuf = Calloc(nrrec, MatchWithRec);
+  mbuf = R_Calloc(nrrec, MatchWithRec);
 
   /* loop over the query sequences in 'query' */
   for(k=0; k<nrqu; k++) {  
@@ -204,7 +204,7 @@ SEXP MP_matchprobes(SEXP query, SEXP records,
   }
   setAttrib(rv, R_NamesSymbol, rvnames);
 
-  Free(mbuf);
+  R_Free(mbuf);
   UNPROTECT(2+rvlen);
   return(rv);
 }
