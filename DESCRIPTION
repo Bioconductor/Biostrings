@@ -7,7 +7,7 @@ biocViews: SequenceMatching, Alignment, Sequencing, Genetics,
 	DataImport, DataRepresentation, Infrastructure
 URL: https://bioconductor.org/packages/Biostrings
 BugReports: https://github.com/Bioconductor/Biostrings/issues
-Version: 2.73.1
+Version: 2.73.2
 License: Artistic-2.0
 Encoding: UTF-8
 Authors@R: c(
