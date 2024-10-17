@@ -1,0 +1,227 @@
+# Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
+# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
+on:
+  pull_request:
+    branches: [main, master, devel, devel-staging]
+
+name: test-coverage-nocodecov
+
+permissions: read-all
+
+jobs:
+  test-coverage:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout current ref
+        uses: actions/checkout@v4
+        with:
+          path: ./new-state
+
+      - name: Checkout Biostrings devel ref
+        id: devel-checkout
+        uses: actions/checkout@v4
+        with:
+          repository: Bioconductor/Biostrings
+          path: ./original-state
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - name: setup dependencies for old state
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          working-directory: ./original-state
+          extra-packages: any::covr
+          needs: coverage
+
+      - name: setup dependencies for new state
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          working-directory: ./new-state
+          extra-packages: any::covr
+          needs: coverage
+
+      - name: Test coverage on base branch
+        run: |
+          dirpath <- file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package")
+          dir.create(dirpath)
+
+          ## first check unit tests
+          cat("Checking test results...\n")
+          res <- testthat::test_local("./new-state", stop_on_failure=FALSE, reporter="check")
+          res <- as.data.frame(res)
+          test_report <- c(sum(res$failed), sum(res$warning), sum(res$skipped), sum(res$passed))
+          shouldStop <- test_report[1] > 0
+          shouldPrint <- sum(test_report[1:2]) > 0
+          test_report <- paste(c("FAIL", "WARN", "SKIP", "PASS"), test_report, collapse=' | ')
+          test_report <- paste('Unit Tests: [', test_report, ']')
+
+          ## build the output message
+          out_msg <- '# Testing Report\n\n'
+          out_msg <- paste0(out_msg, "## Test Results:\n\n")
+          out_msg <- paste0(out_msg, "Please note that test coverage is **not** an ",
+                            "end-all-be-all measure of robustness. Having tests that ",
+                            "correctly cover intended use cases and potential errors ",
+                            "is significantly more important than maximizing coverage.\n\n")
+          out_msg <- paste0(out_msg, "```\n", test_report, '\n```\n\n')
+
+          ## if any tests failed or threw warnings, report them
+          if(shouldPrint){
+            p_toprint <- which(res$failed + res$warning > 0)
+            ptp <- res[p_toprint,]
+            failed_tests <- ptp[,c("file", "test", "warning", "failed")]
+            failed_tests <- apply(failed_tests, 1L, paste, collapse=" | ")
+            failed_tests <- paste("|", failed_tests, "| ")
+            failed_tests <- paste(failed_tests, collapse='\n')
+            md_tab <- paste0("| Test File :page_facing_up: | Test Name :id: | Warnings :warning: | Failures :x: | \n",
+                            "| :----- | :----- | :-----: | :-----: | \n",
+                            failed_tests, "\n\n")
+            out_msg <- paste0(out_msg, "### Warning/Failing Tests:\n\n", md_tab)
+          }
+          if(shouldStop){
+            cat(out_msg, file='./test_status.md')
+            stop("Some tests failed! Skipping coverage report.")
+          }
+
+          ## if no tests failed, check coverage of old vs. new
+          library(covr)
+          # exclude lines with no content
+          options(covr.exclude_pattern=c("^[ \t{}()]+$"))
+          # get results on old state
+          files_to_ignore <- list("R/AMINO_ACID_CODE.R", "R/GENETIC_CODE.R",
+                                  "R/zzz.R", "R/IUPAC_CODE_MAP.R",
+                                  "R/getSeq.R")
+          cov <- covr::package_coverage(
+            path = "./original-state",
+            quiet = FALSE,
+            clean = FALSE,
+            install_path = file.path(dirpath, "old-state"),
+            function_exclusions = "^\\.",
+            line_exclusions=files_to_ignore
+          )
+          head_res <- covr::coverage_to_list(cov)
+          # get results on new state
+          cov <- covr::package_coverage(
+            path = "./new-state",
+            quiet = FALSE,
+            clean = FALSE,
+            install_path = file.path(dirpath, "new-state"),
+            function_exclusions = "^\\.", # excludes functions starting with .
+            line_exclusions=files_to_ignore
+          )
+          new_res <- covr::coverage_to_list(cov)
+
+          ## compare difference in coverage
+          f_old <- head_res$filecoverage
+          f_new <- new_res$filecoverage
+          cat("Old Coverage:\n")
+          print(f_old)
+          cat("***************\n")
+          cat("New Coverage:\n")
+          print(f_new)
+          cat("***************\n")
+          all_files <- union(names(f_old), names(f_new))
+          file_changes <- rep(0, length(all_files))
+          names(file_changes) <- all_files
+          file_changes[names(f_new)] <- file_changes[names(f_new)] + f_new
+          final_cov <- file_changes
+          file_changes[names(f_old)] <- file_changes[names(f_old)] - f_old
+          total_change <- new_res$totalcoverage - head_res$totalcoverage
+
+          out_msg <- paste0(out_msg, "## Negatively Impacted Files\n\n")
+          ## build warning message
+          n <- names(file_changes)
+          pos_neg <- which(file_changes < 0)
+          if(length(pos_neg) > 0){
+            pos_neg <- pos_neg[order(file_changes[pos_neg], decreasing=FALSE)]
+            warn_changes <- sprintf("%+.01f%%", file_changes)
+            header <- "| File name | Coverage | Change |\n | :----- | :-----: | :-----: |\n"
+            warn_tab <- paste0('| ', n[pos_neg], ' | ', sprintf("%0.02f%%", final_cov[pos_neg]), ' | ',
+                                unname(warn_changes[pos_neg]), ' |', collapse='\n')
+            warn_tab <- paste0(header, warn_tab)
+            out_msg <- paste0(out_msg, "The following files have lost coverage:\n", warn_tab, '\n')
+          } else {
+            out_msg <- paste0(out_msg, "No negatively impacted files. Nice job!\n\n")
+          }
+
+          ## build extended diff table
+          p_Rfiles <- grepl("^R/", n)
+          n <- vapply(strsplit(n, '/'), .subset, character(1L), 2L)
+          all_diffs <- data.frame(filename=n,
+            coverage=sprintf("%.02f%%", final_cov),
+            change=sprintf("%+.01f%%", file_changes))
+          max_nchar <- max(nchar(all_diffs$filename))
+          all_diffs$filename <- sprintf(paste0("%", max_nchar, "s"), all_diffs$filename)
+          all_diffs$coverage <- sprintf("%7s", all_diffs$coverage)
+          all_diffs$change <- sprintf("%7s", all_diffs$change)
+          all_diffs$mark_char <- 1L
+          all_diffs$mark_char[file_changes > 0] <- 2L
+          all_diffs$mark_char[file_changes < 0] <- 3L
+          all_diffs$mark_char <- c(" ", "+", "-")[all_diffs$mark_char]
+
+          all_rows <- apply(all_diffs[c(4,1:3)], 1L, paste, collapse=' ')
+          w <- nchar(all_rows[1L])
+
+          title0 <- "Total Coverage"
+          n_padding <- (w - nchar(title0) - 4) / 2
+          title0 <- paste0("@@", paste(rep(' ', floor(n_padding)), collapse=''),
+            title0, paste(rep(' ', ceiling(n_padding)), collapse=''), "@@")
+          row0 <- paste(ifelse(total_change < 0, "-", ifelse(total_change>0, "+", " ")),
+                          sprintf(paste0("%", max_nchar, "s"), "Total Coverage"),
+                          sprintf("%6.02f%%", new_res$totalcoverage),
+                          sprintf("%+6.01f%%", total_change), collapse=' ')
+
+          title1 <- "R/... Files"
+          n_padding <- (w - nchar(title1) - 4) / 2
+          title1 <- paste0("@@", paste(rep(' ', floor(n_padding)), collapse=''),
+            title1, paste(rep(' ', ceiling(n_padding)), collapse=''), "@@")
+
+          title2 <- "src/... Files"
+          n_padding <- (w - nchar(title2) - 4) / 2
+          title2 <- paste0("@@", paste(rep(' ', floor(n_padding)), collapse=''),
+            title2, paste(rep(' ', ceiling(n_padding)), collapse=''), "@@")
+
+          spacer <- paste(rep('=', w), collapse='')
+          entries1 <- paste(all_rows[p_Rfiles], collapse='\n')
+          entries2 <- paste(all_rows[!p_Rfiles], collapse='\n')
+          diff_table <- paste(title0, spacer, '\n', row0, '\n', spacer,
+                              title1, spacer, entries1, spacer,
+                              title2, spacer, entries2, spacer,
+                              collapse='\n', sep='\n')
+          diff_table <- paste0("<details>\n<summary>Additional Details and Impacted Files:</summary>\n\n",
+                                "```diff\n", diff_table, '\n\n```\n\n</details>')
+          out_msg <- paste0(out_msg, diff_table, '\n')
+          cat(out_msg, file='./test_status.md')
+        shell: Rscript {0}
+
+      ## This is a better option than step summary, but requires
+      ## the "pull-request: write" permission, which I'd rather
+      ## not allow on a public repository
+      # - name: Print comment to PR
+      #   uses: thollander/actions-comment-pull-request@v2
+      #   with:
+      #     GITHUB_TOKEN: ${{ env.GITHUB_PAT }}
+      #     filePath: ./test_status.md
+      #     comment_tag: unit-test-results
+
+      - name: Print results to summary
+        if: always()
+        run: cat ./test_status.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload package on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-test-failures
+          path: ${{ runner.temp }}/package
+
+      - name: Upload status on success
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-test-results
+          path: ./test_status.md

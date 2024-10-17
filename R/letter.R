@@ -12,8 +12,8 @@ setGeneric("letter", signature="x",
 setMethod("letter", "character",
     function(x, i)
     {
-        if (!is.numeric(i) || any(is.na(i)))
-            stop("'i' must be an NA-free numeric vector")
+        if (!is.numeric(i) || anyNA(i))
+            stop("subscript 'i' must be an NA-free numeric vector")
         if (length(x) == 0)
             return(character(0))
         if (length(i) == 0)
@@ -42,10 +42,13 @@ setMethod("letter", "character",
 setMethod("letter", "XString",
     function(x, i)
     {
-        if (!is.numeric(i))
-            stop("subscript 'i' must be an integer vector")
+        if (!is.numeric(i) || anyNA(i))
+            stop("subscript 'i' must be an NA-free numeric vector")
         if (!is.integer(i))
             i <- as.integer(i)
+        imax <- length(x)
+        if (!all(i >= 1) || !all(i <= imax))
+            stop("subscript out of bounds")
         extract_character_from_XString_by_positions(x, i, collapse=TRUE)
     }
 )
@@ -54,12 +57,10 @@ setMethod("letter", "XString",
 setMethod("letter", "XStringViews",
     function(x, i)
     {
-        if (!is.numeric(i))
-            stop("subscript 'i' must be an integer vector")
+        if (!is.numeric(i) || anyNA(i))
+            stop("subscript 'i' must be an NA-free numeric vector")
         if (!is.integer(i))
             i <- as.integer(i)
-        if (anyNA(i))
-            stop("subscript 'i' cannot contain NAs")
         if (length(x) == 0)
             return(character(0))
         imax <- min(width(x))

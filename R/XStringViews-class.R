@@ -478,14 +478,14 @@ setMethod("as.matrix", "XStringViews",
     function(x, use.names=TRUE)
     {
         ## TODO: Supress this warning in BioC 2.12.
-        msg <- c("as.matrix() on an XStringViews object 'x' has changed ",
-                 "behavior: now the\n  views in 'x' must be of equal width ",
-                 "and each view is converted into a row of\n",
-                 "  single characters. To achieve the old behavior, ",
-                 "do 'as.matrix(ranges(x))'.\n  To supress this warning, do ",
-                 "'suppressWarnings(as.matrix(x))'.\n  This warning will be ",
-                 "removed in BioC 2.12.")
-        warning(msg)
+        # msg <- c("as.matrix() on an XStringViews object 'x' has changed ",
+        #          "behavior: now the\n  views in 'x' must be of equal width ",
+        #          "and each view is converted into a row of\n",
+        #          "  single characters. To achieve the old behavior, ",
+        #          "do 'as.matrix(ranges(x))'.\n  To supress this warning, do ",
+        #          "'suppressWarnings(as.matrix(x))'.\n  This warning will be ",
+        #          "removed in BioC 2.12.")
+        # warning(msg)
         y <- fromXStringViewsToStringSet(x, out.of.limits="error",
                                          use.names=use.names)
         as.matrix(y)

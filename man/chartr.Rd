@@ -46,7 +46,8 @@ replaceAmbiguities(x, new="N")
   specifications.
 
   \code{replaceAmbiguities()} is a simple wrapper around \code{chartr()}
-  that replaces all IUPAC ambiguities with N.
+  that replaces all IUPAC ambiguities with N for objects containing DNA
+  or RNA sequence data.
 }
 
 \value{

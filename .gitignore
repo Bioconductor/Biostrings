@@ -1,0 +1,13 @@
+*.o
+src/*.o
+src/*.so
+*.icloud
+.Rproj*
+.DS_Store
+*/.DS_Store
+.RData
+.Rbuildignore
+.Rhistory
+*/*.gcov
+*/*.gcda
+*/*.gcno
