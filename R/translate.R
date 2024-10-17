@@ -13,8 +13,9 @@
     if (!all(nchar(genetic.code) == 1L))
         stop("'genetic.code' must contain 1-letter strings")
     ## Just a warning for now. Might become an error in the future.
+    ## 07/26/2024: updated to error since AAString() enforces alphabet
     if (!all(genetic.code %in% AA_ALPHABET))
-        warning("some codons in 'genetic.code' are mapped to letters ",
+        stop("some codons in 'genetic.code' are mapped to letters ",
                 "not in the Amino Acid\n  alphabet (AA_ALPHABET)")
     alt_init_codons <- attr(genetic.code, "alt_init_codons", exact=TRUE)
     if (is.null(alt_init_codons)

@@ -53,6 +53,8 @@ setMethod("maskMotif", signature(x="XString", motif="ANY"),
 ### Deprecate in Biostrings 2.9!
 mask <- function(x, start=NA, end=NA, pattern)
 {
+    warning("`mask()` is deprecated and will be removed in a future release.\n",
+              "Please use `Mask()` or `maskMotif()` instead.")
     if (!is(x, "XString"))
         x <- XString(NULL, x)
     if (missing(pattern)) {
