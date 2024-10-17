@@ -794,9 +794,18 @@ setMethod("consensusMatrix", "XStringSet",
         } else {
             removeUnused <- FALSE
         }
-        ans <- .Call2("XStringSet_consensus_matrix",
-                     x, shift, width, baseOnly, codes,
-                     PACKAGE="Biostrings")
+        if (length(x) == 0L) {
+            ans <- matrix(ifelse(as.prob, 0, 0L),
+                          nrow=0,
+                          ncol=ifelse(removeUnused, 0, length(codes)))
+            if (!removeUnused) {
+                colnames(ans) <- names(codes)
+            }
+        } else {
+            ans <- .Call2("XStringSet_consensus_matrix",
+                         x, shift, width, baseOnly, codes,
+                         PACKAGE="Biostrings")
+        }
         if (removeUnused) {
             ans <- ans[rowSums(ans) > 0, , drop=FALSE]
         }
