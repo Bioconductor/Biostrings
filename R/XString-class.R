@@ -139,6 +139,52 @@ setMethod("extract_character_from_XString_by_ranges", "XString",
     }
 )
 
+### BString methods to support 0:255 input
+
+## BSTRING_RAW_LOOKUP is initialized in `zzz.R`
+## this value is just a backup on the offchance `zzz.R:.onLoad` fails
+BSTRING_RAW_LOOKUP <- rawToChar(as.raw(0:255), multiple=TRUE)
+setMethod("extract_character_from_XString_by_ranges", "BString",
+    function(x, start, width, collapse=FALSE)
+    {
+        SHOW_RAW <- getOption("Biostrings.showRaw")
+        if(!SHOW_RAW) callNextMethod()
+        lkup <- xs_dec_lkup(x)
+
+        ## need to remap null bytes, they have to be in 0:255
+        ## so we have to overload some value
+        if(is.null(lkup)) lkup <- c(255L,1:255)
+        xs <- XVector:::extract_character_from_XRaw_by_ranges(x, start, width,
+                                                        collapse=collapse,
+                                                        lkup=lkup)
+        ## replace all undisplayable characters
+        for(i in seq_along(xs))
+            xs[i] <- paste(BSTRING_RAW_LOOKUP[as.integer(charToRaw(xs[i]))+1L],
+                            collapse='')
+        xs
+    }
+)
+
+setMethod("extract_character_from_XString_by_positions", "BString",
+    function(x, pos, collapse=FALSE)
+    {
+        SHOW_RAW <- getOption("Biostrings.showRaw")
+        if(!SHOW_RAW) callNextMethod()
+        lkup <- xs_dec_lkup(x)
+
+        ## need to remap null bytes, they have to be in 0:255
+        ## so we have to overload some value
+        if(is.null(lkup)) lkup <- c(255L,1:255)
+        xs <- XVector:::extract_character_from_XRaw_by_positions(x, pos,
+                                                        collapse=collapse,
+                                                        lkup=lkup)
+        ## replace all undisplayable characters
+        for(i in seq_along(xs))
+            xs[i] <- paste(BSTRING_RAW_LOOKUP[as.integer(charToRaw(xs[i]))+1L],
+                            collapse='')
+        xs
+    }
+)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### make_XString_from_string()
