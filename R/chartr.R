@@ -49,6 +49,9 @@ setMethod("chartr", c(old="ANY", new="ANY", x="MaskedXString"),
 ### A simple wrapper to chartr().
 replaceAmbiguities <- function(x, new="N")
 {
+    if(!(inherits(x, c("XString", "XStringSet", "XStringViews"))) ||
+       !(seqtype(x) %in% c("DNA", "RNA")))
+      stop("replaceAmbiguities is only supported for DNA and RNA")
     if (!(isSingleString(new) && nchar(new) == 1L))
         stop("'new' must be a single letter")
     old <- paste(setdiff(names(IUPAC_CODE_MAP), DNA_BASES), collapse="")
