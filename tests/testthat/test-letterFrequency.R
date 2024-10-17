@@ -263,3 +263,37 @@ test_that("nucleotideFrequency methods work properly", {
 	expect_error(oligonucleotideFrequency(AAString(), "must contain sequences of type DNA or RNA"))
 	expect_error(oligonucleotideFrequency(BStringSet(), "must contain sequences of type DNA or RNA"))
 })
+
+test_that("zero-length input doesn't cause errors in consensusMatrix, consensusString", {
+	## verify previous functionality
+	exp_output <- matrix(0L, nrow=5, ncol=4)
+	diag(exp_output) <- 1L
+	rownames(exp_output) <- c(DNA_BASES, "other")
+	expect_identical(consensusMatrix(DNAStringSet("ACGT"), baseOnly=TRUE), exp_output)
+	expect_identical(consensusString(DNAStringSet(c("ATGC", "ATTC"))), "ATKC")
+
+	## DNA_ALPHABET is a subset of AA_ALPHABET
+	all_letters <- do.call(union, list(AA_ALPHABET, RNA_ALPHABET))
+	exp_zero_output <- matrix(nrow=0, ncol=length(all_letters))
+	colnames(exp_zero_output) <- all_letters
+
+	## having issues testing for matrix equality manually
+	expect_equal_matrix <- function(m1, m2){
+		expect_identical(nrow(m1), nrow(m2))
+		expect_identical(colnames(m1), colnames(m2))
+	}
+	expect_equal_matrix(consensusMatrix(DNAStringSet()), exp_zero_output[,DNA_ALPHABET])
+	expect_equal_matrix(consensusMatrix(RNAStringSet()), exp_zero_output[,RNA_ALPHABET])
+	expect_equal_matrix(consensusMatrix( AAStringSet()), exp_zero_output[, AA_ALPHABET])
+	expect_equal_matrix(consensusMatrix(  BStringSet()), exp_zero_output[,NULL])
+
+	## zero length input for consensusString
+	expect_identical(consensusString(DNAStringSet()), character(0L))
+	expect_identical(consensusString(RNAStringSet()), character(0L))
+	expect_identical(consensusString(AAStringSet()), character(0L))
+	expect_identical(consensusString(BStringSet()), character(0L))
+	expect_identical(consensusString(character(0L)), character(0L))
+
+	expect_true(is.integer(consensusMatrix(DNAStringSet(), as.prob=FALSE)))
+	expect_false(is.integer(consensusMatrix(DNAStringSet(), as.prob=TRUE)))
+})
