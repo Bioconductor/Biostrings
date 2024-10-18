@@ -152,20 +152,16 @@ test_that("XStringSet read/write is correct", {
 
     names(x1) <- names_dna
     writeXStringSet(x1, format="fastq", file=tmpfilefq)
-    expect_warning(qdna2 <- readQualityScaledDNAStringSet(tmpfilefq),
-        "metadata columns on input DNAStringSet object were dropped")
-
+    qdna2 <- readQualityScaledDNAStringSet(tmpfilefq)
     expect_true(!all(quality(qdna2) == quality(qdna1)))
     expect_true(all(all(as(quality(qdna2),"IntegerList") == 26L)))
 
     writeXStringSet(x1, format="fastq", file=tmpfilefq, qualities = q1)
-    expect_warning(qdna2 <- readQualityScaledDNAStringSet(tmpfilefq),
-        "metadata columns on input DNAStringSet object were dropped")
+    qdna2 <- readQualityScaledDNAStringSet(tmpfilefq)
     expect_true(all(quality(qdna2) == quality(qdna1)))
 
     writeXStringSet(qdna1, format="fastq", file=tmpfilefq)
-    expect_warning(qdna2 <- readQualityScaledDNAStringSet(tmpfilefq),
-        "metadata columns on input DNAStringSet object were dropped")
+    qdna2 <- readQualityScaledDNAStringSet(tmpfilefq)
     expect_true(all(names(qdna2) == names_dna))
     expect_true(all(quality(qdna2) == quality(qdna1)))
 
