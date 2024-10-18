@@ -186,6 +186,13 @@ readQualityScaledDNAStringSet <- function(filepath,
                           nrec, skip, seek.first.rec,
                           use.names, with.qualities=TRUE)
     qualities <- mcols(x)[ , "qualities"]
+    ## Clear out the qualities parameter from the DNAStringSet,
+    ## since it gets passed into the QualityScaledDNAStringSet
+    ## constructor via quals anyway
+    ## (otherwise we get a warning that doesn't make sense)
+    mcols(x)[,"qualities"] <- NULL
+    if(ncol(mcols(x)) == 0)
+        mcols(x) <- NULL
     quals <- switch(quality.scoring,
                     phred=PhredQuality(qualities),
                     solexa=SolexaQuality(qualities),
@@ -201,4 +208,3 @@ writeQualityScaledXStringSet <- function(x, filepath,
     writeXStringSet(x, filepath, append, compress, compression_level,
                        format="fastq", qualities=quality(x))
 }
-

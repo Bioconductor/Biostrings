@@ -63,7 +63,7 @@ make_DNA_AND_RNA_COLORED_LETTERS <- function()
 ### Colors groupins by
 ###   https://www.jalview.org/help/html/colourSchemes/zappo.html
 ### Called in .onLoad() to initialize AA_COLORED_LETTERS.
-make_AA_COLORED_LETTERS <- function(x){
+make_AA_COLORED_LETTERS <- function(){
     whiter <- make_style(rgb(1, 1, 1))
     dark_grey_bg <- make_style(rgb(0.5,0.5,0.5), bg=TRUE)
 

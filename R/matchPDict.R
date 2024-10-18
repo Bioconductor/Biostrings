@@ -647,7 +647,7 @@ setMethod("matchPDict", "XStringViews",
 
 ### Dispatch on 'subject' (see signature of generic).
 setMethod("matchPDict", "MaskedXString",
-    function(pdict, subject, 
+    function(pdict, subject,
              max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
         matchPDict(pdict, toXStringViewsOrXString(subject),

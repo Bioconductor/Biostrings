@@ -113,12 +113,12 @@ g.test <- function(x, y = NULL, correct="none",
   else {
     # x is not a matrix, so we do Goodness of Fit
     METHOD <- "Log likelihood ratio (G-test) goodness of fit test"
-    if (length(x) == 1) 
+    if (length(x) == 1)
       stop("x must at least have 2 elements")
-    if (length(x) != length(p)) 
+    if (length(x) != length(p))
       stop("x and p must have the same number of elements")
     E <- n * p
-    
+
     if (correct=="yates"){ # Do Yates' correction
       if(length(x)!=2)
         stop("Yates' correction requires 2 data values")

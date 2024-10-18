@@ -60,10 +60,7 @@
   for storing a list of \link{BStringSet}, \link{DNAStringSet},
   \link{RNAStringSet} and \link{AAStringSet} objects, respectively.
   These four containers are direct subclasses of XStringSetList
-  with no additional slots.
-
-  Currently \code{DNAStringSetList()} and \code{AAStringSetList()} are
-  the only XStringSetList constructors. The XStringSetList class itself 
+  with no additional slots. The XStringSetList class itself
   is virtual and has no constructor.
 }
 
@@ -77,7 +74,7 @@ AAStringSetList(..., use.names=TRUE)
 
 \arguments{
   \item{\dots}{
-    Character vector(s) (with no NAs), or \link{XStringSet} object(s), or 
+    Character vector(s) (with no NAs), or \link{XStringSet} object(s), or
     \link{XStringViews} object(s) to be concatenated into a
     \link{XStringSetList}.
   }
@@ -110,8 +107,6 @@ AAStringSetList(..., use.names=TRUE)
 ## ------------------------------------------------------------------------
 ## A. THE XStringSetList CONSTRUCTORS
 ## ------------------------------------------------------------------------
-## Currently DNAStringSetList() and AAStringSetList() are the only 
-## constructors. Others will be developed when the use case arises.
 
 dna1 <- c("AAA", "AC", "", "T", "GGATA")
 dna2 <- c("G", "TT", "C")
