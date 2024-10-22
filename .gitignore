@@ -1,6 +1,3 @@
-*.o
-src/*.o
-src/*.so
 *.icloud
 .Rproj*
 .DS_Store

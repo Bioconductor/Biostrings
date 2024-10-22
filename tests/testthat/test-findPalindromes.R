@@ -8,9 +8,11 @@
 
 
 ## new tests
-test_that("palindromeLeftArm and *RightArm identify the right arms", {
+test_that("palindromeLeftArm() and *RightArm() identify the right arms", {
   text4 <- BString("i45hgfe7d321c3b4a56789uvwWVU98765A4B3C123D7EFGH54I")
-  current <- findPalindromes(text4, min.armlength = 5, max.looplength = length(text4), max.mismatch = 3)
+  current <- findPalindromes(text4, min.armlength=5,
+                                    max.looplength=length(text4),
+                                    max.mismatch=3)
   leftarm <- palindromeLeftArm(current)
   expect_equal(start(leftarm), start(current))
   expect_equal(width(leftarm), c(5,1,1,3,1,0))
@@ -21,7 +23,7 @@ test_that("palindromeLeftArm and *RightArm identify the right arms", {
 })
 
 ## For now I'm just going to port the old tests
-test_that("findPalindromes works on BString objects", {
+test_that("findPalindromes() works on BString objects", {
     text1 <- BString("ABCDCBA")
     current <- findPalindromes(text1, min.armlength=2)
     expect_identical(IRanges(1, 7), ranges(current))
@@ -38,11 +40,14 @@ test_that("findPalindromes works on BString objects", {
     expect_identical(IRanges(c(1, 3, 16), c(5, 15, 19)), ranges(current))
 
     text4 <- BString("i45hgfe7d321c3b4a56789uvwWVU98765A4B3C123D7EFGH54I")
-    current <- findPalindromes(text4, min.armlength = 5, max.looplength = length(text4), max.mismatch = 3)
-    expect_identical(IRanges(c(18, 16, 14, 10, 8, 7), c(33, 35, 37, 41, 43, 44)), ranges(current))
+    current <- findPalindromes(text4, min.armlength=5,
+                                      max.looplength=length(text4),
+                                      max.mismatch=3)
+    expected <- IRanges(c(18, 16, 14, 10, 8, 7), c(33, 35, 37, 41, 43, 44))
+    expect_identical(ranges(current), expected)
 })
 
-test_that("findPalindromes works on nucleotide sequences", {
+test_that("findPalindromes() works on nucleotide sequences", {
   x1 <- DNAString("AATAAACTNTCAAATYCCY")  # same sequence as 'text3'
   for (class in c("DNAString", "RNAString")) {
       x <- as(x1, class)
@@ -139,7 +144,7 @@ test_that("findPalindromes works on nucleotide sequences", {
   }
 })
 
-test_that("palindromeArmLength functions correctly for nucleotide sequences", {
+test_that("palindromeArmLength() works for nucleotide sequences", {
     x2 <- DNAString("AATTT")
     for (class in c("DNAString", "RNAString")) {
         x <- as(x2, class)
@@ -173,3 +178,4 @@ test_that("palindromeArmLength functions correctly for nucleotide sequences", {
                        palindromeArmLength(pals))
     }
 })
+

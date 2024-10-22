@@ -139,7 +139,7 @@ setMethod("show", "ACtree2",
     function(object)
     {
         .PreprocessedTB.showFirstLine(object)
-	invisible(.Call2("ACtree2_summary", object, PACKAGE="Biostrings"))
+        invisible(.Call2("ACtree2_summary", object, PACKAGE="Biostrings"))
     }
 )
 

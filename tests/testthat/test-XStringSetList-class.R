@@ -5,7 +5,7 @@
 ## TODO: Maybe "all.equal" should be made an S4 generic with S4/S3 method
 ## combos for XVector and XVectorList object?
 
-B_ALPHABET <- strsplit(rawToChar(as.raw(32:126)), '')[[1]]
+B_ALPHABET <- safeExplode(rawToChar(as.raw(32:126)))
 
 ## Unclass the XStringSet object by setting its "pool" and "ranges" slots
 ## to NULL first.
@@ -73,7 +73,9 @@ all.equal.XStringSetList <- function(target, current, ...)
     ans
 }
 
-.XStringSetList_constructor <- function(XStringSetFUN, XStringSetListFUN, XS_ALPHABET){
+.XStringSetList_constructor <-
+    function(XStringSetFUN, XStringSetListFUN, XS_ALPHABET)
+{
     xs1 <- XStringSetFUN(XS_ALPHABET[1:8])
     xs2 <- XStringSetFUN(XS_ALPHABET[9:17])
 
@@ -85,13 +87,17 @@ all.equal.XStringSetList <- function(target, current, ...)
     expect_equal(length(XStringSetListFUN()), 0L)
 }
 
-.XStringSetList_unlist <- function(XStringSetFUN, XStringSetListFUN, XS_ALPHABET){
+.XStringSetList_unlist <-
+    function(XStringSetFUN, XStringSetListFUN, XS_ALPHABET)
+{
     lst <- XStringSetListFUN(XS_ALPHABET, XS_ALPHABET)
     expected <- XStringSetFUN(c(XS_ALPHABET, XS_ALPHABET))
     expect_true(all.equal.XStringSet(unlist(lst), expected))
 }
 
-.XStringSetList_append <- function(XStringSetFUN, XStringSetListFUN, XS_ALPHABET){
+.XStringSetList_append <-
+    function(XStringSetFUN, XStringSetListFUN, XS_ALPHABET)
+{
     xs <- XStringSetFUN(XS_ALPHABET)
     lst <- XStringSetListFUN(XS_ALPHABET, XS_ALPHABET)
     elementMetadata(lst) <- DataFrame(C1=c("list1", "list2"))
@@ -103,56 +109,61 @@ all.equal.XStringSetList <- function(target, current, ...)
     expect_true(all.equal.XStringSetList(xs2a, xs2c))
 }
 
-.XStringSetList_subset <- function(XStringSetFUN, XStringSetListFUN, XS_ALPHABET){
-    lst1 <- XStringSetListFUN(XS_ALPHABET[-1], XS_ALPHABET[-2], XS_ALPHABET[-3], XS_ALPHABET[-4])
-    lst2 <- XStringSetListFUN(XS_ALPHABET[-2], XS_ALPHABET[-1], XS_ALPHABET[-4])
+.XStringSetList_subset <-
+    function(XStringSetFUN, XStringSetListFUN, XS_ALPHABET)
+{
+    lst1 <- XStringSetListFUN(XS_ALPHABET[-1], XS_ALPHABET[-2],
+                              XS_ALPHABET[-3], XS_ALPHABET[-4])
+    lst2 <- XStringSetListFUN(XS_ALPHABET[-2], XS_ALPHABET[-1],
+                              XS_ALPHABET[-4])
 
     expect_true(all.equal.XStringSetList(lst1[1:2], lst2[2:1]))
     expect_true(all.equal.XStringSetList(lst1[-c(2:3)], lst2[-1]))
 }
 
-.XStringSetList_from_list <- function(XStringSetFUN, XStringSetListFUN, XS_ALPHABET){
+.XStringSetList_from_list <-
+    function(XStringSetFUN, XStringSetListFUN, XS_ALPHABET)
+{
     lst1 <- list(XStringSetFUN(XS_ALPHABET), XStringSetFUN(XS_ALPHABET))
     lst2 <- XStringSetListFUN(XS_ALPHABET, XS_ALPHABET)
 
     expect_true(all.equal.XStringSetList(XStringSetListFUN(lst1), lst2))
 }
 
-## DNAStringSet
-test_that("XStringSetList constructor works correctly", {
+test_that("*StringSetList() constructors work correctly", {
     .XStringSetList_constructor(DNAStringSet, DNAStringSetList, DNA_ALPHABET)
     .XStringSetList_constructor(RNAStringSet, RNAStringSetList, RNA_ALPHABET)
     .XStringSetList_constructor(AAStringSet, AAStringSetList, AA_ALPHABET)
     .XStringSetList_constructor(BStringSet, BStringSetList, B_ALPHABET)
 })
 
-test_that("XStringSetList unlist works correctly", {
+test_that("unlist() works correctly on XStringSetList derivatives", {
     .XStringSetList_unlist(DNAStringSet, DNAStringSetList, DNA_ALPHABET)
     .XStringSetList_unlist(RNAStringSet, RNAStringSetList, RNA_ALPHABET)
     .XStringSetList_unlist(AAStringSet, AAStringSetList, AA_ALPHABET)
     .XStringSetList_unlist(BStringSet, BStringSetList, B_ALPHABET)
 })
 
-test_that("XStringSetList append works correctly", {
+test_that("append() works correctly on XStringSetList derivatives", {
     .XStringSetList_append(DNAStringSet, DNAStringSetList, DNA_ALPHABET)
     .XStringSetList_append(RNAStringSet, RNAStringSetList, RNA_ALPHABET)
     .XStringSetList_append(AAStringSet, AAStringSetList, AA_ALPHABET)
     .XStringSetList_append(BStringSet, BStringSetList, B_ALPHABET)
 })
 
-test_that("XStringSetList subset works correctly", {
+test_that("subset() works correctly on XStringSetList derivatives", {
     .XStringSetList_subset(DNAStringSet, DNAStringSetList, DNA_ALPHABET)
     .XStringSetList_subset(RNAStringSet, RNAStringSetList, RNA_ALPHABET)
     .XStringSetList_subset(AAStringSet, AAStringSetList, AA_ALPHABET)
     .XStringSetList_subset(BStringSet, BStringSetList, B_ALPHABET)
 })
 
-test_that("XStringSetList showAsCell works correctly", {
+test_that("showAsCell() works correctly on XStringSetList derivatives", {
     expect_equal(showAsCell(DNAStringSetList()), character(0L))
     expect_equal(showAsCell(DNAStringSetList(DNA_ALPHABET)), "A,C,G,...")
 })
 
-test_that("XStringSetList seqtype is correct", {
+test_that("seqtype() works correctly on XStringSetList derivatives", {
     expect_equal(seqtype(DNAStringSetList()), "DNA")
     expect_equal(seqtype(RNAStringSetList()), "RNA")
     expect_equal(seqtype(AAStringSetList()), "AA")
@@ -171,28 +182,35 @@ test_that("XStringSetList seqtype is correct", {
 
     # invalid conversions
     x <- DNAStringSetList(DNA_ALPHABET)
-    expect_error({seqtype(x) <- "AA"}, 'incompatible sequence types "DNA" and "AA"')
+    expect_error({seqtype(x) <- "AA"},
+        "incompatible sequence types \"DNA\" and \"AA\"")
     seqtype(x) <- "RNA"
-    expect_error({seqtype(x) <- "AA"}, 'incompatible sequence types "RNA" and "AA"')
+    expect_error({seqtype(x) <- "AA"},
+        "incompatible sequence types \"RNA\" and \"AA\"")
 })
 
-test_that("XStringSetLists show correctly", {
+test_that("show() works correctly on XStringSetList derivatives", {
     ## TODO: add some values in case printing only breaks on output
-    expect_output(show(DNAStringSetList(DNA_ALPHABET)), "DNAStringSetList of length 1\\n\\[\\[1\\]\\]")
-    expect_output(show(RNAStringSetList(RNA_ALPHABET)), "RNAStringSetList of length 1\\n\\[\\[1\\]\\]")
-    expect_output(show(AAStringSetList(AA_ALPHABET)), "AAStringSetList of length 1\\n\\[\\[1\\]\\]")
-    expect_output(show(BStringSetList(B_ALPHABET)), "BStringSetList of length 1\\n\\[\\[1\\]\\]")
+    expect_output(show(DNAStringSetList(DNA_ALPHABET)),
+                  "DNAStringSetList of length 1\\n\\[\\[1\\]\\]")
+    expect_output(show(RNAStringSetList(RNA_ALPHABET)),
+                  "RNAStringSetList of length 1\\n\\[\\[1\\]\\]")
+    expect_output(show(AAStringSetList(AA_ALPHABET)),
+                  "AAStringSetList of length 1\\n\\[\\[1\\]\\]")
+    expect_output(show(BStringSetList(B_ALPHABET)),
+                  "BStringSetList of length 1\\n\\[\\[1\\]\\]")
 })
 
-test_that("XStringSetLists coerce from list correctly", {
+test_that("coercion from list to XStringSetList derivative works", {
     .XStringSetList_from_list(DNAStringSet, DNAStringSetList, DNA_ALPHABET)
     .XStringSetList_from_list(RNAStringSet, RNAStringSetList, RNA_ALPHABET)
     .XStringSetList_from_list(AAStringSet, AAStringSetList, AA_ALPHABET)
     .XStringSetList_from_list(BStringSet, BStringSetList, B_ALPHABET)
 })
 
-test_that("XStringSetList uses nchar correctly", {
+test_that("nchar() works correctly on XStringSetList derivatives", {
     dna <- DNAStringSetList(DNA_ALPHABET)
     expect_s4_class(nchar(dna), "IntegerList")
     expect_equal(unlist(nchar(dna)), rep(1L, length(DNA_ALPHABET)))
 })
+

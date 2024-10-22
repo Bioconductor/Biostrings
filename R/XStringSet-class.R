@@ -360,7 +360,7 @@ setMethod("XStringSet", "AsIs",
         if (!is.character(x))
             stop("unsupported input type")
         class(x) <- "character" # keeps the names (unlike as.character())
-	.charToXStringSet(seqtype, x, start, end, width, use.names)
+        .charToXStringSet(seqtype, x, start, end, width, use.names)
     }
 )
 

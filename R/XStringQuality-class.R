@@ -121,9 +121,9 @@ function(from, qualityClass)
        qualityClass)
 
 .XStringQualityToInteger <- function(from, qualityClass)
-	qualityConverter(BStringSet(from), qualityClass, "integer")
+    qualityConverter(BStringSet(from), qualityClass, "integer")
 .XStringQualityToNumeric <- function(from, qualityClass)
-	qualityConverter(BStringSet(from), qualityClass, "numeric")
+    qualityConverter(BStringSet(from), qualityClass, "numeric")
 
 .XStringQualityToIntegerMatrix <- function(x)
 {
@@ -183,7 +183,7 @@ setAs("NumericList", "IlluminaQuality",
 setMethod("as.vector", "XStringQuality",
     function(x, mode="any")
     {
-        if (!isSingleString(mode)) 
+        if (!isSingleString(mode))
             stop("'mode' must be a single string")
         if (mode %in% "integer")  # return the quality scores
             return(.XStringQualityToInteger(x, class(x)))
@@ -237,7 +237,7 @@ IlluminaQuality <- function(x) as(x, "IlluminaQuality")
 ###
 
 setMethod("alphabet", "XStringQuality",
-    function(x) 
+    function(x)
 {
     alf <- strsplit(rawToChar(as.raw(33:126)), "")[[1]]
     len <- maxQuality(x) - minQuality(x) + 1L
@@ -247,7 +247,7 @@ setMethod("alphabet", "XStringQuality",
 setGeneric("encoding", function(x) standardGeneric("encoding"))
 
 setMethod("encoding", "XStringQuality",
-    function(x) 
+    function(x)
 {
     alf <- alphabet(x)
     setNames(seq(minQuality(x), length.out=length(alf)), alf)
