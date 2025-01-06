@@ -152,22 +152,24 @@ setMethod("extract_character_from_XString_by_ranges", "BString",
             SHOW_RAW <- FALSE
             options(Biostrings.showRaw=FALSE)
         }
-        if(!SHOW_RAW) callNextMethod()
+        if(!SHOW_RAW){
+            callNextMethod()
+        } else {
+            bstring_lookup <- get("BSTRING_RAW_LOOKUP", envir=.pkgenv)
+            lkup <- xs_dec_lkup(x)
 
-        bstring_lookup <- get("BSTRING_RAW_LOOKUP", envir=.pkgenv)
-        lkup <- xs_dec_lkup(x)
-
-        ## need to remap null bytes, they have to be in 0:255
-        ## so we have to overload some value
-        if(is.null(lkup)) lkup <- c(255L,1:255)
-        xs <- XVector:::extract_character_from_XRaw_by_ranges(x, start, width,
-                                                        collapse=collapse,
-                                                        lkup=lkup)
-        ## replace all undisplayable characters
-        for(i in seq_along(xs))
-            xs[i] <- paste(bstring_lookup[as.integer(charToRaw(xs[i]))+1L],
-                            collapse='')
-        xs
+            ## need to remap null bytes, they have to be in 0:255
+            ## so we have to overload some value
+            if(is.null(lkup)) lkup <- c(255L,1:255)
+            xs <- XVector:::extract_character_from_XRaw_by_ranges(x, start, width,
+                                                            collapse=collapse,
+                                                            lkup=lkup)
+            ## replace all undisplayable characters
+            for(i in seq_along(xs))
+                xs[i] <- paste(bstring_lookup[as.integer(charToRaw(xs[i]))+1L],
+                                collapse='')
+            xs
+        }
     }
 )
 
@@ -181,21 +183,24 @@ setMethod("extract_character_from_XString_by_positions", "BString",
             SHOW_RAW <- FALSE
             options(Biostrings.showRaw=FALSE)
         }
-        if(!SHOW_RAW) callNextMethod()
-        lkup <- xs_dec_lkup(x)
-        bstring_lookup <- get("BSTRING_RAW_LOOKUP", envir=.pkgenv)
+        if(!SHOW_RAW){
+            callNextMethod()
+        } else {
+            lkup <- xs_dec_lkup(x)
+            bstring_lookup <- get("BSTRING_RAW_LOOKUP", envir=.pkgenv)
 
-        ## need to remap null bytes, they have to be in 0:255
-        ## so we have to overload some value
-        if(is.null(lkup)) lkup <- c(255L,1:255)
-        xs <- XVector:::extract_character_from_XRaw_by_positions(x, pos,
-                                                        collapse=collapse,
-                                                        lkup=lkup)
-        ## replace all undisplayable characters
-        for(i in seq_along(xs))
-            xs[i] <- paste(bstring_lookup[as.integer(charToRaw(xs[i]))+1L],
-                            collapse='')
-        xs
+            ## need to remap null bytes, they have to be in 0:255
+            ## so we have to overload some value
+            if(is.null(lkup)) lkup <- c(255L,1:255)
+            xs <- XVector:::extract_character_from_XRaw_by_positions(x, pos,
+                                                            collapse=collapse,
+                                                            lkup=lkup)
+            ## replace all undisplayable characters
+            for(i in seq_along(xs))
+                xs[i] <- paste(bstring_lookup[as.integer(charToRaw(xs[i]))+1L],
+                                collapse='')
+            xs
+        }
     }
 )
 
