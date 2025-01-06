@@ -13,13 +13,11 @@
     .Call2("init_AAlkups",
           AA_STRING_CODEC@enc_lkup, AA_STRING_CODEC@dec_lkup,
           PACKAGE=pkgname)
-    #.pkgenv[["DNA_AND_RNA_COLORED_LETTERS"]] <- make_DNA_AND_RNA_COLORED_LETTERS()
-    #.pkgenv[["AA_COLORED_LETTERS"]] <- make_AA_COLORED_LETTERS()
+    
     assign("DNA_AND_RNA_COLORED_LETTERS", make_DNA_AND_RNA_COLORED_LETTERS(), envir=.pkgenv)
     assign("AA_COLORED_LETTERS", make_AA_COLORED_LETTERS(), envir=.pkgenv)
     assign("BSTRING_COLORED_LETTERS", character(0L), envir=.pkgenv)
-    #DNA_AND_RNA_COLORED_LETTERS <<- make_DNA_AND_RNA_COLORED_LETTERS()
-    #AA_COLORED_LETTERS <<- make_AA_COLORED_LETTERS()
+
     option_name <- "Biostrings.coloring"
     if (!(option_name %in% names(.Options)))
         options(setNames(list(TRUE), option_name))
