@@ -250,6 +250,29 @@ test_that("reverse, complement, reverseComplement work correctly", {
     expect_equal(as.character(reverseComplement(mrna)), .revString(mr_comp))
 })
 
+test_that("BStrings display correctly with full 0-255 value range", {
+    orig_setting <- getOption("Biostrings.showRaw")
+    full_bstring <- as(as(as.raw(0:255),"XRaw"),"BString")
+    options(Biostrings.showRaw=FALSE)
+    expect_error(extract_character_from_XString_by_ranges(full_bstring, 1L, 256L),
+        "embedded nul in string")
+
+    ## can't really test MBCS vs. non-MBCS because we can't guarantee
+    ## the test suites will run on a platform with(out) MBCS
+    options(Biostrings.showRaw=TRUE)
+    expect_is(extract_character_from_XString_by_ranges(full_bstring, 1L, 256L),
+                "character")
+
+    options(Biostrings.showRaw=10)
+    expect_warning(extract_character_from_XString_by_ranges(BString("ABCD"), 1L, 4L),
+        "Invalid value for option 'Biostrings.showRaw'")
+    expect_false(getOption("Biostrings.showRaw"))
+
+    ## make sure we leave the system as we found it
+    options(Biostrings.showRaw=orig_setting)
+
+})
+
 ## Porting RUnit tests
 test_that("alphabet finds the correct values", {
     expect_equal(alphabet(DNAString(dnastr)), strsplit(dnastr, "")[[1]])

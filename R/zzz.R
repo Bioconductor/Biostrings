@@ -1,5 +1,7 @@
 ###
 
+.pkgenv <- new.env(parent=emptyenv())
+
 .onLoad <- function(libname, pkgname)
 {
     .Call2("init_DNAlkups",
@@ -28,17 +30,22 @@
     encoding_details <- l10n_info()
     bstring_lookup <- rawToChar(as.raw(0:255), multiple=TRUE)
     invalid_chars <- c(1:32,128:256)
-    if(encoding_details$`UTF-8`){
-      # braille is nice if supported
-      # allows for char comparisons after as.character() comparisons
-      bstring_lookup[invalid_chars] <-
-        as.character(parse(text=paste0("'\\U28", as.raw(95:255), "'")))
-    } else if (encoding_details$MBCS){
+    # if(encoding_details$`UTF-8`){
+    #   # braille is nice if supported
+    #   # allows for char comparisons after as.character() comparisons
+    #   # I think it's overkill, though...uncomment this section if we need it
+    #   bstring_lookup[invalid_chars] <-
+    #     as.character(parse(text=paste0("'\\U28", as.raw(95:255), "'")))
+    # } else
+    if (encoding_details$MBCS){
       # use multibyte question mark if supported
       compact_unknown <- rawToChar(as.raw(c(0xef, 0xbf, 0xbd)))
       bstring_lookup[invalid_chars] <- compact_unknown
+    } else {
+      # otherwise just use the regular '?'
+      bstring_lookup[invalid_chars] <- "?"
     }
-    BSTRING_RAW_LOOKUP <<- bstring_lookup
+    assign("BSTRING_RAW_LOOKUP", bstring_lookup, envir=.pkgenv)
 }
 
 .onUnload <- function(libpath)

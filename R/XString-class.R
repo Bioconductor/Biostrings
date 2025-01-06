@@ -142,13 +142,19 @@ setMethod("extract_character_from_XString_by_ranges", "XString",
 ### BString methods to support 0:255 input
 
 ## BSTRING_RAW_LOOKUP is initialized in `zzz.R`
-## this value is just a backup on the offchance `zzz.R:.onLoad` fails
-BSTRING_RAW_LOOKUP <- rawToChar(as.raw(0:255), multiple=TRUE)
 setMethod("extract_character_from_XString_by_ranges", "BString",
     function(x, start, width, collapse=FALSE)
     {
         SHOW_RAW <- getOption("Biostrings.showRaw")
+        if(!is.logical(SHOW_RAW)){
+            warning("Invalid value for option 'Biostrings.showRaw', ",
+                        "resetting to FALSE")
+            SHOW_RAW <- FALSE
+            options(Biostrings.showRaw=FALSE)
+        }
         if(!SHOW_RAW) callNextMethod()
+
+        bstring_lookup <- get("BSTRING_RAW_LOOKUP", envir=.pkgenv)
         lkup <- xs_dec_lkup(x)
 
         ## need to remap null bytes, they have to be in 0:255
@@ -159,7 +165,7 @@ setMethod("extract_character_from_XString_by_ranges", "BString",
                                                         lkup=lkup)
         ## replace all undisplayable characters
         for(i in seq_along(xs))
-            xs[i] <- paste(BSTRING_RAW_LOOKUP[as.integer(charToRaw(xs[i]))+1L],
+            xs[i] <- paste(bstring_lookup[as.integer(charToRaw(xs[i]))+1L],
                             collapse='')
         xs
     }
@@ -169,8 +175,15 @@ setMethod("extract_character_from_XString_by_positions", "BString",
     function(x, pos, collapse=FALSE)
     {
         SHOW_RAW <- getOption("Biostrings.showRaw")
+        if(!is.logical(SHOW_RAW)){
+            warning("Invalid value for option 'Biostrings.showRaw', ",
+                        "resetting to FALSE")
+            SHOW_RAW <- FALSE
+            options(Biostrings.showRaw=FALSE)
+        }
         if(!SHOW_RAW) callNextMethod()
         lkup <- xs_dec_lkup(x)
+        bstring_lookup <- get("BSTRING_RAW_LOOKUP", envir=.pkgenv)
 
         ## need to remap null bytes, they have to be in 0:255
         ## so we have to overload some value
@@ -180,7 +193,7 @@ setMethod("extract_character_from_XString_by_positions", "BString",
                                                         lkup=lkup)
         ## replace all undisplayable characters
         for(i in seq_along(xs))
-            xs[i] <- paste(BSTRING_RAW_LOOKUP[as.integer(charToRaw(xs[i]))+1L],
+            xs[i] <- paste(bstring_lookup[as.integer(charToRaw(xs[i]))+1L],
                             collapse='')
         xs
     }
