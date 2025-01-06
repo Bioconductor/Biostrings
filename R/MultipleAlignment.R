@@ -89,16 +89,16 @@ setGeneric("rowmask", signature="x", function(x) standardGeneric("rowmask"))
 setMethod("rowmask", "MultipleAlignment", function(x) x@rowmask)
 
 .setMask <- function(mask, append, invert, length, value){
-  if (!isTRUEorFALSE(invert))
-    stop("'invert' must be TRUE or FALSE")
-  if (invert)
-    value <- gaps(value, start=1L, end=length)     
-  append <- match.arg(append, choices=c("union", "replace", "intersect"))
-  value <- switch(append,
+    if (!isTRUEorFALSE(invert))
+        stop("'invert' must be TRUE or FALSE")
+    if (invert)
+        value <- gaps(value, start=1L, end=length)
+    append <- match.arg(append, choices=c("union", "replace", "intersect"))
+    value <- switch(append,
                   "union"=union(mask, value),
                   "replace"=value,
                   "intersect"=intersect(mask, value))
-  as(value, "NormalIRanges")
+    as(value, "NormalIRanges")
 }
 setGeneric("rowmask<-", signature=c("x", "value"),
     function(x, append="union", invert=FALSE, value)
@@ -107,18 +107,17 @@ setGeneric("rowmask<-", signature=c("x", "value"),
 
 setReplaceMethod("rowmask", signature(x="MultipleAlignment", value="NULL"),
     function(x, append="replace", invert=FALSE, value)
-        callGeneric(x, append=append, invert=invert,
-                    value=new("NormalIRanges"))
+        callGeneric(x, append=append, invert=invert, value=new("NormalIRanges"))
 )
 setReplaceMethod("rowmask",
     signature(x="MultipleAlignment", value="ANY"),
     function(x, append="union", invert=FALSE, value)
     {
-      if (!is(value, "IRanges"))
-        value <- as(value, "IRanges")
-      value <- .setMask(mask=rowmask(x), append=append, invert=invert,
+        if (!is(value, "IRanges"))
+            value <- as(value, "IRanges")
+        value <- .setMask(mask=rowmask(x), append=append, invert=invert,
                         length=dim(x)[1], value=value)
-      initialize(x, rowmask = value)
+        initialize(x, rowmask = value)
     }
 )
 
@@ -138,11 +137,11 @@ setReplaceMethod("colmask",
     signature(x="MultipleAlignment", value="ANY"),
     function(x, append="union", invert=FALSE, value)
     {
-      if (!is(value, "IRanges"))
-        value <- as(value, "IRanges")
-      value <- .setMask(mask=colmask(x), append=append, invert=invert,
+        if (!is(value, "IRanges"))
+            value <- as(value, "IRanges")
+        value <- .setMask(mask=colmask(x), append=append, invert=invert,
                         length=dim(x)[2], value=value)
-      initialize(x, colmask = value)
+        initialize(x, colmask = value)
     }
 )
 
@@ -157,7 +156,7 @@ setMethod("maskMotif", signature(x="MultipleAlignment", motif="ANY"),
             string <- gsub("#", "+", string)
             string <- as(string, xsbaseclass(unmasked(x)))
             maskedString <-
-              callGeneric(string, motif, min.block.width=min.block.width, ...)
+                callGeneric(string, motif, min.block.width=min.block.width, ...)
             newmask <- nir_list(masks(maskedString))[[1L]]
             colmask(x) <- union(newmask, cmask)
         }
@@ -305,7 +304,7 @@ function(rows, markupPattern)
 function(filepath)
 {
     rows <- scan(filepath, what = "", sep = "\n", strip.white = TRUE,
-                 quiet = TRUE, blank.lines.skip = FALSE)
+                   quiet = TRUE, blank.lines.skip = FALSE)
     if (length(rows) < 3 ||
         !identical(grep("^# STOCKHOLM", rows[1L]), 1L))
         stop("invalid Stockholm file")
@@ -317,7 +316,7 @@ function(filepath)
 function(filepath)
 {
     rows <- scan(filepath, what = "", sep = "\n", strip.white = TRUE,
-                 quiet = TRUE, blank.lines.skip = FALSE)
+                   quiet = TRUE, blank.lines.skip = FALSE)
     if (length(rows) < 3 ||
         !identical(grep("^CLUSTAL", rows[1L]), 1L) ||
         !identical(rows[2:3], c("","")))
@@ -329,7 +328,7 @@ function(filepath)
 
 ## In order to recycle .read.MultipleAlignment.splitRows().
 ## I need to have the names on each row.
-.read.PhylipAln <- 
+.read.PhylipAln <-
 function(filepath, maskGen=FALSE)
 {
     rows <- scan(filepath, what = "", sep = "\n", strip.white = TRUE,
@@ -337,38 +336,38 @@ function(filepath, maskGen=FALSE)
     if (length(rows) < 1 ||
         !identical(grep("^\\d+?\\s\\d+?", rows[1L]), 1L))
         stop("invalid Phylip file")
-    ##(mask+num rows + blank line) 
-    nameLength <- as.numeric(sub("(\\d+).*$","\\1", rows[1])) +1 
+    ##(mask+num rows + blank line)
+    nameLength <- as.numeric(sub("(\\d+).*$","\\1", rows[1])) +1
     rows <- tail(rows, -1)
     names <- character()
     names[nameLength] <- "" ## an empty string is ALWAYS the last "name"
     offset <- 0L
     for(i in seq_len(length(rows))){
-      if(i<nameLength){
-        rows[i] <- sub("(^\\S+)\\s+(\\S+)", "\\1\\|\\2", rows[i])
-        rows[i] <- gsub("\\s", "", rows[i])
-        rows[i] <- sub("\\|", " ", rows[i])
-        names[i] <- sub("(\\S+).*$","\\1",rows[i])
-      }else{        
-        rows[i] <- gsub("\\s", "", rows[i])
-        rows[i] <- paste(names[i %% nameLength], rows[i])
-      }
+        if(i<nameLength){
+            rows[i] <- sub("(^\\S+)\\s+(\\S+)", "\\1\\|\\2", rows[i])
+            rows[i] <- gsub("\\s", "", rows[i])
+            rows[i] <- sub("\\|", " ", rows[i])
+            names[i] <- sub("(\\S+).*$","\\1",rows[i])
+        } else {
+            rows[i] <- gsub("\\s", "", rows[i])
+            rows[i] <- paste(names[i %% nameLength], rows[i])
+        }
     }
     rows <- c(" ",rows)
     if(maskGen==FALSE){ ## filter out the Mask values OR blank lines
-       .read.MultipleAlignment.splitRows(rows, "^(Mask|\\s)")
-    }else{## only retrieve the Mask values
-      if(length(grep("^(?!Mask)",rows, perl=TRUE))==length(rows)){
-        return(as(IRanges(),"NormalIRanges"))
-      }else{
-        msk <- .read.MultipleAlignment.splitRows(rows, "^(?!Mask)")
-        ## THEN cast them to be a NormalIRanges object.
-        splt <- strsplit(msk,"") ## split up all chars
-        names(splt) <- NULL ## drop the name
-        splt <- unlist(splt) ## THEN unlist
-        lsplt <- as.logical(as.numeric(splt)) ## NOW you can get a logical
-        return(gaps(as(lsplt,"NormalIRanges"))) ## gaps() inverts mask
-      }
+        .read.MultipleAlignment.splitRows(rows, "^(Mask|\\s)")
+    } else {## only retrieve the Mask values
+        if(length(grep("^(?!Mask)",rows, perl=TRUE))==length(rows)){
+            return(as(IRanges(),"NormalIRanges"))
+        } else {
+            msk <- .read.MultipleAlignment.splitRows(rows, "^(?!Mask)")
+            ## THEN cast them to be a NormalIRanges object.
+            splt <- strsplit(msk,"") ## split up all chars
+            names(splt) <- NULL ## drop the name
+            splt <- unlist(splt) ## THEN unlist
+            lsplt <- as.logical(as.numeric(splt)) ## NOW you can get a logical
+            return(gaps(as(lsplt,"NormalIRanges"))) ## gaps() inverts mask
+        }
     }
 }
 
@@ -441,16 +440,16 @@ function(filepath, format)
 ## helper to chop up strings into pieces.
 .strChop <- function(x, chopsize=10, simplify = TRUE)
 {
-  chunks <- breakInChunks(nchar(x), chunksize=chopsize)
-  if(simplify==TRUE){
-    sapply(seq_len(length(chunks)),
-           function(i)
-           substr(x, start=start(chunks)[i], stop=end(chunks)[i]))
-  }else{
-    lapply(seq_len(length(chunks)),
-           function(i)
-           substr(x, start=start(chunks)[i], stop=end(chunks)[i]))
-  }
+    chunks <- breakInChunks(nchar(x), chunksize=chopsize)
+    if(simplify==TRUE){
+        sapply(seq_len(length(chunks)),
+               function(i)
+               substr(x, start=start(chunks)[i], stop=end(chunks)[i]))
+    } else {
+        lapply(seq_len(length(chunks)),
+               function(i)
+               substr(x, start=start(chunks)[i], stop=end(chunks)[i]))
+    }
 }
 
 ## We just have to just insert line spaces
@@ -459,40 +458,42 @@ function(filepath, format)
   paste(str, collapse=" ")
 }
 
-.write.MultAlign <- function(x,filepath,invertColMask, showRowNames,
+.write.MultAlign <- function(x, filepath, invertColMask, showRowNames,
                              hideMaskedCols){
-  if(inherits(x, "MultipleAlignment")){
+    if(!inherits(x, "MultipleAlignment")){
+        stop("'x' must be an object of class 'MultipleAlignment'")
+    }
     ## 1st, we need to capture the colmask as a vector that can be included
     msk <- colmask(x)
-    dims <- dim(x)    
+    dims <- dim(x)
     if(invertColMask==FALSE){
-      msk<-gaps(msk, start=1, end=dims[2])
+        msk <- gaps(msk, start=1, end=dims[2])
     }
     ##If we are hiding the masked cols, then we don't care about the mask
     if(hideMaskedCols){
-      hasMask <- FALSE
-    }else{## If we show masked cols, drop mask before as.character()
-      colmask(x) <- NULL
-      if(length(msk) > 0){hasMask<-TRUE}else{hasMask <- FALSE}
+        hasMask <- FALSE
+    } else {## If we show masked cols, drop mask before as.character()
+        colmask(x) <- NULL
+        if(length(msk) > 0){ hasMask<-TRUE } else { hasMask <- FALSE }
     }
-    if(hasMask){dims[1] <- dims[1]+1}
+    if(hasMask){ dims[1] <- dims[1]+1 }
     ## Massage to character vector
     ch <- as.character(x)
     ch <- unlist(lapply(ch, .insertSpaces))
     ## Convert mask to string format
     if(hasMask){
-      mskInd <- as.integer(msk) ## index that should be masked
-      mskCh <- paste(as.character(replace(rep(1,dim(x)[2]), mskInd, 0)),
-        collapse="")
-      mskCh <- .insertSpaces(mskCh)
+        mskInd <- as.integer(msk) ## index that should be masked
+        mskCh <- paste(as.character(replace(rep(1,dim(x)[2]), mskInd, 0)),
+                        collapse="")
+        mskCh <- .insertSpaces(mskCh)
     }
     ## Split up the output into lines, but grouped into a list object
     names <- names(ch)
     ch <- sapply(ch, .strChop, chopsize=55, simplify=FALSE)
     ## Again consider mask, split, name & cat on (if needed)
     if(hasMask){
-      mskCh <- .strChop(mskCh, chopsize=55)
-      ch <- c(list(Mask = mskCh), ch)
+        mskCh <- .strChop(mskCh, chopsize=55)
+        ch <- c(list(Mask = mskCh), ch)
     }
     ## 1) precalculate the max length of the names and then
     maxLen <- max(nchar(names(ch)))
@@ -508,21 +509,21 @@ function(filepath, format)
     ## 5) Iterate so that all the rows are interleaved together
     output <- character(length(ch[[1]])*length(ch))
     for(i in seq_len(length(ch[[1]]))){
-      for(j in seq_len(length(ch))){
-        if(i==1){
-          output[j] <- paste(unlist(lapply(names(ch[j]), bufferSpacing)),
-                             "   ",ch[[j]][i],sep="")
-        }else{
-          if(showRowNames){
-            output[(length(ch)*(i-1)) + j] <-
-              paste(unlist(lapply(names(ch[j]), bufferSpacing)),
-                    "   ",ch[[j]][i],sep="")
-          }else{
-            output[(length(ch)*(i-1)) + j] <- paste(stockSpc,
-                                                    "   ",ch[[j]][i],sep="")
-          }
+        for(j in seq_len(length(ch))){
+            if(i==1) {
+            output[j] <- paste(unlist(lapply(names(ch[j]), bufferSpacing)),
+                               "   ",ch[[j]][i],sep="")
+            } else {
+                if(showRowNames){
+                  output[(length(ch)*(i-1)) + j] <-
+                    paste(unlist(lapply(names(ch[j]), bufferSpacing)),
+                            "   ",ch[[j]][i],sep="")
+                } else {
+                    output[(length(ch)*(i-1)) + j] <- paste(stockSpc, "   ",
+                                                            ch[[j]][i], sep="")
+                }
+            }
         }
-      }
     }
     ## drop trailing spaces
     output <-  gsub("\\s+$","", output)
@@ -530,18 +531,17 @@ function(filepath, format)
     output <- output[1:length(output)-1]
     ## finally attach the dims
     if(hasMask){
-      ##Honestly not sure if I need a "W" here or what it means?
-      output <- c(paste("",paste(c(dims,""),collapse=" "),collapse=" "),output)
-    }else{
-      output <- c(paste("",paste(dims,collapse=" "),collapse=" "),output)
+        ##Honestly not sure if I need a "W" here or what it means?
+        output <- c(paste("",paste(c(dims,""),collapse=" "),collapse=" "),output)
+    } else {
+        output <- c(paste("",paste(dims,collapse=" "),collapse=" "),output)
     }
     writeLines(output, filepath)
-  }
 }
 
 write.phylip <- function(x, filepath){
-  .write.MultAlign(x, filepath, invertColMask=TRUE, showRowNames=FALSE,
-                   hideMaskedCols=FALSE)
+    .write.MultAlign(x, filepath, invertColMask=TRUE, showRowNames=FALSE,
+                        hideMaskedCols=FALSE)
 }
 
 
@@ -552,16 +552,16 @@ write.phylip <- function(x, filepath){
 detail <- function(x, ...) show(x)
 setGeneric("detail")
 setMethod("detail", "MultipleAlignment",
-          function(x,invertColMask=FALSE,hideMaskedCols=TRUE){
-            ## We don't want a permanent file for this
-            FH <- tempfile(pattern = "tmpFile", tmpdir = tempdir())
-            ## Then write out a temp file with the correct stuff in it
-            .write.MultAlign(x, FH, invertColMask=invertColMask,
-                             showRowNames=TRUE,
-                             hideMaskedCols=hideMaskedCols)
-            ## use file.show() to display
-            file.show(FH)
-          })
+            function(x,invertColMask=FALSE,hideMaskedCols=TRUE){
+                ## We don't want a permanent file for this
+                FH <- tempfile(pattern = "tmpFile", tmpdir = tempdir())
+                ## Then write out a temp file with the correct stuff in it
+                .write.MultAlign(x, FH, invertColMask=invertColMask,
+                                 showRowNames=TRUE,
+                                 hideMaskedCols=hideMaskedCols)
+                ## use file.show() to display
+                file.show(FH)
+            })
 
 
 ## TODO: explore if we can make a textConnection() to save time writing to disk.
@@ -759,7 +759,7 @@ setMethod("alphabetFrequency","MultipleAlignment",
 ###
 
 .MultipleAlignment.show_frame_header <-
-function (iW, with.names) 
+function (iW, with.names)
 {
     cat(format("", width = iW + 1), sep="")
     if (with.names) {
@@ -775,7 +775,7 @@ function (iW, with.names)
 function (x, i, iW)
 {
     snippetWidth <- getOption("width") - 2L - iW
-    if (!is.null(names(x))) 
+    if (!is.null(names(x)))
         snippetWidth <- snippetWidth - .namesW - 1L
     snippet <- toSeqSnippet(x[[i]], snippetWidth)
     if (!is.null(names(x))) {
@@ -821,8 +821,8 @@ setMethod("show", "MultipleAlignment",
     {
         nr <- nrow(object)
         nc <- ncol(object)
-        cat(class(object), " with ", nr, ifelse(nr == 1, " row and ", 
-            " rows and "), nc, ifelse(nc == 1, " column\n", " columns\n"), 
+        cat(class(object), " with ", nr, ifelse(nr == 1, " row and ",
+            " rows and "), nc, ifelse(nc == 1, " column\n", " columns\n"),
             sep = "")
         if (nr != 0) {
             strings <- unmasked(object)
