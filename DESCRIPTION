@@ -78,6 +78,7 @@ Collate: utils.R
 	misc.R
 	SparseList-class.R
 	MIndex-class.R
+	MIndexList-class.R
 	lowlevel-matching.R
 	match-utils.R
 	matchPattern.R
