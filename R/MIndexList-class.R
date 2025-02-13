@@ -11,8 +11,8 @@
 ### As with MIndex, in normal operations, the user should never need to create
 ### MIndex objects directly or to modify existing ones. Those objects are
 ### typically returned by a sequence matching/alignment function like
-### vmatchPattern() or matchPDict(). For this reason, coercion methods are
-### relatively barebones and will throw errors rather than try to correct
+### vmatchPDict(). For this reason, coercion methods are relatively barebones
+### and will throw errors rather than try to correct
 ###
 
 setClass("MIndexList",

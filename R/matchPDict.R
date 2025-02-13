@@ -561,10 +561,8 @@
             if (!identical(weight, 1L))
                 warning("'weight' is ignored when 'collapse=FALSE'")
         }
-    } else {
-        ## vmatchPDict()
-        stop("vmatchPDict() is not supported yet, sorry")
     }
+
     ## We are doing our own dispatch here, based on the type of 'pdict'.
     ## TODO: Revisit this. Would probably be a better design to use a
     ## generic/methods approach and rely on the standard dispatch mechanism.
@@ -599,8 +597,14 @@
         }
         return(ans)
     }
+
     ## vmatchPDict()
-    stop("vmatchPDict() is not supported yet, sorry")
+    ## converting all the results to MIndex objects and then wrapping the result
+    ans_width0 <- rep.int(length(pdict), length(subject))
+    for(i in seq_along(ans))
+      ans[[i]] <- new("ByPos_MIndex", width0=ans_width0, NAMES=names(pdict), ends=ans[[i]])
+    names(ans) <- names(subject)
+    ans <- as(ans, "MIndexList")
     return(ans)
 }
 
@@ -771,8 +775,8 @@ setMethod("whichPDict", "MaskedXString",
 ###     'lapply(subject, function(s) whichPDict(pdict, s, ...))'.
 ###      The returned object is a list of length N.
 ###   o vcountPDict(): returns an M x N matrix of integers.
-###   o vmatchPDict(): not supported yet! (first we need a container to
-###     store the results)
+###   o vmatchPDict(): returns an MIndexList (CompressedList of MIndex objects)
+###      This contains N MIndex objects, each with up to M entries
 ###
 
 setGeneric("vmatchPDict", signature="subject",
@@ -787,7 +791,10 @@ setMethod("vmatchPDict", "ANY",
     function(pdict, subject,
              max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
-        stop("vmatchPDict() is not ready yet, sorry")
+         .vmatchPDict(pdict, subject,
+                      max.mismatch, min.mismatch, with.indels, fixed,
+                      algorithm, collapse=FALSE, weight=1L,
+                      verbose, matches.as="MATCHES_AS_ENDS")
 )
 
 ### Dispatch on 'subject' (see signature of generic).
