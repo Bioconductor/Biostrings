@@ -85,6 +85,11 @@ test_that("users can update color palettes", {
                       C=colored_letter("C", rgb(1,1,1), "blue"),
                       D=crayon::make_style("orange")("D"),
                       E=crayon::make_style("yellow")("E")))
+
+    multibyte_char_palette <- list()
+    multibyte_char_palette[[rawToChar(as.raw(239L))]] <- list(fg="red")
+    expect_no_condition(update_B_palette(multibyte_char_palette))
+
     update_B_palette()
     bpalette <- get("BSTRING_COLORED_LETTERS", envir=Biostrings:::.pkgenv)
     expect_identical(bpalette, origb_palette)
