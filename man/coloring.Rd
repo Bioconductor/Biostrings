@@ -6,10 +6,10 @@
 \alias{update_AA_palette}
 \alias{update_B_palette}
 
-\title{Update XString Display Colors}
+\title{XString Display Colors}
 
 \description{
-  Functions to set custom user color palettes for displaying \code{XString} objects.
+  \link{XString} objects support custom coloring for display. Users can also set custom color palettes for XString objects using the \code{update_X_palette} functions.
 }
 
 \usage{
@@ -26,7 +26,15 @@ update_B_palette(colors=NULL)
 }
 
 \details{
-  These functions allow users to change the default color scheme of Biostrings. Each function expects a \code{list} with named entries corresponding to the values to update. Each entry can specify \code{'fg'} and \code{'bg'} values, corresponding to the foreground and background colors (respectively). If \code{'fg'} is not specified, it defaults to \code{rgb(1,1,1)} (white). If \code{'bg'} is not specified, it defaults to transparent.
+  \link{XString} objects support the following default coloring for display.
+\itemize{
+  \item DNAString: A, C, G, and T are colored red, green, blue, and orange (respectively), N is colored light grey, other ambiguity codes are colored dark grey, and \code{"-+."} have no coloring.
+  \item RNAString: All bases are colored identically to DNAString. U is colored yellow.
+  \item AAString: Amino acids are colored according to JalView's Zappo color scheme, representing physicochemical properties. X is colored light grey, other ambiguity codes are colored dark grey, and \code{"*-+."} are not colored.
+  \item BStrings are not colored.
+}
+
+  Users can change the default color scheme of Biostrings with the \code{update_X_palette} family functions. Each function expects a \code{list} with named entries corresponding to the values to update. Each entry can specify \code{'fg'} and \code{'bg'} values, corresponding to the foreground and background colors (respectively). If \code{'fg'} is not specified, it defaults to \code{rgb(1,1,1)} (white). If \code{'bg'} is not specified, it defaults to transparent.
 
   These functions will only update the values passed, leaving the rest of the colors as-is. For example, calling \code{update_AA_palette(list(A=list(fg="green")))} would update the coloring for \code{A} while leaving all other colors as the default schema.
 
@@ -40,7 +48,7 @@ update_B_palette(colors=NULL)
 }
 
 \value{
-  Invisibly returns the new color mapping, consisting of a named character vector. Calling \code{cat} on the return value will print out all letters with their respective coloring.
+  For \code{update_X_palette}, Invisibly returns the new color mapping, consisting of a named character vector. Calling \code{cat} on the return value will print out all letters with their respective coloring.
 }
 
 \author{Aidan Lakshman <AHL27@pitt.edu>}
@@ -52,6 +60,7 @@ update_B_palette(colors=NULL)
 \examples{
 ## display default colors
 DNAString(paste(DNA_ALPHABET, collapse=''))
+RNAString(paste(RNA_ALPHABET, collapse=''))
 AAString(paste(AA_ALPHABET, collapse=''))
 BString(paste(LETTERS, collapse=''))
 
