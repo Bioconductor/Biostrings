@@ -26,7 +26,7 @@ test_that("users can update color palettes", {
 
     dnapalette <- get("DNA_AND_RNA_COLORED_LETTERS", envir=Biostrings:::.pkgenv)
     aapalette <- get("AA_COLORED_LETTERS", envir=Biostrings:::.pkgenv)
-    bpalette <- get("BSTRING_COLORED_LETTERS", envir=Biostrings:::.pkgenv)
+    bpalette <- get("B_COLORED_LETTERS", envir=Biostrings:::.pkgenv)
 
     origdna_palette <- Biostrings:::make_DNA_AND_RNA_COLORED_LETTERS()
     origaa_palette <- Biostrings:::make_AA_COLORED_LETTERS()
@@ -78,7 +78,7 @@ test_that("users can update color palettes", {
       E=list(fg="yellow")
     )
     update_B_palette(B_palette)
-    bpalette <- get("BSTRING_COLORED_LETTERS", envir=Biostrings:::.pkgenv)
+    bpalette <- get("B_COLORED_LETTERS", envir=Biostrings:::.pkgenv)
     expect_identical(bpalette[c("A","B","C","D","E")],
                     c(A=colored_letter("A", rgb(1,1,1), "green"),
                       B=colored_letter("B", rgb(1,1,1), "red"),
@@ -91,7 +91,7 @@ test_that("users can update color palettes", {
     expect_no_condition(update_B_palette(multibyte_char_palette))
 
     update_B_palette()
-    bpalette <- get("BSTRING_COLORED_LETTERS", envir=Biostrings:::.pkgenv)
+    bpalette <- get("B_COLORED_LETTERS", envir=Biostrings:::.pkgenv)
     expect_identical(bpalette, origb_palette)
 
     ## sad path testing

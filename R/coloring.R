@@ -173,7 +173,7 @@ update_AA_palette <- function(colors=NULL){
 update_B_palette <- function(colors=NULL){
     ## BStrings don't have a default palette
     ## thus their default palette function is just \() return(character(0L))
-    .update_X_palette(colors, "BSTRING_COLORED_LETTERS",
+    .update_X_palette(colors, "B_COLORED_LETTERS",
                         NULL,
                         \(){ character(0L) })
 }
@@ -182,4 +182,4 @@ add_colors <- function(x) UseMethod("add_colors")
 add_colors.default <- identity
 add_colors.DNA <- add_colors.RNA <- function(x){ .add_xstring_colors(x, "DNA_AND_RNA_COLORED_LETTERS") }
 add_colors.AA <- function(x){ .add_xstring_colors(x, "AA_COLORED_LETTERS") }
-add_colors.B <- function(x) { .add_xstring_colors(x, "BSTRING_COLORED_LETTERS") }
+add_colors.B <- function(x) { .add_xstring_colors(x, "B_COLORED_LETTERS") }
