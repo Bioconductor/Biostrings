@@ -1,9 +1,6 @@
 ### =========================================================================
 ### XString Display Colors
 ### -------------------------------------------------------------------------
-###
-### Only update_X_palette() methods are exported
-###
 
 ### Return a named character vector where all the names are single letters.
 ### Colors for A, C, G, and T were inspired by
