@@ -1,5 +1,6 @@
 \name{coloring}
 
+\alias{coloring}
 \alias{update_X_palette}
 \alias{update_DNA_palette}
 \alias{update_RNA_palette}

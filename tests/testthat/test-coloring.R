@@ -96,11 +96,11 @@ test_that("users can update color palettes", {
 
     ## sad path testing
     expect_error(update_DNA_palette(list(E=list(fg="yellow"))),
-                  "Invalid DNA/RNA codes specified.")
+                  "Invalid codes specified.")
     expect_error(update_AA_palette(list(test=list(fg="yellow"))),
-                  "Invalid AA codes specified.")
+                  "Invalid codes specified.")
     expect_error(update_B_palette(list(test=list(fg="yellow"))),
-                  "Invalid B codes specified.")
+                  "Invalid codes specified.")
     expect_error(update_DNA_palette(10), "should be NULL or a named list")
     expect_error(update_AA_palette(10), "should be NULL or a named list")
     expect_error(update_B_palette(10), "should be NULL or a named list")
