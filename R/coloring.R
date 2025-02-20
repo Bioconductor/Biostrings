@@ -167,12 +167,12 @@ update_DNA_palette <- function(colors=NULL){
         palette <- make_DNA_AND_RNA_COLORED_LETTERS()
     if(!is.null(colors)){
         if(!is.list(colors)){
-            error("'colors' should be NULL or a list of entries with 'bg' ",
+            stop("'colors' should be NULL or a named list of entries with 'bg' ",
                     "and optionally 'fg' values.")
         }
         all_bases <- union(DNA_ALPHABET, RNA_ALPHABET)
         if(length(setdiff(names(colors), all_bases)) != 0){
-            error("Invalid DNA/RNA codes specified.")
+            stop("Invalid DNA/RNA codes specified.")
         }
 
         n <- names(colors)
@@ -202,12 +202,12 @@ update_AA_palette <- function(colors=NULL){
 
     if(!is.null(colors)){
         if(!is.list(colors)){
-            error("'colors' should be NULL or a list of entries with 'bg' ",
+            stop("'colors' should be NULL or a named list of entries with 'bg' ",
                     "and optionally 'fg' values.")
         }
 
         if(length(setdiff(names(colors), AA_ALPHABET)) != 0){
-            error("Invalid AA codes specified.")
+            stop("Invalid AA codes specified.")
         }
 
         n <- names(colors)
@@ -234,11 +234,18 @@ update_B_palette <- function(colors=NULL){
         palette <- character(0L)
     if(!is.null(colors)){
         if(!is.list(colors)){
-            error("'colors' should be NULL or a list of entries with 'bg' ",
+            stop("'colors' should be NULL or a named list of entries with 'bg' ",
                     "and optionally 'fg' values.")
         }
 
         n <- names(colors)
+        ## have to use this approach over nchar() because of multibyte chars
+        ## e.g., 240 -> f0 -> "\xf0" -> 'Error: invalid multibyte string'
+        ## however, BString supports these values (sort of)
+        name_nchars <- vapply(n, \(x) length(charToRaw(x)), integer(1L))
+        if(!all(name_nchars == 1L)){
+            stop("Invalid B codes specified.")
+        }
         for(i in seq_along(colors)){
             fg <- colors[[i]]$fg
             bg <- colors[[i]]$bg

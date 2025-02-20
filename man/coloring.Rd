@@ -1,5 +1,6 @@
-\name{update_X_palette}
+\name{coloring}
 
+\alias{update_X_palette}
 \alias{update_DNA_palette}
 \alias{update_RNA_palette}
 \alias{update_AA_palette}
@@ -31,7 +32,7 @@ update_B_palette(colors=NULL)
 
   To reset all colors to the default palette, call the function with no arguments (\code{NULL}).
 
-  To remove a coloring for a specific value, provide a named entry with no elements. For example, \code{update_AA_palette(list(A=NULL))} will remove the coloring for \code{A}.
+  To remove a coloring for a specific value, provide a named entry with value \code{NULL}. For example, \code{update_AA_palette(list(A=NULL))} will remove the coloring for \code{A}.
 
   \code{update_DNA_palette} and \code{update_RNA_palette} are identical internally, so either function can be used to update colorings for \code{T,U}.
 
