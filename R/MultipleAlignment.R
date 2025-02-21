@@ -460,9 +460,9 @@ function(filepath, format)
 
 .write.MultAlign <- function(x, filepath, invertColMask, showRowNames,
                              hideMaskedCols){
-    if(!inherits(x, "MultipleAlignment")){
-        stop("'x' must be an object of class 'MultipleAlignment'")
-    }
+    if(!is(x, "MultipleAlignment"))
+        stop("'x' must be a MultipleAlignment object or derivative")
+
     ## 1st, we need to capture the colmask as a vector that can be included
     msk <- colmask(x)
     dims <- dim(x)

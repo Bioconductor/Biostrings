@@ -11,5 +11,5 @@ test_that("write.phylip only functions for MultipleAlignment objects", {
         dnastr)
 
     expect_error(write.phylip(DNAStringSet(dnastr), tf),
-                    "must be an object of class 'MultipleAlignment'")
+                    "must be a MultipleAlignment object or derivative")
 })
