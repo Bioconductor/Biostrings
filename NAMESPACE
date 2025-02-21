@@ -70,7 +70,10 @@ export(
     BStringSetList, DNAStringSetList, RNAStringSetList, AAStringSetList,
 
     ## xscat.R:
-    xscat
+    xscat,
+
+    ## coloring.R:
+    update_DNA_palette, update_RNA_palette, update_AA_palette, update_B_palette
 )
 
 exportMethods(
