@@ -1,3 +1,27 @@
+VERSION 2.76.0
+--------------
+
+NEW FEATURES
+
+    o Add functions update_DNA_palette(), update_RNA_palette(),
+      update_AA_palette(), and update_B_palette(), to let users
+      set their own color palettes for XString/XStringSet objects.
+      Author: Aidan Lakshman
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Bring back the BLOSUM* and PAM* scoring matrices from pwalign but now
+      they display a warning that their new home is the pwalign package and
+      that they will soon be removed from the Biostrings package.
+
+DEPRECATED AND DEFUNCT
+
+    o Deprecate XStringPartialMatches objects. They've been a stale
+      work-in-progress since 2008 so time to get rid of them!
+
+    o Formally deprecate all the functions that went to pwalign in BioC 3.19.
+
+
 VERSION 2.74.0
 --------------
 
