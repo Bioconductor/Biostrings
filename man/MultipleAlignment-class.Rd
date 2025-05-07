@@ -133,7 +133,7 @@ write.phylip(x, filepath)
     \code{filepath} cannot be a connection.
   }
   \item{format}{
-    Either \code{"fasta"} (the default), \code{stockholm}, or
+    Either \code{"fasta"} (the default), \code{"stockholm"}, \code{"phylip"}, or
     \code{"clustal"}.
   }
   \item{rowmask}{
@@ -141,7 +141,7 @@ write.phylip(x, filepath)
   }
   \item{colmask}{
     a NormalIRanges object that will set masking for columns
-  }  
+  }
 }
 
 \details{
