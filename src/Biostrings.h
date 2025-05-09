@@ -1110,8 +1110,3 @@ SEXP lcsuffix(
 char compbase(char c);
 SEXP MP_longestConsecutive(SEXP x, SEXP letter);
 
-
-/* matchprobes.c (belonged originally to old matchprobes package) */
-
-SEXP MP_matchprobes(SEXP query, SEXP records, SEXP probepos);
-

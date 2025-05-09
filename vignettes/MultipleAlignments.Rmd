@@ -5,7 +5,7 @@ author:
   affiliation: "Bioconductor Core Team, Fred Hutchinson Cancer Research Center, Seattle, WA"
 - name: "Beryl Kanali"
   affiliation: "Vignette conversion from Sweave to Rmarkdown"
-date: "Edited: November 1, 2022; Compiled: `r format(Sys.time(), '%d %B, %Y')`"
+date: "Edited: May 8, 2025; Compiled: `r format(Sys.time(), '%d %B, %Y')`"
 
 vignette: >
   %\VignetteIndexEntry{Multiple Alignments}
@@ -226,6 +226,7 @@ clustering the unmasked `DNAMultipleAlignment` will draw a
 funky looking tree.  
 
 ```{r cluster}
+library(pwalign)  # for stringDist()
 sdist <- stringDist(as(origMAlign,"DNAStringSet"), method="hamming")
 clust <- hclust(sdist, method = "single")
 png(file="badTree.png")

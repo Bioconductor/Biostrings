@@ -298,7 +298,6 @@ exportMethods(
 ###   XStringQuality-class.R
 ###   QualityScaledXStringSet.R
 ###   pmatchPattern.R
-###   needwunsQS.R
 ###   MultipleAlignment.R
 
 exportClasses(
@@ -341,10 +340,7 @@ export(
     readAAMultipleAlignment,
     consensusViews,
     write.phylip,
-    detail,
-
-    ## Old stuff (Deprecated or Defunct):
-    needwunsQS
+    detail
 )
 
 exportMethods(

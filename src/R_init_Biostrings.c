@@ -140,9 +140,6 @@ static const R_CallMethodDef callMethods[] = {
 /* strutils.c (belonged originally to old matchprobes package) */
 	CALLMETHOD_DEF(MP_longestConsecutive, 2),
 
-/* matchprobes.c (belonged originally to old matchprobes package) */
-	CALLMETHOD_DEF(MP_matchprobes, 3),
-
 	{NULL, NULL, 0}
 };
 

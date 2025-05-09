@@ -1,8 +1,11 @@
 \name{matchprobes}
 \alias{matchprobes}
-\title{(Deprecated) A function to match a query sequence to the sequences
+\title{(Defunct) A function to match a query sequence to the sequences
   of a set of probes.}
 \description{
+  WARNING: The \code{matchprobes()} function is defunct in
+  \pkg{Biostrings} >= 2.77.1.
+
   The \code{query} sequence, a character string (probably representing
   a transcript of interest), is scanned for the presence of exact
   matches to the sequences in the character vector \code{records}.

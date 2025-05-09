@@ -1,7 +1,6 @@
 matchprobes <- function(query, records, probepos=FALSE) {
-  msg <- "matchprobes() is deprecated. Please use matchPdict() instead."
-  .Deprecated(msg=msg)
-  .Call2("MP_matchprobes", toupper(query), toupper(records), probepos, PACKAGE="Biostrings")
+  msg <- "matchprobes() is defunct. Please use matchPdict() instead."
+  .Defunct(msg=msg)
 }
 
 longestConsecutive <- function(seq, letter) {

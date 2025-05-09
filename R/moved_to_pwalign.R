@@ -1,26 +1,12 @@
 ### Everything in this file has moved to the pwalign package
 
 
-### TODO: Move this to S4Vectors (or BiocBaseUtils).
-.load_package_gracefully <- function(package, ...)
-{
-    if (!requireNamespace(package, quietly=TRUE))
-        stop("Could not load package ", package, ". Is it installed?\n\n  ",
-             wmsg("Note that ", ..., " requires the ", package, " package. ",
-                  "Please install it with:"),
-             "\n\n    BiocManager::install(\"", package, "\")")
-}
-
 .call_fun_in_pwalign <- function(fun, ...)
 {
-    .load_package_gracefully("pwalign", "starting with BioC 3.19, ",
-                             "calling ", fun, "()")
     msg <- c(fun, "() has moved from Biostrings to the pwalign package, ",
-             "and is formally deprecated in Biostrings >= 2.75.1. ",
-             "Please call pwalign::", fun, "() to get rid of this warning.")
-    .Deprecated(msg=wmsg(msg))
-    FUN <- base::get(fun, envir=asNamespace("pwalign"), inherits=FALSE)
-    do.call(FUN, list(...))
+             "and is formally defunct in Biostrings >= 2.77.1. ",
+             "Please call pwalign::", fun, "() to get rid of this error.")
+    .Defunct(msg=wmsg(msg))
 }
 
 writePairwiseAlignments <-
