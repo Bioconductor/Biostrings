@@ -11,7 +11,7 @@ import(BiocGenerics)
 import(S4Vectors)
 import(IRanges)
 import(XVector)
-import(GenomeInfoDb)
+import(Seqinfo)
 
 
 ### ==========================================================================
