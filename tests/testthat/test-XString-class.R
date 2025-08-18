@@ -137,14 +137,64 @@ test_that("equality methods work as advertised", {
     expect_true(AAString(aastr) != BString(bstr))
     expect_true(bstr == BString(bstr))
 
+    ## comparisons against character
+    expect_true(DNAString("AAA") == "AAA")
+    expect_true(DNAString("AAA") != "BBB")
+    expect_false(RNAString("UUU") == "TTT")
+    expect_true(AAString("UUU") == "UUU")
+    ## these may seem redundant but need to ensure that order doesn't matter
+    expect_true("AAA" == DNAString("AAA"))
+    expect_true("BBB" != DNAString("AAA"))
+    expect_false("TTT" == RNAString("UUU"))
+    expect_true("UUU" == AAString("UUU"))
+
     ## invalid comparisons
-    expect_error(DNAString(dnastr) == AAString(aastr),
+    expect_error(DNAString() == AAString(),
       "comparison between a \"DNAString\" instance and a \"AAString\" instance is not supported")
-    expect_error(DNAString(dnastr) == BString(bstr),
+    expect_error(DNAString() == BString(),
       "comparison between a \"DNAString\" instance and a \"BString\" instance is not supported")
-    expect_error(RNAString(rnastr) == AAString(aastr),
+    expect_error(RNAString() == AAString(),
       "comparison between a \"RNAString\" instance and a \"AAString\" instance is not supported")
-    expect_error(RNAString(rnastr) == BString(bstr),
+    expect_error(RNAString() == BString(),
+      "comparison between a \"RNAString\" instance and a \"BString\" instance is not supported")
+})
+
+test_that("inequality methods work as advertised", {
+    ## Basic cases
+    expect_true(DNAString("AAA") <= DNAString("AAAA"))
+    expect_false(DNAString("AAA") > DNAString("AAAA"))
+    expect_true(DNAString("AAA") <= DNAString("AAA"))
+    expect_true(DNAString("A") <= DNAString("C"))
+    expect_false(DNAString("ATTT") > RNAString("AUUU"))
+    expect_true(AAString("AAA") <= AAString("BBB"))
+    expect_true(BString("Testing") <= BString("ZZZTesting"))
+
+    ## have to check every combination for XString - character comparisons
+    ## due to how dispatch works
+    expect_true(BString("ABCDEFG") <= "ABCDEFG")
+    expect_true(BString("ABCDEFG") <  "ZYXWVUT")
+    expect_true(BString("ABCDEFG") >= "ABCDEFG")
+    expect_false(BString("ABCDEFG") > "ABCDEFG")
+
+    expect_true("ABCDEFG" <= BString("ABCDEFG"))
+    expect_false("ZYXWVUT" < BString("ABCDEFG"))
+    expect_true("ABCDEFG" >= BString("ABCDEFG"))
+    expect_false("ABCDEFG" > BString("ABCDEFG"))
+
+    ## Cases with potentially invalid characters
+    expect_true(DNAString("AAA") < "BBB")
+    expect_true(DNAString("CCC") > "BBB")
+    expect_true(RNAString("UUU") >= "TTT")
+    expect_true(RNAString("UUU") >= "UUU")
+
+    ## invalid comparisons
+    expect_error(DNAString() <= AAString(),
+      "comparison between a \"DNAString\" instance and a \"AAString\" instance is not supported")
+    expect_error(DNAString() <= BString(),
+      "comparison between a \"DNAString\" instance and a \"BString\" instance is not supported")
+    expect_error(RNAString() <= AAString(),
+      "comparison between a \"RNAString\" instance and a \"AAString\" instance is not supported")
+    expect_error(RNAString() <= BString(),
       "comparison between a \"RNAString\" instance and a \"BString\" instance is not supported")
 })
 
