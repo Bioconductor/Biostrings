@@ -1,3 +1,26 @@
+VERSION 2.78.0
+--------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o The package now depends on Seqinfo instead of GenomeInfoDb.
+
+DEPRECATED AND DEFUNCT
+
+    o All the functions that went to the pwalign package in BioC 3.19 and
+      got formally deprecated in Biostrings in BioC 3.21 are now defunct.
+
+    o After being deprecated in BioC 3.19, XStringPartialMatches objects
+      and matchprobes() are now defunct.
+
+    o Remove needwunsQS() (was defunct in BioC 3.19).
+
+BUG FIXES
+
+    o Fix: minor bug with input verification in `write.phylip`; clean up
+      formatting (#124). By Aidan Lakshman.
+
+
 VERSION 2.76.0
 --------------
 
