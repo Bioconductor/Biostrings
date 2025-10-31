@@ -65,6 +65,10 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(XStringSet_two_way_letter_frequency, 6),
 	CALLMETHOD_DEF(XStringSet_two_way_letter_frequency_by_quality, 7),
 
+/* lcsuffix.c */
+	CALLMETHOD_DEF(lcprefix, 6),
+	CALLMETHOD_DEF(lcsuffix, 6),
+
 /* translate.c */
 	CALLMETHOD_DEF(DNAStringSet_translate, 7),
 
@@ -132,10 +136,6 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(match_XStringSet_XStringViews, 11),
 	CALLMETHOD_DEF(vmatch_PDict3Parts_XStringSet, 11),
 	CALLMETHOD_DEF(vmatch_XStringSet_XStringSet, 11),
-
-/* pmatchPattern.c */
-	CALLMETHOD_DEF(lcprefix, 6),
-	CALLMETHOD_DEF(lcsuffix, 6),
 
 /* strutils.c (belonged originally to old matchprobes package) */
 	CALLMETHOD_DEF(MP_longestConsecutive, 2),

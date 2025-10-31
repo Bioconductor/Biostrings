@@ -104,6 +104,7 @@ exportMethods(
 ###   getSeq.R
 ###   letterFrequency.R
 ###   dinucleotideFrequencyTest.R
+###   lcsuffix.R
 ###   chartr.R
 ###   reverse.R
 ###   translate.R
@@ -140,11 +141,14 @@ export(
     oligonucleotideTransitions,
     twoWayAlphabetFrequency,
 
-    ## chartr.R:
-    replaceAmbiguities,
-
     ## dinucleotideFrequencyTest.R
     dinucleotideFrequencyTest,
+
+    ## lcsuffix.R:
+    lcprefix, lcsuffix,
+
+    ## chartr.R:
+    replaceAmbiguities,
 
     ## reverseComplement.R:
     complement, reverseComplement,
@@ -188,6 +192,7 @@ exportMethods(
     oligonucleotideFrequency,
     nucleotideFrequencyAt,
     dinucleotideFrequencyTest,
+    lcprefix, lcsuffix,
     chartr,
     reverse, complement, reverseComplement,
     codons, translate,
@@ -294,14 +299,11 @@ exportMethods(
 ### ==========================================================================
 ### STRING ALIGNMENT
 ### --------------------------------------------------------------------------
-###   XStringPartialMatches-class.R
 ###   XStringQuality-class.R
 ###   QualityScaledXStringSet.R
-###   pmatchPattern.R
 ###   MultipleAlignment.R
 
 exportClasses(
-    XStringPartialMatches,
     XStringQuality, PhredQuality, SolexaQuality, IlluminaQuality,
     QualityScaledXStringSet,
     QualityScaledBStringSet, QualityScaledDNAStringSet,
@@ -311,9 +313,6 @@ exportClasses(
 )
 
 export(
-    ## XStringPartialMatches-class.R:
-    subpatterns,
-
     ## XStringQuality-class.R:
     PhredQuality, SolexaQuality, IlluminaQuality,
     encoding,
@@ -323,9 +322,6 @@ export(
     QualityScaledBStringSet, QualityScaledDNAStringSet,
     QualityScaledRNAStringSet, QualityScaledAAStringSet,
     readQualityScaledDNAStringSet, writeQualityScaledXStringSet,
-
-    ## pmatchPattern.R:
-    lcprefix, lcsuffix, pmatchPattern, lcsubstr,
 
     ## MultipleAlignment.R:
     DNAMultipleAlignment,
@@ -349,11 +345,9 @@ exportMethods(
     show, summary,
     start, end, width,
     Views,
-    subpatterns,
     quality, encoding,
     parallel_slot_names,
     parallelVectorNames,
-    lcprefix, lcsuffix, pmatchPattern, lcsubstr,
     nchar, names, "names<-", "[[", windows,
     consensusMatrix, consensusString,
     alphabetFrequency, as.list,
@@ -367,39 +361,18 @@ exportMethods(
 
 
 ### ==========================================================================
-### STUFF THAT BELONGED ORIGINALLY TO OLD matchprobes PACKAGE AND IS NOW
-### SUPERSEDED BY SOME NATIVE Biostrings FUNCTIONALITY
+### MISCELLANEOUS
 ### --------------------------------------------------------------------------
-###   matchprobes.R
+###   longestConsecutive.R
 
 export(
-    longestConsecutive,
-    matchprobes
+    longestConsecutive
 )
 
 
 ### ==========================================================================
 ### STUFF THAT HAS MOVED TO THE pwalign PACKAGE
 ### --------------------------------------------------------------------------
-
-export(
-    writePairwiseAlignments,
-    nucleotideSubstitutionMatrix,
-    errorSubstitutionMatrices,
-    qualitySubstitutionMatrices,
-
-    insertion, deletion,
-    unaligned, aligned, indel, nindel,
-    PairwiseAlignments, pattern, alignedPattern, alignedSubject,
-    PairwiseAlignmentsSingleSubject,
-    nedit,
-    mismatchTable, mismatchSummary,
-    compareStrings,
-    pid,
-    pairwiseAlignment,
-    stringDist,
-    print.moved_to_pwalign_pkg
-)
 
 S3method(print, moved_to_pwalign_pkg)
 

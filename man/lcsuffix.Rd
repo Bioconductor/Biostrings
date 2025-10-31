@@ -1,4 +1,4 @@
-\name{pmatchPattern}
+\name{lcsuffix}
 
 \alias{lcprefix}
 \alias{lcprefix,character,character-method}
@@ -12,23 +12,10 @@
 \alias{lcsuffix,XString,character-method}
 \alias{lcsuffix,XString,XString-method}
 
-\alias{lcsubstr}
-\alias{lcsubstr,character,character-method}
-\alias{lcsubstr,character,XString-method}
-\alias{lcsubstr,XString,character-method}
-\alias{lcsubstr,XString,XString-method}
-
-\alias{pmatchPattern}
-\alias{pmatchPattern,character-method}
-\alias{pmatchPattern,XString-method}
-\alias{pmatchPattern,XStringViews-method}
-
-
-\title{Longest Common Prefix/Suffix/Substring searching functions}
+\title{Find Longest Common Prefix/Suffix}
 
 \description{
-  Functions for searching the Longest Common Prefix/Suffix/Substring
-  of two strings.
+  Functions for searching the Longest Common Prefix/Suffix of two strings.
 
   WARNING: These functions are experimental and might
   not work properly! Full documentation will come later.
@@ -39,8 +26,6 @@
 \usage{
 lcprefix(s1, s2)
 lcsuffix(s1, s2)
-lcsubstr(s1, s2)
-pmatchPattern(pattern, subject, maxlength.out=1L)
 }
 
 \arguments{
@@ -49,16 +34,6 @@ pmatchPattern(pattern, subject, maxlength.out=1L)
   }
   \item{s2}{
     2nd string, a character string or an \link{XString} object.
-  }
-  \item{pattern}{
-    The pattern string.
-  }
-  \item{subject}{
-    An \link{XString} object containing the subject string.
-  }
-  \item{maxlength.out}{
-    The maximum length of the output i.e. the maximum number of views
-    in the returned object.
   }
 }
 

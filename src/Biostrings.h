@@ -344,6 +344,27 @@ SEXP XStringSet_two_way_letter_frequency_by_quality(
         SEXP with_other
 );
 
+/* lcsuffix.c */
+
+SEXP lcprefix(
+	SEXP s1_xp,
+	SEXP s1_offset,
+	SEXP s1_length,
+	SEXP s2_xp,
+	SEXP s2_offset,
+	SEXP s2_length
+);
+
+SEXP lcsuffix(
+	SEXP s1_xp,
+	SEXP s1_offset,
+	SEXP s1_length,
+	SEXP s2_xp,
+	SEXP s2_offset,
+	SEXP s2_length
+);
+
+
 /* gtestsim.c */
 
 void gtestsim(
@@ -1081,27 +1102,6 @@ SEXP vmatch_XStringSet_XStringSet(
 	SEXP weight,
 	SEXP matches_as,
 	SEXP envir
-);
-
-
-/* pmatchPattern.c */
-
-SEXP lcprefix(
-	SEXP s1_xp,
-	SEXP s1_offset,
-	SEXP s1_length,
-	SEXP s2_xp,
-	SEXP s2_offset,
-	SEXP s2_length
-);
-
-SEXP lcsuffix(
-	SEXP s1_xp,
-	SEXP s1_offset,
-	SEXP s1_length,
-	SEXP s2_xp,
-	SEXP s2_offset,
-	SEXP s2_length
 );
 
 

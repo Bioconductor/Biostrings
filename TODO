@@ -115,10 +115,6 @@ BASIC OPERATIONS
 
 UTILITIES
 
-- Move lcprefix()/lcsuffix() out of pmatchPattern.R to a file of their own.
-  (This stuff needs to belong to the UTILITIES component of the package, not
-  to the STRING ALIGNMENT component.)
-
 - Add patternFrequency() methods for XStringSet and XStringViews objects.
 
 - Maybe add a new generic that combines a subject and an IRanges (or
