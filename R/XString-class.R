@@ -434,6 +434,13 @@ setMethod("==", signature(e1="BString", e2="character"),
 setMethod("==", signature(e1="character", e2="BString"),
     function(e1, e2) e2 == e1
 )
+setMethod("==", signature(e1="XString", e2="character"),
+    ## Coerce to BString to handle things like RNAString("U") == "T"
+    function(e1, e2) as(e1, "BString") == e2
+)
+setMethod("==", signature(e1="character", e2="XString"),
+    function(e1, e2) e1 == as(e2, "BString")
+)
 
 setMethod("!=", signature(e1="XString", e2="XString"),
     function(e1, e2) !(e1 == e2)
@@ -444,7 +451,34 @@ setMethod("!=", signature(e1="BString", e2="character"),
 setMethod("!=", signature(e1="character", e2="BString"),
     function(e1, e2) !(e1 == e2)
 )
+setMethod("!=", signature(e1="XString", e2="character"),
+    function(e1, e2) as(e1, "BString") != e2
+)
+setMethod("!=", signature(e1="character", e2="XString"),
+    function(e1, e2) e1 != as(e2, "BString")
+)
 
+### Comparisons are already implemented for XStringSet objects,
+### so we can just dispatch to that code here.
+setMethod("<=", signature(e1="XString", e2="XString"),
+    function(e1, e2)
+    {
+        if (!comparable_seqtypes(seqtype(e1), seqtype(e2))) {
+            class1 <- class(e1)
+            class2 <- class(e2)
+            stop("comparison between a \"", class1, "\" instance ",
+                 "and a \"", class2, "\" instance ",
+                 "is not supported")
+        }
+        as(e1, "XStringSet") <= as(e2, "XStringSet")
+    }
+)
+setMethod("<=", signature(e1="XString", e2="character"),
+    function(e1, e2) as(e1, "BStringSet") <= e2
+)
+setMethod("<=", signature(e1="character", e2="XString"),
+    function(e1, e2) e1 <= as(e2, "BStringSet")
+)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "substr" and "substring" methods.
