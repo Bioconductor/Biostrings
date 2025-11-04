@@ -35,24 +35,20 @@
 \alias{toString,XString-method}
 \alias{as.vector,XString-method}
 
-% "show" method:
+% show():
 \alias{show,XString-method}
 \alias{showAsCell,XString-method}
 
-% Equality:
-\alias{==,XString,XString-method}
-\alias{==,BString,character-method}
-\alias{==,character,BString-method}
+% Comparisons:
+\alias{Compare,XString,XString-method}
+\alias{Compare,XString,character-method}
+\alias{Compare,character,XString-method}
 
-\alias{!=,XString,XString-method}
-\alias{!=,BString,character-method}
-\alias{!=,character,BString-method}
-
-% "substr" and "substring" methods:
+% substr() and substring():
 \alias{substr,XString-method}
 \alias{substring,XString-method}
 
-% "updateObject" method:
+% updateObject():
 \alias{updateObject,XString-method}
 \alias{updateObject,AAString-method}
 

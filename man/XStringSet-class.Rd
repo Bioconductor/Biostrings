@@ -22,12 +22,14 @@
 % Methods:
 \alias{width,character-method}
 \alias{nchar,XStringSet-method}
+\alias{is.na,XStringSet-method}
+\alias{anyNA,XStringSet-method}
 \alias{windows,character-method}
 \alias{narrow,character-method}
 \alias{subseq,character-method}
-\alias{threebands,character-method}
 \alias{subseq<-,character-method}
 \alias{subseq<-,XStringSet-method}
+\alias{threebands,character-method}
 
 \alias{seqtype,XStringSet-method}
 \alias{seqtype<-,XStringSet-method}
@@ -85,7 +87,7 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
 \arguments{
   \item{x}{
     Either a character vector (with no NAs), or an \link{XString},
-    XStringSet or \link{XStringViews} object.
+    XStringSet, or \link{XStringViews} object.
   }
   \item{start,end,width}{
     Either \code{NA}, a single integer, or an integer vector of the same
@@ -113,13 +115,11 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
   by the following property: if \code{x} is a character vector
   (with no NAs), or an XStringSet (or \link{XStringViews}) object,
   then the 3 following transformations are equivalent:
-  \describe{
-    \item{\code{BStringSet(x, start=mystart, end=myend, width=mywidth)}:}{
-    }
-    \item{\code{subseq(BStringSet(x), start=mystart, end=myend, width=mywidth)}:}{
-    }
-    \item{\code{BStringSet(subseq(x, start=mystart, end=myend, width=mywidth))}:}{
-    }
+  \preformatted{    BStringSet(x, start=mystart, end=myend, width=mywidth)
+
+    narrow(BStringSet(x), start=mystart, end=myend, width=mywidth)
+
+    BStringSet(narrow(x, start=mystart, end=myend, width=mywidth))
   }
   Note that, besides being more convenient, the first form is also more
   efficient on character vectors.
@@ -136,6 +136,7 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
     \item{\code{width(x)}:}{
       A vector of non-negative integers containing the number
       of letters for each element in \code{x}.
+
       Note that \code{width(x)} is also defined for a character vector
       with no NAs and is equivalent to \code{nchar(x, type="bytes")}.
     }
@@ -157,56 +158,67 @@ AAStringSet(x=character(), start=NA, end=NA, width=NA, use.names=TRUE)
     \item{\code{nchar(x)}:}{
       The same as \code{width(x)}.
     }
+    \item{\code{is.na(x)}:}{
+      Returns \code{FALSE} for every element.
+    }
+    \item{\code{anyNA(x)}:}{
+      Returns \code{FALSE}.
+    }
   }
 }
 
 \section{Subsequence extraction and related transformations}{
-  In the code snippets below,
-  \code{x} is a character vector (with no NAs),
-  or an XStringSet (or \link{XStringViews}) object.
+  In the code snippets below, \code{x} is a character vector (with
+  no NAs) or an XStringSet object.
 
   \describe{
-    \item{\code{subseq(x, start=NA, end=NA, width=NA)}:}{
-      Applies \code{subseq} on each element in \code{x}.
+    \item{\code{narrow(x, start=NA, end=NA, width=NA, use.names=TRUE)}:}{
+      Applies \code{subseq()} on each element in \code{x}.
       See \code{?\link[XVector]{subseq}} for the details.
 
       Note that this is similar to what \code{\link{substr}} does on a
       character vector. However there are some noticeable differences:
+      \enumerate{
+        \item \code{narrow()} has arguments \code{start}, \code{end}, and
+              \code{width}, where \code{\link{substr}()} only has arguments
+              \code{start} and \code{stop};
 
-      (1) the arguments are \code{start} and \code{stop} for
-      \code{\link{substr}};
+        \item The SEW interface (start/end/width) interface of \code{narrow()}
+              is richer (e.g. it supports negative start and/or end values);
 
-      (2) the SEW interface (start/end/width) interface of \code{subseq}
-      is richer (e.g. support for negative start or end values);
-      and (3) \code{subseq} checks that the specified start/end/width values
-      are valid i.e., unlike \code{\link{substr}}, it throws an error if
-      they define "out of limits" subsequences or subsequences with a
-      negative width.
+        \item Unlike \code{\link{substr}()}, \code{narrow()} checks that the
+              supplied start/end/width values are valid, that is, it throws
+              an error if they specify "out of limits" subsequences or
+              subsequences with a negative width;
+
+        \item \code{narrow()} has the \code{use.names} argument to let the
+              user choose whether the names on the input should be propagated
+              or not.
+      }
+      Note that \code{narrow()} also works on a character vector.
     }
-    \item{\code{narrow(x, start=NA, end=NA, width=NA, use.names=TRUE)}:}{
-      Same as \code{subseq}. The only differences are: (1) \code{narrow}
-      has a \code{use.names} argument; and (2) all the things \code{narrow}
-      and \code{subseq} work on
-      (\link[IRanges]{IRanges}, XStringSet or
-      \link{XStringViews} objects for \code{narrow},
-      \link[XVector]{XVector} or XStringSet objects for
-      \code{subseq}). But they both work and do the same thing on an
-      XStringSet object.
-    }
-    \item{\code{threebands(x, start=NA, end=NA, width=NA)}:}{
-      Like the method for \link[IRanges]{IRanges}
-      objects, the
-      \code{threebands} methods for character vectors and XStringSet
-      objects extend the capability of \code{narrow} by returning the 3
-      set of subsequences (the left, middle and right subsequences)
-      associated to the narrowing operation.
-      See \code{?\link[IRanges]{threebands}} in the
-      \pkg{IRanges} package for the details.
+    \item{\code{subseq(x, start=NA, end=NA, width=NA)}:}{
+      Same as \code{narrow()}. The only difference is that \code{subseq()}
+      has no \code{use.names} argument.
+      Other than that they do the same thing on an XStringSet object or
+      character vector.
     }
     \item{\code{subseq(x, start=NA, end=NA, width=NA) <- value}:}{
       A vectorized version of the \code{\link[XVector]{subseq<-}}
       method for \link[XVector]{XVector} objects.
       See \code{?`\link[XVector]{subseq<-}`} for the details.
+
+      Note that \code{subseq<-} also works on a character vector.
+    }
+    \item{\code{threebands(x, start=NA, end=NA, width=NA)}:}{
+      Like the method for \link[IRanges]{IRanges} objects, the
+      \code{threebands()} method for XStringSet objects extends the
+      capability of \code{narrow()} by returning the 3 set of subsequences
+      (the left, middle and right subsequences) associated with the narrowing
+      operation. See \code{?\link[IRanges]{threebands}} in the \pkg{IRanges}
+      package for the details.
+
+      Note that \code{threebands()} also works on a character vector.
     }
   }
 }

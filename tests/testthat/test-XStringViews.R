@@ -33,11 +33,11 @@ test_that("XStringViews equality works correctly", {
     expect_identical(test2, exp_opt)
 
     ## comparison against Views objects should be supported
-    expect_identical(v==v, rep(TRUE, n_ranges))
+    expect_identical(v == v, rep(TRUE, n_ranges))
 
     ## comparison with non-BString is not supported
-    expect_error(v == strs, "is not supported")
-    expect_error(strs == v, "is not supported")
+    expect_error2(v == strs, "is not supported")
+    expect_error2(strs == v, "is not supported")
 
     ## comparing BString against character
     v2 <- v

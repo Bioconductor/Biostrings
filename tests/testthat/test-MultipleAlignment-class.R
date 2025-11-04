@@ -10,6 +10,6 @@ test_that("write.phylip only functions for MultipleAlignment objects", {
     expect_equal(unname(as.character(readDNAMultipleAlignment(tf, format="phylip"))),
         dnastr)
 
-    expect_error(write.phylip(DNAStringSet(dnastr), tf),
-                    "must be a MultipleAlignment object or derivative")
+    expect_error2(write.phylip(DNAStringSet(dnastr), tf),
+                  "must be a MultipleAlignment object or derivative")
 })

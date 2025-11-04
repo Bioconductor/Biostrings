@@ -41,7 +41,7 @@ exportClasses(
 )
 
 export(
-    ## IUPAC_CODE_MAP.R + AMINO_ACID_CODE.R + GENETIC_CODE.R:
+    ## IUPAC_CODE_MAP.R, AMINO_ACID_CODE.R, GENETIC_CODE.R:
     IUPAC_CODE_MAP, mergeIUPACLetters,
     AMINO_ACID_CODE, AA_ALPHABET, AA_STANDARD, AA_PROTEINOGENIC,
     GENETIC_CODE, RNA_GENETIC_CODE,
@@ -87,7 +87,7 @@ exportMethods(
     relistToClass,
     union, intersect, setdiff, setequal,
     "%in%", match,
-    pcompare, "==", "!=", match,
+    Compare, pcompare, "==", "!=", match,
     coerce, as.character, unlist, as.matrix, as.list, toString, toComplex,
     as.data.frame,
     windows, subseq, threebands, "subseq<-", collapse, gaps,

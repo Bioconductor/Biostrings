@@ -46,10 +46,10 @@ test_that("gregexpr2 correctly returns overlapping matches", {
                  c(2L, 3L, 6L, -1L))
 
     ## only supports character vectors of length 1 for 'pattern'
-    expect_error(gregexpr2(c("aa", "aaa"), "a"), "invalid pattern")
-    expect_error(gregexpr2(NA_character_, "a"), "invalid pattern")
-    expect_error(gregexpr2(1, "a"), "invalid pattern")
-    expect_error(gregexpr2(character(0L), "a"), "invalid pattern")
+    expect_error2(gregexpr2(c("aa", "aaa"), "a"), "invalid pattern")
+    expect_error2(gregexpr2(NA_character_, "a"), "invalid pattern")
+    expect_error2(gregexpr2(1, "a"), "invalid pattern")
+    expect_error2(gregexpr2(character(0L), "a"), "invalid pattern")
 })
 
 test_that("matchPattern, countPattern work as expected", {
@@ -98,19 +98,19 @@ test_that("matchPattern, countPattern work as expected", {
                        fixed=FALSE)
 
     ## sad paths
-    expect_error(matchPattern("ATG", dna, algorithm="indels"),
-                 "valid algos for your string matching problem")
-    expect_error(matchPattern("ATG", dss), "please use vmatchPattern")
-    expect_error(countPattern("ATG", dna, algorithm="indels"),
-                 "valid algos for your string matching problem")
-    expect_error(countPattern("ATG", dss), "please use vcountPattern")
-    expect_error(matchPattern("", dna), "empty patterns are not supported")
-    expect_error(matchPattern(1, dna),
-                 "'pattern' must be a single string or an XString object")
-    expect_error(matchPattern("test", "", algorithm="gregexpr"),
-                 "'subject' must be a single (non-empty) string", fixed=TRUE)
-    expect_error(matchPattern("test", "", algorithm="gregexpr2"),
-                 "'subject' must be a single (non-empty) string", fixed=TRUE)
+    expect_error2(matchPattern("ATG", dna, algorithm="indels"),
+                  "valid algos for your string matching problem")
+    expect_error2(matchPattern("ATG", dss), "please use vmatchPattern")
+    expect_error2(countPattern("ATG", dna, algorithm="indels"),
+                  "valid algos for your string matching problem")
+    expect_error2(countPattern("ATG", dss), "please use vcountPattern")
+    expect_error2(matchPattern("", dna), "empty patterns are not supported")
+    expect_error2(matchPattern(1, dna),
+                  "'pattern' must be a single string or an XString object")
+    expect_error2(matchPattern("test", "", algorithm="gregexpr"),
+                  "'subject' must be a single \\(non-empty\\) string")
+    expect_error2(matchPattern("test", "", algorithm="gregexpr2"),
+                  "'subject' must be a single \\(non-empty\\) string")
 
     ## edge cases from matchPattern.R
     ## unsure if these are intended functionality, but at least we'll track
@@ -139,10 +139,10 @@ test_that("vmatchPattern, vcountPattern work correctly", {
     }
 
     ## sad path
-    expect_error(vmatchPattern("ATG", dna),  "please use matchPattern")
-    expect_error(vmatchPattern("ATG", mdna), "please use matchPattern")
-    expect_error(vcountPattern("ATG", dna),  "please use countPattern")
-    expect_error(vcountPattern("ATG", mdna), "please use countPattern")
+    expect_error2(vmatchPattern("ATG", dna),  "please use matchPattern")
+    expect_error2(vmatchPattern("ATG", mdna), "please use matchPattern")
+    expect_error2(vcountPattern("ATG", dna),  "please use countPattern")
+    expect_error2(vcountPattern("ATG", mdna), "please use countPattern")
 
     ## TODO: more sad path options
     expect_equal(vcountPattern("TG", vdna), c(1L,1L))

@@ -37,9 +37,9 @@ test_that("replaceLetterAt has expected behavior", {
     object <- replaceLetterAt(d2, 1:6, rep(c("A","M"), each=3),
                               if.not.extending="skip")
     expect_equal(object, d2)
-    expect_error(replaceLetterAt(d2, 1:6, rep(c("A","M"), each=3),
+    expect_error2(replaceLetterAt(d2, 1:6, rep(c("A","M"), each=3),
                                  if.not.extending="error"),
-                 "does not extend old letter")
+                  "does not extend old letter")
 })
 
 ## old tests

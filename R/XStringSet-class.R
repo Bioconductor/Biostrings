@@ -3,6 +3,7 @@
 ### -------------------------------------------------------------------------
 ###
 
+
 setClass("XStringSet",
     contains="XRawList",
     representation("VIRTUAL"),
@@ -76,7 +77,7 @@ setMethod("relistToClass", "XString",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessor-like methods.
+### Accessor-like methods
 ###
 
 setMethod("width", "character",
@@ -116,6 +117,15 @@ setMethod("nchar", "XStringSet",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### is.na() and related methods
+###
+
+setMethod("is.na", "XStringSet", function(x) rep(FALSE, length(x)))
+
+setMethod("anyNA", "XStringSet", function(x, recursive=FALSE) FALSE)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "subseq" endomorphism and related transformations.
 ###
 ### Methods for XStringSet objects are inherited from the XVectorList class.
@@ -136,19 +146,6 @@ setMethod("windows", "character",
 setMethod("subseq", "character",
     function(x, start=NA, end=NA, width=NA)
         narrow(x, start=start, end=end, width=width)
-)
-
-setMethod("threebands", "character",
-    function(x, start=NA, end=NA, width=NA)
-    {
-        names(x) <- NULL
-        x_width <- width(x)
-        solved_SEW <- solveUserSEW(x_width, start=start, end=end, width=width)
-        left <- substr(x, start=1L, stop=start(solved_SEW)-1L)
-        middle <- substr(x, start=start(solved_SEW), stop=end(solved_SEW))
-        right <- substr(x, start=end(solved_SEW)+1L, stop=x_width)
-        list(left=left, middle=middle, right=right)
-    }
 )
 
 setReplaceMethod("subseq", "character",
@@ -175,6 +172,19 @@ setReplaceMethod("subseq", "XStringSet",
             x[] <- xscat(bands$left, value, bands$right)
         }
         x
+    }
+)
+
+setMethod("threebands", "character",
+    function(x, start=NA, end=NA, width=NA)
+    {
+        names(x) <- NULL
+        x_width <- width(x)
+        solved_SEW <- solveUserSEW(x_width, start=start, end=end, width=width)
+        left <- substr(x, start=1L, stop=start(solved_SEW)-1L)
+        middle <- substr(x, start=start(solved_SEW), stop=end(solved_SEW))
+        right <- substr(x, start=end(solved_SEW)+1L, stop=x_width)
+        list(left=left, middle=middle, right=right)
     }
 )
 

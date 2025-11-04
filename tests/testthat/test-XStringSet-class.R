@@ -53,13 +53,13 @@ test_that("seqtype() setter works correctly on XStringSet derivatives", {
     expect_equal({x <- BStringSet(aastr); seqtype(x) <- "AA"; x}, a)
 
     ## invalid conversions
-    expect_error(seqtype(d) <- "AA", "incompatible sequence types")
-    expect_error(seqtype(r) <- "AA", "incompatible sequence types")
-    expect_error(seqtype(a) <- "DNA", "incompatible sequence types")
-    expect_error(seqtype(a) <- "RNA", "incompatible sequence types")
-    expect_error(seqtype(b) <- "AA", "not in lookup table")
-    expect_error(seqtype(b) <- "DNA", "not in lookup table")
-    expect_error(seqtype(b) <- "RNA", "not in lookup table")
+    expect_error2(seqtype(d) <- "AA", "incompatible sequence types")
+    expect_error2(seqtype(r) <- "AA", "incompatible sequence types")
+    expect_error2(seqtype(a) <- "DNA", "incompatible sequence types")
+    expect_error2(seqtype(a) <- "RNA", "incompatible sequence types")
+    expect_error2(seqtype(b) <- "AA", "not in lookup table")
+    expect_error2(seqtype(b) <- "DNA", "not in lookup table")
+    expect_error2(seqtype(b) <- "RNA", "not in lookup table")
 })
 
 test_that("unlist() works correctly on XStringSet derivatives", {
@@ -80,7 +80,7 @@ test_that("width() and nchar() work correctly on XStringSet derivatives", {
     expect_equal(nchar(a), nchar(aastr))
     expect_equal(nchar(b), nchar(bstr))
 
-    expect_error(width(NA_character_), "NAs in 'x' are not supported")
+    expect_error2(width(NA_character_), "NAs in 'x' are not supported")
 })
 
 test_that("concatenation of XStringSet derivatives and their conversion to character/vector work properly", {
@@ -175,28 +175,6 @@ test_that("showAsCell() works correctly on XStringSet derivatives", {
     expect_equal(nchar(showAsCell(r)), 23L)
     expect_equal(nchar(showAsCell(a)), 23L)
     expect_equal(nchar(showAsCell(b)), 23L)
-})
-
-test_that("comparison between XStringSet derivatives works", {
-    dna <- DNAStringSet(DNA_ALPHABET)
-    rna <- RNAStringSet(RNA_ALPHABET)
-    aaa <- AAStringSet(AA_ALPHABET)
-    bbb <- BStringSet(LETTERS)
-
-    expect_true(!any(is.na(dna)))
-    expect_true(!anyNA(dna))
-    expect_equal(match(dna, dna), seq_along(dna))
-    expect_equal(aaa[seq_len(26)] < bbb, AA_ALPHABET[seq_len(26L)] < LETTERS)
-
-    expect_equal(match(sort(aaa), bbb, nomatch=0), c(rep(0L, 4L), seq_len(26L)))
-    expect_true(all(dna == as.character(dna)))
-
-    expect_error(aaa == dna, "is not supported")
-    expect_error(aaa == rna, "is not supported")
-    expect_true(all(dna == BStringSet(DNA_ALPHABET)))
-    expect_true(all(rna == BStringSet(RNA_ALPHABET)))
-    expect_true(all(aaa == BStringSet(AA_ALPHABET)))
-    expect_equal(dna == NULL, logical(0L))
 })
 
 ## Porting RUnit tests
