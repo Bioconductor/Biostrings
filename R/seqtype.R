@@ -17,8 +17,13 @@
 ### The seqtype() function returns the sequence type. For
 ### example 'seqtype(AAString())' returns "AA".
 ###
-### The ModString package by Felix Ernst introduces two additional sequence
+### The Modstrings package by Felix Ernst introduces two additional sequence
 ### types, "ModDNA" and "ModRNA", that are treated as sequence type "B" by
+### compatible_seqtypes(), get_seqtype_conversion_lookup(), and
+### get_seqtype_switches_before_binary_op() below.
+###
+### The Structstrings package by Felix Ernst introduces one additional sequence
+### types, "DotBracket", that are treated as sequence type "B" by
 ### compatible_seqtypes(), get_seqtype_conversion_lookup(), and
 ### get_seqtype_switches_before_binary_op() below.
 ###
@@ -103,18 +108,19 @@ xs_dec_lkup <- function(x)
 ### determine those restrictions.
 ###
 
-### Note that sequence types "ModDNA" and "ModRNA" are treated as sequence
-### type "B" by compatible_seqtypes(), get_seqtype_conversion_lookup(), and
-### get_seqtype_switches_before_binary_op() below.
-.SUPPORTED_SEQTYPES <- c("B", "DNA", "RNA", "AA", "ModDNA", "ModRNA")
+### Note that sequence types "ModDNA", "ModRNA" and "DotBracket" are treated as
+### sequence type "B" by compatible_seqtypes(), get_seqtype_conversion_lookup(),
+### and get_seqtype_switches_before_binary_op() below.
+.SUPPORTED_SEQTYPES <- c("B", "DNA", "RNA", "AA", "ModDNA", "ModRNA",
+                         "DotBracket")
 
 compatible_seqtypes <- function(seqtype1, seqtype2)
 {
     stopifnot(isSingleString(seqtype1), seqtype1 %in% .SUPPORTED_SEQTYPES,
               isSingleString(seqtype2), seqtype2 %in% .SUPPORTED_SEQTYPES)
     if (seqtype1 == seqtype2 ||
-        seqtype1 %in% c("B", "ModDNA", "ModRNA") ||
-        seqtype2 %in% c("B", "ModDNA", "ModRNA"))
+        seqtype1 %in% c("B", "ModDNA", "ModRNA", "DotBracket") ||
+        seqtype2 %in% c("B", "ModDNA", "ModRNA", "DotBracket"))
         return(TRUE)
     is_nucleo1 <- seqtype1 %in% c("DNA", "RNA")
     is_nucleo2 <- seqtype2 %in% c("DNA", "RNA")
@@ -127,9 +133,9 @@ get_seqtype_conversion_lookup <- function(from_seqtype, to_seqtype)
     if (!compatible_seqtypes(from_seqtype, to_seqtype))
         stop("incompatible sequence types \"",
              from_seqtype, "\" and \"", to_seqtype, "\"")
-    if (from_seqtype %in% c("ModDNA", "ModRNA"))
+    if (from_seqtype %in% c("ModDNA", "ModRNA", "DotBracket"))
         from_seqtype <- "B"
-    if (to_seqtype %in% c("ModDNA", "ModRNA"))
+    if (to_seqtype %in% c("ModDNA", "ModRNA", "DotBracket"))
         to_seqtype <- "B"
     if (from_seqtype == to_seqtype)
         return(NULL)
@@ -159,9 +165,9 @@ get_seqtype_conversion_lookup <- function(from_seqtype, to_seqtype)
                                                    what_op, class1, class2)
 {
     stopifnot(isSingleString(seqtype1), isSingleString(seqtype2))
-    if (seqtype1 %in% c("ModDNA", "ModRNA"))
+    if (seqtype1 %in% c("ModDNA", "ModRNA", "DotBracket"))
         seqtype1 <- "B"
-    if (seqtype2 %in% c("ModDNA", "ModRNA"))
+    if (seqtype2 %in% c("ModDNA", "ModRNA", "DotBracket"))
         seqtype2 <- "B"
     if (seqtype1 == seqtype2)
         return(c(seqtype1, seqtype2))
