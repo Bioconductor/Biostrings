@@ -23,7 +23,7 @@
 ### get_seqtype_switches_before_binary_op() below.
 ###
 ### The Structstrings package by Felix Ernst introduces one additional sequence
-### types, "DotBracket", that are treated as sequence type "B" by
+### type, "DotBracket", which is treated as sequence type "B" by
 ### compatible_seqtypes(), get_seqtype_conversion_lookup(), and
 ### get_seqtype_switches_before_binary_op() below.
 ###
