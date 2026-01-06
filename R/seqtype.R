@@ -17,15 +17,11 @@
 ### The seqtype() function returns the sequence type. For
 ### example 'seqtype(AAString())' returns "AA".
 ###
-### The Modstrings package by Felix Ernst introduces two additional sequence
-### types, "ModDNA" and "ModRNA", that are treated as sequence type "B" by
-### compatible_seqtypes(), get_seqtype_conversion_lookup(), and
-### get_seqtype_switches_before_binary_op() below.
-###
-### The Structstrings package by Felix Ernst introduces one additional sequence
-### type, "DotBracket", which is treated as sequence type "B" by
-### compatible_seqtypes(), get_seqtype_conversion_lookup(), and
-### get_seqtype_switches_before_binary_op() below.
+### The Modstrings and Structstrings packages by Felix Ernst introduce
+### three additional sequence types: "ModDNA", "ModRNA", and "DotBracket".
+### These are treated as sequence type "B" by compatible_seqtypes(),
+### get_seqtype_conversion_lookup(), and get_seqtype_switches_before_binary_op()
+### below.
 ###
 ### Unless specified otherwise, things in this file are not exported.
 
