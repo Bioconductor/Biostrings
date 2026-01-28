@@ -19,9 +19,9 @@ test_that("translate works properly for all dna,rna", {
     expect_identical(translate(rr) == aa, c(TRUE, TRUE))
 
     ## errors
-    expect_error(translate(BString()), "unable to find an inherited method")
-    expect_error(translate(AAString()), "unable to find an inherited method")
-    expect_error(translate("ATG"), "unable to find an inherited method")
+    expect_error2(translate(BString()), "unable to find an inherited method")
+    expect_error2(translate(AAString()), "unable to find an inherited method")
+    expect_error2(translate("ATG"), "unable to find an inherited method")
 
     alt_gen_code <- GENETIC_CODE
     alt_gen_code[] <- rep(c("A", "B"), each=32L)
@@ -35,33 +35,33 @@ test_that("translate works properly for all dna,rna", {
                      c(TRUE, TRUE))
 
     ## fault paths
-    expect_error(translate(d, genetic.code=character(0L)),
-        "'genetic.code' must have the same names as predefined constant GENETIC_CODE", fixed=TRUE)
-    expect_error(translate(d, genetic.code=GENETIC_CODE[seq_len(10L)]),
-        "'genetic.code' must have the same names as predefined constant GENETIC_CODE", fixed=TRUE)
+    expect_error2(translate(d, genetic.code=character(0L)),
+        "'genetic\\.code' must have the same names as predefined constant GENETIC_CODE")
+    expect_error2(translate(d, genetic.code=GENETIC_CODE[seq_len(10L)]),
+        "'genetic\\.code' must have the same names as predefined constant GENETIC_CODE")
     alt_gen_code[] <- ""
-    expect_error(translate(d, genetic.code=alt_gen_code),
-        "'genetic.code' must contain 1-letter strings", fixed=TRUE)
+    expect_error2(translate(d, genetic.code=alt_gen_code),
+        "'genetic\\.code' must contain 1-letter strings")
 
     ## this is promoted to an error with this test case
     alt_gen_code[] <- "/"
-    expect_error(translate(d, genetic.code=alt_gen_code),
-        "some codons in 'genetic.code' are mapped to letters not in the Amino Acid\n  alphabet", fixed=TRUE)
+    expect_error2(translate(d, genetic.code=alt_gen_code),
+        "some codons in 'genetic\\.code' are mapped to letters not in the Amino Acid alphabet")
 
     ## alt_init_codon args
     ## error message could be more informative here
     error_msg <- "'genetic.code' must have an \"alt_init_codons\" attribute"
     alt_gen_code <- GENETIC_CODE
     attr(alt_gen_code, "alt_init_codons")[] <- c("BLAH", "NOTANAMINOACID")
-    expect_error(translate(d, genetic.code=alt_gen_code), error_msg, fixed=TRUE)
+    expect_error2(translate(d, genetic.code=alt_gen_code), error_msg)
     attr(alt_gen_code, "alt_init_codons")[] <- c("AAA", "AAA")
-    expect_error(translate(d, genetic.code=alt_gen_code), error_msg, fixed=TRUE)
+    expect_error2(translate(d, genetic.code=alt_gen_code), error_msg)
     attr(alt_gen_code, "alt_init_codons")[] <- c(NA_character_, "AAA")
-    expect_error(translate(d, genetic.code=alt_gen_code), error_msg, fixed=TRUE)
+    expect_error2(translate(d, genetic.code=alt_gen_code), error_msg)
     attr(alt_gen_code, "alt_init_codons")[] <- c(1,2)
-    expect_error(translate(d, genetic.code=alt_gen_code), error_msg, fixed=TRUE)
+    expect_error2(translate(d, genetic.code=alt_gen_code), error_msg)
     attr(alt_gen_code, "alt_init_codons") <- NULL
-    expect_error(translate(d, genetic.code=alt_gen_code), error_msg, fixed=TRUE)
+    expect_error2(translate(d, genetic.code=alt_gen_code), error_msg)
 
     ## alternate init codons
     dna1 <- DNAString("TTGATATGGCCCTTATAA")
@@ -73,7 +73,7 @@ test_that("translate works properly for all dna,rna", {
 
     ## fuzzy codons
     dna1 <- DNAString("TTYTTTTTC")
-    expect_error(translate(dna1), "not a base at pos 3")
+    expect_error2(translate(dna1), "not a base at pos 3")
     expect_identical(translate(dna1, if.fuzzy.codon="solve"), AAString("FFF"))
     expect_identical(translate(dna1, if.fuzzy.codon="X"), AAString("XFF"))
     expect_identical(translate(dna1, if.fuzzy.codon="error.if.X"),
@@ -82,11 +82,11 @@ test_that("translate works properly for all dna,rna", {
     dna2 <- DNAString("TTNTTYTTC")
     expect_identical(translate(dna2, if.fuzzy.codon="solve"), AAString("XFF"))
     expect_identical(translate(dna2, if.fuzzy.codon="X"), AAString("XXF"))
-    expect_error(translate(dna2, if.fuzzy.codon="error.if.X"),
-                 "ambiguous fuzzy codon starting at pos 1")
+    expect_error2(translate(dna2, if.fuzzy.codon="error.if.X"),
+                  "ambiguous fuzzy codon starting at pos 1")
 
-    expect_error(translate(dna2, if.fuzzy.codon="blahblahblaherror"),
-                 "'arg' should be one of ", fixed=TRUE)
+    expect_error2(translate(dna2, if.fuzzy.codon="blahblahblaherror"),
+                  "'arg' should be one of ")
 })
 
 test_that("translate, codons work properly for masked strings and string sets", {
@@ -128,11 +128,11 @@ test_that("codon function works properly", {
     expect_warning(codons(RNAString("AUAUA")),
                    "the number of nucleotides in 'x' is not a multiple of 3")
 
-    expect_error(codons(AAString()),
-                 "unable to find an inherited method for function")
-    expect_error(codons(BString()),
-                 "unable to find an inherited method for function")
-    expect_error(codons("ATG"),
-                 "unable to find an inherited method for function")
+    expect_error2(codons(AAString()),
+                  "unable to find an inherited method for function")
+    expect_error2(codons(BString()),
+                  "unable to find an inherited method for function")
+    expect_error2(codons("ATG"),
+                  "unable to find an inherited method for function")
 })
 

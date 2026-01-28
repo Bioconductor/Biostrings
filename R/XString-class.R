@@ -381,11 +381,14 @@ setMethod("showAsCell", "XString",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Equality.
+### Comparing two XString derivatives
 ###
 ### We want:
-###   BString("ab") == "ab" # TRUE
+###   BString("ab") == "ab"              # TRUE
 ###   DNAString("TG") == RNAString("UG") # TRUE!!!
+###   BString("AC") == DNAString("AC")   # TRUE
+###   BString("ac") == DNAString("AC")   # FALSE
+###   DNAString("AC") == AAString("AC")  # error! (not supported)
 ###   library(BSgenome.Hsapiens.UCSC.hg18)
 ###   dna <- Hsapiens$chr1
 ###   dna != Hsapiens$chr1 # FALSE
@@ -399,50 +402,27 @@ setMethod("showAsCell", "XString",
 ###   s7 <- toString(dnav[[7]])
 ###   s1 == s7
 
-### 'x' and 'y' must be XString objects
-.XString.equal <- function(x, y)
+### Also works if 'x' or 'y' is a single ordinary string.
+.Compare_XString_XString <- function(op, x, y)
 {
-    if (x@length != y@length)
-        return(FALSE)
-    ans <- !SharedVector.compare(x@shared, x@offset + 1L, y@shared, y@offset + 1L, x@length)
-    as.logical(ans)
+    seqtypes <- get_seqtype_switches_before_binary_op(x, y,
+                                                      what_op="comparison")
+    class1 <- paste0(seqtypes[[1L]], "StringSet")
+    class2 <- paste0(seqtypes[[2L]], "StringSet")
+    x <- as(x, class1)
+    y <- as(y, class2)
+    do.call(op, list(x, y))
 }
 
-setMethod("==", signature(e1="XString", e2="XString"),
-    function(e1, e2)
-    {
-        if (!comparable_seqtypes(seqtype(e1), seqtype(e2))) {
-            class1 <- class(e1)
-            class2 <- class(e2)
-            stop("comparison between a \"", class1, "\" instance ",
-                 "and a \"", class2, "\" instance ",
-                 "is not supported")
-        }
-        .XString.equal(e1, e2)
-    }
+## 'Compare' operations: "==", "!=", "<=", ">=", "<", ">"
+setMethod("Compare", c("XString", "XString"),
+    function(e1, e2) .Compare_XString_XString(.Generic, e1, e2)
 )
-setMethod("==", signature(e1="BString", e2="character"),
-    function(e1, e2)
-    {
-        if (length(e2) != 1 || e2 %in% c("", NA))
-            stop("comparison between a \"BString\" object and a character vector ",
-                 "of length != 1 or an empty string or an NA ",
-                 "is not supported")
-        .XString.equal(e1, BString(e2))
-    }
+setMethod("Compare", c("XString", "character"),
+    function(e1, e2) .Compare_XString_XString(.Generic, e1, e2)
 )
-setMethod("==", signature(e1="character", e2="BString"),
-    function(e1, e2) e2 == e1
-)
-
-setMethod("!=", signature(e1="XString", e2="XString"),
-    function(e1, e2) !(e1 == e2)
-)
-setMethod("!=", signature(e1="BString", e2="character"),
-    function(e1, e2) !(e1 == e2)
-)
-setMethod("!=", signature(e1="character", e2="BString"),
-    function(e1, e2) !(e1 == e2)
+setMethod("Compare", c("character", "XString"),
+    function(e1, e2) .Compare_XString_XString(.Generic, e1, e2)
 )
 
 

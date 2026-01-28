@@ -394,7 +394,7 @@ XStringViews.equal <- function(x, y)
 setMethod("==", signature(e1="XStringViews", e2="XStringViews"),
     function(e1, e2)
     {
-        if (!comparable_seqtypes(seqtype(e1), seqtype(e2))) {
+        if (!compatible_seqtypes(seqtype(e1), seqtype(e2))) {
             class1 <- class(subject(e1))
             class2 <- class(subject(e2))
             stop("comparison between XStringViews objects with subjects of ",
@@ -407,7 +407,7 @@ setMethod("==", signature(e1="XStringViews", e2="XStringViews"),
 setMethod("==", signature(e1="XStringViews", e2="XString"),
     function(e1, e2)
     {
-        if (!comparable_seqtypes(seqtype(e1), seqtype(e2))) {
+        if (!compatible_seqtypes(seqtype(e1), seqtype(e2))) {
             class1 <- class(subject(e1))
             class2 <- class(e2)
             stop("comparison between an XStringViews object with a subject of ",

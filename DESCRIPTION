@@ -7,7 +7,7 @@ biocViews: SequenceMatching, Alignment, Sequencing, Genetics,
 	DataImport, DataRepresentation, Infrastructure
 URL: https://bioconductor.org/packages/Biostrings
 BugReports: https://github.com/Bioconductor/Biostrings/issues
-Version: 2.75.3
+Version: 2.79.4
 License: Artistic-2.0
 Encoding: UTF-8
 Authors@R: c(
@@ -33,8 +33,8 @@ Authors@R: c(
 	person("Jen", "Wokaty", role="ctb",
 	       comment="Converted 'matchprobes' vignette from Sweave to RMarkdown"),
 	person("Erik", "Wright", role="ctb"))
-Depends: R (>= 4.0.0), BiocGenerics (>= 0.37.0), S4Vectors (>= 0.27.12),
-	IRanges (>= 2.31.2), XVector (>= 0.37.1), GenomeInfoDb
+Depends: R (>= 4.1.0), BiocGenerics (>= 0.37.0), S4Vectors (>= 0.27.12),
+	IRanges (>= 2.31.2), XVector (>= 0.37.1), Seqinfo
 Imports: methods, utils, grDevices, stats, crayon
 LinkingTo: S4Vectors, IRanges, XVector
 Suggests: graphics, pwalign, BSgenome (>= 1.13.14),
@@ -90,12 +90,10 @@ Collate: utils.R
 	findPalindromes.R
 	PDict-class.R
 	matchPDict.R
-	XStringPartialMatches-class.R
 	XStringQuality-class.R
 	QualityScaledXStringSet.R
-	pmatchPattern.R
-	needwunsQS.R
+	lcsuffix.R
 	MultipleAlignment.R
-	matchprobes.R
-	moved_to_pwalign.R
+	longestConsecutive.R
+	predefined_scoring_matrices.R
 	zzz.R

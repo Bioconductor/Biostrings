@@ -4,13 +4,13 @@ aastr <- paste(AA_ALPHABET, collapse="")
 bstr <- rawToChar(as.raw(32:126))
 
 test_allstrings_for_error <- function(input, exp_error, ignore="") {
-    if (!("DNA" %in% ignore)) expect_error(DNAString(input), exp_error)
-    if (!("RNA" %in% ignore)) expect_error(RNAString(input), exp_error)
-    if (!("AA" %in% ignore))  expect_error(AAString(input), exp_error)
-    if (!("B" %in% ignore))   expect_error(BString(input), exp_error)
+    if (!("DNA" %in% ignore)) expect_error2(DNAString(input), exp_error)
+    if (!("RNA" %in% ignore)) expect_error2(RNAString(input), exp_error)
+    if (!("AA" %in% ignore))  expect_error2(AAString(input), exp_error)
+    if (!("B" %in% ignore))   expect_error2(BString(input), exp_error)
 }
 
-test_that("seqtype correctly infers types", {
+test_that("seqtype() correctly infers types", {
     expect_equal(seqtype(BString("ABC")), "B")
     expect_equal(seqtype(RNAString("AUG")), "RNA")
     expect_equal(seqtype(DNAString("ATG")), "DNA")
@@ -38,7 +38,7 @@ test_that("encode/decode tables work correctly", {
     test_allstrings_for_error(bstr, "not in lookup table", ignore="B")
 })
 
-test_that("'letter' correctly extracts elements", {
+test_that("letter() works as expected", {
     expect_equal(letter(DNAString("ATGCATGC"), c(1,3,6)), "AGT")
     expect_equal(letter(RNAString("AUGCAUGC"), c(1,3,6)), "AGU")
     expect_equal( letter(AAString("ARNDARND"), c(1,3,6)), "ANR")
@@ -47,11 +47,11 @@ test_that("'letter' correctly extracts elements", {
                  rawToChar(rev(charToRaw(bstr))))
 
     ## TODO: Better error messages
-    expect_error(letter(DNAString(""), 10), "out of bounds")
-    expect_error(letter(RNAString(""), 10), "out of bounds")
-    expect_error(letter(AAString(""), 10), "out of bounds")
-    expect_error(letter(BString(""), 10), "out of bounds")
-    expect_error(letter("", 10), "out of bounds")
+    expect_error2(letter(DNAString(""), 10), "out of bounds")
+    expect_error2(letter(RNAString(""), 10), "out of bounds")
+    expect_error2(letter(AAString(""), 10), "out of bounds")
+    expect_error2(letter(BString(""), 10), "out of bounds")
+    expect_error2(letter("", 10), "out of bounds")
 })
 
 test_that("constructors handle invalid and non-char input correctly", {
@@ -65,7 +65,7 @@ test_that("constructors handle invalid and non-char input correctly", {
                               "input must be a single non-NA string")
 })
 
-test_that("conversion between XStrings works properly", {
+test_that("conversion between XString seqtypes works properly", {
     # DNA <-> RNA
     expect_equal(RNAString(DNAString(dnastr)), RNAString(rnastr))
     expect_equal(DNAString(RNAString(rnastr)), DNAString(dnastr))
@@ -81,17 +81,17 @@ test_that("conversion between XStrings works properly", {
     expect_equal(AAString(BString(aastr)), AAString(aastr))
 
     # invalid DNA,RNA <-> AA
-    expect_error(AAString(DNAString("ATGC")), "incompatible sequence types")
-    expect_error(AAString(RNAString("AUGC")), "incompatible sequence types")
-    expect_error(DNAString(AAString("ARND")), "incompatible sequence types")
-    expect_error(RNAString(AAString("ARND")), "incompatible sequence types")
+    expect_error2(AAString(DNAString("ATGC")), "incompatible sequence types")
+    expect_error2(AAString(RNAString("AUGC")), "incompatible sequence types")
+    expect_error2(DNAString(AAString("ARND")), "incompatible sequence types")
+    expect_error2(RNAString(AAString("ARND")), "incompatible sequence types")
 
     # invalid B -> X
     bbad <- BString(";")
     test_allstrings_for_error(bbad, "not in lookup table", ignore="B")
 })
 
-test_that("as.vector methods work correctly", {
+test_that("as.vector() methods work as expected", {
     ## TODO: sometimes returns factor, sometimes character
     ##                 note the BString case as an example
     dnafac <- factor(seq_len(nchar(dnastr)))
@@ -112,40 +112,173 @@ test_that("as.vector methods work correctly", {
     #expect_equal(as.vector(BString(bstr)), bfac)
 })
 
-test_that("equality methods work as advertised", {
-    expect_true(DNAString(dnastr) == DNAString(dnastr))
-    expect_true(RNAString(rnastr) == RNAString(rnastr))
-    expect_true(AAString(aastr) == AAString(aastr))
-    expect_true(BString(bstr) == BString(bstr))
+test_that("methods from the Compare group generic work as expected", {
+    check_Compare_methods <- function(x, y, compare_code) {
+        expect_identical(x == y, compare_code == 0L)
+        expect_identical(x != y, compare_code != 0L)
+        expect_identical(x <= y, compare_code <= 0L)
+        expect_identical(x >= y, compare_code >= 0L)
+        expect_identical(x <  y, compare_code <  0L)
+        expect_identical(x >  y, compare_code >  0L)
+    }
 
-    expect_false(DNAString(dnastr) == DNAString(substr(dnastr, 1, 7)))
-    expect_false(RNAString(rnastr) == RNAString(substr(rnastr, 1, 7)))
-    expect_false(AAString(aastr) == AAString(substr(aastr, 1, 7)))
-    expect_false(BString(bstr) == BString(substr(bstr, 1, 7)))
+    pcompare_character <- function(x, y) {
+        stopifnot(is.character(x), is.character(y))
+        prev_locale <- Sys.getlocale("LC_COLLATE")
+        Sys.setlocale("LC_COLLATE", "C")
+        on.exit(Sys.setlocale("LC_COLLATE", prev_locale))
+        ifelse(x < y, -1L, ifelse(x > y, 1L, 0L))
+    }
 
-    expect_true(DNAString(dnastr) != DNAString(substr(dnastr, 1, 7)))
-    expect_true(RNAString(rnastr) != RNAString(substr(rnastr, 1, 7)))
-    expect_true(AAString(aastr) != AAString(substr(aastr, 1, 7)))
-    expect_true(BString(bstr) != BString(substr(bstr, 1, 7)))
+    BString_objects <- list(BString(), BString("AAA"), BString("aaa"),
+                            BString("aaz"), BString("aaaa"),
+                            BString("TGM"), BString("tgg"))
+    ## Note that the objects in 'DNAString_objects' and 'RNAString_objects'
+    ## are sorted in strictly increasing order. Yes, because of how the
+    ## letters in an DNAString or RNAString object are encoded,
+    ## DNAString("TGM") is considered < DNAString("TGG").
+    DNAString_objects <- list(DNAString(), DNAString("TGM"), DNAString("TGG"))
+    RNAString_objects <- list(RNAString(), RNAString("UGM"), RNAString("UGG"))
+    AAString_objects <- list(AAString(), AAString("AAA"), AAString("TGM"))
+    char_vecs <- c("", "aaa", "aaz", "aaaa", "tgg", "TGM")
 
+    ## Between two BString objects.
+    for (x in BString_objects) {
+        for (y in BString_objects) {
+            compare_code <- pcompare_character(as.character(x), as.character(y))
+            check_Compare_methods(x, y, compare_code)
+        }
+    }
 
-    ## DNA <-> RNA comparison
-    expect_true(DNAString(dnastr) == RNAString(rnastr))
+    ## Between a BString object and a DNAString object.
+    for (x in BString_objects) {
+        for (y in DNAString_objects) {
+            compare_code <- pcompare_character(as.character(x), as.character(y))
+            check_Compare_methods(x, y, compare_code)
+            check_Compare_methods(y, x, -compare_code)
+        }
+    }
 
-    ## other B comparisons
-    expect_true(AAString(aastr) == BString(aastr))
-    expect_true(AAString(aastr) != BString(bstr))
-    expect_true(bstr == BString(bstr))
+    ## Between a BString object and an RNAString object.
+    for (x in BString_objects) {
+        for (y in RNAString_objects) {
+            compare_code <- pcompare_character(as.character(x), as.character(y))
+            check_Compare_methods(x, y, compare_code)
+            check_Compare_methods(y, x, -compare_code)
+        }
+    }
 
-    ## invalid comparisons
-    expect_error(DNAString(dnastr) == AAString(aastr),
-      "comparison between a \"DNAString\" instance and a \"AAString\" instance is not supported")
-    expect_error(DNAString(dnastr) == BString(bstr),
-      "comparison between a \"DNAString\" instance and a \"BString\" instance is not supported")
-    expect_error(RNAString(rnastr) == AAString(aastr),
-      "comparison between a \"RNAString\" instance and a \"AAString\" instance is not supported")
-    expect_error(RNAString(rnastr) == BString(bstr),
-      "comparison between a \"RNAString\" instance and a \"BString\" instance is not supported")
+    ## Between a BString object and a AAString object.
+    for (x in BString_objects) {
+        for (y in AAString_objects) {
+            compare_code <- pcompare_character(as.character(x), as.character(y))
+            check_Compare_methods(x, y, compare_code)
+            check_Compare_methods(y, x, -compare_code)
+        }
+    }
+
+    ## Between a BString object and a character vector.
+    for (x in BString_objects) {
+        compare_codes <- pcompare_character(as.character(x), char_vecs)
+        check_Compare_methods(x, char_vecs, compare_codes)
+        check_Compare_methods(char_vecs, x, -compare_codes)
+    }
+
+    ## Between two DNAString objects.
+    for (i in seq_along(DNAString_objects)) {
+        x <- DNAString_objects[[i]]
+        for (j in seq_along(DNAString_objects)) {
+            y <- DNAString_objects[[j]]
+            compare_code <- as.integer(sign(i - j))
+            check_Compare_methods(x, y, compare_code)
+        }
+    }
+
+    ## Between a DNAString object and an RNAString object.
+    for (i in seq_along(DNAString_objects)) {
+        x <- DNAString_objects[[i]]
+        for (j in seq_along(RNAString_objects)) {
+            y <- RNAString_objects[[j]]
+            compare_code <- as.integer(sign(i - j))
+            check_Compare_methods(x, y, compare_code)
+            check_Compare_methods(y, x, -compare_code)
+        }
+    }
+
+    ## Between a DNAString object and an AAString object.
+    msg <- paste0("comparison between a DNAString object ",
+                  "and a AAString object is not supported")
+    expect_error2(DNAString() == AAString(), msg)
+    expect_error2(DNAString() != AAString(), msg)
+    expect_error2(DNAString() <= AAString(), msg)
+    expect_error2(DNAString() >= AAString(), msg)
+    expect_error2(DNAString() <  AAString(), msg)
+    expect_error2(DNAString() >  AAString(), msg)
+    msg <- paste0("comparison between a AAString object ",
+                  "and a DNAString object is not supported")
+    expect_error2(AAString() == DNAString(), msg)
+    expect_error2(AAString() != DNAString(), msg)
+    expect_error2(AAString() <= DNAString(), msg)
+    expect_error2(AAString() >= DNAString(), msg)
+    expect_error2(AAString() <  DNAString(), msg)
+    expect_error2(AAString() >  DNAString(), msg)
+
+    ## Between a DNAString object and a character vector.
+    for (x in DNAString_objects) {
+        compare_codes <- pcompare_character(as.character(x), char_vecs)
+        check_Compare_methods(x, char_vecs, compare_codes)
+        check_Compare_methods(char_vecs, x, -compare_codes)
+    }
+
+    ## Between two RNAString objects.
+    for (i in seq_along(RNAString_objects)) {
+        x <- RNAString_objects[[i]]
+        for (j in seq_along(RNAString_objects)) {
+            y <- RNAString_objects[[j]]
+            compare_code <- as.integer(sign(i - j))
+            check_Compare_methods(x, y, compare_code)
+        }
+    }
+
+    ## Between an RNAString object and an AAString object.
+    msg <- paste0("comparison between a RNAString object ",
+                  "and a AAString object is not supported")
+    expect_error2(RNAString() == AAString(), msg)
+    expect_error2(RNAString() != AAString(), msg)
+    expect_error2(RNAString() <= AAString(), msg)
+    expect_error2(RNAString() >= AAString(), msg)
+    expect_error2(RNAString() <  AAString(), msg)
+    expect_error2(RNAString() >  AAString(), msg)
+    msg <- paste0("comparison between a AAString object ",
+                  "and a RNAString object is not supported")
+    expect_error2(AAString() == RNAString(), msg)
+    expect_error2(AAString() != RNAString(), msg)
+    expect_error2(AAString() <= RNAString(), msg)
+    expect_error2(AAString() >= RNAString(), msg)
+    expect_error2(AAString() <  RNAString(), msg)
+    expect_error2(AAString() >  RNAString(), msg)
+
+    ## Between an RNAString object and a character vector.
+    for (x in RNAString_objects) {
+        compare_codes <- pcompare_character(as.character(x), char_vecs)
+        check_Compare_methods(x, char_vecs, compare_codes)
+        check_Compare_methods(char_vecs, x, -compare_codes)
+    }
+
+    ## Between two AAString objects.
+    for (x in AAString_objects) {
+        for (y in AAString_objects) {
+            compare_code <- pcompare_character(as.character(x), as.character(y))
+            check_Compare_methods(x, y, compare_code)
+        }
+    }
+
+    ## Between an AAString object and a character vector.
+    for (x in AAString_objects) {
+        compare_codes <- pcompare_character(as.character(x), char_vecs)
+        check_Compare_methods(x, char_vecs, compare_codes)
+        check_Compare_methods(char_vecs, x, -compare_codes)
+    }
 })
 
 test_that("output works correctly", {
@@ -170,7 +303,7 @@ test_that("output works correctly", {
         "100-letter BString object\\nseq: AA\\.\\.\\.AA$", width=10)
 })
 
-test_that("substr, substring methods work correctly", {
+test_that("substr() and substring() methods work as expected", {
     d <- DNAString(dnastr)
     r <- RNAString(rnastr)
     a <- AAString(aastr)
@@ -186,17 +319,17 @@ test_that("substr, substring methods work correctly", {
     expect_equal(as.character(substring(a, 5, 10)), substring(aastr, 5, 10))
     expect_equal(as.character(substring(b, 5, 10)), substring(bstr, 5, 10))
 
-    expect_error(substring(d, 10, 5), "Invalid sequence coordinates")
-    expect_error(substring(r, 10, 5), "Invalid sequence coordinates")
-    expect_error(substring(a, 10, 5), "Invalid sequence coordinates")
-    expect_error(substring(b, 10, 5), "Invalid sequence coordinates")
+    expect_error2(substring(d, 10, 5), "Invalid sequence coordinates")
+    expect_error2(substring(r, 10, 5), "Invalid sequence coordinates")
+    expect_error2(substring(a, 10, 5), "Invalid sequence coordinates")
+    expect_error2(substring(b, 10, 5), "Invalid sequence coordinates")
 
     # `[` dispatch
     expect_equal(as.character(d[1:10]), substr(dnastr, 1, 10))
     expect_equal(as.character(d[-1]), substr(dnastr, 2, nchar(dnastr)))
 })
 
-test_that("reverse, complement, reverseComplement work correctly", {
+test_that("reverse(), complement(), reverseComplement() work as expected", {
     ## reverse tests
     .revString <- function(s) paste(rev(safeExplode(s)), collapse="")
     dna <- DNAString(dnastr)
@@ -231,8 +364,8 @@ test_that("reverse, complement, reverseComplement work correctly", {
     ## complement method
     expect_equal(as.character(complement(dna)), d_comp)
     expect_equal(as.character(complement(rna)), r_comp)
-    expect_error(complement(AAString()), "unable to find an inherited method")
-    expect_error(complement(BString()), "unable to find an inherited method")
+    expect_error2(complement(AAString()), "unable to find an inherited method")
+    expect_error2(complement(BString()), "unable to find an inherited method")
     expect_equal(as.character(complement(d_v)), rep(d_comp, 3L))
     expect_equal(as.character(complement(mdna)), md_comp)
     expect_equal(as.character(complement(mrna)), mr_comp)
@@ -240,10 +373,10 @@ test_that("reverse, complement, reverseComplement work correctly", {
     ## reverseComplement method
     expect_equal(as.character(reverseComplement(dna)), .revString(d_comp))
     expect_equal(as.character(reverseComplement(rna)), .revString(r_comp))
-    expect_error(reverseComplement(AAString()),
-                 "unable to find an inherited method")
-    expect_error(reverseComplement(BString()),
-                 "unable to find an inherited method")
+    expect_error2(reverseComplement(AAString()),
+                  "unable to find an inherited method")
+    expect_error2(reverseComplement(BString()),
+                  "unable to find an inherited method")
     expect_equal(as.character(reverseComplement(d_v)),
                  rep(.revString(d_comp), 3L))
     expect_equal(as.character(reverseComplement(mdna)), .revString(md_comp))
@@ -251,7 +384,7 @@ test_that("reverse, complement, reverseComplement work correctly", {
 })
 
 ## Porting RUnit tests
-test_that("alphabet finds the correct values", {
+test_that("alphabet() finds the correct values", {
     expect_equal(alphabet(DNAString(dnastr)), strsplit(dnastr, "")[[1]])
     expect_equal(alphabet(RNAString(rnastr)), strsplit(rnastr, "")[[1]])
     expect_equal(alphabet(AAString(aastr)), strsplit(aastr, "")[[1]])
@@ -259,7 +392,7 @@ test_that("alphabet finds the correct values", {
 
     expect_equal(alphabet(DNAString(), baseOnly=TRUE), DNA_BASES)
     expect_equal(alphabet(RNAString(), baseOnly=TRUE), RNA_BASES)
-    expect_error(alphabet(DNAString(), baseOnly=1),
-                 "'baseOnly' must be TRUE or FALSE")
+    expect_error2(alphabet(DNAString(), baseOnly=1),
+                  "'baseOnly' must be TRUE or FALSE")
 })
 

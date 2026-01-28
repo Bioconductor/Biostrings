@@ -95,8 +95,8 @@ test_that("coercion between masked types works correctly", {
     expect_equal(as.character(unmasked(as(rnam, "MaskedRNAString"))),
                  as.character(as(rna, "RNAString")))
 
-    expect_error(as(dnam, "MaskedAAString"), "incompatible sequence types")
-    expect_error(as(rnam, "MaskedAAString"), "incompatible sequence types")
+    expect_error2(as(dnam, "MaskedAAString"), "incompatible sequence types")
+    expect_error2(as(rnam, "MaskedAAString"), "incompatible sequence types")
 
     # roundtrip X -> B -> X conversion
     expect_equal(as(as(dnam, "MaskedBString"), "MaskedDNAString"), dnam)

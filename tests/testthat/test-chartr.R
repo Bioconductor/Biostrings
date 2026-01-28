@@ -22,7 +22,7 @@ test_that("chartr has correct behavior on Biostrings objects", {
     ms2 <- s2
     m1 <- Mask(length(s1), start=7, width=5)
     masks(ms1) <- m1
-    expect_error(chartr("apple", "peels", ms1), "Please complain!")
+    expect_error2(chartr("apple", "peels", ms1), "Please complain!")
 })
 
 test_that("replaceAmbiguities works as expected", {
@@ -36,9 +36,9 @@ test_that("replaceAmbiguities works as expected", {
 
     aa <- AAString(paste(AA_ALPHABET, collapse=""))
     bb <- BString(paste(LETTERS, collapse=""))
-    expect_error(replaceAmbiguities(aa), "only supported for DNA and RNA")
-    expect_error(replaceAmbiguities(bb), "only supported for DNA and RNA")
-    expect_error(replaceAmbiguities("test"), "only supported for DNA and RNA")
+    expect_error2(replaceAmbiguities(aa), "only supported for DNA and RNA")
+    expect_error2(replaceAmbiguities(bb), "only supported for DNA and RNA")
+    expect_error2(replaceAmbiguities("test"), "only supported for DNA and RNA")
 
     expect_true(all(replaceAmbiguities(DNAStringSet(list(dna1, dna1))) ==
                     DNAStringSet(list(dna2, dna2))))

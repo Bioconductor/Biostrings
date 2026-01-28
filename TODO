@@ -57,67 +57,7 @@ BASIC CONTAINERS
   though: this would require a huge amount of memory and there are other ways
   to retrieve these locations on user demand so maybe it's not worth it.
 
-BASIC OPERATIONS
-
-- Several problems with comparison operators (==, !=, <=, >=, < and >)
-  when at least one of the two operands is an XString derivative.
-  Issue https://github.com/Bioconductor/Biostrings/issues/51 is just the
-  tip of the iceberg :-(
-  For example:
-
-    > DNAString("A") != "A"
-    Error: C stack usage  7969796 is too close to the limit
-
-    > DNAString("A") <= "A"
-    Error: C stack usage  7969828 is too close to the limit
-
-    > DNAString("A") >= "A"
-    Error in order(...) : unimplemented type 'list' in 'orderVector1'
-
-    > DNAString("A") < "A"
-    Error in order(...) : unimplemented type 'list' in 'orderVector1'
-
-    > DNAString("A") > "A"
-    Error: C stack usage  7969796 is too close to the limit
-
-    > DNAString("AAA") == "AAA"
-    Error in FUN(X[[i]], ...) :
-      coercion of character object to DNAString didn't preserve its length
-
-    > DNAString("AAA") <= "AAA"
-    Error in FUN(X[[i]], ...) :
-      coercion of character object to DNAString didn't preserve its length
-
-    > BString("AAA") <= "AAA"
-    Error in FUN(X[[i]], ...) :
-      coercion of character object to BString didn't preserve its length
-
-    > DNAString("A") > DNAString("A")
-    Error: C stack usage  7969796 is too close to the limit
-
-    > DNAString("C") > DNA_ALPHABET
-    Error in .charToXString(seqtype, x, start, end, width) :
-      input must be a single non-NA string
-
-    etc...
-
-  All of these should work and behave the same way as when replacing the
-  XString derivative with a character vector of length 1.
-  There will be many 'x <op> y' cases to test:
-    o 'x' is a B/DNA/RNA/AAString and 'y' is a character vector of
-      arbitrary length;
-    o 'x' is a character vector of arbitrary length and 'y' is a
-      B/DNA/RNA/AAString;
-    o both 'x' and 'y' are XString derivatives of the same type or not;
-    o <op> is any of the 6 comparison operators.
-  So there's a little bit of a combinatorial explosion here but we should
-  be able to come up with a solid set of unit tests that will cover it all.
-
 UTILITIES
-
-- Move lcprefix()/lcsuffix() out of pmatchPattern.R to a file of their own.
-  (This stuff needs to belong to the UTILITIES component of the package, not
-  to the STRING ALIGNMENT component.)
 
 - Add patternFrequency() methods for XStringSet and XStringViews objects.
 

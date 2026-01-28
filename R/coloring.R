@@ -1,13 +1,6 @@
 ### =========================================================================
-### add_colors()
+### XString Display Colors
 ### -------------------------------------------------------------------------
-###
-### Nothing in this file is exported.
-###
-
-### Placeholder, initialized in .onLoad()
-DNA_AND_RNA_COLORED_LETTERS <- NULL
-AA_COLORED_LETTERS <- NULL
 
 ### Return a named character vector where all the names are single letters.
 ### Colors for A, C, G, and T were inspired by
@@ -34,28 +27,6 @@ make_DNA_AND_RNA_COLORED_LETTERS <- function()
                  dark_grey_bg_letters),
         N=make_style("grey", bg=TRUE)(whiter("N"))
     )
-}
-
-### 'x' must be a character vector.
-.add_dna_and_rna_colors <- function(x)
-{
-    if (!isTRUE(getOption("Biostrings.coloring", default=FALSE)))
-        return(x)
-    ans <- vapply(x,
-        function(xi) {
-            xi <- safeExplode(xi)
-            m <- match(xi, names(DNA_AND_RNA_COLORED_LETTERS))
-            match_idx <- which(!is.na(m))
-            xi[match_idx] <- DNA_AND_RNA_COLORED_LETTERS[m[match_idx]]
-            paste0(xi, collapse="")
-        },
-        character(1),
-        USE.NAMES=FALSE
-    )
-    x_names <- names(x)
-    if (!is.null(x_names))
-        names(ans) <- x_names
-    ans
 }
 
 ### Return a named character vector where all the names are single letters.
@@ -118,16 +89,18 @@ make_AA_COLORED_LETTERS <- function(){
 }
 
 ### 'x' must be a character vector.
-.add_aa_colors <- function(x)
+## env_var_name is the name of the corresponding palette in .pkgenv
+.add_xstring_colors <- function(x, env_var_name)
 {
     if (!isTRUE(getOption("Biostrings.coloring", default=FALSE)))
         return(x)
+    color_palette <- get(env_var_name, envir=.pkgenv)
     ans <- vapply(x,
         function(xi) {
             xi <- safeExplode(xi)
-            m <- match(xi, names(AA_COLORED_LETTERS))
+            m <- match(xi, names(color_palette))
             match_idx <- which(!is.na(m))
-            xi[match_idx] <- AA_COLORED_LETTERS[m[match_idx]]
+            xi[match_idx] <- color_palette[m[match_idx]]
             paste0(xi, collapse="")
         },
         character(1),
@@ -139,7 +112,71 @@ make_AA_COLORED_LETTERS <- function(){
     ans
 }
 
+.update_X_palette <- function(colors=NULL, env_var_name,
+                                alphabet, default_palette_function){
+    ## passing default_palette_function as a function pointer so we don't
+    ## have to evaluate it unless necessary
+    palette <- get(env_var_name, envir=.pkgenv)
+    if(is.null(colors))
+        palette <- default_palette_function()
+    if(!is.null(colors)){
+        if(!is.list(colors)){
+            stop("'colors' should be NULL or a named list of entries with 'bg' ",
+                    "and optionally 'fg' values.")
+        }
+
+        n <- names(colors)
+        if(!is.null(alphabet) && length(setdiff(n, alphabet)) != 0){
+            ## non-BStrings: checking if the characters are valid
+            stop("Invalid codes specified.")
+        } else if(is.null(alphabet)){
+            ## BStrings: checking for single characters (0:255 in raw)
+            name_nchars <- vapply(n, \(x) length(charToRaw(x)), integer(1L))
+            if(!all(name_nchars == 1L))
+                stop("Invalid codes specified.")
+        }
+
+        for(i in seq_along(colors)){
+            fg <- colors[[i]]$fg
+            bg <- colors[[i]]$bg
+            if(is.null(fg) && is.null(bg)){
+                palette[n[i]] <- n[i]
+            } else if(is.null(bg)) {
+                palette[n[i]] <- make_style(fg)(n[i])
+            } else {
+                if(is.null(fg)) fg <- rgb(1,1,1)
+                palette[n[i]] <- make_style(bg, bg=TRUE)(make_style(fg)(n[i]))
+            }
+        }
+    }
+
+    assign(env_var_name, palette, envir=.pkgenv)
+}
+
+update_DNA_palette <- function(colors=NULL){
+    .update_X_palette(colors, "DNA_AND_RNA_COLORED_LETTERS",
+                        union(DNA_ALPHABET, RNA_ALPHABET),
+                        make_DNA_AND_RNA_COLORED_LETTERS)
+}
+
+update_RNA_palette <- update_DNA_palette
+
+update_AA_palette <- function(colors=NULL){
+    .update_X_palette(colors, "AA_COLORED_LETTERS",
+                        AA_ALPHABET,
+                        make_AA_COLORED_LETTERS)
+}
+
+update_B_palette <- function(colors=NULL){
+    ## BStrings don't have a default palette
+    ## thus their default palette function is just \() return(character(0L))
+    .update_X_palette(colors, "B_COLORED_LETTERS",
+                        NULL,
+                        \(){ character(0L) })
+}
+
 add_colors <- function(x) UseMethod("add_colors")
 add_colors.default <- identity
-add_colors.DNA <- add_colors.RNA <- .add_dna_and_rna_colors
-add_colors.AA <- .add_aa_colors
+add_colors.DNA <- add_colors.RNA <- function(x){ .add_xstring_colors(x, "DNA_AND_RNA_COLORED_LETTERS") }
+add_colors.AA <- function(x){ .add_xstring_colors(x, "AA_COLORED_LETTERS") }
+add_colors.B <- function(x) { .add_xstring_colors(x, "B_COLORED_LETTERS") }

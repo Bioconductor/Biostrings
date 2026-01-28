@@ -7,7 +7,7 @@
 \title{seqinfo() method for DNAStringSet objects}
 
 \description{
-    \code{\link[GenomeInfoDb]{seqinfo}} methods for extracting the
+    \code{\link[Seqinfo]{seqinfo}} methods for extracting the
     sequence information stored in a \link[Biostrings]{DNAStringSet}
     object.
 }

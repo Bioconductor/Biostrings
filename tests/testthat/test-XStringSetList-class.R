@@ -182,10 +182,10 @@ test_that("seqtype() works correctly on XStringSetList derivatives", {
 
     # invalid conversions
     x <- DNAStringSetList(DNA_ALPHABET)
-    expect_error({seqtype(x) <- "AA"},
+    expect_error2({seqtype(x) <- "AA"},
         "incompatible sequence types \"DNA\" and \"AA\"")
     seqtype(x) <- "RNA"
-    expect_error({seqtype(x) <- "AA"},
+    expect_error2({seqtype(x) <- "AA"},
         "incompatible sequence types \"RNA\" and \"AA\"")
 })
 

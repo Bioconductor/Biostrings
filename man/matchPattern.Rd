@@ -157,7 +157,8 @@ vcountPattern(pattern, subject,
   \itemize{
     \item \link{lowlevel-matching}
     \item \code{\link{matchPDict}}
-    \item \code{\link{pairwiseAlignment}}
+    \item \code{\link[pwalign]{pairwiseAlignment}} in the \pkg{pwalign}
+          package
     \item \code{\link{mismatch}}
     \item \code{\link{matchLRPatterns}}
     \item \code{\link{matchProbePair}}
@@ -165,8 +166,6 @@ vcountPattern(pattern, subject,
     \item \code{\link{alphabetFrequency}}
     \item \link{XStringViews} class
     \item \link{MIndex} class
-    \item \code{\link[pwalign]{pairwiseAlignment}} in the \pkg{pwalign}
-          package
   }
 }
 

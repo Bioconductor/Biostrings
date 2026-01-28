@@ -80,7 +80,7 @@ test_that("PDicts can be initialized happy path", {
                         "MTB_PDict")
         p <- PDict(pats, max.mismatch=1L, algorithm=algo)
         expect_output(show(p), "MTB_PDict object of length 64 and width 6")
-        expect_error(p@threeparts, "no slot of name \"threeparts\"")
+        expect_error2(p@threeparts, "no slot of name \"threeparts\"")
         expect_equal(length(p@threeparts_list), 2L)
         p1 <- p@threeparts_list[[1]]
         p2 <- p@threeparts_list[[2]]
@@ -96,46 +96,46 @@ test_that("PDicts can be initialized happy path", {
 })
 
 test_that("PDict sad path errors correctly", {
-    expect_error(PDict(DNA_ALPHABET),
-                 "non base DNA letter found in Trusted Band")
-    expect_error(PDict(AA_ALPHABET), "not in lookup table")
-    expect_error(PDict(1:3), "unable to find an inherited method")
-    expect_error(PDict(character(0L)), "must contain at least one pattern")
+    expect_error2(PDict(DNA_ALPHABET),
+                  "non base DNA letter found in Trusted Band")
+    expect_error2(PDict(AA_ALPHABET), "not in lookup table")
+    expect_error2(PDict(1:3), "unable to find an inherited method")
+    expect_error2(PDict(character(0L)), "must contain at least one pattern")
     p <- PDict(DNA_BASES)
-    expect_error({names(p) <- DNA_BASES},
-                 "attempt to modify the names of a TB_PDict instance")
-    expect_error(PDict(c("AA", "AAA")), "Trusted Band has a different length")
+    expect_error2({names(p) <- DNA_BASES},
+                  "attempt to modify the names of a TB_PDict instance")
+    expect_error2(PDict(c("AA", "AAA")), "Trusted Band has a different length")
 
     codons <- mkAllStrings(DNA_BASES, 3)
-    expect_error(PDict(codons, max.mismatch=1),
-                 "supported only if the width of dictionary 'x' is >= 6")
+    expect_error2(PDict(codons, max.mismatch=1),
+                  "supported only if the width of dictionary 'x' is >= 6")
 
     longstrings <- mkAllStrings(c("A","T"), 6)
-    expect_error(PDict(longstrings, max.mismatch=7),
-                 "must be <= 1 given the width of dictionary 'x'")
-    expect_error(PDict(paste0(rep("A", 100), collapse=""), max.mismatch=100),
-                 "must be <= 32 given the width of dictionary 'x'")
+    expect_error2(PDict(longstrings, max.mismatch=7),
+                  "must be <= 1 given the width of dictionary 'x'")
+    expect_error2(PDict(paste0(rep("A", 100), collapse=""), max.mismatch=100),
+                  "must be <= 32 given the width of dictionary 'x'")
 
-    expect_error(PDict(codons, max.mismatch=NULL),
-                 "must be a single integer or 'NA'")
-    expect_error(PDict(codons, max.mismatch="a"),
-                 "must be a single integer or 'NA'")
-    expect_error(PDict(codons, max.mismatch=c(1,2)),
-                 "must be a single integer or 'NA'")
+    expect_error2(PDict(codons, max.mismatch=NULL),
+                  "must be a single integer or 'NA'")
+    expect_error2(PDict(codons, max.mismatch="a"),
+                  "must be a single integer or 'NA'")
+    expect_error2(PDict(codons, max.mismatch=c(1,2)),
+                  "must be a single integer or 'NA'")
 
-    expect_error(PDict("A", algorithm="erroralgo"), "is not a defined class")
+    expect_error2(PDict("A", algorithm="erroralgo"), "is not a defined class")
 
     names(longstrings) <- rep("", length(longstrings))
-    expect_error(PDict(longstrings), "'x' has invalid names")
+    expect_error2(PDict(longstrings), "'x' has invalid names")
     names(longstrings) <- rep("test", length(longstrings))
-    expect_error(PDict(longstrings), "'x' has duplicated names")
+    expect_error2(PDict(longstrings), "'x' has duplicated names")
 
-    expect_error(PDict("AAAA", tb.start="a"),
-                 "must be a single integer or 'NA'")
-    expect_error(PDict("AAAA", tb.end="a"),
-                 "must be a single integer or 'NA'")
-    expect_error(PDict("AAAA", tb.width="a"),
-                 "must be a single integer or 'NA'")
+    expect_error2(PDict("AAAA", tb.start="a"),
+                  "must be a single integer or 'NA'")
+    expect_error2(PDict("AAAA", tb.end="a"),
+                  "must be a single integer or 'NA'")
+    expect_error2(PDict("AAAA", tb.width="a"),
+                  "must be a single integer or 'NA'")
 
     expect_warning(PDict("AAAA", algorithm="ACtree"),
                    "support for ACtree preprocessing algo has been dropped")

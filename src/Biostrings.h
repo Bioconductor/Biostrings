@@ -344,6 +344,27 @@ SEXP XStringSet_two_way_letter_frequency_by_quality(
         SEXP with_other
 );
 
+/* lcsuffix.c */
+
+SEXP lcprefix(
+	SEXP s1_xp,
+	SEXP s1_offset,
+	SEXP s1_length,
+	SEXP s2_xp,
+	SEXP s2_offset,
+	SEXP s2_length
+);
+
+SEXP lcsuffix(
+	SEXP s1_xp,
+	SEXP s1_offset,
+	SEXP s1_length,
+	SEXP s2_xp,
+	SEXP s2_offset,
+	SEXP s2_length
+);
+
+
 /* gtestsim.c */
 
 void gtestsim(
@@ -1084,34 +1105,8 @@ SEXP vmatch_XStringSet_XStringSet(
 );
 
 
-/* pmatchPattern.c */
-
-SEXP lcprefix(
-	SEXP s1_xp,
-	SEXP s1_offset,
-	SEXP s1_length,
-	SEXP s2_xp,
-	SEXP s2_offset,
-	SEXP s2_length
-);
-
-SEXP lcsuffix(
-	SEXP s1_xp,
-	SEXP s1_offset,
-	SEXP s1_length,
-	SEXP s2_xp,
-	SEXP s2_offset,
-	SEXP s2_length
-);
-
-
 /* strutils.c (belonged originally to old matchprobes package) */
 
 char compbase(char c);
 SEXP MP_longestConsecutive(SEXP x, SEXP letter);
-
-
-/* matchprobes.c (belonged originally to old matchprobes package) */
-
-SEXP MP_matchprobes(SEXP query, SEXP records, SEXP probepos);
 

@@ -83,16 +83,16 @@ test_that("vcount/vwhich/vmatchPDict() work", {
     dvv <- Views(d, start=rep(1,2), width=rep(length(d), 2))
 
     # Disallowed cases
-    expect_error(matchPDict(pdict, dss), "please use vmatchPDict")
-    expect_error(vmatchPDict(pdict, d), "please use matchPDict")
-    expect_error(vmatchPDict(pdict, as(d, "MaskedDNAString")),
-                 "please use matchPDict")
-    expect_error(vwhichPDict(pdict, d), "please use whichPDict")
-    expect_error(vwhichPDict(pdict, as(d, "MaskedDNAString")),
-                 "please use whichPDict")
-    expect_error(vcountPDict(pdict, d), "please use countPDict")
-    expect_error(vcountPDict(pdict, as(d, "MaskedDNAString")),
-                 "please use countPDict")
+    expect_error2(matchPDict(pdict, dss), "please use vmatchPDict")
+    expect_error2(vmatchPDict(pdict, d), "please use matchPDict")
+    expect_error2(vmatchPDict(pdict, as(d, "MaskedDNAString")),
+                  "please use matchPDict")
+    expect_error2(vwhichPDict(pdict, d), "please use whichPDict")
+    expect_error2(vwhichPDict(pdict, as(d, "MaskedDNAString")),
+                  "please use whichPDict")
+    expect_error2(vcountPDict(pdict, d), "please use countPDict")
+    expect_error2(vcountPDict(pdict, as(d, "MaskedDNAString")),
+                  "please use countPDict")
 
     exp_out <- matrix(rep(c(0,2), times=c(6,2)), nrow=4L, byrow=TRUE)
     expect_equal(vcountPDict(pdict, dss), exp_out)
@@ -118,8 +118,8 @@ test_that("vcount/vwhich/vmatchPDict() work", {
                  list(c(1,3,4),c(1,3,4)))
 
     ## this will fail when we implement it to remind me to add tests for it
-    expect_error(vmatchPDict(pdict, dss),
-                 "vmatchPDict() is not ready yet", fixed=TRUE)
+    expect_error2(vmatchPDict(pdict, dss),
+                  "vmatchPDict\\(\\) is not ready yet")
 })
 
 test_that("MIndex functionality works", {

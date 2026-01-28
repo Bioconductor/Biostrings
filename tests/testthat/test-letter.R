@@ -42,10 +42,10 @@ test_that("letter generic works properly for all classes", {
                     "must be an NA-free numeric vector",
                     "out of bounds")
     for (i in seq_along(sad_list)) {
-        expect_error(letter(s, sad_list[[i]]), error_msgs[i])
-        expect_error(letter(dna, sad_list[[i]]), error_msgs[i])
-        expect_error(letter(viewdna, sad_list[[i]]), error_msgs[i])
-        expect_error(letter(maskdna, sad_list[[i]]), error_msgs[i])
+        expect_error2(letter(s, sad_list[[i]]), error_msgs[i])
+        expect_error2(letter(dna, sad_list[[i]]), error_msgs[i])
+        expect_error2(letter(viewdna, sad_list[[i]]), error_msgs[i])
+        expect_error2(letter(maskdna, sad_list[[i]]), error_msgs[i])
     }
 })
 

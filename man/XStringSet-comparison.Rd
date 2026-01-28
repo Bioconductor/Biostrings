@@ -3,17 +3,18 @@
 \alias{XStringSet-comparison}
 
 \alias{pcompare,XStringSet,XStringSet-method}
-\alias{pcompare,XStringSet,ANY-method}
-\alias{pcompare,ANY,XStringSet-method}
+\alias{pcompare,XStringSet,Vector-method}
+\alias{pcompare,XStringSet,vector-method}
+\alias{pcompare,Vector,XStringSet-method}
+\alias{pcompare,vector,XStringSet-method}
 
 \alias{match,XStringSet,XStringSet-method}
-\alias{match,XStringSet,ANY-method}
-\alias{match,ANY,XStringSet-method}
+\alias{match,XStringSet,Vector-method}
+\alias{match,XStringSet,vector-method}
+\alias{match,Vector,XStringSet-method}
+\alias{match,vector,XStringSet-method}
 
-\alias{is.na,XStringSet-method}
-\alias{anyNA,XStringSet-method}
-
-\title{Comparing and ordering the elements in one or more XStringSet objects}
+\title{Element-wise comparison of XStringSet objects}
 
 \description{
   Methods for comparing and ordering the elements in one or more
@@ -118,19 +119,6 @@
     \item{\code{x \%in\% table}:}{
       Returns a logical vector indicating which elements in \code{x} match
       identically with an element in \code{table}.
-    }
-  }
-}
-
-\section{\code{is.na()} and related methods}{
-  In the code snippets below, \code{x} is an \link{XStringSet}
-  object. An \code{XStringSet} object never contains missing values
-  (these methods exist for compatibility).
-
-  \describe{
-    \item{\code{is.na(x)}:}{ Returns \code{FALSE} for every element.
-    }
-    \item{\code{anyNA(x)}:}{ Returns \code{FALSE}.
     }
   }
 }

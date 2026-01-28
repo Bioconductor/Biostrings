@@ -84,10 +84,10 @@ check_alphfreq <- function(XStringFUN, X_ALPH,
         v <- alphabetFrequency(ss, baseOnly=TRUE)
         expect_equal(v, exp_res)
         expect_equal(sum(v), sum(nchar(strs)))
-        expect_error(alphabetFrequency(ss, baseOnly=NA),
-                     "'baseOnly' must be TRUE or FALSE")
-        expect_error(alphabetFrequency(ss, baseOnly=1),
-                     "'baseOnly' must be TRUE or FALSE")
+        expect_error2(alphabetFrequency(ss, baseOnly=NA),
+                      "'baseOnly' must be TRUE or FALSE")
+        expect_error2(alphabetFrequency(ss, baseOnly=1),
+                      "'baseOnly' must be TRUE or FALSE")
         expect_equal(alphabetFrequency(ss, baseOnly=TRUE, as.prob=TRUE),
                      norm_res)
         if (isMatrix) {
@@ -155,8 +155,8 @@ test_that("letterFrequency(), alphabetFrequency() work for all input types", {
     expect_equal(alphabetFrequency(BStringSet(bstr)),
                  matrix(r, nrow=1L, ncol=256L))
 
-    expect_error(alphabetFrequency(BString(), baseOnly=TRUE),
-                 "unused argument (baseOnly = TRUE)", fixed=TRUE)
+    expect_error2(alphabetFrequency(BString(), baseOnly=TRUE),
+                  "unused argument \\(baseOnly = TRUE\\)")
 
     ## checking for Views objects and maskedString objects
     ds <- sample(DNA_ALPHABET, 100L, replace=TRUE)
@@ -187,8 +187,8 @@ test_that("hasOnlyBaseLetters() works as expected", {
     expect_false(hasOnlyBaseLetters(DNAStringSet(DNA_ALPHABET)))
     expect_false(hasOnlyBaseLetters(RNAStringSet(RNA_ALPHABET)))
     expect_false(hasOnlyBaseLetters(AAStringSet(AA_ALPHABET)))
-    expect_error(hasOnlyBaseLetters(BStringSet()),
-                 "unable to find an inherited method")
+    expect_error2(hasOnlyBaseLetters(BStringSet()),
+                  "unable to find an inherited method")
 
     ## Views
     d1 <- DNAString(paste(DNA_BASES, collapse=""))
@@ -286,10 +286,10 @@ test_that("nucleotideFrequency() methods work properly", {
     expect_equal(oligonucleotideFrequency(mask_d, 2L), exp_res)
 
     ## disallowed types
-    expect_error(oligonucleotideFrequency(AAString(),
-                 "must contain sequences of type DNA or RNA"))
-    expect_error(oligonucleotideFrequency(BStringSet(),
-                 "must contain sequences of type DNA or RNA"))
+    expect_error2(oligonucleotideFrequency(AAString()),
+                  "must contain sequences of type DNA or RNA")
+    expect_error2(oligonucleotideFrequency(BStringSet()),
+                  "must contain sequences of type DNA or RNA")
 })
 
 test_that("consensusMatrix/String() work properly on zero-length input", {
