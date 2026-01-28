@@ -79,7 +79,8 @@ test_that("vcount/vwhich/vmatchPDict() work", {
     ## canary tests for future changes
     pdict <- PDict(c("acgt", "gt", "cgt", "ac"), tb.end=2)
     d <- DNAString("acggaccg")
-    dss <- DNAStringSet(list(d,d))
+    d2 <- DNAString("gtcgtacgt")
+    dss <- DNAStringSet(list(d,d2))
     dvv <- Views(d, start=rep(1,2), width=rep(length(d), 2))
 
     # Disallowed cases

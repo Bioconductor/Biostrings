@@ -15,7 +15,7 @@
 ###   > library(BSgenome.Hsapiens.UCSC.hg18)
 ###   > chr1 <- Hsapiens$chr1
 ###   > system.time(end_index <- endIndex(matchPDict(pdict, chr1)))
-###      user  system elapsed 
+###      user  system elapsed
 ###    50.663   0.000  50.763
 ###   > count_index <- sapply(end_index, length)
 ###   > table(count_index)
@@ -64,8 +64,8 @@
 ###       1M      36      2.5 sec    717M     106 sec     103 sec            0
 ###      10M      36       56 sec   6724M     351 sec     200 sec            0
 ###      10M      12      7.5 sec    340M     227 sec     216 sec         100M
-###      30M      12       27 sec    523M     491 sec           ? 
-### 
+###      30M      12       27 sec    523M     491 sec           ?
+###
 ### III. Inexact matching
 ### ---------------------
 ###   pdict <- PDict(c("acgt", "gt", "cgt", "ac"), tb.end=2)
@@ -582,7 +582,8 @@
                        max.mismatch, min.mismatch, with.indels, fixed,
                        algorithm, collapse, weight,
                        verbose, matches.as)
-    if (is.null(which_pp_excluded))
+    if (is.null(which_pp_excluded) && matches.as %in%
+        c("MATCHES_AS_WHICH", "MATCHES_AS_COUNTS"))
         return(ans)
     if (matches.as == "MATCHES_AS_WHICH") {
         ## vwhichPDict()
@@ -600,9 +601,8 @@
 
     ## vmatchPDict()
     ## converting all the results to MIndex objects and then wrapping the result
-    ans_width0 <- rep.int(length(pdict), length(subject))
     for(i in seq_along(ans))
-      ans[[i]] <- new("ByPos_MIndex", width0=ans_width0, NAMES=names(pdict), ends=ans[[i]])
+      ans[[i]] <- new("ByPos_MIndex", width0=width(pdict), NAMES=names(pdict), ends=ans[[i]])
     names(ans) <- names(subject)
     ans <- as(ans, "MIndexList")
     return(ans)
