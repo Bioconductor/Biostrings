@@ -75,12 +75,11 @@ test_that("inexact PDict matching works", {
     expect_equal(countPDict(pdict, d, max.mismatch=2), c(2,0,2,2))
 })
 
-test_that("vcount/vwhich/vmatchPDict() work", {
+test_that("vcount/vwhich/vmatchPDict work", {
     ## canary tests for future changes
     pdict <- PDict(c("acgt", "gt", "cgt", "ac"), tb.end=2)
     d <- DNAString("acggaccg")
-    d2 <- DNAString("gtcgtacgt")
-    dss <- DNAStringSet(list(d,d2))
+    dss <- DNAStringSet(list(d,d))
     dvv <- Views(d, start=rep(1,2), width=rep(length(d), 2))
 
     # Disallowed cases
@@ -117,10 +116,6 @@ test_that("vcount/vwhich/vmatchPDict() work", {
     expect_equal(vcountPDict(pdict, dvv, max.mismatch=2), exp_out)
     expect_equal(vwhichPDict(pdict, dvv, max.mismatch=2),
                  list(c(1,3,4),c(1,3,4)))
-
-    ## this will fail when we implement it to remind me to add tests for it
-    expect_error2(vmatchPDict(pdict, dss),
-                  "vmatchPDict\\(\\) is not ready yet")
 })
 
 test_that("MIndex functionality works", {
@@ -234,3 +229,38 @@ test_that("matchPDict() works for variable width dictionary", {
     }
 })
 
+test_that("vmatchPDict is equivalent to matchPDict output", {
+  pdict <- PDict(c("acgt", "gt", "cgt", "ac"), tb.end=2)
+  d <- DNAString("acggaccg")
+  d2 <- DNAString("gtcgtacgt")
+  dss <- DNAStringSet(list(d,d2))
+
+  mindex_obj_comp <- function(m1, m2){
+    if(!is(m1, "MIndex") || !is(m2, "MIndex")){
+      return(FALSE)
+    }
+
+    if(length(m1) != length(m1)){
+      return (FALSE)
+    }
+
+    for(i in seq_along(m1)){
+      l1 <- m1[[i]]
+      l2 <- m2[[i]]
+      for(attr_name in c("start", "width")){
+        if(!identical(attr(l1, attr_name), attr(l2, attr_name))){
+          return(FALSE)
+        }
+      }
+    }
+    return(TRUE)
+  }
+
+  vmatch_output <- vmatchPDict(pdict, dss)
+
+  match1_output <- matchPDict(pdict, dss[[1]])
+  match2_output <- matchPDict(pdict, dss[[2]])
+
+  expect_true(mindex_obj_comp(vmatch_output[[1]], match1_output))
+  expect_true(mindex_obj_comp(vmatch_output[[2]], match2_output))
+})
