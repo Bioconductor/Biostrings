@@ -572,7 +572,8 @@ SEXP vmatch_XStringSet_XStringSet(SEXP pattern,
 				with_indels, fixed,
 				algorithm, collapse, weight);
 	}
-	error("vmatchPDict() is not supported yet, sorry");
+	error("vmatchPDict() on two XStringSets is not supported yet. "
+        "Please use a PDict object instead (see `?PDict` for more info).");
 	return R_NilValue;
 }
 
