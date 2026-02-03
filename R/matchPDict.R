@@ -598,13 +598,16 @@
         }
         return(ans)
     }
+    if(matches.as == "MATCHES_AS_ENDS") {
+      ## vmatchPDict() by ends
+      ## converting all the results to MIndex objects and then wrapping the result
+      for(i in seq_along(ans))
+        ans[[i]] <- new("ByPos_MIndex", width0=width(pdict), NAMES=names(pdict), ends=ans[[i]])
+      names(ans) <- names(subject)
+      ans <- as(ans, "MIndexList")
+      return(ans)
+    }
 
-    ## vmatchPDict()
-    ## converting all the results to MIndex objects and then wrapping the result
-    for(i in seq_along(ans))
-      ans[[i]] <- new("ByPos_MIndex", width0=width(pdict), NAMES=names(pdict), ends=ans[[i]])
-    names(ans) <- names(subject)
-    ans <- as(ans, "MIndexList")
     return(ans)
 }
 
