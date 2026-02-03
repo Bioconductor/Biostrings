@@ -87,7 +87,7 @@ vcountPDict(pdict, subject,
 vwhichPDict(pdict, subject,
             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
             algorithm="auto", verbose=FALSE)
-matchPDict(pdict, subject,
+vmatchPDict(pdict, subject,
            max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
            algorithm="auto", verbose=FALSE)
 }

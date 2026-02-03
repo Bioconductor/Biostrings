@@ -256,11 +256,29 @@ test_that("vmatchPDict is equivalent to matchPDict output", {
     return(TRUE)
   }
 
+  ## Basic matching
   vmatch_output <- vmatchPDict(pdict, dss)
+  expect_true(mindex_obj_comp(vmatch_output[[1]], matchPDict(pdict, dss[[1]])))
+  expect_true(mindex_obj_comp(vmatch_output[[2]], matchPDict(pdict, dss[[2]])))
 
-  match1_output <- matchPDict(pdict, dss[[1]])
-  match2_output <- matchPDict(pdict, dss[[2]])
+  ## max.mismatch
+  vmatch_output <- vmatchPDict(pdict, dss, max.mismatch = 2)
+  expect_true(mindex_obj_comp(vmatch_output[[1]],
+                              matchPDict(pdict, dss[[1]], max.mismatch = 2)))
+  expect_true(mindex_obj_comp(vmatch_output[[2]],
+                              matchPDict(pdict, dss[[2]], max.mismatch = 2)))
 
-  expect_true(mindex_obj_comp(vmatch_output[[1]], match1_output))
-  expect_true(mindex_obj_comp(vmatch_output[[2]], match2_output))
+  ## min.mismatch
+  vmatch_output <- vmatchPDict(pdict, dss, min.mismatch = 1, max.mismatch = 2)
+  expect_true(mindex_obj_comp(vmatch_output[[1]],
+                              matchPDict(pdict, dss[[1]], min.mismatch = 1, max.mismatch = 2)))
+  expect_true(mindex_obj_comp(vmatch_output[[2]],
+                              matchPDict(pdict, dss[[2]], min.mismatch = 1, max.mismatch = 2)))
+
+  ## fixed
+  vmatch_output <- vmatchPDict(pdict, dss, fixed = FALSE)
+  expect_true(mindex_obj_comp(vmatch_output[[1]],
+                              matchPDict(pdict, dss[[1]], fixed = FALSE)))
+  expect_true(mindex_obj_comp(vmatch_output[[2]],
+                              matchPDict(pdict, dss[[2]], fixed = FALSE)))
 })
