@@ -1,0 +1,742 @@
+---
+title: "Sequence Searching and Matching with Biostrings"
+author:
+- name: Aidan Lakshman
+  email: aidanlakshman@gmail.com
+package: Biostrings
+output:
+  BiocStyle::pdf_document
+abstract: |
+  Biostrings encapsulates a wide variety of sequence matching functions, but
+  using them can be relatively confusing. This vignette walks through examples
+  of using the many functions available in Biostrings along with explanations
+  of their output types.
+vignette: |
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup,include=FALSE}
+library(BiocStyle)
+library(Biostrings)
+```
+
+# Brief Recap
+
+Before diving into searching and matching in Biostrings, let's first briefly review the central data structures and concepts in the package. If you're already familiar with XString objects and the various containers to hold them, feel free to skip forward to the next section.
+
+## XString objects
+
+The focus of Biostrings is providing containers to efficiently work with biological data. Operations in Biostrings revolve around XString^[XString: a container that holds a single sequence of a particular type.] objects. XString isn't actually a type; it's the collective name for a set of objects of the form `*String`:
+
+- DNAString: holds DNA data (A/T/G/C)
+- RNAString: holds RNA data (A/U/G/C)
+- AAString: holds amino acid data
+- BString: holds any arbitrary character
+
+Aside from BString, all the XString types also support standard IUPAC ambiguity codes.
+
+The simplest way to create XString objects is directly from a character object:
+
+```{r}
+DNAString("ATGCATGC")
+
+RNAString("AUGCAUGC")
+
+AAString("ARNDC*")
+
+BString("I am a BString")
+```
+
+## XStringSets
+
+Single XString objects are nice, but many biological sequence analyses need to work with multiple sequences. Our primary container to achieve this functionality is the  XStringSet^[XStringSet: a container that holds a collection of XString objects together.] object. This container holds a set of XString objects that are all the same type (all DNA, all RNA, etc.). There is one XStringSet type for each XString type (i.e., DNA, RNA, AA, B).
+
+It's also possible to create XStringSet objects from character vectors:
+
+```{r}
+DNAStringSet(c("ATGC", "CGTA", "AAAAA", "TT"))
+```
+
+However, they are most often used to read in sequence sets from files, such as FASTA files:
+
+```{r}
+filepath1 <- system.file("extdata", "someORF.fa", package="Biostrings")
+readDNAStringSet(filepath1)
+```
+
+Once we have an XStringSet, we can use single brackets (`[]`) to get a subset of the XStringSet, and double brackets (`[[]]`) to get the component XStrings:
+
+```{r}
+x <- DNAStringSet(c("ATGC", "CGTA", "AAAAA", "TT"))
+
+# Subsetting to a DNAStringSet
+x[1]
+
+# Subsetting to a DNAString
+x[[1]]
+```
+
+## XStringViews
+
+When we search for patterns in a sequence, we're looking for specific subsequences within a single sequence that match whatever we're looking for. To implement that functionality, we have the XStringViews^[XStringViews: Stores subsequences of a single XString object.] classes, which store "views" (subsequences) of a single XString object. These will be very important for searching and matching patterns later on.
+
+We can directly construct an XStringViews from an XString object with the `Views` method by by either specifying start/end indices, or using the width of the subsequences:
+
+```{r}
+seq <- DNAString("AAATTTGGGCCC")
+
+## Splitting into codons
+Views(seq, 
+      start = seq(1, length(seq), by = 3), 
+      end = seq(3, length(seq), by = 3))
+
+## All overlapping subsequences of length 3
+Views(seq, 
+      start = seq_len(length(seq) - 2), 
+      width = 3)
+
+## Views can also be "out of range":
+Views(seq, 
+      end = seq_along(seq), 
+      width = 3)
+```
+
+This class will be commonly returned from the pattern matching functions we'll discuss later, as well as some other internal functions (e.g., `codons`, which returns all the codons in a DNAString)
+
+It's worth noting that we can initialize an XStringSet from an XStringViews, in case we want to save our subsequences as a new XStringSet object.
+
+```{r}
+seq <- DNAString("AAATTTGGGCCC")
+
+## `codons` returns an XStringViews 
+seq_codons <- codons(seq)
+
+seq_codons
+
+## We can also convert it to a DNAStringSet
+DNAStringSet(seq_codons)
+```
+
+## Summary
+
+Knowledge of XStrings, XStringSets, and XStringViews are all that you'll need to be able to understand the rest of this vignette. However, there exist a number of additional containers and utility functions to work with these objects that I haven't mentioned here. For more information on these utility functions, look at `?XString`. Other containers that may be of interest include XStringSetList, MaskedXString, and QualityScaledXStringSet.
+  
+# Low-Level Matching
+
+Now we can start to look at how to perform some basic matching operations in Biostrings. Matching in Biostrings is done in terms of "patterns" and "subjects". A *pattern* is what we're searching for, and a *subject* is where we're searching. For example, if we wanted to find all `ATG` codons in an *E. coli* genome, `ATG` would be the pattern, and the *E. coli* genome is the subject. A *match* is a subsequence of the pattern that is equal to the pattern (or similar enough, if using things like ambiguity codes).
+
+## Edit Distance
+
+Before we can get to matching, we first need a way to quantify the edit distance between two strings. The *edit distance* is the minimum number of operations it takes to transform one string into another. For instance, the edit distance between `AAA` and `AAB` is 1, since the only letter that differs between the two strings is the final character.
+
+```{r}
+## the first string is the pattern,
+## the second is the subject
+neditAt(pattern = "AAAAA", subject = "AAAAB")
+
+neditAt("ABCDEFG", "AAADDDG")
+
+## Going from subject -> pattern
+## AACGCA -> AACGTA -> AACCTA -> AAGCTA -> GAGCTA: 4 edits
+neditAt("GAGCTA", "AACGCA")
+```
+
+However, this only works for strings of the same length. If we wanted to get the edit distance between two strings of unequal length, we'd also have to consider insertions and deletions (e.g., `AAA` and `AC` would have a distance of two via `AAA` -> `AA` -> `AC`). Considering insertions, deletions, and substitutions produces the Levenstein distance, which is also supported by `neditAt` if we set `with.indels=TRUE`:
+
+```{r}
+## AACGCA -> GACGCA -> GAGCA -> GAGCTA: 3 edits
+neditAt("GAGCTA", "AACGCA", with.indels = TRUE)
+```
+
+Note that this tries to match the pattern against the subject, so it only looks at the first `n` characters of the subject, where `n` is the length of the pattern. This can lead to some unintuitive results:
+
+```{r}
+## Both of these will return 0, because nchar("ABC") = 3,
+## so we only look at the first 3 characters of the pattern ("ABC")
+neditAt("ABC", "ABCD")
+neditAt("ABC", "ABCD", with.indels = TRUE)
+
+## However, if we change the subject slightly
+## (note just showing the first 3 characters of the subject)
+neditAt("ABC", "DBCA") # DBCA -> ABCA: 1
+neditAt("ABC", "DCBA") # DCBA -> DCCA -> DBCA -> ABCA : 3
+neditAt("ABC", "DCBA", with.indels = TRUE) # DCBA -> ADCBA -> ABCBA: 2
+```
+
+## Simple Matching
+
+The previous result for `neditAt` probably seems unintuitive. Why is this function set up the way it is?
+
+It turns out that we can use this `neditAt` function to find matches. We can define a "match" as a pattern that has an edit distance of 0 with the subject.
+
+```{r}
+neditAt("ABC", "ABCDE") == 0
+
+isMatchingAt("ABC", "ABCDE")
+```
+
+These functions have an "at" suffix because we can specify where we should start searching in the subject. By default, we start searching at the first character (`1`), but we can start anywhere:
+
+```{r}
+neditAt("ABC", "BABCABC", at = 1)
+
+neditAt("ABC", "BABCABC", at = 2)
+
+neditAt("ABC", "BABCABC", at = 5)
+```
+
+Both functions are vectorized to calculate for multiple starting positions at the same time:
+
+```{r}
+subject <- "BABCABC"
+edit_dists <- neditAt("ABC", subject, at = seq_len(nchar(subject)))
+edit_dists
+
+## These are the positions of the matches!
+which(edit_dists == 0)
+
+matches <- isMatchingAt("ABC", subject, at = seq_len(nchar(subject)))
+which(matches)
+```
+
+What if we want to be a little more lenient than exact matching? Previously, we defined a match as any location where `neditAt` returns 0. We can relax these conditions with the `min.mismatch` and `max.mismatch` arguments. With these, the  definition of a "match" becomes anywhere where `min.mismatch <= neditAt <= max.mismatch`.
+
+```{r}
+pattern <- "AAB"
+subject <- "AABBAAA"
+s <- seq_len(nchar(subject))
+neditAt(pattern, subject, at = s)
+
+## Default is min.mismatch = max.mismatch = 0
+isMatchingAt(pattern, subject, at = s)
+
+## If max.mismatch = 1, we get more matches
+isMatchingAt(pattern, subject, at = s, max.mismatch = 1)
+
+## We can also restrict the lower bound
+## This returns all patterns with neditAt == 2
+isMatchingAt(pattern, subject, at = s, min.mismatch = 2, max.mismatch = 2)
+```
+
+Note that since we're using `neditAt` to define a match, the we can also use the Levenshtein distance as our matcher:
+
+```{r}
+neditAt("GAGC", "AACG", with.indels = FALSE)
+isMatchingAt("GAGCTA", "AACGCA", with.indels = FALSE, max.mismatch = 3)
+
+neditAt("GAGC", "AACG", with.indels = TRUE)
+isMatchingAt("GAGCTA", "AACGCA", with.indels = TRUE, max.mismatch = 3)
+```
+
+## Summary
+
+With `isMatchingAt`, we have a basic way to get matches in pattern/subject syntax. All future sections will build off this foundational function.
+
+Note that, while we used character vectors for the examples in this section, all the functions shown also work on XString and XStringSet objects.
+
+# Fixed Pattern Matching
+
+In the previous section, we talked about how to check if a particular pattern has a match at a specific location in a sequence. While this is theoretically sufficient to do any arbitrary pattern matching, the API is pretty clunky. Ideally, we could just call a single function to automatically find a pattern throughout the subject, without having to worry about where to look.
+
+## `matchPattern`
+
+The `matchPattern` function does exactly what we're looking for. This function has the same input arguments as `isMatchingAt`, but searches in the entire subject for the pattern rather than at specific points.
+
+```{r}
+subject <- "BABCABC"
+edit_dists <- neditAt("ABC", subject, at = seq_len(nchar(subject)))
+
+which(edit_dists == 0)
+
+matchPattern("ABC", subject)
+```
+
+The output is almost the same as running `isMatchingAt` over the entire subject, except that the return type is an XStringViews object.
+
+XStringViews objects are perfect for pattern matching, because they can hold all the subsequences that match in the subject along with their start and end positions. Let's see what that looks like using DNAStrings:
+
+```{r}
+pattern <- DNAString("AG")
+subject <- DNAString("AGTAGCAGA")
+
+matchPattern(pattern, subject)
+```
+
+Here we can see that the pattern `AG` is found starting at indices 1, 4, and 7. In this case, all of our matches are identical to the pattern, but this may not always be the case.
+
+For instance, if we set `fixed = FALSE`, then we can use IUPAC ambiguity codes:
+
+```{r}
+pattern <- DNAString("AGY") # Y = T or G
+subject <- DNAString("AGTAGCAGAAGY")
+
+## By default, ambiguities only match ambiguities
+## (i.e., Y = Y)
+matchPattern(pattern, subject)
+
+## But with fixed = FALSE, it can match other letters
+## (i.e., Y = Y, T, or G)
+matchPattern(pattern, subject, fixed = FALSE)
+```
+
+Similarly, if we use the `max.mismatch` arguments, we can get variable length matches:
+
+```{r}
+pattern <- DNAString("AGY") # Y = T or G
+subject <- DNAString("AGTAGCAGAAGY")
+
+## But with fixed = FALSE, it can match other letters
+## (i.e., Y = Y, T, or G)
+matchPattern(pattern, subject, fixed = FALSE, max.mismatch = 2)
+```
+
+Sometimes you may get too many matches to deal with. However, we can also match a pattern against an XStringViews subject. In other words, we can find matches *in our matches* to filter them out:
+
+```{r}
+pattern1 <- DNAString("ANN") # Any 3-mer beginning with A
+pattern2 <- DNAString("NNT") # Any 3-mer ending with T
+subject <- DNAString("ATGTTTAATTTATAATATTTATAAAT")
+
+first_matches <- matchPattern(pattern1, subject, fixed = FALSE)
+first_matches
+
+second_matches <- matchPattern(pattern2, first_matches, fixed = FALSE)
+second_matches
+```
+
+## `countPattern`
+
+Sometimes we don't care specifically about what the matches are, we just want to know how many matches exist. For this, we have `countPattern`. `countPattern` returns the number of matches that would be found by `matchPattern`.
+
+```{r}
+pattern <- DNAString("ANN")
+subject <- DNAString("ATGTTTAATTTATAATATTTATAAAT")
+
+length(matchPattern(pattern, subject, fixed = FALSE))
+
+countPattern(pattern, subject, fixed = FALSE)
+```
+
+## One Pattern, Multiple Subjects
+
+What if we want to search for a single pattern in multiple subjects? A common example of this is searching for a motif across multiple chromosomes.
+
+We can accomplish this workflow using the `vcountPattern` and `vmatchPattern`. The "v" stands for "vectorized", since it operates across all the strings in the subject like a vectorized function.
+
+While we can only use a single pattern (for now), the subject of these functions can have multiple sequences, like a character vector or XStringSet:
+
+```{r}
+pattern <- DNAString("ATNG")
+subjects <- DNAStringSet(c("ATTGATTAATGGATCG", "AGTGAGACAGATTG"))
+
+vcountPattern(pattern, subjects, fixed = FALSE)
+vcountPattern(pattern, subjects, fixed = FALSE, max.mismatch = 2)
+
+vmatchPattern(pattern, subjects, fixed = FALSE, max.mismatch = 1)
+```
+
+`vmatchPattern` returns an object we haven't seen before: an `MIndex`. This container stores matches for a set of a patterns against one or more subject sequences. Each entry in the `MIndex` is an `IRanges` object, which is basically an `XStringViews` without the substring of the match attached (i.e., just the start/end position of each match and its width).
+
+```{r}
+pattern <- DNAString("ATNG")
+subjects <- DNAStringSet(c("ATTGATTAATGGATCG", "AGTGAGACAGATTG"))
+
+matches <- vmatchPattern(pattern, subjects, fixed = FALSE)
+
+## 3 matches at indices 1, 9, and 13
+matches[[1]]
+
+## Note this is the same as in matchPattern
+matchPattern(pattern, subjects[[1]], fixed = FALSE)
+
+## ...and same for the second match
+matches[[2]]
+matchPattern(pattern, subjects[[2]], fixed = FALSE)
+```
+
+## Summary
+
+`matchPattern` and `countPattern` are the first "real" matching functions we've seen. While it's possible to do complex matching using `isMatchingAt` and `neditAt`, the `*Pattern` functions provide true search functionality that is useful in real scenarios.
+
+One point of discussion we'll skip in this vignette is the `algorithm` parameter of `matchPattern`. The best practice is to just leave it set to its default value of `"auto"`, which will automatically pick the best pattern for your search. If a particular algorithm can be used for your search, it will perform identically to all other usable algorithms, so you don't need to worry too much about this parameter.
+
+We unfortunately won't be able to do "multiple pattern, multiple sequence" searching quite yet. For that, we'll need `PDict` objects, which we'll talk about later.
+
+# Palindromes and Probes
+  * `?findPalindromes`
+  * additional helper functions
+  * use real sequences here
+  * `?matchProbePair`
+
+# Position Weight Matrix (PWM) Matching
+
+I'd really prefer not to do this section, but we probably should.
+
+# Matching with PDicts
+
+## What is a PDict?
+
+PDict is short for "Preprocessed Dictionary". A PDict object is essentially a container that holds a collection of DNA patterns to search with. The container preprocesses these patterns to allow fast matching against one or more subject sequences.
+
+In the standard configuration, PDicts have the following limitations:
+
+1. They can only contain DNA base letters (i.e., `ATGC`, no ambiguity codes allowed)
+2. All sequences must be the same length
+3. Only exact matching is supported
+
+We'll relax these limitations later.
+
+```{r}
+patterns <- DNAStringSet(c("ATGC", "GGGG", "CCCC", "ATAT"))
+pdict <- PDict(patterns)
+pdict
+```
+
+The PDict object shows how many patterns it holds ("length 4") and how long the sequences are ("width 4"). We can also recover the sequences inside of it:
+
+```{r}
+pdict[[1]]
+```
+
+We can also provide named sequences, and the PDict will keep track of them:
+```{r}
+patterns <- c(seq1 = "ATGC", seq2 = "CGTA")
+pdict <- PDict(patterns)
+names(pdict)
+```
+
+It also mentions the preprocessing algorithm, which must be one of the following:
+
+- `ACtree2`: The default processing algorithm. Supports matching against subjects that have ambiguity codes (i.e., `A` in the PDict could match `N` in a sequence).
+- `Twobit`: Much faster than `ACtree2`, but can't match against ambiguity codes in subjects.
+
+Regardless of algorithm, we can't include ambiguity codes in the patterns stored in the PDict. However, we can get around this and unlock the full power of PDicts by using a "Trusted Band".
+
+## Exact Matching 
+
+Once we have a PDict, we can start matching. These functions are very similar to the `*Pattern` functions:
+
+- `matchPDict` is equivalent to `matchPattern`
+- `countPDict` is equivalent to `countPattern`
+- `vmatchPDict` is similar to `vmatchPattern`
+- `vcountPDict` is equivalent to `vcountPattern`
+
+These enable us to do "many pattern, single subject" matching:
+
+```{r}
+patterns <- DNAStringSet(c(seq1 = "ATGC", seq2 = "AATT", seq3 = "CCTA"))
+pdict <- PDict(patterns)
+subject <- DNAString("ATGCAAAATTTAATTGC")
+
+## How many matches does each pattern have?
+countPDict(pdict, subject)
+
+## Where are the matches?
+matchPDict(pdict, subject)
+```
+
+We also have `whichPDict`, which returns a vector indicating which patterns have at least one match:
+
+```{r}
+## only the first and second patterns have matches
+whichPDict(pdict, subject)
+```
+
+We can also do "many pattern, many subject" matching with the `v*PDict` functions. However, the output types of these are different than previously. Let's break them down one by one.
+
+
+First, `vwhichPDict`:
+
+```{r}
+subjects <- DNAStringSet(c(subj1 = "ATGCAAAATTTAATTGC", subj2 = "CCAATCCTACTATGC"))
+
+vwhichPDict(pdict, subjects)
+```
+
+This returns a list with the output of calling `whichPDict` on each sequence in the subject. For this input, we find that patterns 1 and 2 have matches in the first sequence, and patterns 1 and 3 have matches in the second sequence.
+
+If we wanted to find out how many matches each pattern has in each sequence, we'd use `vcountPDict`:
+```{r}
+vcountPDict(pdict, subjects)
+```
+
+This function returns a matrix of counts. The rows correspond to patterns, and the columns correspond to subjects. Thus, since `vcountPDict(pdict, subjects)[2,1] = 2`, we know that pattern 2 has two matches in subject 1.
+
+If we wanted to find out where those matches were, we'd use `vmatchPDict`:
+
+```{r}
+vmatchPDict(pdict, subjects)
+```
+
+The result of this is an MIndexList class. This is a similar concept to what we saw with the MIndex class when we discussed `matchPattern`. The MIndex class is esssentially a list storing offsets of matches for a set of patterns against a subject, and the MIndexList class is a list storing an MIndex object for each subject.
+
+```{r}
+all_matches <- vmatchPDict(pdict, subjects)
+
+## first entry is the matches for all patterns against the first subject:
+all_matches[[1]]
+```
+
+Note that the last entry of `all_matches[[1]]` is empty, because the third pattern had no matches against the first subject.
+
+**Note:** `vmatchPDict` is the *only* function that supports "many pattern, many subject" matching. `vmatchPattern` can only match a single pattern against one or more sequences.
+
+## Trusted Bands
+
+PDicts in their default configuration are very limited. However, this changes when we define a "Trusted Band". PDicts with a trusted band support ambiguity codes, variable length sequences, and fuzzy/inexact matching.
+
+The trusted band is a fixed size subsequence of the patterns that obeys the prior limitations (no ambiguities, fixed size). When we do matching, the PDict can first search for matches in the trusted band to limit the search space, and then expand to the regions of each pattern outside the trusted band.
+
+The trusted bands do not need to all be in the same position, but they all need to be the same length. For example, we could imagine the following sequences with trusted bands:
+
+```
+Sequences:
+----------
+TTGCTAMKT
+AGCTAGTTAAG
+
+Some Possible Trusted Bands:
+----------------------------
+T | TGCT | AMKT
+A | GCTA | GTTAAG
+
+  T | TGCTA | MKT
+AGC | TAGTT | AAG
+```
+
+Notice how the bands are all the same width and contain no ambiguity codes, but they don't have to all be in the same position in each sequence. In R, we could do this with the following:
+
+```{r}
+patterns <- DNAStringSet(c("TTGCTAMKT", "AGCTAGTTAAG"))
+pdict1 <- PDict(patterns, tb.start = 2, tb.width = 4)
+pdict1
+
+pdict2 <- PDict(patterns, tb.end = -4, tb.width = 5)
+pdict2
+```
+
+We can either define the trusted band relative to the start (`tb.start`), or relative to the end (`tb.end`). Negative numbers are indices relative to the end of the sequence, so `-4` means "the fourth base counting from the end of the sequence".
+
+The trusted band splits the sequences into three parts: the head (before the band), the band, and the tail (part after the band). We can extract these to look at them:
+
+```{r}
+head(pdict2)
+tb(pdict2)
+tail(pdict2)
+``` 
+
+## Inexact Matching
+
+Given a PDict with a trusted band, we can start to do inexact matching. Inexact matching with a PDict that has a trusted band works in the following steps:
+
+1. Find all exact matches using the trusted band of each pattern against the subjects.
+2. For each match, compare the head and tail of the pattern against the regions of the subject flanking the match.
+
+This means that an exact match has to be found to the trusted band before any inexact matching takes place. This is a key distinction, and can lead to some unintuitive behavior. For example, suppose we make two trusted bands from a given sequence:
+
+```
+Seq: AATTGGC
+
+Trusted Band 1: AA | TTGG | C
+Trusted Band 2: A | ATTG | GC
+```
+
+The trusted band is the center section, and the left and right regions are the head / tail. Now suppose we want to match against a target sequence with at most one mismatch:
+
+```
+Subject: ACTTGGC
+
+Goal: Match with at most 1 mismatch
+
+Trusted Band 1 finds a match:
+AA | TTGG | C
+AC   TTGG   C
+
+Trusted Band 2 finds NO match.
+A | ATTG | GC
+A   CTTG   GC
+(One mismatch, but no exact match in trusted band)
+```
+
+Because of this, the trusted band should be defined as the minimal match that must exist for a match to be correct.
+
+To do this in R:
+
+```{r}
+seq <- DNAStringSet(c("AATTGGC"))
+
+# A | ATTG | GC
+pdict <- PDict(seq, tb.start=2, tb.end=5)
+
+subjects <- DNAStringSet(c("AATTGGCC", "CATTGGCT", "ACTTGGCG"))
+
+# Pattern: A | ATTG | GC
+#   Seq 1: A   ATTG   GCC  (matches)
+#   Seq 2: C   ATTG   GCT  (matches, one mismatch)
+#   Seq 3: A   CTTG   GCG  (no exact match in TB)
+vcountPDict(pdict, subjects, max.mismatch = 1L)
+```
+
+The use of the trusted band allows us to use the other fuzzy matching techniques we used with the `*Pattern` functions.
+
+We can match ambiguity codes using `fixed`:
+
+```{r}
+pattern <- DNAStringSet("ATNC")
+
+# | AT | NC
+pdict <- PDict(pattern, tb.start = 1, tb.end = 2)
+
+subject <- DNAString("CCAATATACATNC")
+
+## Only one match, since ambiguities are treated literally
+matchPDict(pdict, subject)[[1]]
+
+## Two matches; N in tail can match any nucleotide
+matchPDict(pdict, subject, fixed=FALSE)[[1]]
+
+## Since N matches anything, this matches any AT** pattern
+matchPDict(pdict, subject, fixed=FALSE, max.mismatch = 1)[[1]]
+```
+
+## PDict Matching Without a PDict
+
+It's possible to use the `*PDict` functions without a PDict, by just passing in a  DNAStringSet. This is slightly slower than using a preprocessed dictionary, but will be slightly faster than using `matchPattern` in a loop, since `matchPDict` loops at the C level. Additionally, the preprocessing restrictions for PDicts *only apply to initializing the object*, so it's possible to call `matchPDict` for a variable width sequence set if the sequences aren't preprocessed:
+
+```{r}
+## Patterns are all different lengths!
+patterns <- DNAStringSet(c("AA", "ATGC", "TTGGCC", "T"))
+subject <- DNAString("AATTGGCCAATGC")
+countPDict(patterns, subject)
+```
+
+This is also the only way to use the `with.indels = TRUE` argument.
+
+## Performance Notes
+
+Inexact matching can become extremely slow for large numbers of subjects and patterns, especially if the trusted band is small. The most time consuming part is the inexact matching of the head/tail with the flanking regions of the subject's matches. Larger trusted bands mean fewer exact matches, which means better performance. The Biostrings documentation recommends aiming for $\frac{L}{4^w} < 10$, where $L$ is the number of letters in the subject, and $w$ is the width of the trusted band. Larger trusted bands will always result in fewer, faster matches, so prioritize making it as large as you confidently can to get the matches you're looking for.
+
+# Other Matching Utilities
+
+Biostrings also includes a couple general-purpose helper functions that operate on matches returned by matching functions (e.g., `matchPattern`, `matchPDict`).
+
+## Finding Mismatches
+
+Fuzzy / inexact matching can match with some mismatches. It's often useful to figure out which letters were mismatching in an inexact match call. For this, we have the `mismatch` function, which provides the position of mismatching letters of a given pattern relative to its matches in the subject:
+
+```{r}
+subject <- DNAString("ATGCCGTA")
+pattern <- DNAString("GCGGAA")
+
+matches <- matchPattern(pattern, subject, max.mismatch = 2)
+matches
+
+## the pattern matched positions 3-8 of the subject
+## pattern:   GCGGAA
+## subject: ATGCCGTA
+## mismatches:  | |    (positions 3 and 5 of the match)
+mismatch(pattern = pattern, x = matches)
+
+## How many mismatches were there overall?
+nmismatch(pattern = pattern, x = matches)
+```
+
+If we're matching using ambiguity codes, we can also use the `fixed` argument to treat ambiguities in the subject as ambiguities (and not literal matches)
+
+```{r}
+subject <- DNAString("ATNGTNCTN")
+pattern <- DNAString("ATC")
+
+matches <- matchPattern(pattern, subject, fixed = FALSE, max.mismatch = 1L)
+matches
+
+## mismatches if we ignored ambiguities in subject
+mismatch(pattern, matches)
+
+## mismatches if we use ambiguities in subject
+mismatch(pattern, matches, fixed = FALSE)
+```
+
+## Finding Coverage
+
+Given a set of matches on a subject, we may also be interested in determining how many matches we got at each position. In other words, how well does the pattern "cover" the sequence?
+
+
+Let's use the same example from the previous section, including ambiguities:
+```{r}
+subject <- DNAString("ATNGTNCTN")
+pattern <- DNAString("ATC")
+
+matches <- matchPattern(pattern, subject, fixed = FALSE, max.mismatch = 1L)
+matches
+```
+
+We can imagine overlaying the regions that match the pattern:
+
+```
+Subject:  A T N G T N C T N
+Match 1:  - - -
+Match 2:        - - -
+Match 3:          - - -
+Match 4:              - - -
+```
+
+If we then count how many matches we have for each position, we get the coverage:
+```
+Subject:  A T N G T N C T N
+Match 1:  - - -
+Match 2:        - - -
+Match 3:          - - -
+Match 4:              - - -
+Coverage: 1 1 1 1 2 2 2 1 1
+```
+
+In code, this looks like:
+```{r}
+subject <- DNAString("ATNGTNCTN")
+pattern <- DNAString("ATC")
+
+matches <- matchPattern(pattern, subject, fixed = FALSE, max.mismatch = 1L)
+
+## This is a run-length encoding
+coverage(matches)
+
+## converting to a vector, we get:
+as.vector(coverage(matches))
+```
+
+If we're matching multiple patterns against a subject, `coverage` will give us the number of matches from *any* pattern for each position:
+
+```{r}
+patterns <- DNAStringSet(c("ATC", "ATG"))
+pd <- PDict(patterns, tb.start = 1, tb.end = 2)
+subject <- DNAString("ATATATATATGAC")
+
+countPDict(pd, subject, max.mismatch = 1L)
+
+matches <- matchPDict(pd, subject, max.mismatch = 1L)
+as.vector(coverage(matches))
+```
+
+# Further Reading
+
+If you're interested in diving more into the details of matching in Biostrings, check out these man pages:
+
+- ?`lowlevel-matching`: low-level matching
+- ?matchPattern
+- ?PDict
+- ?matchPDict
+- ?`matchPDict-inexact`
+- ?`match-utils`
+
+Matching in Biostrings is still a work in progress, and there are many features we're still working on. Some of them are even noted in the man pages. If you're interested in contributing to Biostrings, feel free to file a [pull request](https://github.com/Bioconductor/Biostrings/pulls)!
+
+
+
+# Session info
+
+```{r sessionInfo, echo=FALSE}
+sessionInfo()
+```
