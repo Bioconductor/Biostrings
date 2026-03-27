@@ -88,7 +88,6 @@ static const R_CallMethodDef callMethods[] = {
 
 /* MIndex_class.c */
 	CALLMETHOD_DEF(ByPos_MIndex_endIndex, 3),
-	CALLMETHOD_DEF(SparseMIndex_endIndex, 4),
 	CALLMETHOD_DEF(ByPos_MIndex_combine, 1),
 
 /* lowlevel_matching.c */

@@ -26,15 +26,6 @@
 \alias{make_XStringSet_from_strings}
 \alias{make_XStringSet_from_strings,XStringSet-method}
 
-% SparseList class and methods:
-\alias{class:SparseList}
-\alias{SparseList-class}
-\alias{SparseList}
-
-\alias{length,SparseList-method}
-%\alias{ls,SparseList-method}
-\alias{as.list,SparseList-method}
-\alias{[[,SparseList-method}
 
 \title{Biostrings internals}
 

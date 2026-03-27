@@ -7,7 +7,7 @@ biocViews: SequenceMatching, Alignment, Sequencing, Genetics,
 	DataImport, DataRepresentation, Infrastructure
 URL: https://bioconductor.org/packages/Biostrings
 BugReports: https://github.com/Bioconductor/Biostrings/issues
-Version: 2.79.4
+Version: 2.79.5
 License: Artistic-2.0
 Encoding: UTF-8
 Authors@R: c(
@@ -76,7 +76,6 @@ Collate: utils.R
 	padAndClip.R
 	strsplit-methods.R
 	misc.R
-	SparseList-class.R
 	MIndex-class.R
 	MIndexList-class.R
 	lowlevel-matching.R
