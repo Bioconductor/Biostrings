@@ -364,16 +364,6 @@ One point of discussion we'll skip in this vignette is the `algorithm` parameter
 
 We unfortunately won't be able to do "multiple pattern, multiple sequence" searching quite yet. For that, we'll need `PDict` objects, which we'll talk about later.
 
-# Palindromes and Probes
-  * `?findPalindromes`
-  * additional helper functions
-  * use real sequences here
-  * `?matchProbePair`
-
-# Position Weight Matrix (PWM) Matching
-
-I'd really prefer not to do this section, but we probably should.
-
 # Matching with PDicts
 
 ## What is a PDict?
@@ -720,6 +710,204 @@ matches <- matchPDict(pd, subject, max.mismatch = 1L)
 as.vector(coverage(matches))
 ```
 
+# Biological Applications
+
+The previous sections have covered everything you need to know for matching sequences with Biostrings. In this last section, we'll cover some of the more application-specific functions you can use for biological analyses.
+
+## Finding Palindromes
+
+Finding palindromic sequences is a critical analysis for many analyses. Biostrings provides the `findPalindromes` function to identify palindromic regions in a sequence.
+
+By palindromic sequences, we mean two regions of a sequence that are reverse complements of each other, potentially separated by a non-matching region. These palindromic sequences can form hairpin loops, like so:
+
+```
+Palindromic Sequence: GAATTCAATCTAAGAATTC
+
+This forms a hairpin:
+
+                A A
+    G A A T T C     T
+    | | | | | |     C
+    C T T A A G     T
+                A A
+```
+
+This palindrome has three regions: a left arm, a right arm, and a loop. The arms are the two regions that match, with left / right corresponding to which comes first / last in the sequence (respectively). The loop is the middle region that doesn't bind to itself.
+
+In the previous example, we'd see the following regions:
+```
+Palindromic Sequence: GAATTCAATCTAAGAATTC
+
+Separated into groups: GAATTC AATCTAA GAATTC
+                       /         |       \
+                  left arm     loop    right arm
+```
+
+We can find this with the `findPalindrome` function in Biostrings:
+
+```{r}
+subject <- DNAString("GAATTCAATCTAAGAATTC")
+findPalindromes(subject, max.looplength = 7)
+```
+
+In this case, we get a single view on the whole string, since the entire sequence is a palindrome. Note that we set `max.looplength` to control the maximum size of loop we look for. We can also set `min.armlength` and `max.armlength` to control the size of the arms, and `min.looplength` to control the size of the loop.
+
+If we have a sequence with multiple palindromes, we can find them all at once:
+
+```{r}
+subject <- DNAString("GAAGTTCTTCATGCATGTAACATG")
+
+# Default parameters:
+# - min.armlength = 4
+# - max.looplength = 1 (strict palindromes only)
+findPalindromes(subject, max.looplength = 3L)
+```
+
+Now we have three palindromes! However, it's a little difficult to tell what the palindromic regions are. We can identify the left/right arms with some helper functions:
+
+```{r}
+subject <- DNAString("GAAGTTCTTCATGCATGTAACATG")
+palindromes <- findPalindromes(subject, max.looplength = 3L)
+
+## lengths of all arms
+palindromeArmLength(palindromes)
+
+## Get only the left arm
+palindromeLeftArm(palindromes)
+
+## Get only the right arm
+palindromeRightArm(palindromes)
+```
+
+We can also set `allow.wobble` to `TRUE` to treat `G-T` or `G-U` pairings as matches:
+
+```{r}
+subject <- DNAString("ATGCGTAT")
+
+## No matches, because G-T pairings are ignored
+findPalindromes(subject)
+
+## Allowing wobble base pairs, we find a match
+findPalindromes(subject, allow.wobble = TRUE)
+
+## We can also just allow mismatches directly, which aren't limited to G-T pairs
+findPalindromes(subject, max.mismatch = 1L)
+```
+
+`findPalindromes` will search for reverse complement sequences if the input is a DNAString or RNAString. If the input is a BString or AAString, it'll just search for regular palindromes:
+
+```{r}
+subject <- BString("amanaplanacanalpanama racecar momomomom")
+findPalindromes(subject)
+```
+
+## Finding Ampilicons for a Primer Pair
+
+Another common workflow is identifying amplicons that match to a given pair of primers. For this, we have the `matchProbePair` function, which takes as input a pair (forward and reverse) of primers and a target sequence, and returns all the amplicons mapped to it.
+
+Let's look at an example, using a primer pair derived directly from a yeast chromosome.
+
+```{r}
+options(width = 70) # limiting the width of XString output
+data("yeastSEQCHR1") # bundled with the Biostrings package
+yeast_chr1 <- DNAString(yeastSEQCHR1)
+
+## We'll target 500 bases starting at position 50,000
+region_start <- 50000L
+region_width <- 500L
+probe_size <- 20L
+
+## Getting some subsequences to act as primers
+forward_probe <- subseq(yeast_chr1, start = region_start, width = probe_size)
+reverse_probe <- subseq(
+  yeast_chr1, 
+  end = region_start + region_width - 1, 
+  width = probe_size
+)
+
+## The reverse probe should be the reverse complement
+reverse_probe <- reverseComplement(reverse_probe)
+
+## Now we can identify the amplicons
+matchProbePair(forward_probe, reverse_probe, subject = yeast_chr1)
+```
+
+Under the hood, `matchProbePair` uses `matchPattern`, which is why it returns an XStringViews object. That means it supports all the features of `matchPattern`:
+
+```{r}
+options(width = 70) # limiting the width of XString output
+
+## Including mismatches
+matchProbePair(
+  forward_probe,
+  reverse_probe,
+  yeast_chr1,
+  max.mismatch = 5
+)
+
+## Not sure why you'd want to do this, but you can!
+matchProbePair(
+  forward_probe,
+  reverse_probe,
+  yeast_chr1,
+  min.mismatch = 6,
+  max.mismatch = 8
+)
+```
+
+## Position Weight Matrix (PWM) Matching
+
+We can also find matches in sequences using position weight matrices (PWMs). This functions exactly like all the other matching functions we've covered, except we'll use a PWM as the pattern rather than an XString directly. We can create a PWM with the `PWM` function:
+
+```{r}
+## Some possible TATA box binding motifs
+motifs <- DNAStringSet(c("TATAAA", "TATATA", "TATAAT", "TATATT"))
+
+## Converting into a PWM
+pwm <- PWM(motifs)
+pwm
+```
+
+Now we can use our `countPWM` and `matchPWM` just like we would with a pattern, we're just going to use the PWM as our pattern:
+
+```{r}
+options(width = 70) # limiting the width of XString output
+data("yeastSEQCHR1") # bundled with the Biostrings package
+yeast_chr1 <- DNAString(yeastSEQCHR1)
+
+## Getting the number of matching motifs
+countPWM(pwm, yeast_chr1)
+
+## Finding the matches
+matchPWM(pwm, yeast_chr1)
+```
+
+As you can see, there are tons of matches. First, let's get an idea of how well each of these matches scored:
+
+```{r}
+## finding matches with score included
+matches <- matchPWM(pwm, yeast_chr1, with.score = TRUE)
+
+## `mcols` references the metadata columns
+all_scores <- mcols(matches)$score
+table(round(all_scores, 2))
+```
+
+The high scores are because we have such a small motif, but we do have some subsequences that scored higher than others. Let's trim out the lower scoring sequences:
+
+```{r}
+## Way too many matches
+countPWM(pwm, yeast_chr1)
+
+## ...but we can limit the matches with min.score
+countPWM(pwm, yeast_chr1, min.score = "86%")
+
+## Score can also be expressed as a decimal value
+countPWM(pwm, yeast_chr1, min.score = 0.95)
+```
+
+There are a lot of features with the `*PWM` functions. You can use logged probability ratios (the default) or raw probabilities for scores, set priors for the estimated probability of bases at each position, and renormalize your PWMs to a unit scale. Check out `?PWM` for more details on these features.
+
 # Further Reading
 
 If you're interested in diving more into the details of matching in Biostrings, check out these man pages:
@@ -732,7 +920,6 @@ If you're interested in diving more into the details of matching in Biostrings, 
 - ?`match-utils`
 
 Matching in Biostrings is still a work in progress, and there are many features we're still working on. Some of them are even noted in the man pages. If you're interested in contributing to Biostrings, feel free to file a [pull request](https://github.com/Bioconductor/Biostrings/pulls)!
-
 
 
 # Session info
