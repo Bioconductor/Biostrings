@@ -5,6 +5,7 @@ NEW FEATURES
 
     o Comparison methods ==, !=, and <= now allow comparisons between XString
       objects and character vectors or other XString objects.
+      Contributed by Aidan Lakshman.
 
     o Comparison between an XString object and a character vector of
       arbitrary length is now supported.
