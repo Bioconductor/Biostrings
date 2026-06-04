@@ -304,9 +304,7 @@ exportClasses(
     XStringQuality, PhredQuality, SolexaQuality, IlluminaQuality,
     QualityScaledXStringSet,
     QualityScaledBStringSet, QualityScaledDNAStringSet,
-    QualityScaledRNAStringSet, QualityScaledAAStringSet,
-    MultipleAlignment,
-    DNAMultipleAlignment, RNAMultipleAlignment, AAMultipleAlignment
+    QualityScaledRNAStringSet, QualityScaledAAStringSet
 )
 
 export(
@@ -347,13 +345,7 @@ exportMethods(
     parallelVectorNames,
     nchar, names, "names<-", "[[", windows,
     consensusMatrix, consensusString,
-    alphabetFrequency, as.list,
-
-    rowmask, "rowmask<-",
-    colmask, "colmask<-",
-    maskGaps,
-    maskednrow, maskedncol, maskeddim,
-    consensusViews
+    alphabetFrequency, as.list
 )
 
 
