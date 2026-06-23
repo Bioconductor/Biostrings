@@ -262,15 +262,6 @@ are summarized here.
     Write pairwise alignments (as produced by \Rfunction{pairwiseAlignment})
     to a file (``pair'' format). \\
 \hline
-\Rfunction{readDNAMultipleAlignment}\par
-\Rfunction{readRNAMultipleAlignment}\par
-\Rfunction{readAAMultipleAlignment}&
-    Read multiple alignments from a file (FASTA, ``stockholm'',
-    or ``clustal'' format). \\
-\hline
-\Rfunction{write.phylip} &
-    Write multiple alignments to a file (Phylip format). \\
-\hline
 \end{tabular}
 \end{center}
 \caption{\bf I/O functions.}

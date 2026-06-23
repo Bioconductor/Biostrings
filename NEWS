@@ -1,3 +1,47 @@
+VERSION 2.80.0
+--------------
+
+NEW FEATURES
+
+    o Comparison methods ==, !=, and <= now allow comparisons between XString
+      objects and character vectors or other XString objects.
+      Contributed by Aidan Lakshman.
+
+    o Comparison between an XString object and a character vector of
+      arbitrary length is now supported.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o When comparing a BStringSet object with a DNAStringSet or RNAStringSet
+      object, the former is no longer coerced to DNAStringSet or RNAStringSet.
+      Instead, coercion now happens the other way around, that is, the latter
+      now gets coerced to BStringSet. This means that:
+      - This comparison can no longer fail. That's because coercion from
+        DNAStringSet or RNAStringSet to BStringSet always works (unlike
+        coercion in the opposite direction).
+      - This comparison is no longer case insensitive.
+
+DEPRECATED AND DEFUNCT
+
+    o Remove all the functions that went to the pwalign package in BioC 3.19,
+      that is: writePairwiseAlignments(), nucleotideSubstitutionMatrix(),
+      errorSubstitutionMatrices(), qualitySubstitutionMatrices(),
+      insertion(), deletion(), unaligned(), aligned(), indel(), nindel(),
+      PairwiseAlignments(), pattern(), alignedPattern(), alignedSubject(),
+      PairwiseAlignmentsSingleSubject, nedit(), mismatchTable(),
+      mismatchSummary(), compareStrings(), pid(), pairwiseAlignment(),
+      stringDist().
+
+      Note that these functions got formally deprecated in Biostrings in
+      BioC 3.21 and defunct in BioC 3.22.
+
+    o The XStringPartialMatches class and following functions are now gone
+      after being defunct in BioC 3.22 or non-functional for years:
+      matchprobes(), subpatterns(), pmatchPattern(), lcsubstr().
+
+    o Get rid of never-used SparseMIndex and SparseList classes.
+
+
 VERSION 2.78.0
 --------------
 

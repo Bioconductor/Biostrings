@@ -446,40 +446,6 @@ SEXP XStringSetList_unstrsplit(
 );
 
 
-/* SparseList_utils.c */
-
-SEXP _SparseList_int2symb(int symb_as_int);
-
-int _SparseList_symb2int(SEXP symbol);
-
-SEXP _get_val_from_env(
-	SEXP symbol,
-	SEXP env,
-	int error_on_unbound_value
-);
-
-SEXP _get_val_from_SparseList(
-	int symb_as_int,
-	SEXP env,
-	int error_on_unbound_value
-);
-
-int _get_int_from_SparseList(
-	int symb_as_int,
-	SEXP env
-);
-
-void _set_env_from_IntAE(
-	SEXP env,
-	const IntAE *int_ae
-);
-
-void _set_env_from_IntAEAE(
-	SEXP env,
-	const IntAEAE *int_aeae
-);
-
-
 /* match_reporting.c */
 
 int _get_match_storing_code(const char *ms_mode);
@@ -556,13 +522,6 @@ SEXP ByPos_MIndex_endIndex(
 	SEXP x_high2low,
 	SEXP x_ends,
 	SEXP x_width0
-);
-
-SEXP SparseMIndex_endIndex(
-	SEXP x_ends_envir,
-	SEXP x_width0,
-	SEXP x_names,
-	SEXP all_names
 );
 
 SEXP ByPos_MIndex_combine(SEXP ends_listlist);

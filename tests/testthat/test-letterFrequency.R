@@ -11,7 +11,6 @@
 ##    - dinucleotideFrequency
 ##    - trinucleotideFrequency
 ##     - *oligonucleotideTransitions
-##  - *twoWayAlphabetFrequency
 ##
 ## starred functions are still lacking tests
 
