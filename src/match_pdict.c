@@ -480,6 +480,28 @@ static SEXP vcount_XStringSet_XStringSet(SEXP pattern,
 	return ans;
 }
 
+SEXP vmatch_PDict3Parts_XStringSet_helper(SEXP pptb, HeadTail *headtail, MatchPDictBuf *mpdb,
+																					SEXP xstringset,
+																					SEXP max_mismatch, SEXP min_mismatch,
+																					SEXP fixed){
+	XStringSet_holder subject;
+	int subj_length;
+	Chars_holder subj_elt;
+
+	subject = _hold_XStringSet(xstringset);
+	subj_length = _get_length_from_XStringSet_holder(&subject);
+
+	SEXP RETURN_LIST = PROTECT(NEW_LIST(subj_length));
+	for(int i=0; i<subj_length; i++){
+		subj_elt = _get_elt_from_XStringSet_holder(&subject, i);
+		match_pdict(pptb, headtail, &subj_elt, max_mismatch, min_mismatch, fixed, mpdb);
+		SET_ELEMENT(RETURN_LIST, i, _MatchBuf_as_SEXP(&(mpdb->matches), R_NilValue));
+		_MatchPDictBuf_flush(mpdb);
+	}
+	UNPROTECT(1);
+	return RETURN_LIST;
+}
+
 /* --- .Call ENTRY POINT --- */
 SEXP vmatch_PDict3Parts_XStringSet(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 		SEXP subject,
@@ -495,10 +517,12 @@ SEXP vmatch_PDict3Parts_XStringSet(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 	matchpdict_buf = new_MatchPDictBuf_from_PDict3Parts(matches_as,
 				pptb, pdict_head, pdict_tail);
 	switch (matchpdict_buf.matches.ms_code) {
-	    case MATCHES_AS_NULL:
-		error("vmatch_PDict3Parts_XStringSet() does not support "
-		      "'matches_as=\"%s\"' yet, sorry",
-		      CHAR(STRING_ELT(matches_as, 0)));
+			case MATCHES_AS_RANGES:
+			case MATCHES_AS_ENDS:
+	  return vmatch_PDict3Parts_XStringSet_helper(pptb, &headtail,
+	    																					&matchpdict_buf, subject,
+																								max_mismatch, min_mismatch,
+																								fixed);
 	    case MATCHES_AS_WHICH:
 		return vwhich_PDict3Parts_XStringSet(pptb, &headtail,
 				subject,
@@ -510,8 +534,11 @@ SEXP vmatch_PDict3Parts_XStringSet(SEXP pptb, SEXP pdict_head, SEXP pdict_tail,
 				max_mismatch, min_mismatch, fixed,
 				collapse, weight,
 				&matchpdict_buf);
+			default:
+		error("vmatch_PDict3Parts_XStringSet() does not support "
+		     "'matches_as=\"%s\"' yet, sorry",
+		      CHAR(STRING_ELT(matches_as, 0)));
 	}
-	error("vmatchPDict() is not supported yet, sorry");
 	return R_NilValue;
 }
 
@@ -545,7 +572,8 @@ SEXP vmatch_XStringSet_XStringSet(SEXP pattern,
 				with_indels, fixed,
 				algorithm, collapse, weight);
 	}
-	error("vmatchPDict() is not supported yet, sorry");
+	error("vmatchPDict() on two XStringSets is not supported yet. "
+        "Please use a PDict object instead (see `?PDict` for more info).");
 	return R_NilValue;
 }
 

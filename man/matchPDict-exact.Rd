@@ -55,9 +55,10 @@
   and \code{whichPDict} returns the "who" information i.e. which patterns
   in the input dictionary have at least one match.
 
-  \code{vcountPDict} and \code{vwhichPDict} are vectorized versions
-  of \code{countPDict} and \code{whichPDict}, respectively, that is,
-  they work on a set of reference sequences in a vectorized fashion.
+  \code{vcountPDict}, \code{vwhichPDict}, and \code{vmatchPDict} are vectorized
+  versions of \code{countPDict}, \code{whichPDict}, and \code{matchPDict}
+  respectively, that is, they work on a set of reference sequences in a
+  vectorized fashion.
 
   This man page shows how to use these functions (aka the \code{*PDict}
   functions) for exact matching of a constant width dictionary i.e.
@@ -86,6 +87,9 @@ vcountPDict(pdict, subject,
 vwhichPDict(pdict, subject,
             max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
             algorithm="auto", verbose=FALSE)
+vmatchPDict(pdict, subject,
+           max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
+           algorithm="auto", verbose=FALSE)
 }
 
 \arguments{
@@ -111,7 +115,7 @@ vwhichPDict(pdict, subject,
     \code{whichPDict}.
 
     An \link{XStringSet} object containing the subject sequences
-    for \code{vcountPDict} and \code{vwhichPDict}.
+    for \code{vmatchPDict}, \code{vcountPDict}, \and code{vwhichPDict}.
 
     If \code{pdict} is a \link{PDict} object (i.e. a preprocessed
     dictionary), then \code{subject} must be of base class \link{DNAString}.
@@ -210,6 +214,10 @@ vwhichPDict(pdict, subject,
   (see above for the details).
 
   \code{vwhichPDict} returns a list of \code{N} integer vectors.
+
+  \code{vmatchPDict} returns an \link{MIndexList}, which is essentially a list
+  of length \code{N} where each entry is an \link{MIndex} object (as would be
+  obtained from running \code{matchPDict} on each of the sequences).
 }
 
 \author{H. Pagès}
@@ -513,7 +521,7 @@ if (interactive()) {
   pdict2 <- PDict(probes2)
 
   ## Get the mapping from probes1 to probes2 (based on exact matching):
-  map1to2 <- vwhichPDict(pdict2, probes1) 
+  map1to2 <- vwhichPDict(pdict2, probes1)
 
   ## The following helper function uses the probe level mapping to induce
   ## the mapping at the probe set IDs level (from hgu95av2 to hgu133a).

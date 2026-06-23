@@ -15,7 +15,7 @@
 ###   > library(BSgenome.Hsapiens.UCSC.hg18)
 ###   > chr1 <- Hsapiens$chr1
 ###   > system.time(end_index <- endIndex(matchPDict(pdict, chr1)))
-###      user  system elapsed 
+###      user  system elapsed
 ###    50.663   0.000  50.763
 ###   > count_index <- sapply(end_index, length)
 ###   > table(count_index)
@@ -64,8 +64,8 @@
 ###       1M      36      2.5 sec    717M     106 sec     103 sec            0
 ###      10M      36       56 sec   6724M     351 sec     200 sec            0
 ###      10M      12      7.5 sec    340M     227 sec     216 sec         100M
-###      30M      12       27 sec    523M     491 sec           ? 
-### 
+###      30M      12       27 sec    523M     491 sec           ?
+###
 ### III. Inexact matching
 ### ---------------------
 ###   pdict <- PDict(c("acgt", "gt", "cgt", "ac"), tb.end=2)
@@ -561,10 +561,8 @@
             if (!identical(weight, 1L))
                 warning("'weight' is ignored when 'collapse=FALSE'")
         }
-    } else {
-        ## vmatchPDict()
-        stop("vmatchPDict() is not supported yet, sorry")
     }
+
     ## We are doing our own dispatch here, based on the type of 'pdict'.
     ## TODO: Revisit this. Would probably be a better design to use a
     ## generic/methods approach and rely on the standard dispatch mechanism.
@@ -584,7 +582,8 @@
                        max.mismatch, min.mismatch, with.indels, fixed,
                        algorithm, collapse, weight,
                        verbose, matches.as)
-    if (is.null(which_pp_excluded))
+    if (is.null(which_pp_excluded) && matches.as %in%
+        c("MATCHES_AS_WHICH", "MATCHES_AS_COUNTS"))
         return(ans)
     if (matches.as == "MATCHES_AS_WHICH") {
         ## vwhichPDict()
@@ -599,8 +598,51 @@
         }
         return(ans)
     }
-    ## vmatchPDict()
-    stop("vmatchPDict() is not supported yet, sorry")
+    if(matches.as == "MATCHES_AS_ENDS") {
+      ## vmatchPDict() by ends
+      ## converting all the results to MIndex objects and then wrapping the result
+      for(i in seq_along(ans)) {
+        ans[[i]] <- new("ByPos_MIndex",
+                        width0=width(pdict),
+                        NAMES=names(pdict),
+                        ends=ans[[i]])
+      }
+
+      names(ans) <- names(subject)
+      ans <- as(ans, "MIndexList")
+      return(ans)
+    }
+    if(matches.as == "MATCHES_AS_RANGES") {
+      ## vmatchPDict() by ranges
+      ## This is the same as MATCHES_AS_ENDS, except ans[[i]] holds two lists
+      ## - The first list has the start position for each range
+      ## - The second list has the width of the range (including the start)
+
+      for(i in seq_along(ans)){
+        ## First we have to move from starts to ends to align with the
+        ## Pos_MIndex constructor
+        ans_start <- ans[[i]][[1]]
+        ans_width <- ans[[i]][[2]]
+        for(j in seq_along(ans_start)){
+          if(!is.null(ans_start[[j]])){
+            ## Note that the width includes the start, so we subtract 1
+            ans_start[[j]] <- ans_start[[j]] + ans_width[[j]] - 1L
+          }
+        }
+        ## Now ans_start holds the **end** position
+        ## width(pdict) will be equivalent to ifelse(is.null(w), 0, w[1]) for
+        ##   w in ans_width
+        ans[[i]] <- new("ByPos_MIndex",
+                        width0=width(pdict),
+                        NAMES=names(pdict),
+                        ends=ans_start)
+      }
+
+      names(ans) <- names(subject)
+      ans <- as(ans, "MIndexList")
+      return(ans)
+    }
+    warning("Failed to post-process output of .vmatch(pdict, subject)")
     return(ans)
 }
 
@@ -771,8 +813,8 @@ setMethod("whichPDict", "MaskedXString",
 ###     'lapply(subject, function(s) whichPDict(pdict, s, ...))'.
 ###      The returned object is a list of length N.
 ###   o vcountPDict(): returns an M x N matrix of integers.
-###   o vmatchPDict(): not supported yet! (first we need a container to
-###     store the results)
+###   o vmatchPDict(): returns an MIndexList (CompressedList of MIndex objects)
+###      This contains N MIndex objects, each with up to M entries
 ###
 
 setGeneric("vmatchPDict", signature="subject",
@@ -787,7 +829,10 @@ setMethod("vmatchPDict", "ANY",
     function(pdict, subject,
              max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
-        stop("vmatchPDict() is not ready yet, sorry")
+         .vmatchPDict(pdict, subject,
+                      max.mismatch, min.mismatch, with.indels, fixed,
+                      algorithm, collapse=FALSE, weight=1L,
+                      verbose, matches.as="MATCHES_AS_ENDS")
 )
 
 ### Dispatch on 'subject' (see signature of generic).

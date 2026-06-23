@@ -76,6 +76,7 @@ Collate: utils.R
 	strsplit-methods.R
 	misc.R
 	MIndex-class.R
+	MIndexList-class.R
 	lowlevel-matching.R
 	match-utils.R
 	matchPattern.R

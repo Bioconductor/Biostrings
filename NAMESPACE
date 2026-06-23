@@ -218,7 +218,8 @@ exportMethods(
 ###   matchPDict.R
 
 exportClasses(
-    MIndex, ByPos_MIndex,
+    #SparseList,
+    MIndex, ByPos_MIndex, MIndexList,
     PreprocessedTB, Twobit, ACtree2,
     PDict3Parts,
     PDict, TB_PDict, MTB_PDict, Expanded_TB_PDict
