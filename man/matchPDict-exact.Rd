@@ -115,7 +115,7 @@ vmatchPDict(pdict, subject,
     \code{whichPDict}.
 
     An \link{XStringSet} object containing the subject sequences
-    for \code{vmatchPDict}, \code{vcountPDict}, \and code{vwhichPDict}.
+    for \code{vmatchPDict}, \code{vcountPDict}, and code{vwhichPDict}.
 
     If \code{pdict} is a \link{PDict} object (i.e. a preprocessed
     dictionary), then \code{subject} must be of base class \link{DNAString}.
