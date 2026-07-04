@@ -65,9 +65,6 @@ readAAMultipleAlignment <- function(...)
 write.phylip <- function(...)
     .call_fun_in_MultipleAlignment("write.phylip", ...)
 
-detail <- function(x, ...)
-    .call_fun_in_MultipleAlignment("detail", x, ...)
-
 consensusViews <- function(x, ...)
     .call_fun_in_MultipleAlignment("consensusViews", x, ...)
 

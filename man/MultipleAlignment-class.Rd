@@ -81,8 +81,6 @@
 \alias{show,MultipleAlignment-method}
 \alias{detail,MultipleAlignment-method}
 
-\alias{detail}
-
 \title{MultipleAlignment objects}
 
 \description{
