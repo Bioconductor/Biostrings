@@ -230,55 +230,56 @@ test_that("matchPDict() works for variable width dictionary", {
 })
 
 test_that("vmatchPDict is equivalent to matchPDict output", {
-  pdict <- PDict(c("acgt", "gt", "cgt", "ac"), tb.end=2)
-  d <- DNAString("acggaccg")
-  d2 <- DNAString("gtcgtacgt")
-  dss <- DNAStringSet(list(d,d2))
+    pdict <- PDict(c("acgt", "gt", "cgt", "ac"), tb.end=2)
+    d <- DNAString("acggaccg")
+    d2 <- DNAString("gtcgtacgt")
+    dss <- DNAStringSet(list(d, d2))
 
-  mindex_obj_comp <- function(m1, m2){
-    if(!is(m1, "MIndex") || !is(m2, "MIndex")){
-      return(FALSE)
-    }
-
-    if(length(m1) != length(m1)){
-      return (FALSE)
-    }
-
-    for(i in seq_along(m1)){
-      l1 <- m1[[i]]
-      l2 <- m2[[i]]
-      for(attr_name in c("start", "width")){
-        if(!identical(attr(l1, attr_name), attr(l2, attr_name))){
-          return(FALSE)
+    mindex_obj_comp <- function(m1, m2)
+    {
+        if (!is(m1, "MIndex") || !is(m2, "MIndex")) {
+            return(FALSE)
         }
-      }
+
+        if (length(m1) != length(m2)) {
+            return(FALSE)
+        }
+
+        for (i in seq_along(m1)) {
+            l1 <- m1[[i]]
+            l2 <- m2[[i]]
+            for (attr_name in c("start", "width")) {
+                if (!identical(attr(l1, attr_name), attr(l2, attr_name))) {
+                    return(FALSE)
+                }
+            }
+        }
+        return(TRUE)
     }
-    return(TRUE)
-  }
 
-  ## Basic matching
-  vmatch_output <- vmatchPDict(pdict, dss)
-  expect_true(mindex_obj_comp(vmatch_output[[1]], matchPDict(pdict, dss[[1]])))
-  expect_true(mindex_obj_comp(vmatch_output[[2]], matchPDict(pdict, dss[[2]])))
+    ## Basic matching
+    vmatch_output <- vmatchPDict(pdict, dss)
+    expect_true(mindex_obj_comp(vmatch_output[[1]], matchPDict(pdict, dss[[1]])))
+    expect_true(mindex_obj_comp(vmatch_output[[2]], matchPDict(pdict, dss[[2]])))
 
-  ## max.mismatch
-  vmatch_output <- vmatchPDict(pdict, dss, max.mismatch = 2)
-  expect_true(mindex_obj_comp(vmatch_output[[1]],
-                              matchPDict(pdict, dss[[1]], max.mismatch = 2)))
-  expect_true(mindex_obj_comp(vmatch_output[[2]],
-                              matchPDict(pdict, dss[[2]], max.mismatch = 2)))
+    ## max.mismatch
+    vmatch_output <- vmatchPDict(pdict, dss, max.mismatch = 2)
+    expect_true(mindex_obj_comp(vmatch_output[[1]],
+                                matchPDict(pdict, dss[[1]], max.mismatch = 2)))
+    expect_true(mindex_obj_comp(vmatch_output[[2]],
+                                matchPDict(pdict, dss[[2]], max.mismatch = 2)))
 
-  ## min.mismatch
-  vmatch_output <- vmatchPDict(pdict, dss, min.mismatch = 1, max.mismatch = 2)
-  expect_true(mindex_obj_comp(vmatch_output[[1]],
-                              matchPDict(pdict, dss[[1]], min.mismatch = 1, max.mismatch = 2)))
-  expect_true(mindex_obj_comp(vmatch_output[[2]],
-                              matchPDict(pdict, dss[[2]], min.mismatch = 1, max.mismatch = 2)))
+    ## min.mismatch
+    vmatch_output <- vmatchPDict(pdict, dss, min.mismatch = 1, max.mismatch = 2)
+    expect_true(mindex_obj_comp(vmatch_output[[1]],
+                                matchPDict(pdict, dss[[1]], min.mismatch = 1, max.mismatch = 2)))
+    expect_true(mindex_obj_comp(vmatch_output[[2]],
+                                matchPDict(pdict, dss[[2]], min.mismatch = 1, max.mismatch = 2)))
 
-  ## fixed
-  vmatch_output <- vmatchPDict(pdict, dss, fixed = FALSE)
-  expect_true(mindex_obj_comp(vmatch_output[[1]],
-                              matchPDict(pdict, dss[[1]], fixed = FALSE)))
-  expect_true(mindex_obj_comp(vmatch_output[[2]],
-                              matchPDict(pdict, dss[[2]], fixed = FALSE)))
+    ## fixed
+    vmatch_output <- vmatchPDict(pdict, dss, fixed = FALSE)
+    expect_true(mindex_obj_comp(vmatch_output[[1]],
+                                matchPDict(pdict, dss[[1]], fixed = FALSE)))
+    expect_true(mindex_obj_comp(vmatch_output[[2]],
+                                matchPDict(pdict, dss[[2]], fixed = FALSE)))
 })
