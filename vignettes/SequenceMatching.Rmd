@@ -12,7 +12,7 @@ abstract: |
   of using the many functions available in Biostrings along with explanations
   of their output types.
 vignette: |
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Sequence Searching and Matching with Biostrings}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

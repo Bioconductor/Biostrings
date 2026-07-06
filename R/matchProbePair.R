@@ -84,17 +84,17 @@ setMethod("matchProbePair", "DNAString",
              logfile=NULL, verbose=FALSE, ...)
     {
         ## This won't copy the data if Fprobe and Rprobe are already DNAString objects
-        F <- DNAString(Fprobe)
-        R <- DNAString(Rprobe)
+        F_dna <- DNAString(Fprobe)
+        R_dna <- DNAString(Rprobe)
 
         ## F and R hits on the + strand
-        Fp_hits <- start(matchPattern(F, subject, algorithm=algorithm, ...))
-        Rp_hits <- start(matchPattern(R, subject, algorithm=algorithm, ...))
+        Fp_hits <- start(matchPattern(F_dna, subject, algorithm=algorithm, ...))
+        Rp_hits <- start(matchPattern(R_dna, subject, algorithm=algorithm, ...))
 
         ## F and R hits on the - strand
-        Fm_hits <- end(matchPattern(reverseComplement(F),
+        Fm_hits <- end(matchPattern(reverseComplement(F_dna),
                                     subject, algorithm=algorithm, ...))
-        Rm_hits <- end(matchPattern(reverseComplement(R),
+        Rm_hits <- end(matchPattern(reverseComplement(R_dna),
                                     subject, algorithm=algorithm, ...))
 
         if (verbose) {
