@@ -598,49 +598,49 @@
         }
         return(ans)
     }
-    if(matches.as == "MATCHES_AS_ENDS") {
-      ## vmatchPDict() by ends
-      ## converting all the results to MIndex objects and then wrapping the result
-      for(i in seq_along(ans)) {
-        ans[[i]] <- new("ByPos_MIndex",
-                        width0=width(pdict),
-                        NAMES=names(pdict),
-                        ends=ans[[i]])
-      }
-
-      names(ans) <- names(subject)
-      ans <- as(ans, "MIndexList")
-      return(ans)
-    }
-    if(matches.as == "MATCHES_AS_RANGES") {
-      ## vmatchPDict() by ranges
-      ## This is the same as MATCHES_AS_ENDS, except ans[[i]] holds two lists
-      ## - The first list has the start position for each range
-      ## - The second list has the width of the range (including the start)
-
-      for(i in seq_along(ans)){
-        ## First we have to move from starts to ends to align with the
-        ## Pos_MIndex constructor
-        ans_start <- ans[[i]][[1]]
-        ans_width <- ans[[i]][[2]]
-        for(j in seq_along(ans_start)){
-          if(!is.null(ans_start[[j]])){
-            ## Note that the width includes the start, so we subtract 1
-            ans_start[[j]] <- ans_start[[j]] + ans_width[[j]] - 1L
-          }
+    if (matches.as == "MATCHES_AS_ENDS") {
+        ## vmatchPDict() by ends
+        ## converting all the results to MIndex objects and then wrapping the result
+        for (i in seq_along(ans)) {
+            ans[[i]] <- new("ByPos_MIndex",
+                            width0=width(pdict),
+                            NAMES=names(pdict),
+                            ends=ans[[i]])
         }
-        ## Now ans_start holds the **end** position
-        ## width(pdict) will be equivalent to ifelse(is.null(w), 0, w[1]) for
-        ##   w in ans_width
-        ans[[i]] <- new("ByPos_MIndex",
-                        width0=width(pdict),
-                        NAMES=names(pdict),
-                        ends=ans_start)
-      }
 
-      names(ans) <- names(subject)
-      ans <- as(ans, "MIndexList")
-      return(ans)
+        names(ans) <- names(subject)
+        ans <- as(ans, "MIndexList")
+        return(ans)
+    }
+    if (matches.as == "MATCHES_AS_RANGES") {
+        ## vmatchPDict() by ranges
+        ## This is the same as MATCHES_AS_ENDS, except ans[[i]] holds two lists
+        ## - The first list has the start position for each range
+        ## - The second list has the width of the range (including the start)
+
+        for (i in seq_along(ans)) {
+            ## First we have to move from starts to ends to align with the
+            ## Pos_MIndex constructor
+            ans_start <- ans[[i]][[1]]
+            ans_width <- ans[[i]][[2]]
+            for (j in seq_along(ans_start)) {
+                if (!is.null(ans_start[[j]])) {
+                    ## Note that the width includes the start, so we subtract 1
+                    ans_start[[j]] <- ans_start[[j]] + ans_width[[j]] - 1L
+                }
+            }
+            ## Now ans_start holds the **end** position
+            ## width(pdict) will be equivalent to ifelse(is.null(w), 0, w[1]) for
+            ##   w in ans_width
+            ans[[i]] <- new("ByPos_MIndex",
+                            width0=width(pdict),
+                            NAMES=names(pdict),
+                            ends=ans_start)
+        }
+
+        names(ans) <- names(subject)
+        ans <- as(ans, "MIndexList")
+        return(ans)
     }
     warning("Failed to post-process output of .vmatch(pdict, subject)")
     return(ans)
@@ -829,10 +829,10 @@ setMethod("vmatchPDict", "ANY",
     function(pdict, subject,
              max.mismatch=0, min.mismatch=0, with.indels=FALSE, fixed=TRUE,
              algorithm="auto", verbose=FALSE)
-         .vmatchPDict(pdict, subject,
-                      max.mismatch, min.mismatch, with.indels, fixed,
-                      algorithm, collapse=FALSE, weight=1L,
-                      verbose, matches.as="MATCHES_AS_ENDS")
+        .vmatchPDict(pdict, subject,
+                     max.mismatch, min.mismatch, with.indels, fixed,
+                     algorithm, collapse=FALSE, weight=1L,
+                     verbose, matches.as="MATCHES_AS_ENDS")
 )
 
 ### Dispatch on 'subject' (see signature of generic).

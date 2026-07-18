@@ -263,7 +263,7 @@ v12[v12 == v12[1]]
 @
 
 This is \Robject{TRUE}:
-<<e2,results=hide>>=
+<<e3,results=hide>>=
 v12[3] == Views(RNAString("AU"), start=0, end=2)
 @
 
