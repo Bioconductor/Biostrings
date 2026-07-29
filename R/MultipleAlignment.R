@@ -7,7 +7,7 @@
 .call_fun_in_MultipleAlignment <- function(fun, ...)
 {
      S4Vectors:::load_package_gracefully("MultipleAlignment",
-              "starting with BioC 3.24, calling ", fun, "()")
+              "when calling ", fun, "() in BioC >= 3.24")
      msg <- c(fun, "() has moved from Biostrings to the MultipleAlignment ",
               "package, and is formally deprecated in Biostrings >= 2.81.3. ",
               "Please call MultipleAlignment::", fun, "() to get rid of ",
