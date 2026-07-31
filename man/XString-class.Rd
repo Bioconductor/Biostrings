@@ -101,7 +101,7 @@
   \describe{
     \item{\code{alphabet(x)}:}{
       \code{NULL} for a \code{BString} object.
-      See the corresponding man pages when \code{x} is a 
+      See the corresponding man pages when \code{x} is a
       \link{DNAString}, \link{RNAString} or \link{AAString} object.
     }
     \item{\code{length(x)}:}{ or \code{nchar(x)}:
@@ -163,6 +163,14 @@
   }
 }
 
+\note{
+BString objects can technically hold any valid ASCII code, which includes all values in the range 0:255. However, non-displayable characters may cause the BString object to display in a weird format (see Examples for one such case). Even worse, if a 0 value is included in the BString, attempting to display it will throw a cryptic error that looks like this:
+
+\code{Error in XVector:::extract_character_from_XRaw_by_ranges: embedded nul in string: ...}
+
+BString objects are intended to hold displayable characters, so this shouldn't be an issue for most cases. However, if you need BString objects to hold non-displayable values, you can set \code{options(Biostrings.showRaw=TRUE)} to fix the formatting of non-displayable characters. Note that this adds some overhead to methods that show BString objects.
+}
+
 \author{H. Pagès}
 
 \seealso{
@@ -210,6 +218,18 @@ identical(b, 1:length(b))  # FALSE
 ## Compacting. As a particular type of XVector objects, XString
 ## objects can optionally be compacted. Compacting is done typically
 ## before serialization. See ?compact for more information.
+
+## Non-displayable characters in BStrings
+## BString objects support any value, though this isn't encouraged:
+b_bad <- as(as(as.raw(c(10,65,10,66,10,67,68)), "XRaw"), "BString")
+b_bad     ## formatting is all messed up because 10 = \n
+
+## if you really need to display characters like this, set this option:
+options(Biostrings.showRaw=TRUE)
+b_bad ## now all 7 characters "display"
+
+## reseting to default
+options(Biostrings.showRaw=FALSE)
 }
 
 \keyword{methods}
