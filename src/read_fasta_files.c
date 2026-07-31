@@ -628,6 +628,7 @@ SEXP write_XStringSet_to_fasta(SEXP x, SEXP filexp_list, SEXP width, SEXP lkup)
 {
 	XStringSet_holder X;
 	int x_length, width0, lkup_len, i, j1, j2, dest_nbytes;
+	int nmax_write_bytes, nwrote_bytes;
 	const int *lkup0;
 	SEXP filexp, x_names, desc;
 	Chars_holder X_elt;
@@ -636,8 +637,7 @@ SEXP write_XStringSet_to_fasta(SEXP x, SEXP filexp_list, SEXP width, SEXP lkup)
 	x_length = _get_length_from_XStringSet_holder(&X);
 	filexp = VECTOR_ELT(filexp_list, 0);
 	width0 = INTEGER(width)[0];
-	if (width0 >= IOBUF_SIZE)
-		error("'width' must be <= %d", IOBUF_SIZE - 1);
+	nmax_write_bytes = width0 >= IOBUF_SIZE ? IOBUF_SIZE - 1 : width0;
 	iobuf[width0] = 0;
 	if (lkup == R_NilValue) {
 		lkup0 = NULL;
@@ -657,21 +657,33 @@ SEXP write_XStringSet_to_fasta(SEXP x, SEXP filexp_list, SEXP width, SEXP lkup)
 		}
 		filexp_puts(filexp, "\n");
 		X_elt = _get_elt_from_XStringSet_holder(&X, i);
-		for (j1 = 0; j1 < X_elt.length; j1 += width0) {
-			j2 = j1 + width0;
+		j1 = 0;
+		nwrote_bytes = 0;
+		while(j1 < X_elt.length){
+			j2 = j1 + nmax_write_bytes;
 			if (j2 > X_elt.length)
 				j2 = X_elt.length;
 			dest_nbytes = j2 - j1;
+			if(nwrote_bytes + dest_nbytes > width0){
+				// align write to size width0
+				dest_nbytes = width0 - nwrote_bytes;
+				j2 = j1 + dest_nbytes;
+			}
 			j2--;
 			Ocopy_bytes_from_i1i2_with_lkup(j1, j2,
 				iobuf, dest_nbytes,
 				X_elt.ptr, X_elt.length,
 				lkup0, lkup_len);
 			iobuf[dest_nbytes] = 0;
+			nwrote_bytes += dest_nbytes;
+			j1 = j2+1;
 			filexp_puts(filexp, iobuf);
-			filexp_puts(filexp, "\n");
+			if(j1 == X_elt.length || nwrote_bytes == width0){
+				// add newline if at end of line (width0) or end of sequence
+				filexp_puts(filexp, "\n");
+				nwrote_bytes = 0;
+			}
 		}
 	}
 	return R_NilValue;
 }
-

@@ -615,9 +615,25 @@ static void write_FASTQ_id(SEXP filexp, const char *markup, const char *id)
 	filexp_puts(filexp, "\n");
 }
 
-static void write_FASTQ_seq(SEXP filexp, const char *buf)
+static void write_FASTQ_seq(SEXP filexp, const Chars_holder X,
+		const int *lkup0, int lkup_len)
 {
-	filexp_puts(filexp, buf);
+	// write sequences in chunks in case sequence is longer than I/O buffer
+	int i1, i2, bytes_to_write, bytes_remaining;
+	bytes_remaining = X.length;
+	i1 = 0;
+	while(bytes_remaining){
+		bytes_to_write = bytes_remaining >= IOBUF_SIZE ? IOBUF_SIZE-1 : bytes_remaining;
+		i2 = i1+bytes_to_write-1;
+		Ocopy_bytes_from_i1i2_with_lkup(i1, i2,
+			iobuf, bytes_to_write,
+			X.ptr, X.length,
+			lkup0, lkup_len);
+		iobuf[bytes_to_write] = 0;
+		filexp_puts(filexp, iobuf);
+		i1 = i2 + 1;
+		bytes_remaining -= bytes_to_write;
+	}
 	filexp_puts(filexp, "\n");
 }
 
@@ -677,18 +693,8 @@ SEXP write_XStringSet_to_fastq(SEXP x, SEXP filexp_list,
 	for (i = 0; i < x_length; i++) {
 		id = get_FASTQ_rec_id(x_names, q_names, i);
 		X_elt = _get_elt_from_XStringSet_holder(&X, i);
-		if (X_elt.length >= IOBUF_SIZE)
-			error("XStringSet object (or derivative) to "
-			      "write 'x' cannot contain strings\n  longer "
-			      "than %d ('x[[%d]]' has %d characters)",
-			      IOBUF_SIZE - 1, i + 1, X_elt.length);
-		Ocopy_bytes_from_i1i2_with_lkup(0, X_elt.length - 1,
-			iobuf, X_elt.length,
-			X_elt.ptr, X_elt.length,
-			lkup0, lkup_len);
-		iobuf[X_elt.length] = 0;
 		write_FASTQ_id(filexp, FASTQ_line1_markup, id);
-		write_FASTQ_seq(filexp, iobuf);
+		write_FASTQ_seq(filexp, X_elt, lkup0, lkup_len);
 		write_FASTQ_id(filexp, FASTQ_line3_markup, id);
 		if (qualities != R_NilValue) {
 			write_FASTQ_qual(filexp, X_elt.length, &Q, i);
