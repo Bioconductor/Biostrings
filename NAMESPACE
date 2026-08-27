@@ -75,6 +75,10 @@ export(
     update_DNA_palette, update_RNA_palette, update_AA_palette, update_B_palette
 )
 
+S3method(as.data.frame, XStringSet)
+S3method(as.data.frame, XStringViews)
+export(as.data.frame.XStringSet, as.data.frame.XStringViews)
+
 exportMethods(
     length,
     nchar, width,

@@ -136,16 +136,31 @@ setAs("XStringViews", "AAStringSet", function(from) AAStringSet(from))
 setAs("XStringSet", "Views", .XStringSetAsViews)
 setAs("XStringSet", "XStringViews", .XStringSetAsViews)
 
-setMethod("as.data.frame", "XStringViews",
-    function(x, row.names=NULL, optional= FALSE)
-    {
-        ans1 <- as.data.frame(as(x, "IRanges"), row.names=row.names, optional=optional)
-        ans2 <- as.data.frame(as(x, "XStringSet"), row.names=row.names, optional=optional)
-        stopifnot(ncol(ans2) == 1L)  # should never happen
-        colnames(ans2)[[1L]] <- "seq"
-        cbind(ans1, ans2)
-    }
-)
+### --- S3/S4 combo for as.data.frame.XStringViews ---
+### Inherits the 'validRN' argument from as.data.frame.vector(), and
+### the 'stringsAsFactors' argument from as.data.frame.character(),
+### as.data.frame.list(), and as.data.frame.matrix().
+.as.data.frame.XStringViews <- function(x, row.names=NULL,
+                                        validRN=TRUE, stringsAsFactors=FALSE)
+{
+    x_ranges <- ranges(v, use.names=FALSE, use.mcols=FALSE)
+    x_sequences <- as(x, "XStringSet")  # does NOT propagate the metadata cols
+    stopifnot(is.null(mcols(x_ranges)), is.null(mcols(x_sequences)))
+    ans1 <- as.data.frame(x_ranges, row.names=row.names,
+                          validRN=validRN, stringsAsFactors=stringsAsFactors)
+    ans2 <- as.data.frame(x_sequences, row.names=row.names,
+                          validRN=validRN, stringsAsFactors=stringsAsFactors)
+    ans <- cbind(ans1, ans2)
+    x_mcols <- mcols(x, use.names=FALSE)  # can be NULL!
+    if (!is.null(x_mcols))
+        ans <- cbind(ans, as.data.frame(x_mcols, validRN=validRN,
+                                        stringsAsFactors=stringsAsFactors))
+    ans
+}
+### Silently ignores the 'optional' argument.
+as.data.frame.XStringViews <- function(x, row.names=NULL, optional=FALSE, ...)
+    .as.data.frame.XStringViews(x, row.names=row.names, ...)
+setMethod("as.data.frame", "XStringViews", as.data.frame.XStringViews)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

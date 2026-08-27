@@ -322,10 +322,10 @@ setMethod("show", "MaskedXString",
     {
         object_len <- length(object)
         cat(object_len, "-letter ", class(object), " object ",
-            "(# for masking)\n", sep="")
-        snippet <- toSeqSnippet(object, getOption("width") - 5L)
-        cat("seq: ", add_colors(snippet), "\n", sep="")
-        MaskCollection.show_frame(masks(object))
+            "(# for masking):\n", sep="")
+        snippet <- toSeqSnippet(object, getOption("width"))
+        cat(add_colors(snippet), "\n", sep="")
+        MaskCollection.show_frame(masks(object), margin="|")
     }
 )
 

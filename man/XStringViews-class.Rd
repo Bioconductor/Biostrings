@@ -39,6 +39,7 @@
 
 \alias{as.character,XStringViews-method}
 \alias{as.matrix,XStringViews-method}
+\alias{as.data.frame.XStringViews}
 \alias{as.data.frame,XStringViews-method}
 \alias{toString,XStringViews-method}
 

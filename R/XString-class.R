@@ -364,9 +364,9 @@ setMethod("show", "XString",
     function(object)
     {
         object_len <- object@length
-        cat(object_len, "-letter ", class(object), " object\n", sep="")
-        snippet <- toSeqSnippet(object, getOption("width") - 5L)
-        cat("seq: ", add_colors(snippet), "\n", sep="")
+        cat(object_len, "-letter ", class(object), " object:\n", sep="")
+        snippet <- toSeqSnippet(object, getOption("width"))
+        cat(add_colors(snippet), "\n", sep="")
     }
 )
 

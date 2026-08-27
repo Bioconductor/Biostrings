@@ -453,11 +453,11 @@ setAs("ANY", "XStringSet",
         format("width", width=widthW, justify="right"),
         sep="")
     if (with.names) {
-        cat(format(" seq", width=getOption("width")-iW-widthW-.namesW-1),
+        cat(format(" sequence", width=getOption("width")-iW-widthW-.namesW-1),
             format("names", width=.namesW, justify="left"),
             sep="")
     } else {
-        cat(" seq")
+        cat(" sequence")
     }
     cat("\n")
 }
@@ -562,21 +562,29 @@ setMethod("as.character", "XStringSet",
     }
 )
 
-setMethod("as.factor", "XStringSet",
-    function(x)
-    {
-        as.factor(as.character(x))
-    })
+setMethod("as.factor", "XStringSet", function(x) as.factor(as.character(x)))
 
-### TODO: Turn this into an S3/S4 combo for as.data.frame.XStringSet
-setMethod("as.data.frame", "XStringSet",
-    function(x, row.names=NULL, optional=FALSE)
-    {
-        x <- as.character(x)
-        as.data.frame(x, row.names=NULL, optional=optional,
-                         stringsAsFactors=FALSE)
-    }
-)
+### --- S3/S4 combo for as.data.frame.XStringSet ---
+### Inherits the 'validRN' argument from as.data.frame.vector(), and
+### the 'stringsAsFactors' argument from as.data.frame.character(),
+### as.data.frame.list(), and as.data.frame.matrix().
+.as.data.frame.XStringSet <- function(x, row.names=NULL,
+                                      validRN=TRUE, stringsAsFactors=FALSE)
+{
+    ans <- data.frame(sequence=as.character(x),
+                      row.names=row.names, check.names=FALSE,
+                      stringsAsFactors=stringsAsFactors)
+    ans$names <- names(x)
+    x_mcols <- mcols(x, use.names=FALSE)  # can be NULL!
+    if (!is.null(x_mcols))
+        ans <- cbind(ans, as.data.frame(x_mcols, validRN=validRN,
+                                        stringsAsFactors=stringsAsFactors))
+    ans
+}
+### Silently ignores the 'optional' argument.
+as.data.frame.XStringSet <- function(x, row.names=NULL, optional=FALSE, ...)
+    .as.data.frame.XStringSet(x, row.names=row.names, ...)
+setMethod("as.data.frame", "XStringSet", as.data.frame.XStringSet)
 
 setMethod("as.vector", "XStringSet",
     function(x, mode="any")
