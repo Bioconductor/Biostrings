@@ -128,8 +128,9 @@
     }
     dna_codes <- DNAcodes(baseOnly=FALSE)
     skip_code <- dna_codes[["+"]]
+    gap_code <- dna_codes[["."]]
     ans <- .Call2("DNAStringSet_translate",
-                  x, skip_code, dna_codes[codon_alphabet],
+                  x, skip_code, gap_code, dna_codes[codon_alphabet],
                   lkup, init_lkup,
                   if.non.ambig, if.ambig,
                   PACKAGE="Biostrings")

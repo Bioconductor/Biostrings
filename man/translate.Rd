@@ -118,7 +118,7 @@ codons(x)
   supply a different genetic code via the \code{genetic.code} argument.
 
   \code{codons} is a utility for extracting the codons involved
-  in this translation without translating them. 
+  in this translation without translating them.
 }
 
 \value{
@@ -193,7 +193,53 @@ translate(dna2, if.fuzzy.codon="solve")
 translate(dna2, genetic.code=SGC1, if.fuzzy.codon="solve")
 
 ## ---------------------------------------------------------------------
-## 2. TRANSLATING AN OPEN READING FRAME
+## 2. GAPS
+## ---------------------------------------------------------------------
+
+## A codon made of three dots (...) in an input sequence is interpreted
+## as a "gap codon" and gets translated to a single dot in the
+## corresponding output sequence:
+translate(DNAString("TGTCTA...TGG......TAA"))
+
+dna3 <- DNAStringSet(c(s1="TC+N..++.TGY", s2="+ACC.+++.....T+TT+..+.GTT"))
+aa3 <- translate(dna3, if.fuzzy.codon="solve")
+aa3
+
+## Sanity check:
+stopifnot(identical(as.character(aa3), c(s1="S.C", s2="T..F.V")))
+
+## Additionally, a block of dots at the beginning of an input sequence
+## is interpreted as a "clipping gap" and gets translated to a clipping
+## gap in the corresponding output sequence:
+dna4 <- DNAString("..........TTACTCAGCCAAGCTCT...GTGTCTACGTCTCTAGGA")
+translate(dna4)
+
+## Note that the size of the clipping gap in the input sequence determines
+## the size of the clipping gap in the output sequence. More precisely,
+## if 'Sin' and 'Sout' are the sizes of the clipping gaps in the input
+## and output sequences, respectively, then we have:
+##
+##     Sout = (Sin - 1) %/% 3 + 1
+##
+## For example:
+dna5 <- DNAStringSet(c(".TTACTCAGCCA",   # Sin = 1 -> Sout = 1
+                       "..TACTCAGCCA",   # Sin = 2 -> Sout = 1
+                       "...ACTCAGCCA",   # Sin = 3 -> Sout = 1
+                       "....CTCAGCCA",   # Sin = 4 -> Sout = 2
+                       ".....TCAGCCA",   # Sin = 5 -> Sout = 2
+                       "......CAGCCA",   # Sin = 6 -> Sout = 2
+                       ".......AGCCA"))  # Sin = 7 -> Sout = 3
+aa5 <- translate(dna5)
+aa5
+
+## Sanity check:
+stopifnot(identical(
+    as.character(aa5),
+    c(".TQP", ".TQP", ".TQP", "..QP", "..QP", "..QP", "...P")
+))
+
+## ---------------------------------------------------------------------
+## 3. TRANSLATING AN OPEN READING FRAME
 ## ---------------------------------------------------------------------
 
 file <- system.file("extdata", "someORF.fa", package="Biostrings")
@@ -220,25 +266,25 @@ which(width(codons(y1)) != 3)
 codons(y1)[20:28]
 
 ## ---------------------------------------------------------------------
-## 3. AN ADVANCED EXAMPLE
+## 4. AN ADVANCED EXAMPLE
 ## ---------------------------------------------------------------------
 
 ## Translation on the '-' strand:
-dna3 <- DNAStringSet(c("ATC", "GCTG", "CGACT"))
-translate(reverseComplement(dna3))
+dna6 <- DNAStringSet(c("ATC", "GCTG", "CGACT"))
+translate(reverseComplement(dna6))
 
-## Translate sequences on both '+' and '-' strand across all 
+## Translate sequences on both '+' and '-' strand across all
 ## possible reading frames (i.e., codon position 1, 2 or 3):
-## First create a DNAStringSet of '+' and '-' strand sequences, 
+## First create a DNAStringSet of '+' and '-' strand sequences,
 ## removing the nucleotides prior to the reading frame start position.
-dna3_subseqs <- lapply(1:3, function(pos) 
-    subseq(c(dna3, reverseComplement(dna3)), start=pos))
-## Translation of 'dna3_subseqs' produces a list of length 3, each with
+dna6_subseqs <- lapply(1:3, function(pos)
+    subseq(c(dna6, reverseComplement(dna6)), start=pos))
+## Translation of 'dna6_subseqs' produces a list of length 3, each with
 ## 6 elements (3 '+' strand results followed by 3 '-' strand results).
-lapply(dna3_subseqs, translate)
+lapply(dna6_subseqs, translate)
 
 ## Note that translate() throws a warning when the length of the sequence
-## is not divisible by 3. To avoid this warning wrap the function in 
+## is not divisible by 3. To avoid this warning wrap the function in
 ## suppressWarnings().
 }
 
