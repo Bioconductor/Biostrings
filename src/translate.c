@@ -9,24 +9,73 @@
 
 static char errmsg_buf[200];
 
+static int process_gap(const char *c, int i, int *phase, int gap_code,
+		       int *in_gap_codon, int *in_clipping_codon,
+		       Chars_holder *aa)
+{
+	if (!*in_gap_codon) {
+		if (*phase != 0) {
+			snprintf(errmsg_buf, sizeof(errmsg_buf),
+				 "unexpected gap start at pos %d", i + 1);
+			return -1;
+		}
+		*in_gap_codon = *phase = 1;
+		return 0;
+	}
+	if (*c == gap_code) {
+		if (*in_clipping_codon == 1) {
+			snprintf(errmsg_buf, sizeof(errmsg_buf),
+				 "unexpected gap letter at pos %d", i + 1);
+			return -1;
+		}
+	} else {
+		if (!*in_clipping_codon) {
+			snprintf(errmsg_buf, sizeof(errmsg_buf),
+				 "gap letter expected at pos %d", i + 1);
+			return -1;
+		}
+		*in_clipping_codon = 1;
+	}
+	if (*phase < 2) {
+		(*phase)++;
+	} else {
+		/* aa->ptr is a const char * so we need to cast it to
+		   char * before we can write to it */
+		((char *) aa->ptr)[aa->length++] = '.';
+		*in_gap_codon = *phase = 0;
+		if (*in_clipping_codon == 1)
+			*in_clipping_codon = 0;
+	}
+	return 0;
+}
+
 /*
  * Returns -1 if error, or the nb of trailing letters that were ignored
  * if successful (0, 1, or 2).
  */
 static int fast_translate(const Chars_holder *dna, Chars_holder *aa,
-			  char skip_code,
+			  char skip_code, char gap_code,
 			  TwobitEncodingBuffer *teb,
 			  SEXP lkup, SEXP init_lkup)
 {
-	int phase, i, lkup_key;
+	int phase, i, lkup_key, in_gap_codon, in_clipping_codon;
 	const char *c;
 	char aa_letter;
 
-	aa->length = phase = 0;
+	aa->length = phase = in_gap_codon = 0;
+	in_clipping_codon = 2;
 	_reset_twobit_signature(teb);
 	for (i = 0, c = dna->ptr; i < dna->length; i++, c++) {
 		if (*c == skip_code)
 			continue;
+		if (*c == gap_code || in_gap_codon) {
+			if (process_gap(c, i, &phase, gap_code, &in_gap_codon,
+					&in_clipping_codon, aa) < 0)
+				return -1;
+			continue;
+		}
+		if (in_clipping_codon && *c != gap_code)
+			in_clipping_codon = 0;
 		lkup_key = _shift_twobit_signature(teb, *c);
 		if (teb->lastin_twobit == NA_INTEGER) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
@@ -55,19 +104,29 @@ static int fast_translate(const Chars_holder *dna, Chars_holder *aa,
  * if successful (0, 1, or 2).
  */
 static int translate(const Chars_holder *dna, Chars_holder *aa,
-		     char skip_code,
+		     char skip_code, char gap_code,
 		     int ncodes, ByteTrTable *byte2offset,
 		     SEXP lkup, SEXP init_lkup,
 		     int if_non_ambig, int if_ambig)
 {
-	int phase, is_fuzzy, i, lkup_key, offset;
+	int phase, is_fuzzy, i, lkup_key, offset,
+	    in_gap_codon, in_clipping_codon;
 	const char *c;
 	char aa_letter;
 
-	aa->length = phase = is_fuzzy = 0;
+	aa->length = phase = in_gap_codon = is_fuzzy = 0;
+	in_clipping_codon = 2;
 	for (i = 0, c = dna->ptr; i < dna->length; i++, c++) {
 		if (*c == skip_code)
 			continue;
+		if (*c == gap_code || in_gap_codon) {
+			if (process_gap(c, i, &phase, gap_code, &in_gap_codon,
+					&in_clipping_codon, aa) < 0)
+				return -1;
+			continue;
+		}
+		if (in_clipping_codon && *c != gap_code)
+			in_clipping_codon = 0;
 		offset = byte2offset->byte2code[(unsigned char) *c];
 		if (offset == NA_INTEGER) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
@@ -128,11 +187,12 @@ static int translate(const Chars_holder *dna, Chars_holder *aa,
  * --- .Call ENTRY POINT ---
  * Return an AAStringSet object.
  */
-SEXP DNAStringSet_translate(SEXP x, SEXP skip_code, SEXP dna_codes,
+SEXP DNAStringSet_translate(SEXP x,
+		SEXP skip_code, SEXP gap_code, SEXP dna_codes,
 		SEXP lkup, SEXP init_lkup,
 		SEXP if_non_ambig, SEXP if_ambig)
 {
-	char skip_code0;
+	char skip_code0, gap_code0;
 	int ncodes, if_non_ambig0, if_ambig0, ans_length, i, errcode;
 	TwobitEncodingBuffer teb;
 	ByteTrTable byte2offset;
@@ -142,6 +202,7 @@ SEXP DNAStringSet_translate(SEXP x, SEXP skip_code, SEXP dna_codes,
 	SEXP ans, width, ans_width;
 
 	skip_code0 = (unsigned char) INTEGER(skip_code)[0];
+	gap_code0 = (unsigned char) INTEGER(gap_code)[0];
 	ncodes = LENGTH(dna_codes);
 	if (LENGTH(lkup) != ncodes * ncodes * ncodes)
 		error("Biostrings internal error in "
@@ -190,11 +251,10 @@ SEXP DNAStringSet_translate(SEXP x, SEXP skip_code, SEXP dna_codes,
 		X_elt = _get_elt_from_XStringSet_holder(&X, i);
 		Y_elt = _get_elt_from_XStringSet_holder(&Y, i);
 		errcode = ncodes == 4 ?
-			fast_translate(&X_elt, &Y_elt,
-				       skip_code0, &teb, lkup, init_lkup) :
-			translate(&X_elt, &Y_elt,
-				  skip_code0, ncodes, &byte2offset,
-				  lkup, init_lkup,
+			fast_translate(&X_elt, &Y_elt, skip_code0, gap_code0,
+				       &teb, lkup, init_lkup) :
+			translate(&X_elt, &Y_elt, skip_code0, gap_code0,
+				  ncodes, &byte2offset, lkup, init_lkup,
 				  if_non_ambig0, if_ambig0);
 		if (errcode == -1) {
 			UNPROTECT(2);
