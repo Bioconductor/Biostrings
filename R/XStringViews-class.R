@@ -143,7 +143,12 @@ setAs("XStringSet", "XStringViews", .XStringSetAsViews)
 .as.data.frame.XStringViews <- function(x, row.names=NULL,
                                         validRN=TRUE, stringsAsFactors=FALSE)
 {
-    x_ranges <- ranges(v, use.names=FALSE, use.mcols=FALSE)
+    x_subject_len <- length(subject(x))
+    if (any(start(x) < 1L) || any(end(x) > x_subject_len)) {
+        x <- restrict(x, start=1L, end=x_subject_len, keep.all.ranges=TRUE)
+        warning("\"out of limits\" views were trimmed")
+    }
+    x_ranges <- ranges(x, use.names=FALSE, use.mcols=FALSE)
     x_sequences <- as(x, "XStringSet")  # does NOT propagate the metadata cols
     stopifnot(is.null(mcols(x_ranges)), is.null(mcols(x_sequences)))
     ans1 <- as.data.frame(x_ranges, row.names=row.names,

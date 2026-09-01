@@ -284,23 +284,22 @@ test_that("methods from the Compare group generic work as expected", {
 test_that("output works correctly", {
     s <- paste(rep("A", 100L), collapse="")
     expect_output(show(DNAString(s)),
-        "100-letter DNAString object\\nseq: .+\\.\\.\\..+$", width=80)
+        "100-letter DNAString object:\\n.+\\.\\.\\..+$", width=80)
     expect_output(show(RNAString(s)),
-        "100-letter RNAString object\\nseq: .+\\.\\.\\..+$", width=80)
+        "100-letter RNAString object:\\n.+\\.\\.\\..+$", width=80)
     expect_output(show(AAString(s)),
-        "100-letter AAString object\\nseq: .+\\.\\.\\..+$", width=80)
+        "100-letter AAString object:\\n.+\\.\\.\\..+$", width=80)
     expect_output(show(BString(s)),
-        "100-letter BString object\\nseq: A{36}\\.\\.\\.A{36}$", width=80)
+        "100-letter BString object:\\nA{39}\\.\\.\\.A{38}$", width=80)
 
-    # width of sequence is 5 less than that of 'width'
     expect_output(show(DNAString(s)),
-        "100-letter DNAString object\\nseq: .+\\.\\.\\..+$", width=10)
+        "100-letter DNAString object:\\n.+\\.\\.\\..+$", width=10)
     expect_output(show(RNAString(s)),
-        "100-letter RNAString object\\nseq: .+\\.\\.\\..+$", width=10)
+        "100-letter RNAString object:\\n.+\\.\\.\\..+$", width=10)
     expect_output(show(AAString(s)),
-        "100-letter AAString object\\nseq: .+\\.\\.\\..+$", width=10)
+        "100-letter AAString object:\\n.+\\.\\.\\..+$", width=10)
     expect_output(show(BString(s)),
-        "100-letter BString object\\nseq: AA\\.\\.\\.AA$", width=10)
+        "100-letter BString object:\\nAAAA\\.\\.\\.AAA$", width=10)
 })
 
 test_that("substr() and substring() methods work as expected", {

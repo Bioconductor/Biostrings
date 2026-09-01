@@ -146,10 +146,10 @@ test_that("as.factor() works correctly on XStringSet derivatives", {
 })
 
 test_that("as.data.frame() works correctly on XStringSet derivatives", {
-    expect_equal(as.data.frame(c(d,d)), data.frame(x=c(dnastr, dnastr)))
-    expect_equal(as.data.frame(c(r,r)), data.frame(x=c(rnastr, rnastr)))
-    expect_equal(as.data.frame(c(a,a)), data.frame(x=c(aastr, aastr)))
-    expect_equal(as.data.frame(c(b,b)), data.frame(x=c(bstr, bstr)))
+    expect_equal(as.data.frame(c(d,d)), data.frame(sequence=c(dnastr, dnastr)))
+    expect_equal(as.data.frame(c(r,r)), data.frame(sequence=c(rnastr, rnastr)))
+    expect_equal(as.data.frame(c(a,a)), data.frame(sequence=c(aastr, aastr)))
+    expect_equal(as.data.frame(c(b,b)), data.frame(sequence=c(bstr, bstr)))
 })
 
 test_that("toString() works correctly on XStringSet derivatives", {
