@@ -149,12 +149,15 @@ setAs("XStringSet", "XStringViews", .XStringSetAsViews)
         warning("\"out of limits\" views were trimmed")
     }
     x_ranges <- ranges(x, use.names=FALSE, use.mcols=FALSE)
-    x_sequences <- as(x, "XStringSet")  # does NOT propagate the metadata cols
+    ## Coercion to XStringSet propagates the names but not the metadata cols.
+    x_sequences <- as(x, "XStringSet")
     stopifnot(is.null(mcols(x_ranges)), is.null(mcols(x_sequences)))
     ans1 <- as.data.frame(x_ranges, row.names=row.names,
                           validRN=validRN, stringsAsFactors=stringsAsFactors)
     ans2 <- as.data.frame(x_sequences, row.names=row.names,
                           validRN=validRN, stringsAsFactors=stringsAsFactors)
+    if (is.null(colnames(ans2)))
+        colnames(ans2) <- "sequence"
     ans <- cbind(ans1, ans2)
     x_mcols <- mcols(x, use.names=FALSE)  # can be NULL!
     if (!is.null(x_mcols))

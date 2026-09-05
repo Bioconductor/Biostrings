@@ -146,10 +146,47 @@ test_that("as.factor() works correctly on XStringSet derivatives", {
 })
 
 test_that("as.data.frame() works correctly on XStringSet derivatives", {
-    expect_equal(as.data.frame(c(d,d)), data.frame(sequence=c(dnastr, dnastr)))
-    expect_equal(as.data.frame(c(r,r)), data.frame(sequence=c(rnastr, rnastr)))
-    expect_equal(as.data.frame(c(a,a)), data.frame(sequence=c(aastr, aastr)))
-    expect_equal(as.data.frame(c(b,b)), data.frame(sequence=c(bstr, bstr)))
+    ## --- NO names, NO mcols ---
+    x0 <- DNAStringSet(c("GCCTAAC", "CCAAGCG", "CCTAACG"))
+    expected0 <- as.data.frame(as.character(x0), optional=TRUE)
+    expect_identical(as.data.frame(x0), expected0)
+    expect_identical(data.frame(x0), data.frame(x0=as.character(x0)))
+    expect_identical(data.frame(A=x0), data.frame(A=as.character(x0)))
+
+    ## --- names, NO mcols (NULL) ---
+    x1 <- setNames(x0, c("seq1", "seq2", "seq3"))
+    expected1 <- data.frame(sequence=as.character(x0), names=names(x1))
+    expect_identical(as.data.frame(x1), expected1)
+    expect_identical(data.frame(x1), expected1)
+    expect_identical(data.frame(A=x1), data.frame(A=expected1))
+
+    ## --- names, 0-col DataFrame mcols ---
+    mcols(x1) <- DataFrame(matrix(nrow=3, ncol=0))
+    expect_identical(as.data.frame(x1), expected1)
+    expect_identical(data.frame(x1), expected1)
+    expect_identical(data.frame(A=x1), data.frame(A=expected1))
+
+    ## --- NO names, 0-col DataFrame mcols ---
+    x2 <- x0
+    mcols(x2) <- DataFrame(matrix(nrow=3, ncol=0))
+    expect_identical(as.data.frame(x0), expected0)
+    expect_identical(data.frame(x0), data.frame(x0=as.character(x0)))
+    expect_identical(data.frame(A=x0), data.frame(A=as.character(x0)))
+
+    ## --- NO names, 1-col DataFrame mcols ---
+    mcols(x2) <- DataFrame(score=101:103)
+    expected2 <- data.frame(sequence=as.character(x0), score=101:103)
+    expect_identical(as.data.frame(x2), expected2)
+    expect_identical(data.frame(x2), expected2)
+    expect_identical(data.frame(A=x2), data.frame(A=expected2))
+
+    ## --- names, 1-col DataFrame mcols ---
+    names(x2) <- names(x1)
+    expected2 <- data.frame(sequence=as.character(x0),
+                            names=names(x1), score=101:103)
+    expect_identical(as.data.frame(x2), expected2)
+    expect_identical(data.frame(x2), expected2)
+    expect_identical(data.frame(A=x2), data.frame(A=expected2))
 })
 
 test_that("toString() works correctly on XStringSet derivatives", {

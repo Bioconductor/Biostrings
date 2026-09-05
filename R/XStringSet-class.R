@@ -568,15 +568,25 @@ setMethod("as.factor", "XStringSet", function(x) as.factor(as.character(x)))
 ### Inherits the 'validRN' argument from as.data.frame.vector(), and
 ### the 'stringsAsFactors' argument from as.data.frame.character(),
 ### as.data.frame.list(), and as.data.frame.matrix().
+### Returns either a 1-column data.frame with no colnames on it, or a
+### multi-column data.frame with colnames on it.
 .as.data.frame.XStringSet <- function(x, row.names=NULL,
                                       validRN=TRUE, stringsAsFactors=FALSE)
 {
-    ans <- data.frame(sequence=as.character(x),
-                      row.names=row.names, check.names=FALSE,
-                      stringsAsFactors=stringsAsFactors)
-    ans$names <- names(x)
-    x_mcols <- mcols(x, use.names=FALSE)  # can be NULL!
-    if (!is.null(x_mcols))
+    ## We use 'optional=TRUE' to create a 1-column data.frame with no "names"
+    ## attribute (i.e. no colnames).
+    ans <- as.data.frame(as.character(unname(x)),
+                         row.names=row.names, optional=TRUE,
+                         validRN=validRN, stringsAsFactors=stringsAsFactors)
+    stopifnot(ncol(ans) == 1L, is.null(colnames(ans)))
+    x_names <- names(x)
+    x_mcols <- mcols(x, use.names=FALSE)
+    if (is.null(x_names) && length(x_mcols) == 0L)
+        return(ans)
+    colnames(ans) <- "sequence"
+    if (!is.null(x_names))
+        ans <- cbind(ans, names=x_names)
+    if (length(x_mcols) != 0L)
         ans <- cbind(ans, as.data.frame(x_mcols, validRN=validRN,
                                         stringsAsFactors=stringsAsFactors))
     ans
