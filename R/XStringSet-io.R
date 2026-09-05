@@ -362,8 +362,11 @@ readAAStringSet <- function(filepath, format="fasta",
         stop(wmsg("'width' must be a single integer"))
     if (!is.integer(width))
         width <- as.integer(width)
-    if (width < 1L)
-        stop(wmsg("'width' must be an integer >= 1"))
+    if (width < 1L) {
+        ## set to maximum possible width
+        ## using `lengths` because the function overrides `width`
+        width <- max(lengths(x))
+    }
     lkup <- get_seqtype_conversion_lookup(seqtype(x), "B")
     .Call2("write_XStringSet_to_fasta",
           x, filexp_list, width, lkup,

@@ -169,7 +169,7 @@ saveXStringSet(x, objname, dirpath=".", save.dups=FALSE, verbose=TRUE)
 
     If \code{format="fasta"}, the \code{width} argument can be used to
     specify the maximum number of letters per line of sequence.
-    \code{width} must be a single integer.
+    \code{width} must be a single integer, and uses an unbounded width if set to a value less than 1.
 
     If \code{format="fastq"}, the \code{qualities} argument can be used to
     specify the quality strings. \code{qualities} must be a \link{BStringSet}
