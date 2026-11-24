@@ -1,3 +1,37 @@
+VERSION 2.82.0
+--------------
+
+NEW FEATURES
+
+    o Implement vmatchPDict(). Authored by Aidan Lakshman. See #136.
+
+    o New SequenceMatching.Rmd vignette ("Sequence Searching and Matching
+      with Biostrings") by Aidan Lakshman. See #139.
+
+    o translate() now handles gaps (represented by dots) in input sequences.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o MultipleAlignment objects and associated functionality are now
+      implemented and documented in the new MultipleAlignment package.
+
+    o Refactor as.data.frame.XStringSet() and as.data.frame.XStringViews().
+
+    o Revisit show() methods for XString, XStringSet, and MaskedXString
+      objects.
+
+DEPRECATED AND DEFUNCT
+
+    o Formally deprecate the scoring matrices.
+      All the BLOSUM* and PAM* scoring matrices are now located in the pwalign
+      package (since BioC 3.20). Starting with BioC 3.24, the scoring matrices
+      located in the Biostrings package are formally deprecated and will soon
+      be removed from the package.
+
+    o Deprecate twoWayAlphabetFrequency() and
+      twoWayAlphabetFrequencyByQuality().
+
+
 VERSION 2.80.0
 --------------
 
