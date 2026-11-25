@@ -5,7 +5,7 @@ author:
   email: aidanlakshman@gmail.com
 package: Biostrings
 output:
-  BiocStyle::pdf_document
+  BiocStyle::html_document
 abstract: |
   Biostrings encapsulates a wide variety of sequence matching functions, but
   using them can be relatively confusing. This vignette walks through examples

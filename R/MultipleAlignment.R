@@ -7,15 +7,11 @@
 .call_fun_in_MultipleAlignment <- function(fun, ...)
 {
      S4Vectors:::load_package_gracefully("MultipleAlignment",
-              "when calling ", fun, "() in BioC >= 3.24")
+              "when calling ", fun, "() in BioC >= 3.25")
      msg <- c(fun, "() has moved from Biostrings to the MultipleAlignment ",
-              "package, and is formally deprecated in Biostrings >= 2.81.3. ",
-              "Please call MultipleAlignment::", fun, "() to get rid of ",
-              "this warning.")
-     .Deprecated(msg=wmsg(msg))
-     FUN <- base::get(fun, envir=asNamespace("MultipleAlignment"),
-                      inherits=FALSE)
-     do.call(FUN, list(...))
+              "package, and is formally defunct in Biostrings >= 2.83.1. ",
+              "Please call MultipleAlignment::", fun, "().")
+     .Defunct(msg=wmsg(msg))
 }
 
 rowmask <- function(x)

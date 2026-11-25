@@ -943,49 +943,24 @@ setMethod("consensusString", "ANY",
 
 ### twoWayAlphabetFrequency() was added by M. Lawrence in 2012 (see commit
 ### 4d6298d). However Michael never seemed to care too much about maintaining
-### this (see commit 6b307d8) or about documenting it. So time to deprecate.
-.twoWayAlphabetFrequency_deprecation_msg <- c(
-    "twoWayAlphabetFrequency() is deprecated in BioC 3.24. ",
+### this (see commit 6b307d8) or documenting it. So time to say good bye.
+.twoWayAlphabetFrequency_defunct_msg <- c(
+    "twoWayAlphabetFrequency() is defunct in BioC 3.25. ",
     "To our knowledge, no Bioconductor package uses it. If your ",
     "code relies on it, feel free to open an issue at ",
-    "https://github.com/Bioconductor/Biostrings/issues to discuss ",
-    "alternatives or workarounds."
+    "https://github.com/Bioconductor/Biostrings/issues to ",
+    "discuss alternatives or workarounds."
 )
 
 .XString.two_way_code_frequency <- function(x, y, as.prob, baseOnly)
 {
-  .Deprecated(msg=wmsg(.twoWayAlphabetFrequency_deprecation_msg))
-  if (!isTRUEorFALSE(as.prob))
-    stop("'as.prob' must be TRUE or FALSE")
-  x.codes <- xscodes(x, baseOnly=baseOnly)
-  y.codes <- xscodes(y, baseOnly=baseOnly)
-  ans <- .Call2("XString_two_way_letter_frequency",
-                x, y, x.codes, y.codes, baseOnly,
-                PACKAGE="Biostrings")
-  if (as.prob)
-    ans <- ans / nchar(x) # nchar(x) is sum(ans) but faster
-  ans
+  .Defunct(msg=wmsg(.twoWayAlphabetFrequency_defunct_msg))
 }
 
 .XStringSet.two_way_code_frequency <- function(x, y, as.prob, collapse,
                                                baseOnly)
 {
-  .Deprecated(msg=wmsg(.twoWayAlphabetFrequency_deprecation_msg))
-  if (!isTRUEorFALSE(as.prob))
-    stop("'as.prob' must be TRUE or FALSE")
-  collapse <- .normargCollapse(collapse)
-  x.codes <- xscodes(x, baseOnly=baseOnly)
-  y.codes <- xscodes(y, baseOnly=baseOnly)
-  ans <- .Call2("XStringSet_two_way_letter_frequency",
-                x, y, collapse, x.codes, y.codes, baseOnly,
-                PACKAGE="Biostrings")
-  if (as.prob) {
-    if (collapse)
-      ans <- ans / sum(as.numeric(ans))
-    else
-      ans <- ans / rep(nchar(x), each = prod(dim(ans)[1:2]))
-  }
-  ans
+  .Defunct(msg=wmsg(.twoWayAlphabetFrequency_defunct_msg))
 }
 
 setGeneric("twoWayAlphabetFrequency", signature=c("x", "y"),
@@ -1027,29 +1002,19 @@ setMethod("twoWayAlphabetFrequency", c("XStringSet", "XStringSet"),
 
 ### twoWayAlphabetFrequencyByQuality() was added around the same time
 ### as twoWayAlphabetFrequency() by Michael. Was never exported or documented,
-### and never had unit tests. So also time to deprecate.
-.twoWayAlphabetFrequencyByQuality_deprecation_msg <- c(
-    "twoWayAlphabetFrequencyByQuality() is deprecated in BioC 3.24. ",
+### and never had unit tests. So also time to say good bye.
+.twoWayAlphabetFrequencyByQuality_defunct_msg <- c(
+    "twoWayAlphabetFrequencyByQuality() is defunct in BioC 3.25. ",
     "To our knowledge, no Bioconductor package uses it. If your ",
     "code relies on it, feel free to open an issue at ",
-    "https://github.com/Bioconductor/Biostrings/issues to discuss ",
-    "alternatives or workarounds."
+    "https://github.com/Bioconductor/Biostrings/issues to ",
+    "discuss alternatives or workarounds."
 )
 
 .XStringSet.two_way_code_frequency_by_quality <-
   function(x, y, x.quality, y.quality, as.prob, baseOnly)
 {
-  .Deprecated(msg=wmsg(.twoWayAlphabetFrequencyByQuality_deprecation_msg))
-  if (!isTRUEorFALSE(as.prob))
-    stop("'as.prob' must be TRUE or FALSE")
-  codes <- xscodes(x, baseOnly=baseOnly)
-  ans <- .Call2("XStringSet_two_way_letter_frequency_by_quality",
-                x, y, x.quality, y.quality, collapse, codes, baseOnly,
-                PACKAGE="Biostrings")
-  if (as.prob) {
-    ans <- ans / rep(nchar(x), each = prod(dim(ans)[1:2]))
-  }
-  ans
+  .Defunct(msg=wmsg(.twoWayAlphabetFrequencyByQuality_defunct_msg))
 }
 
 setGeneric("twoWayAlphabetFrequencyByQuality", signature=c("x", "y"),
